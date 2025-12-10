@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   apache:
-    image: php:8.2-apache
+    build: .
     container_name: ProyectoSyncFive
     ports:
       - "8081:80"
@@ -12,9 +12,3 @@ services:
       - "8085:80"
     volumes:
       - ./:/var/www/html
-    working_dir: /var/www/html
-    environment:
-      APACHE_DOCUMENT_ROOT: /var/www/html
-
-    # Optional enhancements
-    command: bash -c "docker-php-ext-install mysqli && apache2-foreground"
