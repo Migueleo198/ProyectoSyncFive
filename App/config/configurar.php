@@ -4,16 +4,16 @@
     define('RUTA_APP', dirname(dirname(__FILE__)));
 
     // Ruta url, Ejemplo: http://localhost/daw2_mvc
-    define('RUTA_URL', '/mvc_completo-24_25');
+    define('RUTA_URL', '/');
 
-    define('NOMBRE_SITIO', 'CRUD MVC - DAW2 Alcañiz 2024-2025');
+    define('NOMBRE_SITIO', 'SyncFive');
 
 
     // Configuracion de la Base de Datos
-    define('DB_HOST', 'localhost');
+    define('DB_HOST', '192.168.13.108:3306');
     define('DB_USUARIO', 'root');
-    define('DB_PASSWORD', '');
-    define('DB_NOMBRE', 'crud_mvc');
+    define('DB_PASSWORD', '1234');
+    define('DB_NOMBRE', 'SyncFive');
 
     // Configuracion Tamaño de pagina en la paginacion
     define('TAM_PAGINA', 3);
