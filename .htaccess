@@ -1,0 +1,7 @@
+RewriteEngine on
+
+Options -Indexes
+
+ErrorDocument 403 /errores/err403.html
+ErrorDocument 404 /errores/err404.html
+ErrorDocument 500 /errores/err500.html
