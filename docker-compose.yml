@@ -3,12 +3,8 @@ version: "3.9"
 services:
   apache:
     build: .
-    container_name: ProyectoSyncFive
+    container_name: german-apache
     ports:
-      - "8081:80"
-      - "8082:80"
-      - "8083:80"
       - "8084:80"
-      - "8085:80"
     volumes:
       - ./:/var/www/html

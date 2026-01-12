@@ -1,0 +1,21 @@
+:root {
+  --rojo-chillon: #0066cc;
+  --rojo-granate: #0066cc;
+  --rojo-pastel: #0066cc;
+  --negro: #262223;
+  --blanco: #f2f2f2;
+  --gris: #818181;
+}
+
+body{
+    background-color: var(--blanco);
+    color: var(--negro);
+}
+
+div{
+    background-color: var(--gris);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--rojo-chillon);
+}
