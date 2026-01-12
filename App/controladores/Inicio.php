@@ -1,13 +1,21 @@
 <?php
 
-    class Inicio extends Controlador{
+class Inicio extends Controlador {
 
-        public function __construct(){
+    private $usuariosModel;
 
-        }
-
-        public function index(){
-
-        }
-
+   
+    public function __construct() {
+      
+        $this->usuariosModel = $this->modelo('Usuario');
     }
+
+   
+    public function index() {
+        
+        //$datos = $this->inicioModel->obtenerNumUsuarios(); 
+
+        $this->vista('index');
+    }
+
+}

@@ -17,7 +17,13 @@
         public function vista($vista, $datos = []){
             // comprobamos si existe el archivo
             if(file_exists('../App/vistas/'.$vista.'.php')){
+                
                 require_once '../App/vistas/'.$vista.'.php';
+            } 
+
+            else if(file_exists('../App/vistas/'.$vista.'.html')){
+                
+                require_once '../App/vistas/'.$vista.'.html';
             } else {
                 die('la vista no existe');
             }
