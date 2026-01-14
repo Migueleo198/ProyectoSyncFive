@@ -2,9 +2,14 @@ version: "3.9"
 
 services:
   apache:
-    build: .
+    image: php:8.2-apache
     container_name: german-apache
     ports:
       - "8084:80"
     volumes:
       - ./:/var/www/html
+    command: >
+      bash -c "
+      docker-php-ext-install pdo_mysql &&
+      apache2-foreground
+      "
