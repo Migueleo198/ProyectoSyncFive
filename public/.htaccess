@@ -1,7 +1,12 @@
 <IfModule mod_rewrite.c>
     Options -Multiviews
-    RewriteEngine On 
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^(.+)$ index.php?url=$1 [QSA,L]
+    RewriteEngine On
+
+    # Do NOT rewrite existing files or folders
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Rewrite everything else to index.php
+    RewriteRule ^ index.php [QSA,L]
 </IfModule>

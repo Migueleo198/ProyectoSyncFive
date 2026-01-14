@@ -11,7 +11,7 @@
      */
 
     class Core{
-        protected $controladorActual = 'Inicio';
+        protected $controladorActual = 'login';
         protected $metodoActual = 'index';
         protected $parametros = [];
 

@@ -1,0 +1,25 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "juanperez",
+      "email": "juan@example.com",
+      "role": "admin",
+      "active": true
+    },
+    {
+      "id": 2,
+      "username": "mariagomez",
+      "email": "maria@example.com",
+      "role": "user",
+      "active": true
+    },
+    {
+      "id": 3,
+      "username": "carlosruiz",
+      "email": "carlos@example.com",
+      "role": "user",
+      "active": false
+    }
+  ]
+}
