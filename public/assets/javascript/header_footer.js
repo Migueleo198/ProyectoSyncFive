@@ -5,6 +5,6 @@
         document.getElementById(id).innerHTML = html;
     }
     document.addEventListener("DOMContentLoaded", () => {
-        cargarHTML("header-placeholder", "../html/header.html");
-        cargarHTML("footer-placeholder", "../html/footer.html");
+        cargarHTML("header-placeholder", "../../includes/footer.html");
+        cargarHTML("footer-placeholder", "../../includes/footer.html");
     });
