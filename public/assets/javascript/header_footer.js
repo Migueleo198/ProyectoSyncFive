@@ -7,7 +7,11 @@ async function cargarHTML(id, url) {
         }
         const html = await res.text();
         document.getElementById(id).innerHTML = html;
-        resizeImg('80px','140px','logo');
+        resizeImg('80px', '140px', 'logo');
+        const CONT_LOGO = document.body.querySelector('.logo-container');
+        CONT_LOGO.addEventListener('click', () => {
+            addPath(window.location.origin + '/pages/home.html');
+        });
     } catch (error) {
         console.error(error);
         document.getElementById(id).innerHTML = `<div class="alert alert-danger">Error al cargar ${url}</div>`;
@@ -18,23 +22,33 @@ async function cargarHTML(id, url) {
 document.addEventListener("DOMContentLoaded", () => {
     // Usar basePath si está definida, si no usar rutas relativas
     const base = typeof basePath !== 'undefined' ? basePath : '../';
-    
+
     cargarHTML("header-placeholder", base + "includes/header.html");
     cargarHTML("sidebar-placeholder", base + "includes/sidebar.html");
     cargarHTML("footer-placeholder", base + "includes/footer.html");
 
 
-    
-    
+
+
 
 
 
 });
 
-async function resizeImg(height,width,imgClass){
+function addPath(url) {
+    window.location.href = url;
+}
+
+
+
+
+
+
+
+async function resizeImg(height, width, imgClass) {
     const IMG = document.querySelector("." + imgClass);
     console.log(IMG);
-   
+
     IMG.style.minHeight = height;
     IMG.style.width = width;
 }
