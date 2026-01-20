@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////// HABRÁ QUE VER COMO HACER LAS RESTRICCIONES
 // config/routes.php
 
 //+++++++++++++++++++++ PLANTILLA CRUD ++++++++++++++++++++++
