@@ -7,40 +7,12 @@
     --gris: #cfcfcf;
     }
 
-    header {
-        background-color: var(--rojo-granate);
-        padding: 0.75rem 1.5rem;
-    }
-
-    .header-text, .header-user span {
-        color: var(--blanco);
-    }
-
     h1, h2, h3, h4, h5, h6 {
         color: var(--rojo-chillon);
     }
 
-    footer {
-        background-color: var(--negro);
-        padding: 1rem 1.5rem;
-    }
 
-    .footer-text,
-    .footer-link {
-        color: var(--blanco);
-    }
+    
 
-    header img {
-        max-height: 50px;
-        width: auto;
-        margin-left: 20px;
-    }
 
-    .gris td{
-        background-color: var(--gris);
-    }
-
-    table td{
-        border: 1px solid #000;
-        border-collapse: collapse;
-    }
+    
