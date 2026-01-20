@@ -7,6 +7,7 @@ async function cargarHTML(id, url) {
         }
         const html = await res.text();
         document.getElementById(id).innerHTML = html;
+        resizeImg('80px','140px','logo');
     } catch (error) {
         console.error(error);
         document.getElementById(id).innerHTML = `<div class="alert alert-danger">Error al cargar ${url}</div>`;
@@ -21,4 +22,19 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarHTML("header-placeholder", base + "includes/header.html");
     cargarHTML("sidebar-placeholder", base + "includes/sidebar.html");
     cargarHTML("footer-placeholder", base + "includes/footer.html");
+
+
+    
+    
+
+
+
 });
+
+async function resizeImg(height,width,imgClass){
+    const IMG = document.querySelector("." + imgClass);
+    console.log(IMG);
+   
+    IMG.style.minHeight = height;
+    IMG.style.width = width;
+}
