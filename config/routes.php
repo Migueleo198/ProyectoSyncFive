@@ -18,7 +18,7 @@ declare(strict_types=1);
 // $router->put('/incidencias/{id}', 'Controllers\\IncidenciaController@update');
 
 // PATCH editar campo @update{Campo}
-// $router->patch('/incidencias/{id}','Controllers\\IncidenciaController@updateDescripcion'); 
+// $router->patch('/incidencias/{id}','Controllers\\IncidenciaController@update{Campo}'); 
 
 // DELETE eliminar @destroy
 // $router->delete('/incidencias/{id}', 'Controllers\\IncidenciaController@destroy');
@@ -105,6 +105,11 @@ $router->delete('/categorias/{id_categorias}', 'Controllers\\CategoriasControlle
 
 
 //+++++++++++++++++++++ MATERIAL ++++++++++++++++++++++
+$router->get('/materiales', 'Controllers\\MaterialesController@index');
+$router->get('/materiales/{id_emergencia}', 'Controllers\\MaterialesController@show');
+$router->post('/materiales', 'Controllers\\MaterialesController@store');
+$router->put('/materiales/{id_emergencia}', 'Controllers\\MaterialesController@update');
+$router->delete('/materiales/{id_emergencia}', 'Controllers\\MaterialesController@destroy');
 
 //--------------------- MATERIAL EN ALMACEN ---------------------
 
@@ -144,6 +149,10 @@ $router->delete('/salidas/{id_registro}/personas/{n_funcionario}', 'Controllers\
 
 
 //+++++++++++++++++++++ GUARDIAS ++++++++++++++++++++++
+
+
+
+//+++++++++++++++++++++ PERMISOS ++++++++++++++++++++++
 
 
 
