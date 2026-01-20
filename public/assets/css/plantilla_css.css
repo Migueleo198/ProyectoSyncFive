@@ -1,0 +1,13 @@
+@import url("paleta_colores.css");
+    .table-bordered td {
+        border-color: var(--gris);
+    }
+
+    #filtroTabla{
+        background-color: var(--rojo-pastel);
+    }
+
+    .contenedorInsertar{
+        background-color: var(--gris);
+    }
+
