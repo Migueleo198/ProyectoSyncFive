@@ -21,8 +21,7 @@
 
     header img {
         max-height: 50px;
-        width: auto;
-        margin-left: 20px;
+        width: 175px;
     }
 
     .gris{
@@ -46,10 +45,8 @@
     }
 
     /* Selecciona solo el div que está justo después del header */
-    #header-placeholder + .d-flex {
-        flex: 1;
-    }
     
+
 #sidebar{
         width:200px;
         padding-left: 0%;
@@ -71,3 +68,9 @@
     aside{
         background-color: var(--gris);
     }
+
+
+    header.container-fluid {
+        padding-left: 0;
+    }
+
