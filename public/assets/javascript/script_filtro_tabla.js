@@ -26,18 +26,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Modal VER
+    // Modal VER dinámico
     const modalVer = document.getElementById('modalVer');
 
     modalVer.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         const row = button.closest('tr');
         const cells = row.querySelectorAll('td');
+        const headerCells = document.querySelectorAll('#tabla thead th');
 
-        document.getElementById('verId').textContent     = cells[0].textContent.trim();
-        document.getElementById('verNombre').textContent = cells[1].textContent.trim();
-        document.getElementById('verGrupo').textContent  = cells[2].textContent.trim();
+        const modalBody = document.getElementById('modalVerBody');
+        modalBody.innerHTML = ''; // Limpiar contenido previo
+
+        cells.forEach((cell, index) => {
+            // Omitimos la columna de acciones si tiene botones
+            if (cell.querySelector('button')) return;
+
+            // Tomamos el nombre de la columna desde el encabezado
+            const headerText = headerCells[index].textContent.trim();
+            const cellText = cell.textContent.trim();
+
+            const p = document.createElement('p');
+            p.innerHTML = `<strong>${headerText}:</strong> ${cellText}`;
+            modalBody.appendChild(p);
+        });
     });
 
 });
-
