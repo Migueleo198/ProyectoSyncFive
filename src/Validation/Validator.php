@@ -94,6 +94,40 @@ class Validator
                             }
                         }
                         break;
+
+                    case 'dni':
+                        if ($value !== null) {
+                            if (!self::validateDNI($value)) {
+                                $errors[$field][] = "El campo $field no es un DNI válido.";
+                            }
+                        }
+                        break;
+                    
+                    case 'phone':
+                        if ($value !== null) {
+                            if (!self::validatePhone($value)) {
+                                $errors[$field][] = "El campo $field debe ser un teléfono válido.";
+                            }
+                        }
+                        break;
+
+                    case 'date':
+                        if ($value !== null) {
+                            $d = date_create($value);
+                            if (!$d || $d->format('Y-m-d') !== $value) {
+                                $errors[$field][] = "El campo $field debe ser una fecha válida (Y-m-d).";
+                            }
+                        }
+                        break;
+
+                    case 'username':
+                        if ($value !== null && !preg_match('/^[a-zA-Z0-9_]{4,50}$/', $value)) {
+                            $errors[$field][] = "El campo $field no es un nombre de usuario válido.";
+                        }
+                        break;
+
+
+
                 }
             }
 
@@ -136,5 +170,32 @@ class Validator
 
         return $value;
     }
+
+    private static function validateDNI(string $dni): bool
+    {
+        $dni = strtoupper(trim($dni));
+
+        if (!preg_match('/^[0-9]{8}[A-Z]$/', $dni)) {
+            return false;
+        }
+
+        $letters = "TRWAGMYFPDXBNJZSQVHLCKE";
+        $number = (int)substr($dni, 0, 8);
+        $letter = $dni[8];
+
+        return $letters[$number % 23] === $letter;
+    }
+
+    private static function validatePhone(string $phone): bool
+    {
+        // Elimina espacios, guiones y paréntesis
+        $cleanPhone = preg_replace('/[\s\-\(\)]/', '', $phone);
+
+        // Debe empezar opcionalmente con + seguido de 1 a 3 dígitos (código país)
+        // y luego de 8 a 12 dígitos para el número local
+        return preg_match('/^\+?[1-9]\d{1,3}\d{8,12}$/', $cleanPhone);
+    }
+
+
 
 }
