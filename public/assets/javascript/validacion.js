@@ -2,7 +2,8 @@
 export function validarDNI(dni) {
     const dniRegex = /^[0-9]{8}[A-Z]$/;
     if (!dniRegex.test(dni)) return false;
-
+    dni = dni.toUpperCase();
+    
     const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
     const numero = parseInt(dni.substring(0, 8), 10);
     const letraCorrecta = letras[numero % 23];
@@ -76,7 +77,7 @@ const PERMISO = ["ACEPTADO", "REVISIÓN", "DENEGADO"];
 const INCIDENCIA = ["ABIERTA", "CERRADA"];
 
 // MANTENIMIENTO
-const MANTENIMIENTO = ["ABIERT", "REALIZADO"];
+const MANTENIMIENTO = ["ABIERTO", "REALIZADO"];
 
 export function validarCheck(dato,rango) {
     dato=dato.toUpperCase();    
