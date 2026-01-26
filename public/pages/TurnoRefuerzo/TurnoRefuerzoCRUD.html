@@ -44,7 +44,7 @@
         <!-- CONTENIDO PRINCIPAL -->
         <main class="p-3 w-100">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">Control de Guardias</h1>
+                <h1 class="mb-0">Control de Turnos de Refuerzo</h1>
                 <!-- Icono de ayuda que redirige a Notion -->
                 <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
                    class="text-dark" title="Abrir ayuda en Notion">
@@ -87,7 +87,7 @@
             </div>
             <!-- Contenedor tabla con filtro-->
             <div class="container mt-4 p-0"> 
-                 <h2 class="d-flex align-items-center">Guardias</h2>
+                 <h2 class="d-flex align-items-center">Turnos de Refuerzo</h2>
 
                 <div id="filtroTabla" class="m-0 row d-flex justify-content-center"> <!-- Filtro -->
                     <div class="col-md-5 d-flex align-items-center m-1">
@@ -104,7 +104,7 @@
                 <table class="table table-bordered table-striped" id="tabla">
                     <thead class="table-dark">
                         <tr>
-                            <th>ID Guardia</th>
+                            <th>ID Turno de Refuerzo</th>
                             <th>Nombre Personas</th>
                             <th>Fecha</th>
                             <th>H_inicio</th>
@@ -142,7 +142,7 @@
             
             <!-- Contenedor insertar Usuario -->
             <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar nueva guardia</h5>
+                <h2 class="text-center mb-4">Insertar nuevo Turno de Refuerzo</h2>
                 <form id="formInsertar" class="mx-auto">
                     <!-- Campos en la misma fila -->
                     <div class="row mb-3">
@@ -176,14 +176,14 @@
                 </form>
             </div>
             <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar usuario a guardia</h5>
+                <h2 class="text-center mb-4">Insertar usuario a Turno de Refuerzo</h2>
                 <form id="formInsertar" class="mx-auto">
                     <!-- Campos en la misma fila -->
                     <div class="row mb-3">
                         <div class="col-md-4 col-sm-6 ">
-                            <label for="ID_Guardia" class="m-2 form-label">ID_Guardia</label>
+                            <label for="ID_Guardia" class="m-2 form-label">ID_Turno_Refuerzo</label>
                             <select class="form-select" id="ID_Guardia">
-                                <option value="">Seleccione guardia...</option>
+                                <option value="">Seleccione Tunro de Refuerzo...</option>
                                 <option value="1">Vehículo 1</option>
                                 <option value="2">Vehículo 2</option>
                             </select>       
@@ -221,7 +221,7 @@
 
 
     <!-- Modal de edición -->
-    <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
+   <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
