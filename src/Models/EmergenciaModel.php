@@ -93,7 +93,7 @@ class EmergenciaModel
         return $result ?: null;
     }
 
-    public function createTipo(array $data): int|false
+    public function addTipo(array $data): int|false
     {
         $this->db->query("
             INSERT INTO Tipo_emergencia (nombre, grupo)
@@ -146,7 +146,7 @@ class EmergenciaModel
             ->fetchAll();
     }
 
-    public function createVehiculo(array $data): int|false
+    public function addVehiculo(array $data): int|false
     {
         $this->db->query("
             INSERT INTO Emergencia_Vehiculo
@@ -209,7 +209,7 @@ class EmergenciaModel
         return 1;
     }
 
-    public function removePersonal(string $matricula, int $n_funcionario): int
+    public function deletePersonal(string $matricula, int $n_funcionario): int
     {
         $this->db->query("
             DELETE FROM Emergencia_Vehiculo_Persona

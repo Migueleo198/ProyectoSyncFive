@@ -62,11 +62,11 @@ $router->protectedSession('DELETE', '/formaciones/{id_formacion}', 'Controllers\
 
 
 //++++++++++++++++++++++++++++++ EDICIONES ++++++++++++++++++++++++++++++
-$router->protectedSession('GET', '/formaciones/{id_formacion}/ediciones', 'Controllers\\EdicionController@index', [1,2,3,4,5]);
-$router->protectedSession('POST', '/formaciones/{id_formacion}/ediciones', 'Controllers\\EdicionController@store', [4,5]);
-$router->protectedSession('PUT', '/formaciones/{id_formacion}/ediciones/{id_edicion}', 'Controllers\\EdicionController@update', [4,5]);
-$router->protectedSession('DELETE', '/formaciones/{id_formacion}/ediciones/{id_edicion}', 'Controllers\\EdicionController@delete', [5]);
-$router->protectedSession('GET', '/formaciones/{id_formacion}/ediciones/{id_edicion}/personas', 'Controllers\\EdicionController@personas', [1,2,3,4,5]);
+$router->protectedSession('GET', '/ediciones/{id_formacion}', 'Controllers\\EdicionController@index', [1,2,3,4,5]);
+$router->protectedSession('POST', '/ediciones', 'Controllers\\EdicionController@store', [4,5]);
+$router->protectedSession('PUT', '/ediciones/{id_edicion}', 'Controllers\\EdicionController@update', [4,5]);
+$router->protectedSession('DELETE', '/ediciones/{id_edicion}', 'Controllers\\EdicionController@delete', [5]);
+$router->protectedSession('GET', '/ediciones/{id_edicion}/personas', 'Controllers\\EdicionController@personas', [1,2,3,4,5]);
 
 
 //++++++++++++++++++++++++++++++ TURNOS DE REFUERZO ++++++++++++++++++++++++++++++
@@ -184,8 +184,9 @@ $router->protectedSession('PUT', '/salidas/{id_registro}', 'Controllers\\SalidaC
 $router->protectedSession('DELETE', '/salidas/{id_registro}', 'Controllers\\SalidaController@delete', [5]);
 
 // PERSONA EN SALIDA
-$router->protectedSession('POST', '/salidas/{id_registro}/persona', 'Controllers\\SalidaController@getPersona', [2,3,4,5]);
-$router->protectedSession('DELETE', '/salidas/{id_registro}/persona/{n_funcionario}', 'Controllers\\SalidaController@deletePersona', [2,3,4,5]);
+$router->protectedSession('GET', '/salidas/{id_registro}/personas', 'Controllers\\SalidaController@getPersona', [2,3,4,5]);
+$router->protectedSession('POST', '/salidas/{id_registro}/personas', 'Controllers\\SalidaController@setPersona', [2,3,4,5]);
+$router->protectedSession('DELETE', '/salidas/{id_registro}/personas/{n_funcionario}', 'Controllers\\SalidaController@deletePersona', [2,3,4,5]);
 
 
 //++++++++++++++++++++++++++++++ AVISOS ++++++++++++++++++++++++++++++

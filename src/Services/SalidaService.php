@@ -17,6 +17,7 @@ class SalidaService
         $this->model = new SalidaModel();
     }
 
+    //================= Salidas =====================
 
     public function getAllSalidas(): array
     {
@@ -120,5 +121,45 @@ class SalidaService
         // Eliminación exitosa → no retorna nada
     }
 
-       
+
+
+        //================= Personas en salidas =====================
+    public function getAllPersonas(int $id_registro): array
+    {
+        try {
+            return $this->model->allPersonas($id_registro);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+
+    public function setPersonaSalida(int $id_registro, array $input): array
+    {
+        $data = Validator::validate($input, [
+            'n_funcionario' => 'required|int|min:1'
+        ]);
+
+        try {
+            $this->model->addPersonaSalida($id_registro, $data);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+
+        return ['message' => 'Persona añadida a la salida correctamente'];
+    }
+
+    public function deletePersonaSalida(int $id_registro, int $n_funcionario): void
+    {
+        try {
+            $result = $this->model->deletePersonaSalida($id_registro, $n_funcionario);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+
+        if ($result === 0) {
+            throw new \Exception("Persona no encontrada en la salida", 404);
+        }
+
+        // Eliminación exitosa → no retorna nada
+    }
 }

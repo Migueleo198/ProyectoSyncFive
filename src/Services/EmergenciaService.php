@@ -128,7 +128,7 @@ class EmergenciaService
         ]);
 
         try {
-            $id = $this->model->createTipo($data);
+            $id = $this->model->addTipo($data);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -198,7 +198,7 @@ class EmergenciaService
         ]);
 
         try {
-            $id = $this->model->createVehiculo($data);
+            $id = $this->model->addVehiculo($data);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -259,7 +259,7 @@ class EmergenciaService
         ]);
 
         try {
-            $result = $this->model->removePersonal($matricula, $n_funcionario);
+            $result = $this->model->deletePersonal($matricula, $n_funcionario);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }

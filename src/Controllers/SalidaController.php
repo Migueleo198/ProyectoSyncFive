@@ -108,4 +108,57 @@ class SalidaController
         }
     }
 
+
+//+++++++++++++++++++ Persona en salida ++++++++++++++++++++++
+
+    /**
+     * GET /salidas/personas
+     */
+    public function getPersona(Request $req, Response $res): void
+    {
+        try {
+            $salidas = $this->service->getAllPersonas();
+            $res->status(200)->json($salidas);
+        } catch (Throwable $e) {
+            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    /**
+     * POST /salidas/personas
+     */
+    public function setPersona(Request $req, Response $res): void
+    {
+        try {
+            $result = $this->service->setPersonaSalida($req->json());
+            $res->status(201)->json(
+                ['id' => $result['id']],
+                "Persona asignada a la salida correctamente"
+            );
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor",500);
+            return;
+        }
+    }     
+
+    /**
+     * DELETE /salidas/personas/{n_funcionario}
+     */
+    public function deletePersona(Request $req, Response $res, string $n_funcionario): void
+    {
+        try {
+            $n_funcionario = (int) $n_funcionario;  
+            $service = new \Services\SalidaService();
+            $service->deletePersonaSalida($n_funcionario);
+
+            $res->status(200)->json([], "Persona eliminada de la salida correctamente");
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
 }

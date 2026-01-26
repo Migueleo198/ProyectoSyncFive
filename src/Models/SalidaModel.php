@@ -78,4 +78,39 @@ class ProfesorModel
 
         return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
     }
+
+
+//=================== Persona en salida ====================
+    public function allPersonas(): array
+    {
+        return $this->db
+            ->query("SELECT * FROM Salida_Persona ORDER BY n_funcionario ASC")
+            ->fetchAll();
+    }
+
+    public function addPersona(array $data): int|false
+    {
+        $this->db->query("
+            INSERT INTO Salida_Persona (id_salida, n_funcionario)
+            VALUES (:id_salida, :n_funcionario)
+        ")
+        ->bind(":id_salida", $data['id_salida'])
+        ->bind(":n_funcionario", $data['n_funcionario'])
+        ->execute();
+
+        return (int) $this->db->lastId();
+    }   
+
+    public function deletePersona(int $id_salida, int $n_funcionario): int
+    {
+        $this->db->query("
+            DELETE FROM Salida_Persona
+            WHERE id_salida = :id_salida AND n_funcionario = :n_funcionario
+        ")
+        ->bind(":id_salida", $id_salida)
+        ->bind(":n_funcionario", $n_funcionario)
+        ->execute();
+
+        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+    }
 }

@@ -3,35 +3,25 @@ declare(strict_types=1);
 
 namespace Services;
 
-use Models\FormacionModel;
+use Models\EdicionModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
 
-class FormacionService
+class EdicionService
 {
-    private FormacionModel $model;
+    private EdicionModel $model;
 
     public function __construct()
     {
-        $this->model = new FormacionModel();
+        $this->model = new EdicionModel();
     }
 
 
-    public function getAllFormaciones(): array
+    public function getEdicionById(int $id): array
     {
-        try {
-            return $this->model->all();
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
-        }
-    }
-
-
-    public function getFormacionById(int $id): array
-    {
-        Validator::validate(['id' => $id], [
-            'id' => 'required|int|min:1'
+        Validator::validate(['id_formacion' => $id], [
+            'id_formacion' => 'required|int|min:1'
         ]);
 
         try {
@@ -48,11 +38,13 @@ class FormacionService
     }
 
 
-    public function createFormacion(array $input): array
+    public function createEdicion(array $input): array
     {
         $data = Validator::validate($input, [
-            'nombre'            => 'required|string|min:1|max:50',
-            'descripcion'       => 'required|string|min:1|max:100'
+            'id_formacion'      => 'required|int|min:1',
+            'f_inicio'          => 'required|date',
+            'f_fin'             => 'required|date',
+            'horas'             => 'required|int'
         ]);
 
         try {
@@ -69,15 +61,17 @@ class FormacionService
     }
 
 
-    public function updateFormacion(int $id, array $input): array
+    public function updateEdicion(int $id, array $input): array
     {
         Validator::validate(['id' => $id], [
             'id' => 'required|int|min:1'
         ]);
 
         $data = Validator::validate($input, [
-            'nombre'            => 'required|string|min:1|max:50',
-            'descripcion'       => 'required|string|min:1|max:100'
+            'id_formacion'      => 'required|int|min:1',
+            'f_inicio'          => 'required|date',
+            'f_fin'             => 'required|date',
+            'horas'             => 'required|int'
         ]);
 
         try {
@@ -100,16 +94,16 @@ class FormacionService
         }
 
         if ($result === -1) {
-            throw new \Exception("No se pudo actualizar la formación: conflicto con restricciones", 409);
+            throw new \Exception("No se pudo actualizar la edición: conflicto con restricciones", 409);
         }
 
         return [
             'status' => 'updated',
-            'message' => 'Formación actualizada correctamente'
+            'message' => 'Edición actualizada correctamente'
         ];
     }
 
-    public function deleteFormacion(int $id): void
+    public function deleteEdicion(int $id): void
     {
         // Validar ID
         Validator::validate(['id' => $id], [
@@ -124,18 +118,31 @@ class FormacionService
 
         if ($result === 0) {
             // No existe el registro
-            throw new \Exception("Formación no encontrada", 404);
+            throw new \Exception("Edición no encontrada", 404);
         }
 
         if ($result === -1) {
             // Conflicto por FK u otra restricción
-            throw new \Exception("No se puede eliminar la formación: el registro está en uso", 409);
+            throw new \Exception("No se puede eliminar la edición: el registro está en uso", 409);
         }
 
         // Eliminación exitosa → no retorna nada
     }
 
-    
+    public function getPersonasEdicion(int $id): array
+    {
+        Validator::validate(['id_edicion' => $id], [
+            'id_edicion' => 'required|int|min:1'
+        ]);
+
+        try {
+            $personas = $this->model->getPersonasByEdicionId($id);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+
+        return $personas;
+    }
 
     
 }
