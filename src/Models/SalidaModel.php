@@ -36,6 +36,16 @@ class ProfesorModel
 
         return (int) $this->db->lastId();
     }
+    
+    public function find(int $id): ?array
+    {
+        $result = $this->db
+            ->query("SELECT * FROM Salida WHERE id_salida = :id")
+            ->bind(":id", $id)
+            ->fetch();
+
+        return $result ?: null;
+    }
 
     public function update(int $id, array $data): int
     {

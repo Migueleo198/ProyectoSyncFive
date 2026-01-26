@@ -21,6 +21,16 @@ class CategoriaModel
             ->fetchAll();
     }
 
+     public function find(int $id): ?array
+    {
+        $result = $this->db
+            ->query("SELECT * FROM Categoria WHERE id_categoria = :id")
+            ->bind(":id", $id)
+            ->fetch();
+
+        return $result ?: null;
+    }
+
     public function create(array $data): int|false
     {
         $this->db->query("

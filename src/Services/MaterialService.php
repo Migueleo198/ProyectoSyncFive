@@ -3,22 +3,22 @@ declare(strict_types=1);
 
 namespace Services;
 
-use Models\FormacionModel;
+use Models\MaterialModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
 
-class FormacionService
+class MaterialService
 {
-    private FormacionModel $model;
+    private MaterialModel $model;
 
     public function __construct()
     {
-        $this->model = new FormacionModel();
+        $this->model = new MaterialModel();
     }
 
 
-    public function getAllFormaciones(): array
+    public function getAllMateriales(): array
     {
         try {
             return $this->model->all();
@@ -28,31 +28,32 @@ class FormacionService
     }
 
 
-    public function getFormacionById(int $id): array
+    public function getMaterialById(int $id): array
     {
         Validator::validate(['id' => $id], [
             'id' => 'required|int|min:1'
         ]);
 
         try {
-            $formacion = $this->model->find($id);
+            $material = $this->model->find($id);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
-        if (!$formacion) {
-            throw new \Exception("Formación no encontrada", 404);
+        if (!$material) {
+            throw new \Exception("Material no encontrado", 404);
         }
 
-        return $formacion;
+        return $material;
     }
 
 
-    public function createFormacion(array $input): array
+    public function createMaterial(array $input): array
     {
         $data = Validator::validate($input, [
-            'nombre'            => 'required|string|min:1|max:50',
-            'descripcion'       => 'required|string|min:1|max:100'
+            'nombre'            => 'required|string|max:100',
+            'descripcion'       => 'required|string|max:300',
+            'estado'            => 'required|string'
         ]);
 
         try {
@@ -62,22 +63,23 @@ class FormacionService
         }
 
         if (!$id) {
-            throw new \Exception("No se pudo crear la formación");
+            throw new \Exception("No se pudo crear el material");
         }
 
         return ['id' => $id];
     }
 
 
-    public function updateFormacion(int $id, array $input): array
+    public function updateMaterial(int $id, array $input): array
     {
         Validator::validate(['id' => $id], [
             'id' => 'required|int|min:1'
         ]);
 
         $data = Validator::validate($input, [
-            'nombre'            => 'required|string|min:1|max:50',
-            'descripcion'       => 'required|string|min:1|max:100'
+            'nombre'            => 'required|string|max:100',
+            'descripcion'       => 'required|string|max:300',
+            'estado'            => 'required|string'
         ]);
 
         try {
@@ -90,26 +92,26 @@ class FormacionService
             $exists = $this->model->find($id);
 
             if (!$exists) {
-                throw new \Exception("Formación no encontrada", 404);
+                throw new \Exception("Material no encontrado", 404);
             }
 
             return [
                 'status' => 'no_changes',
-                'message' => 'No hubo cambios en los datos de la formación'
+                'message' => 'No hubo cambios en los datos del material'
             ];
         }
 
         if ($result === -1) {
-            throw new \Exception("No se pudo actualizar la formación: conflicto con restricciones", 409);
+            throw new \Exception("No se pudo actualizar el material: conflicto con restricciones", 409);
         }
 
         return [
             'status' => 'updated',
-            'message' => 'Formación actualizada correctamente'
+            'message' => 'Material actualizado correctamente'
         ];
     }
 
-    public function deleteProfesor(int $id): void
+    public function deleteMaterial(int $id): void
     {
         // Validar ID
         Validator::validate(['id' => $id], [
@@ -124,18 +126,15 @@ class FormacionService
 
         if ($result === 0) {
             // No existe el registro
-            throw new \Exception("Profesor no encontrado", 404);
+            throw new \Exception("Material no encontrado", 404);
         }
 
         if ($result === -1) {
             // Conflicto por FK u otra restricción
-            throw new \Exception("No se puede eliminar el profesor: el registro está en uso", 409);
+            throw new \Exception("No se puede eliminar el material: el registro está en uso", 409);
         }
 
         // Eliminación exitosa → no retorna nada
     }
-
-    
-
-    
+   
 }
