@@ -131,7 +131,11 @@
                     </div>
                     <div class="col-mg-6 col-lg-4">
                         <label for="estado" class="form-label">Estado</label>
-                        <input type="text" class="form-control" id="estado" name="estado">
+                        <select class="form-select" id="estado" name="estado">
+                            <option value="">Seleccione...</option>
+                            <option value="activa">Activa</option>
+                            <option value="cerrada">Cerrada</option>
+                        </select>
                     </div>
                     <div class="col-mg-6 col-lg-4">
                         <label for="direccion" class="form-label">Dirección</label>
@@ -171,9 +175,9 @@
                         <div class="input-group">
                             <select class="form-select" id="equipos" name="equipos">
                                 <option value="">Seleccione equipo...</option>
-                                <option value="pc">PC</option>
-                                <option value="impresora">Impresora</option>
-                                <option value="router">Router</option>
+                                <option value="equipo1">Equipo 1</option>
+                                <option value="equipo2">Equipo 2</option>
+                                <option value="equipo3">Equipo 3</option>
                             </select>
                             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalInsertarEquipo">+</button>
                         </div>
@@ -326,18 +330,6 @@
                                 <option value="">Seleccione vehículo...</option>
                                 <option value="1">Vehículo 1</option>
                                 <option value="2">Vehículo 2</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Personal -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label for="personal" class="form-label">Personal Asignado</label>
-                            <select class="form-select" id="personal">
-                                <option value="">Seleccione personal...</option>
-                                <option value="1">Equipo 1</option>
-                                <option value="2">Equipo 2</option>
                             </select>
                         </div>
                     </div>
