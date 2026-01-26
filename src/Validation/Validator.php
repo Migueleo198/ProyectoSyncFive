@@ -120,6 +120,16 @@ class Validator
                         }
                         break;
 
+                    case 'datetime':
+                        if ($value !== null) {
+                            $d = date_create($value);
+                            if (!$d || $d->format('Y-m-d H:i:s') !== $value) {
+                                $errors[$field][] = "El campo $field debe ser una fecha y hora válida (Y-m-d H:i:s).";
+                            }
+                        }
+                        break;
+    
+
                     case 'username':
                         if ($value !== null && !preg_match('/^[a-zA-Z0-9_]{4,50}$/', $value)) {
                             $errors[$field][] = "El campo $field no es un nombre de usuario válido.";
