@@ -37,7 +37,7 @@ date_default_timezone_set('Europe/Madrid');
  *   URL: https://midominio.com/mi-app/
  *   BASE_PATH: '/mi-app'
  */
-define('BASE_PATH', '/api_mantenimiento_informatico');
+define('BASE_PATH', '/');
 
 
 // ----------------------------------------------------
