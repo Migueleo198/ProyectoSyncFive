@@ -37,13 +37,13 @@ date_default_timezone_set('Europe/Madrid');
  *   URL: https://midominio.com/mi-app/
  *   BASE_PATH: '/mi-app'
  */
-define('BASE_PATH', '/');
+define('BASE_PATH', '');
 
 
 // ----------------------------------------------------
 // DATABASE
 // ----------------------------------------------------
-define('DB_HOST', '192.168.13.108:3306');
+define('DB_HOST', '192.168.13.108:8082');
 define('DB_NAME', 'SyncFive');
 define('DB_USER', 'root');
 define('DB_PASS', '1234');
