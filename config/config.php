@@ -83,3 +83,15 @@ $GLOBALS['config'] = [
 function app_env(): string { return APP_ENV; }
 function app_debug(): bool { return APP_DEBUG; }
 
+// ----------------------------------------------------
+// EMAIL / SMTP
+// ----------------------------------------------------
+$GLOBALS['config']['email'] = [
+    'host'       => 'smtp.tuservidor.com',
+    'username'   => 'tu_correo@dominio.com',
+    'password'   => 'tu_contraseña',
+    'port'       => 587,
+    'encryption' => 'tls', // tls o ssl
+    'from_email' => 'no-reply@miapp.com',
+    'from_name'  => 'MiApp'
+];
