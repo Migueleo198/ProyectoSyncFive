@@ -11,7 +11,6 @@
 
     footer {
         background-color: var(--negro);
-        padding: 1rem 1.5rem;
     }
 
     .footer-text,
@@ -20,8 +19,7 @@
     }
 
     header img {
-        max-height: 50px;
-        width: 175px;
+        width: 50%;
     }
 
     .gris{
@@ -59,8 +57,8 @@
         }
 
         #sidebar{
-            width: 200px;
-            padding-left: 6px;
+            width: 205px;
+            padding-left: 0%;
             padding-right: 0%;
         }
     }
