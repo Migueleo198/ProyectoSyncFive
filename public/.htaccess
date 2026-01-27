@@ -1,15 +1,18 @@
+
 RewriteEngine On
 
-# 1. Root "/" → login
-RewriteRule ^$ pages/Login/vistaLogin.html [L]
+# 1. Redirigir la raíz del dominio a /pages
+RewriteRule ^$ pages/ [L]
 
-# 2. Do not rewrite existing files or directories
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
+# 2. Evitar redirección infinita si ya está en /pages
+RewriteCond %{REQUEST_URI} !^/pages/
 
-# 3. Never rewrite assets or .html files
-RewriteRule \.(js|css|html|png|jpg|jpeg|gif|svg|ico|map)$ - [L,NC]
-
-# 4. Friendly URLs for PHP only
+# 3. URL amigable: /algo → /pages/algo.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^([^/]+)/?$ pages/$1.php [L]
+
+# 4. URL amigable para subcarpetas (opcional)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)/?$ pages/$1.php [L]
