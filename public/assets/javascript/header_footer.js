@@ -33,8 +33,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function resizeImg(height,width,imgClass){
     const IMG = document.querySelector("." + imgClass);
-    console.log(IMG);
    
+   if(IMG!=null){
     IMG.style.minHeight = height;
     IMG.style.width = width;
+   }
 }
