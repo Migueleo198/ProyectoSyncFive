@@ -37,16 +37,16 @@ date_default_timezone_set('Europe/Madrid');
  *   URL: https://midominio.com/mi-app/
  *   BASE_PATH: '/mi-app'
  */
-define('BASE_PATH', '/api_mantenimiento_informatico');
+define('BASE_PATH', '');
 
 
 // ----------------------------------------------------
 // DATABASE
 // ----------------------------------------------------
-define('DB_HOST', '127.0.0.1');
-define('DB_NAME', 'mantenimiento_informatico');
+define('DB_HOST', '192.168.13.108:3306');
+define('DB_NAME', 'SyncFive');
 define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_PASS', '1234');
 define('DB_CHARSET', 'utf8mb4');
 
 
@@ -83,3 +83,14 @@ $GLOBALS['config'] = [
 function app_env(): string { return APP_ENV; }
 function app_debug(): bool { return APP_DEBUG; }
 
+// ----------------------------------------------------
+// EMAIL / SMTP (PHPMailer)
+// ----------------------------------------------------
+define('MAIL_HOST', 'mail.cpifpbajoaragon.info');
+define('MAIL_PORT', 465);
+define('MAIL_USERNAME', 'syncfive@cpifpbajoaragon.info');
+define('MAIL_PASSWORD', 'q2vEoL-kqW(W@h_q');
+define('MAIL_ENCRYPTION', 'ssl');
+
+define('MAIL_FROM_EMAIL', 'syncfive@cpifpbajoaragon.info');
+define('MAIL_FROM_NAME', 'SIGEBO');

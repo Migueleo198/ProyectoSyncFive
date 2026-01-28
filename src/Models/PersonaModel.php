@@ -157,4 +157,166 @@ class PersonaModel
         
         return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
     }
+
+    // ++++++++++++++++++++++++++++++++++ MÉTODOS SESIONES ++++++++++++++++++++++++++++++++++
+     /**
+     * Buscar usuario por login (nombre_usuario o correo)
+     */
+    public function findByLogin(string $login): ?array
+    {
+        $result = $this->db
+            ->query("
+                SELECT *
+                FROM Persona
+                WHERE nombre_usuario = :login
+                   OR correo = :login
+                LIMIT 1
+            ")
+            ->bind(':login', $login)
+            ->fetch();
+
+        return $result ?: null;
+    }
+
+    /**
+     * Buscar usuario por correo
+     */
+    public function findByEmail(string $correo): ?array
+    {
+        $result = $this->db
+            ->query("
+                SELECT *
+                FROM Persona
+                WHERE correo = :correo
+                LIMIT 1
+            ")
+            ->bind(':correo', $correo)
+            ->fetch();
+
+        return $result ?: null;
+    }
+
+    /**
+     * Buscar usuario por token de activación
+     */
+    public function findByActivationToken(string $token): ?array
+    {
+        $result = $this->db
+            ->query("
+                SELECT *
+                FROM Persona
+                WHERE token_activacion = :token
+                LIMIT 1
+            ")
+            ->bind(':token', $token)
+            ->fetch();
+
+        return $result ?: null;
+    }
+
+    /**
+     * Activar cuenta de usuario
+     */
+    public function activateUser(string $id_bombero): int
+    {
+        $this->db
+            ->query("
+                UPDATE Persona SET
+                    activo = TRUE,
+                    token_activacion = NULL,
+                    fecha_exp_token_activacion = NULL
+                WHERE n_funcionario = :id
+            ")
+            ->bind(':id', $id_bombero)
+            ->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
+
+    /**
+     * Guardar token de recuperación de contraseña
+     */
+    public function setPasswordResetToken(
+        string $id_bombero,
+        string $token,
+        string $expiry
+    ): int {
+        $this->db
+            ->query("
+                UPDATE Persona SET
+                    token_cambio_contrasenia = :token,
+                    fecha_exp_cambio_contrasenia = :expiry
+                WHERE id_bombero = :id
+            ")
+            ->bind(':id', $id_bombero)
+            ->bind(':token', $token)
+            ->bind(':expiry', $expiry)
+            ->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
+
+    /**
+     * Buscar usuario por token de cambio de contraseña
+     */
+    public function findByPasswordResetToken(string $token): ?array
+    {
+        $result = $this->db
+            ->query("
+                SELECT *
+                FROM Persona
+                WHERE token_cambio_contrasenia = :token
+                LIMIT 1
+            ")
+            ->bind(':token', $token)
+            ->fetch();
+
+        return $result ?: null;
+    }
+
+    /**
+     * Actualizar contraseña
+     */
+    public function updatePassword(string $id_bombero, string $hash): int
+    {
+        $this->db
+            ->query("
+                UPDATE Persona SET
+                    contrasenia = :password,
+                    token_cambio_contrasenia = NULL,
+                    fecha_exp_cambio_contrasenia = NULL
+                WHERE id_bombero = :id
+            ")
+            ->bind(':id', $id_bombero)
+            ->bind(':password', $hash)
+            ->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
+
+    /**
+     * Actualizar último inicio de sesión
+     */
+    public function updateLastLogin(string $id_bombero): int
+    {
+        $this->db
+            ->query("
+                UPDATE Persona SET
+                    fecha_ult_inicio_sesion = NOW()
+                WHERE id_bombero = :id
+            ")
+            ->bind(':id', $id_bombero)
+            ->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
+
 }
