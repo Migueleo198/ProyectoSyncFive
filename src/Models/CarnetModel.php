@@ -1,3 +1,107 @@
+<?php
+declare(strict_types=1);
+
+namespace Models;
+
+use Core\DB;
+
+class CarnetModel
+{
+    private DB $db;
+
+    public function __construct()
+    {
+        $this->db = new DB();
+    }
+
+    /**
+     * Obtener todos los carnets
+     */
+    public function all(): array
+    {
+        return $this->db
+            ->query("SELECT * FROM Carnet ORDER BY ID_Carnet ASC")
+            ->fetchAll();
+    }
+
+    /**
+     * Buscar carnet por ID_Carnet
+     */
+    public function find(string $id_carnet): ?array
+    {
+        $result = $this->db
+            ->query("SELECT * FROM Carnet WHERE ID_Carnet = :id")
+            ->bind(':id', $id_carnet)
+            ->fetch();
+
+        return $result ?: null;
+    }
+
+    /**
+     * Crear un carnet
+     */
+    public function create(array $data): string|false
+    {
+        $this->db->query("
+            INSERT INTO Carnet (
+                ID_Carnet,
+                nombre,
+                tipo,
+                duracion
+            ) VALUES (
+                :id_carnet,
+                :nombre,
+                :tipo,
+                :duracion
+            )
+        ")
+        ->bind(':id_carnet', $data['ID_Carnet'])
+        ->bind(':nombre', $data['Nombre'])
+        ->bind(':tipo', $data['Tipo'])
+        ->bind(':duracion', $data['Duracion'])
+        ->execute();
+
+        return $data['ID_Carnet'];
+    }
+
+    /**
+     * Actualizar carnet (PATCH)
+     */
+    public function update(string $id_carnet, array $data): int
+    {
+        $this->db->query("
+            UPDATE Carnet SET
+                nombre = :nombre,
+                tipo = :tipo,
+                duracion = :duracion
+            WHERE ID_Carnet = :id_carnet
+        ")
+        ->bind(':id_carnet', $id_carnet)
+        ->bind(':nombre', $data['Nombre'] ?? null)
+        ->bind(':tipo', $data['Tipo'] ?? null)
+        ->bind(':duracion', $data['Duracion'] ?? null)
+        ->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
+
+    /**
+     * Eliminar carnet
+     */
+    public function delete(string $id_carnet): int
+    {
+        $this->db
+            ->query("DELETE FROM Carnet WHERE ID_Carnet = :id_carnet")
+            ->bind(':id_carnet', $id_carnet)
+            ->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
+
     /**
      * Asignar un carnet a una persona con fecha de obtención y vencimiento
      */
@@ -79,7 +183,6 @@
         string $id_carnet,
         array $data
     ): int {
-
         $this->db->query("
             UPDATE Persona_Carnet SET
                 f_obtencion = :f_obtencion,
@@ -118,3 +221,4 @@
             ->fetch()['affected'];
     }
 }
+?>
