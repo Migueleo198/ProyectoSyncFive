@@ -148,8 +148,10 @@ $router->protectedSession('DELETE', '/almacenes/{id_almacen}/material/{id_materi
 
 
 //++++++++++++++++++++++++++++++ CATEGORÍA ++++++++++++++++++++++++++++++
-$router->protectedSession('GET', '/categorias', 'Controllers\\CategoriaController@index', [1,2,3,4,5]);
-$router->protectedSession('POST', '/categorias', 'Controllers\\CategoriaController@store', [4,5]);
+// $router->protectedSession('GET', '/categorias', 'Controllers\\CategoriaController@index', [1,2,3,4,5]);
+$router->get('/categorias', 'Controllers\\CategoriaController@index');
+// $router->protectedSession('POST', '/categorias', 'Controllers\\CategoriaController@store', [4,5]);
+$router->post( '/categorias', 'Controllers\\CategoriaController@store');
 $router->protectedSession('DELETE', '/categorias/{id_categoria}', 'Controllers\\CategoriaController@delete', [5]);
 
 
