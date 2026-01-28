@@ -1,15 +1,7 @@
-RewriteEngine On
-
-# 1. Root "/" → login
-RewriteRule ^$ pages/Login/vistaLogin.html [L]
-
-# 2. Do not rewrite existing files or directories
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-# 3. Never rewrite assets or .html files
-RewriteRule \.(js|css|html|png|jpg|jpeg|gif|svg|ico|map)$ - [L,NC]
-
-# 4. Friendly URLs for PHP only
-RewriteRule ^([^/]+)/?$ pages/$1.php [L]
+<IfModule mod_rewrite.c>
+    Options -Multiviews
+    RewriteEngine On 
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.+)$ index.php?url=$1 [QSA,L]
+</IfModule>
