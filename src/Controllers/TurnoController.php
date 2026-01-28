@@ -5,40 +5,40 @@ namespace Controllers;
 
 use Core\Request;
 use Core\Response;
-use Services\RefuezoService;
+use Services\RefuerzoService;
 use Validation\ValidationException;
 use Throwable;
 
-class RefuezoController
+class RefuerzoController
 {
-    private RefuezoService $service;
+    private RefuerzoService $service;
 
     public function __construct()
     {
-        $this->service = new RefuezoService();
+        $this->service = new RefuerzoService();
     }
 
     /**
-     * GET /refuezos
+     * GET /refuerzos
      */
     public function index(Request $req, Response $res): void
     {
         try {
-            $refuezos = $this->service->getAllRefuezos();
-            $res->status(200)->json($refuezos, "Listado de refuezos obtenido correctamente");
+            $refuerzos = $this->service->getAllRefuerzos();
+            $res->status(200)->json($refuerzos, "Listado de refuerzos obtenido correctamente");
         } catch (Throwable $e) {
             $res->errorJson($e->getMessage(), 500);
         }
     }
 
     /**
-     * GET /refuezos/{ID_Refuezo}
+     * GET /refuerzos/{ID_Refuerzo}
      */
-    public function show(Request $req, Response $res, string $ID_Refuezo): void
+    public function show(Request $req, Response $res, string $ID_Refuerzo): void
     {
         try {
-            $refuezo = $this->service->getRefuezoById($ID_Refuezo);
-            $res->status(200)->json($refuezo, "Refuezo encontrado correctamente");
+            $refuerzo = $this->service->getRefuerzoById($ID_Refuerzo);
+            $res->status(200)->json($refuerzo, "Refuerzo encontrado correctamente");
         } catch (Throwable $e) {
             $code = ($e->getCode() >= 400) ? $e->getCode() : 500;
             $res->errorJson($e->getMessage(), $code);
@@ -46,17 +46,17 @@ class RefuezoController
     }
 
     /**
-     * POST /refuezos
+     * POST /refuerzos
      */
     public function store(Request $req, Response $res): void
     {
         try {
-            $result = $this->service->createRefuezo($req->json());
+            $result = $this->service->createRefuerzo($req->json());
 
-            // El servicio devuelve ['ID_Refuezo' => ...]
+            // El servicio devuelve ['ID_Refuerzo' => ...]
             $res->status(201)->json(
-                ['ID_Refuezo' => $result['ID_Refuezo']],
-                "Refuezo creado correctamente"
+                ['ID_Refuerzo' => $result['ID_Refuerzo']],
+                "Refuerzo creado correctamente"
             );
 
         } catch (ValidationException $e) {
@@ -76,12 +76,12 @@ class RefuezoController
     }
 
     /**
-     * PATCH /refuezos/{ID_Refuezo}
+     * PATCH /refuerzos/{ID_Refuerzo}
      */
-    public function update(Request $req, Response $res, string $ID_Refuezo): void
+    public function update(Request $req, Response $res, string $ID_Refuerzo): void
     {
         try {
-            $result = $this->service->updateRefuezo($ID_Refuezo, $req->json());
+            $result = $this->service->updateRefuerzo($ID_Refuerzo, $req->json());
 
             $res->status(200)->json([], $result['message']);
         }
@@ -95,14 +95,14 @@ class RefuezoController
     }
 
     /**
-     * DELETE /refuezos/{ID_Refuezo}
+     * DELETE /refuerzos/{ID_Refuerzo}
      */
-    public function delete(Request $req, Response $res, string $ID_Refuezo): void
+    public function delete(Request $req, Response $res, string $ID_Refuerzo): void
     {
         try {
             // YA NO SE CONVIERTE A INT → ID ahora es STRING
-            $this->service->deleteRefuezo($ID_Refuezo);
-            $res->status(200)->json([], "Refuezo eliminado correctamente");
+            $this->service->deleteRefuerzo($ID_Refuerzo);
+            $res->status(200)->json([], "Refuerzo eliminado correctamente");
 
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
