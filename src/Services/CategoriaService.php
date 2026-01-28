@@ -31,7 +31,7 @@ class CategoriaService
     {
         $data = Validator::validate($input, [
             'nombre'            => 'required|string|min:1|max:50',
-            'inventariable'     => 'required|boolean'
+            'inventariable'     => 'required|int|min:0|max:1'
         ]);
 
         try {
