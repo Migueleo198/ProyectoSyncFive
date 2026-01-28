@@ -1,15 +1,7 @@
-RewriteEngine on
+<IfModule mod_rewrite.c>
+    RewriteEngine On
 
-Options -Indexes
-
-ErrorDocument 403 /errores/err403.html
-ErrorDocument 404 /errores/err404.html
-ErrorDocument 500 /errores/err500.html
-
-# Force UTF-8 encoding
-AddDefaultCharset UTF-8
-
-# Optional: ensure HTML meta charset
-<IfModule mod_headers.c>
-    Header set Content-Type "text/html; charset=UTF-8"
+    # --- Redirecciones a /public ---
+    RewriteRule ^$ public/ [L]
+    RewriteRule (.*) public/$1 [L] 
 </IfModule>
