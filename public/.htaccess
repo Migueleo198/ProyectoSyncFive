@@ -1,18 +1,15 @@
-
+# public/.htaccess
+Options -Multiviews
+Options -Indexes
 RewriteEngine On
 
-# 1. Redirigir la raíz del dominio a /pages
-RewriteRule ^$ pages/ [L]
+# Para capturar el token
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 
-# 2. Evitar redirección infinita si ya está en /pages
-RewriteCond %{REQUEST_URI} !^/pages/
-
-# 3. URL amigable: /algo → /pages/algo.php
+# If the requested file exists, serve it directly
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([^/]+)/?$ pages/$1.php [L]
 
-# 4. URL amigable para subcarpetas (opcional)
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.+)/?$ pages/$1.php [L]
+# Otherwise forward request to index.php
+RewriteRule ^ index.php [L,QSA]
