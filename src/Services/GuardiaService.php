@@ -3,24 +3,24 @@ declare(strict_types=1);
 
 namespace Services;
 
-use Models\CarnetModel;
+use Models\GuardiaModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
 
-class CarnetService
+class GuardiaService
 {
-    private CarnetModel $model;
+    private GuardiaModel $model;
 
     public function __construct()
     {
-        $this->model = new CarnetModel();
+        $this->model = new GuardiaModel();
     }
 
     /**
-     * Obtener todos los carnets
+     * Obtener todos los guardias
      */
-    public function getAllCarnets(): array
+    public function getAllGuardias(): array
     {
         try {
             return $this->model->all();
@@ -33,16 +33,16 @@ class CarnetService
     }
 
     /**
-     * Obtener un carnet por su ID (string)
+     * Obtener un guardia por su ID (string)
      */
-    public function getCarnetById(string $ID_Carnet): array
+    public function getGuardiaById(string $ID_Guardia): array
     {
-        Validator::validate(['ID_Carnet' => $ID_Carnet], [
-            'ID_Carnet' => 'required|string'
+        Validator::validate(['ID_Guardia' => $ID_Guardia], [
+            'ID_Guardia' => 'required|string'
         ]);
 
         try {
-            $carnet = $this->model->find($ID_Carnet);
+            $guardia = $this->model->find($ID_Guardia);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -50,26 +50,24 @@ class CarnetService
             );
         }
 
-        if (!$carnet) {
-            throw new \Exception("Carnet no encontrado", 404);
+        if (!$guardia) {
+            throw new \Exception("Guardia no encontrado", 404);
         }
 
-        return $carnet;
+        return $guardia;
     }
 
     /**
-     * Crear un carnet
+     * Crear un guardia
      */
-    public function createCarnet(array $input): array
+    public function createGuardia(array $input): array
     {
         $data = Validator::validate($input, [
-            'ID_Carnet'     => 'required|string',
-            'Nombre'        => 'required|string',
-            'Tipo'          => 'required|string',
-            'Duracion'      => 'required|int|min:1',
-
-            // Si el carnet pertenece a una persona:
-            'n_funcionario' => 'string' // ahora SIEMPRE string
+            'ID_Guardia'     => 'required|string',
+            'Fecha'        => 'required|date',
+            'H_inicio'          => 'required|int',
+            'H_fin'          => 'required|int',
+            'horas'      => 'int'
         ]);
 
         try {
@@ -82,28 +80,27 @@ class CarnetService
         }
 
         if (!$id) {
-            throw new \Exception("No se pudo crear el carnet");
+            throw new \Exception("No se pudo crear la guardia");
         }
 
-        return ['ID_Carnet' => $data['ID_Carnet']];
+        return ['ID_Guardia' => $data['ID_Guardia']];
     }
 
     /**
-     * Actualizar carnet
+     * Actualizar guardia
      */
-    public function updateCarnet(string $ID_Carnet, array $input): array
+    public function updateGuardia(string $ID_Guardia, array $input): array
     {
-        Validator::validate(['ID_Carnet' => $ID_Carnet], [
-            'ID_Carnet' => 'required|string'
+        Validator::validate(['ID_Guardia' => $ID_Guardia], [
+            'ID_Guardia' => 'required|string'
         ]);
 
         $data = Validator::validate($input, [
-            'Nombre'        => 'string|min:1',
-            'Tipo'          => 'string|min:1',
-            'Duracion'      => 'int|min:1',
-
-            // Asociación a persona (actualizada a string)
-            'n_funcionario' => 'string'
+            'ID_Guardia'     => 'required|string',
+            'Fecha'        => 'required|date',
+            'H_inicio'          => 'required|int',
+            'H_fin'          => 'required|int',
+            'horas'      => 'int'
         ]);
 
         if (empty($data)) {
@@ -113,7 +110,7 @@ class CarnetService
         }
 
         try {
-            $result = $this->model->update($ID_Carnet, $data);
+            $result = $this->model->update($ID_Guardia, $data);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -122,42 +119,42 @@ class CarnetService
         }
 
         if ($result === 0) {
-            $exists = $this->model->find($ID_Carnet);
+            $exists = $this->model->find($ID_Guardia);
 
             if (!$exists) {
-                throw new \Exception("Carnet no encontrado", 404);
+                throw new \Exception("Guardia no encontrado", 404);
             }
 
             return [
                 'status'  => 'no_changes',
-                'message' => 'No hubo cambios en el carnet'
+                'message' => 'No hubo cambios en el guardia'
             ];
         }
 
         if ($result === -1) {
             throw new \Exception(
-                "No se pudo actualizar el carnet: conflicto con restricciones",
+                "No se pudo actualizar el guardia: conflicto con restricciones",
                 409
             );
         }
 
         return [
             'status'  => 'updated',
-            'message' => 'Carnet actualizado correctamente'
+            'message' => 'Guardia actualizado correctamente'
         ];
     }
 
     /**
-     * Eliminar un carnet
+     * Eliminar un guardia
      */
-    public function deleteCarnet(string $ID_Carnet): void
+    public function deleteGuardia(string $ID_Guardia): void
     {
-        Validator::validate(['ID_Carnet' => $ID_Carnet], [
-            'ID_Carnet' => 'required|string'
+        Validator::validate(['ID_Guardia' => $ID_Guardia], [
+            'ID_Guardia' => 'required|string'
         ]);
 
         try {
-            $result = $this->model->delete($ID_Carnet);
+            $result = $this->model->delete($ID_Guardia);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -166,12 +163,12 @@ class CarnetService
         }
 
         if ($result === 0) {
-            throw new \Exception("Carnet no encontrado", 404);
+            throw new \Exception("Guardia no encontrado", 404);
         }
 
         if ($result === -1) {
             throw new \Exception(
-                "No se puede eliminar el carnet: el registro está en uso",
+                "No se puede eliminar el guardia: el registro está en uso",
                 409
             );
         }
