@@ -1,12 +1,12 @@
 // Rutas base relativas a la raíz del frontend
-const BASE_PATH = "/frontend"; // Ajusta según tu servidor o entorno local
+const BASE_PATH = ""; // Ajusta según tu servidor o entorno local
 
 const PATHS = {
-    css: `${BASE_PATH}/assets/css/`,
-    js: `${BASE_PATH}/javascript/`,
-    img: `${BASE_PATH}/assets/img/`,
-    includes: `${BASE_PATH}/includes/`,
-    pages: `${BASE_PATH}/pages/`
+    css: `${BASE_PATH}/frontend/assets/css/`,
+    js: `${BASE_PATH}/frontend/javascript/`,
+    img: `${BASE_PATH}/frontend/assets/img/`,
+    includes: `${BASE_PATH}/frontend/includes/`,
+    pages: `${BASE_PATH}/frontend/pages/`
 };
 
 // Función para obtener ruta completa de un recurso
@@ -30,7 +30,7 @@ function loadJS(fileName) {
     const script = document.createElement("script");
     script.src = getPath("js", fileName);
     script.defer = true;
-    document.body.appendChild(script);
+    document.head.appendChild(script);
 }
 
 function imgPath(fileName) {

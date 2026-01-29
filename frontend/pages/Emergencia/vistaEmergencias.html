@@ -8,20 +8,24 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
-    <!-- CSS del proyecto -->
-    <link rel="stylesheet" href="frontend/assets/css/estilos_generales.css">
-    <link rel="stylesheet" href="frontend/assets/css/plantilla_css.css">
+    <!-- Configuración y rutas absolutas -->
+    <script src="/frontend/javascript/config.js"></script>
 
-    <!-- Configuración (basePath) -->
-    <script src="frontend/assets/javascript/config.js"></script>
-    <!-- Script Filtro de la tabla -->
-    <script src="frontend/assets/javascript/script_filtro_tabla.js"></script>
+    <!-- CSS del proyecto usando loadCSS() -->
+    <script>
+        loadCSS("header_footer.css");
+        loadCSS("plantilla_css.css");
+    </script>
 
-    <!-- Header / Footer / Sidebar -->
-    <script src="frontend/assets/javascript/header_footer.js"></script>
+    <!-- JS del proyecto usando loadJS() -->
+    <script>
+        // Se usa loadJS() definido en config.js
+        loadJS("header_footer.js");
+        loadJS("script_filtro_tabla.js");
+    </script>
 
-    <!-- Bootstrap Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Bundle JS (opcional, se puede dejar defer) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
 </head>
 
 <body class="bg-white text-dark">
