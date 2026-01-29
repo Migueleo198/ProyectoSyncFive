@@ -1,0 +1,157 @@
+<!-- CONTENEDOR DEL SIDEBAR -->
+<div>
+
+    <!-- BOTÓN HAMBURGUESA (MÓVIL) -->
+    <div class="d-lg-none d-flex justify-content-end">
+        <button class="btn btn-outline-dark" type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#sidebar">
+            <i class="bi bi-list fs-3"></i>
+        </button>
+    </div>
+
+    <!-- SIDEBAR / OFFCANVAS -->
+    <div id="sidebar" class="offcanvas-lg offcanvas-start"
+        data-bs-scroll="true"
+        data-bs-backdrop="true"
+        tabindex="-1">
+
+        <!-- CABECERA OFFCANVAS (SOLO MÓVIL) -->
+        <div class="offcanvas-header d-lg-none">
+            <h5 class="offcanvas-title">Menú</h5>
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="offcanvas"
+                    data-bs-target="#sidebar"
+                    aria-label="Close"></button>
+        </div>
+
+        <!-- CONTENIDO -->
+        <div class=" p-0 overflow-hidden">
+            <aside>
+                <ul class="list-unstyled ps-0">
+
+                    <li class="m-0 p-0">
+                        <a href="/pages/home.html" class="btn btn-toggle w-100 border border-dark rounded-0">
+                            Inicio
+                        </a>
+                    </li>
+
+                    <li class="m-0 p-0">
+                        <a href="/pages/Emergencia/vistaEmergencias.html" class="btn btn-toggle w-100 border border-dark rounded-0">
+                            Emergencias
+                        </a>
+                    </li>
+
+
+                    <li class="m-0 p-0">
+                        <a href="/pages/Mantenimiento/vistaMantenimiento.html" class="btn btn-toggle w-100 border border-dark rounded-0">
+                            Mantenimientos
+                        </a>
+                    </li>
+
+
+                    <li class="m-0 p-0">
+                        <a href="" class="btn btn-toggle w-100 border border-dark rounded-0">
+                            Puntos Intervención
+                        </a>
+                    </li>
+
+                    <li class="m-0 p-0">
+                        <a href="" class="btn btn-toggle w-100 border border-dark rounded-0">
+                            Calendario
+                        </a>
+                    </li>
+
+                    <li class="m-0 p-0">
+                        <a href="" class="btn btn-toggle w-100 border border-dark rounded-0">
+                            Libro de Oficiales
+                        </a>
+                    </li>
+
+                    <li class="m-0 p-0">
+                        <a href="/pages/Vehiculo/vistaVehiculo.html" class="btn btn-toggle w-100 border border-dark rounded-0">
+                            Control de Vehículos
+                        </a>
+                    </li>
+
+                    <!-- ALINEACIÓN -->
+                    <li class="m-0 p-0">
+                        <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 border border-dark rounded-0"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#alineacion-sidebar">
+                            <span>Alineación</span>
+                            <i class="bi bi-caret-down-square"></i>
+                        </button>
+                        <div class="collapse" id="alineacion-sidebar">
+                            <ul class="list-unstyled border border-dark">
+                                <li class="border-top border-bottom border-dark">
+                                    <a href="/pages/crear_alineacion.html"
+                                       class="d-flex justify-content-center text-decoration-none text-dark">
+                                        Crear
+                                    </a>
+                                </li>
+                                <li class="border-top border-bottom border-dark">
+                                    <a href="/pages/mostrar_alineacion.html"
+                                       class="d-flex justify-content-center text-decoration-none text-dark">
+                                        Mostrar
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- CUADRANTE -->
+                    <li class="m-0 p-0">
+                        <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 border border-dark rounded-0"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#cuadrante-sidebar">
+                            <span>Cuadrante</span>
+                            <i class="bi bi-caret-down-square"></i>
+                        </button>
+                        <div class="collapse" id="cuadrante-sidebar">
+                            <ul class="list-unstyled border border-dark">
+                                <li class="border-top border-bottom border-dark">
+                                    <a href="/pages/cuadrante_anual.html"
+                                       class="d-flex justify-content-center text-decoration-none text-dark">
+                                        Anual
+                                    </a>
+                                </li>
+                                <li class="border-top border-bottom border-dark">
+                                    <a href="/pages/cuadrante_mensual.html"
+                                       class="d-flex justify-content-center text-decoration-none text-dark">
+                                        Mensual
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="m-0 p-0">
+                        <a href="/public/pages/Materiales/vistaMateriales.html" class="btn btn-toggle w-100 border border-dark rounded-0">
+                            Control de Materiales
+                        </a>
+                    </li>
+
+                    <li class="m-0 p-0">
+                        <a href="" class="btn btn-toggle w-100 border border-dark rounded-0">
+                            Mapas
+                        </a>
+                    </li>
+
+                    <li class="m-0 p-0">
+                        <a href="/pages/Emergencia/vistaTipoEmergencia.html" class="btn btn-toggle w-100 border border-dark rounded-0">
+                            Tipo de Emergencia
+                        </a>
+                    </li>
+
+                    <li class="m-0 p-0">
+                        <a href="/pages/logout" class="btn btn-toggle w-100 border border-dark rounded-0">
+                            Cerrar Sesión
+                        </a>
+                    </li>
+
+                </ul>
+            </aside>
+        </div>
+    </div>
+</div>
