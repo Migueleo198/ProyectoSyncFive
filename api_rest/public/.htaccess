@@ -1,0 +1,15 @@
+# public/.htaccess
+Options -Multiviews
+Options -Indexes
+RewriteEngine On
+
+# Para capturar el token
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+# If the requested file exists, serve it directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Otherwise forward request to index.php
+RewriteRule ^ index.php [L,QSA]

@@ -131,6 +131,66 @@ class PersonaService
     }
 
     /**
+     * Registrar nuevo usuario
+     */
+    public function registerUser(array $data): string
+    {
+        Validator::validate($data, [
+            'id_bombero'    => 'required|string|max:20',
+            'nombre'        => 'required|string|max:50',
+            'apellidos'     => 'required|string|max:100',
+            'correo'        => 'required|email|max:100',
+            'nombre_usuario'=> 'required|string|max:30',
+            'contrasenia'   => 'required|string|min:6|max:100',
+        ]);
+
+        // Hash de la contraseña
+        $data['contrasenia'] = password_hash($data['contrasenia'], PASSWORD_DEFAULT);
+
+        // Generar token de activación
+        $data['token_activacion'] = bin2hex(random_bytes(32));
+        $data['fecha_exp_token_activacion'] = (new \DateTimeImmutable('+24 hours'))->format('Y-m-d H:i:s');
+        $data['activo'] = false;
+
+        $this->model->create($data);
+
+        // Enviar email de activación
+        $this->mailer->sendActivationEmail(
+            $data['correo'],
+            $data['nombre'],
+            $data['token_activacion']
+        );
+
+        return $data['token_activacion'];
+    }
+
+    /**
+     * Activar cuenta mediante token
+     */
+    public function activateAccount(string $token): void
+    {
+        if (!$token) {
+            throw new ValidationException(['token' => ['Token requerido']]);
+        }
+
+        $user = $this->model->findByActivationToken($token);
+
+        if (!$user) {
+            throw new \Exception("Token inválido", 404);
+        }
+
+        if (new \DateTimeImmutable($user['fecha_exp_token_activacion']) < new \DateTimeImmutable()) {
+            throw new \Exception("Token expirado", 400);
+        }
+
+        if ((bool)$user['activo']) {
+            throw new \Exception("La cuenta ya está activada", 400);
+        }
+
+        $this->model->activateUser($user['id_bombero']);
+    }
+
+    /**
     * Actualizar datos de persona
     */
     public function updatePersona(int $n_funcionario, array $input): array

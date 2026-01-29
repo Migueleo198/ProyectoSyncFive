@@ -12,7 +12,7 @@ $router->protectedSession('GET', '/auth/me', 'Controllers\\AuthController@me', [
 
 
 //++++++++++++++++++++++++++++++ PERSONA ++++++++++++++++++++++++++++++
-$router->protectedSession('GET', '/personas', 'Controllers\\PersonaController@index', [1,2,3,4,5]);
+$router->get('/personas', 'Controllers\\PersonaController@index');
 $router->protectedSession('GET', '/personas/{n_funcionario}', 'Controllers\\PersonaController@show', [1,2,3,4,5]);
 $router->protectedSession('POST', '/personas', 'Controllers\\PersonaController@store', [4,5]);
 $router->protectedSession('PATCH', '/personas/{n_funcionario}', 'Controllers\\PersonaController@update', [4,5]);
