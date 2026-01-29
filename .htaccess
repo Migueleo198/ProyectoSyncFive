@@ -1,7 +1,26 @@
+Options -Indexes
+
+ErrorDocument 403 /frontend/errores/err403.html
+ErrorDocument 404 /frontend/errores/err404.html
+ErrorDocument 500 /frontend/errores/err500.html
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # --- Redirecciones a /public ---
-    RewriteRule ^$ public/ [L]
-    RewriteRule (.*) public/$1 [L] 
+    # ROOT → HOME
+    RewriteRule ^$ /frontend/pages/home.html [L]
+
+    # Si el archivo o directorio existe, no tocar
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # NO tocar frontend
+    RewriteCond %{REQUEST_URI} ^/frontend/
+    RewriteRule ^ - [L]
+
+    # API → api_rest/public
+    RewriteCond %{REQUEST_URI} ^/api/
+    RewriteRule ^api/(.*)$ api_rest/public/$1 [L,QSA]
+    
 </IfModule>
