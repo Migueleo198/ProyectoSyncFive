@@ -53,9 +53,8 @@ class MotivoController
         try {
             $result = $this->service->createMotivo($req->json());
 
-            // El servicio devuelve ['n_motivo' => ...]
             $res->status(201)->json(
-                ['ID_Motivo' => $result['n_motivo']],
+                ['ID_Motivo' => $result['ID_Motivo']],
                 "Motivo creado correctamente"
             );
 
@@ -64,16 +63,14 @@ class MotivoController
                 ['errors' => $e->errors],
                 "Errores de validación"
             );
-            return;
-
         } catch (Throwable $e) {
             $res->errorJson(
                 app_debug() ? $e->getMessage() : "Error interno del servidor",
                 500
             );
-            return;
         }
     }
+
 
     /**
      * PATCH /motivos/{ID_Motivo}

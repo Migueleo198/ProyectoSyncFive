@@ -5,7 +5,7 @@ namespace Models;
 
 use Core\DB;
 
-class motivoModel
+class MotivoModel
 {
     private DB $db;
 
@@ -14,9 +14,10 @@ class motivoModel
         $this->db = new DB();
     }
 
-    /**
-     * Obtener todos los motivos
-     */
+    /* =======================
+       CRUD DE MOTIVO
+       ======================= */
+
     public function all(): array
     {
         return $this->db
@@ -24,9 +25,6 @@ class motivoModel
             ->fetchAll();
     }
 
-    /**
-     * Buscar motivo por ID_Motivo
-     */
     public function find(string $id_motivo): ?array
     {
         $result = $this->db
@@ -37,9 +35,6 @@ class motivoModel
         return $result ?: null;
     }
 
-    /**
-     * Crear un motivo
-     */
     public function create(array $data): string|false
     {
         $this->db->query("
@@ -61,9 +56,6 @@ class motivoModel
         return $data['ID_Motivo'];
     }
 
-    /**
-     * Actualizar motivo (PATCH)
-     */
     public function update(string $id_motivo, array $data): int
     {
         $this->db->query("
@@ -82,9 +74,6 @@ class motivoModel
             ->fetch()['affected'];
     }
 
-    /**
-     * Eliminar motivo
-     */
     public function delete(string $id_motivo): int
     {
         $this->db
@@ -97,96 +86,70 @@ class motivoModel
             ->fetch()['affected'];
     }
 
+    /* =======================
+       RELACIÓN PERMISO ↔ MOTIVO
+       ======================= */
+
     /**
-     * Asignar un motivo a una persona con fecha de obtención y vencimiento
+     * Asignar un motivo a un permiso
      */
     public function assignToPermiso(
         string $id_permiso,
         string $id_motivo,
-        date $fecha,
+        string $fecha
     ): bool {
         $this->db->query("
-            INSERT INTO Persona_Carnet (
+            INSERT INTO Permiso_Motivo (
                 id_permiso,
-                ID_Motivo,
-                fecha,
-                dias
+                id_motivo,
+                fecha
             ) VALUES (
                 :id_permiso,
                 :id_motivo,
-                :fecha,
-                :dias
+                :fecha
             )
         ")
         ->bind(':id_permiso', $id_permiso)
         ->bind(':id_motivo', $id_motivo)
         ->bind(':fecha', $fecha)
-        ->bind(':dias', $dias)
         ->execute();
 
         return $this->db->rowCount() > 0;
     }
 
     /**
-     * Obtener todas las personas que tienen un carnet (con fechas)
+     * Obtener motivos asociados a un permiso
      */
-    public function getPermisosByMotivos(string $id_carnet): array
+    public function getMotivosByPermiso(string $id_permiso): array
     {
         return $this->db
             ->query("
                 SELECT 
-                    p.*,
-                    pc.f_obtencion,
-                    pc.f_vencimiento
-                FROM Persona_Carnet pc
-                INNER JOIN Persona p 
-                    ON p.n_funcionario = pc.n_funcionario
-                WHERE pc.ID_Carnet = :id_carnet
-                ORDER BY p.n_funcionario ASC
+                    m.*,
+                    pm.fecha
+                FROM Permiso_Motivo pm
+                INNER JOIN Motivo m
+                    ON m.ID_Motivo = pm.id_motivo
+                WHERE pm.id_permiso = :id_permiso
+                ORDER BY m.ID_Motivo ASC
             ")
-            ->bind(':id_carnet', $id_carnet)
+            ->bind(':id_permiso', $id_permiso)
             ->fetchAll();
     }
 
     /**
-     * Actualizar fechas de obtención y vencimiento de un carnet de una persona
+     * Quitar un motivo de un permiso
      */
-    public function updatePersonCarnetDates(
-        string $n_funcionario,
-        string $id_carnet,
-        array $data
-    ): int {
-        $this->db->query("
-            UPDATE Persona_Carnet SET
-                f_obtencion = :f_obtencion,
-                f_vencimiento = :f_vencimiento
-            WHERE n_funcionario = :n_funcionario
-            AND ID_Carnet = :id_carnet
-        ")
-        ->bind(':n_funcionario', $n_funcionario)
-        ->bind(':id_carnet', $id_carnet)
-        ->bind(':f_obtencion', $data['f_obtencion'] ?? null)
-        ->bind(':f_vencimiento', $data['f_vencimiento'] ?? null)
-        ->execute();
-
-        return $this->db
-            ->query("SELECT ROW_COUNT() AS affected")
-            ->fetch()['affected'];
-    }
-
-    /**
-     * Eliminar la asignación de un carnet a una persona
-     */
-    public function unassignFromPerson(string $n_funcionario, string $id_carnet): int
+    public function unassignFromPermiso(string $id_permiso, string $id_motivo): int
     {
         $this->db
             ->query("
-                DELETE FROM Persona_Carnet
-                WHERE n_funcionario = :n_funcionario
-                AND ID_Carnet = :id_carnet
+                DELETE FROM Permiso_Motivo
+                WHERE id_permiso = :id_permiso
+                AND id_motivo = :id_motivo
             ")
-            ->bind(':n_funcionario', $n_funcionario)
-            ->bind(':id_carnet', $id_carnet)
+            ->bind(':id_permiso', $id_permiso)
+            ->bind(':id_motivo', $id_motivo)
             ->execute();
 
         return $this->db
@@ -194,4 +157,3 @@ class motivoModel
             ->fetch()['affected'];
     }
 }
-?>
