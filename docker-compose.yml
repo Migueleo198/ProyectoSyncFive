@@ -8,5 +8,6 @@ services:
       - "8081:80"
     volumes:
       - ./:/var/www/html
-      - ./configVirtualHost/000-default.conf:/etc/apache2/sites-available/000-default.conf:ro
+      - ./configVirtualHost/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
+
 
