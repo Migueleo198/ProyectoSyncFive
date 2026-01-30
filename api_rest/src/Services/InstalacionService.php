@@ -17,181 +17,147 @@ class InstalacionService
         $this->model = new InstalacionModel();
     }
 
-    /**
-     * Obtener todas las Instalaciones
-     */
     public function getAllInstalaciones(): array
     {
         try {
             return $this->model->all();
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
     }
 
-    /**
-     * Obtener una Instalacion por id_instalacion
-     */
-    public function getInstalacionById(string $id_instalacion): array
+    public function getInstalacionById(int $id): array
     {
-        Validator::validate(['id_instalacion' => $id_instalacion], [
-            'id_instalacion' => 'required|string'
+        Validator::validate(['id' => $id], [
+            'id' => 'required|int|min:1'
         ]);
 
         try {
-            $Instalacion = $this->model->find($id_instalacion);
+            $instalacion = $this->model->find($id);
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
-        if (!$Instalacion) {
-            throw new \Exception("Instalacion no encontrada", 404);
+        if (!$instalacion) {
+            throw new \Exception("Instalación no encontrada", 404);
         }
 
-        return $Instalacion;
+        return $instalacion;
     }
 
-    /**
-     * Crear una Instalacion
-     */
     public function createInstalacion(array $input): array
     {
-        // Validación
         $data = Validator::validate($input, [
-            'id_instalacion'        => 'required|string',
-            'nombre'                => 'required|string|min:2|max:100',
-            'direccion'             => 'required|string|min:5|max:150',
-            'localidad'             => 'required|string|min:2|max:100',
-            'provincia'             => 'required|string|min:5|max:255',
-            'telefono'              => 'required|phone',
-            'correo'                => 'required|email',
-
+            'nombre'     => 'required|string|min:3|max:100',
+            'direccion'  => 'required|string|min:5|max:150',
+            'telefono'   => 'required|string|min:9|max:15',
+            'correo'     => 'required|email|max:100',
+            'localidad'  => 'required|string|max:100'
         ]);
 
-        // Generación automática de token
-        $data['token_activacion'] = bin2hex(random_bytes(32));
-        $data['fecha_exp_token_activacion'] = (new \DateTimeImmutable('+1 hour'))
-            ->format('Y-m-d H:i:s');
+        // Verificar que la localidad existe
+        if (!$this->model->existeLocalidad($data['localidad'])) {
+            throw new \Exception("Localidad no encontrada", 400);
+        }
 
         try {
-            $pk = $this->model->create($data);
+            $id = $this->model->create($data);
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
-        if (!$pk) {
-            throw new \Exception("No se pudo crear la Instalacion");
+        if (!$id) {
+            throw new \Exception("No se pudo crear la instalación");
         }
 
-        return [
-            'id_instalacion' => $data['id_instalacion'],
-        ];
+        return ['id_instalacion' => $id];
     }
 
-    /**
-     * Actualizar datos de una Instalacion
-     */
-    public function updateInstalacion(string $id_instalacion, array $input): array
+    public function updateInstalacion(int $id, array $input): array
     {
-        Validator::validate(['id_instalacion' => $id_instalacion], [
-            'id_instalacion' => 'required|string'
+        Validator::validate(['id' => $id], [
+            'id' => 'required|int|min:1'
         ]);
 
         $data = Validator::validate($input, [
-            'talla_superior'        => 'string|min:1',
-            'talla_inferior'        => 'string|min:1',
-            'talla_calzado'         => 'int|min:30|max:50',
-
-            'domicilio'             => 'string|min:5|max:255',
-            'localidad'             => 'string|min:2|max:100',
-
-            'correo'                => 'email',
-            'telefono'              => 'phone',
-            'telefono_emergencia'   => 'phone',
-
-            'nombre_usuario'        => 'username',
-            'activo'                => 'boolean',
-
-            'fecha_ult_inicio_sesion' => 'datetime',
+            'nombre'     => 'required|string|min:3|max:100',
+            'direccion'  => 'required|string|min:5|max:150',
+            'telefono'   => 'required|string|min:9|max:15',
+            'correo'     => 'required|email|max:100',
+            'localidad'  => 'required|string|max:100'
         ]);
 
-        if (empty($data)) {
-            throw new ValidationException([
-                'body' => ['No se enviaron campos para actualizar']
-            ]);
+        // Verificar que la localidad existe
+        if (!$this->model->existeLocalidad($data['localidad'])) {
+            throw new \Exception("Localidad no encontrada", 400);
         }
 
         try {
-            $result = $this->model->update($id_instalacion, $data);
+            $result = $this->model->update($id, $data);
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
         if ($result === 0) {
-            $exists = $this->model->find($id_instalacion);
+            $exists = $this->model->find($id);
 
             if (!$exists) {
-                throw new \Exception("Instalacion no encontrada", 404);
+                throw new \Exception("Instalación no encontrada", 404);
             }
 
             return [
-                'status'  => 'no_changes',
-                'message' => 'No hubo cambios en la Instalacion'
+                'status' => 'no_changes',
+                'message' => 'No hubo cambios en los datos de la instalación'
             ];
         }
 
         if ($result === -1) {
-            throw new \Exception(
-                "No se pudo actualizar la Instalacion: conflicto con restricciones",
-                409
-            );
+            throw new \Exception("No se pudo actualizar la instalación: conflicto con restricciones", 409);
         }
 
         return [
-            'status'  => 'updated',
-            'message' => 'Instalacion actualizada correctamente'
+            'status' => 'updated',
+            'message' => 'Instalación actualizada correctamente'
         ];
     }
 
-    /**
-     * Eliminar una Instalacion
-     */
-    public function deleteInstalacion(string $id_instalacion): void
+    public function deleteInstalacion(int $id): void
     {
-        Validator::validate(['id_instalacion' => $id_instalacion], [
-            'id_instalacion' => 'required|string'
+        Validator::validate(['id' => $id], [
+            'id' => 'required|int|min:1'
         ]);
 
         try {
-            $result = $this->model->delete($id_instalacion);
+            $result = $this->model->delete($id);
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
         if ($result === 0) {
-            throw new \Exception("Instalacion no encontrada", 404);
+            throw new \Exception("Instalación no encontrada", 404);
         }
 
         if ($result === -1) {
-            throw new \Exception(
-                "No se puede eliminar la Instalacion: el registro está en uso",
-                409
-            );
+            throw new \Exception("No se puede eliminar la instalación: hay vehículos o almacenes asociados", 409);
+        }
+    }
+
+    public function getVehiculosDeInstalacion(int $id_instalacion): array
+    {
+        Validator::validate(['id_instalacion' => $id_instalacion], [
+            'id_instalacion' => 'required|int|min:1'
+        ]);
+
+        // Verificar que la instalación existe
+        $instalacion = $this->model->find($id_instalacion);
+        if (!$instalacion) {
+            throw new \Exception("Instalación no encontrada", 404);
+        }
+
+        try {
+            return $this->model->getVehiculos($id_instalacion);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
     }
 }
