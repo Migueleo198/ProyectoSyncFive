@@ -48,10 +48,10 @@ class EmergenciaService
     public function createEmergencia(array $input): array
     {
         $data = Validator::validate($input, [
-            'n_funcionario'     => 'string|min:1',
+            'id_bombero'        => 'string|min:1',
             'descripcion'       => 'required|string|min:1',
             'estado'            => 'required|string|max:30',
-            'direccion'         => 'required|int|min:1',
+            'direccion'         => 'required|string|min:1',
             'nombre_solicitante'=> 'string|min:1',
             'tlfn_solicitante'  => 'phone|min:1',
             'codigo_tipo'       => 'int|min:1'
@@ -74,10 +74,10 @@ class EmergenciaService
         Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
 
         $data = Validator::validate($input, [
-            'n_funcionario'     => 'string|min:1',
+            'id_bombero'        => 'string|min:1',
             'descripcion'       => 'required|string|min:1',
             'estado'            => 'required|string|max:30',
-            'direccion'         => 'required|int|min:1',
+            'direccion'         => 'required|string|min:1',
             'nombre_solicitante'=> 'string|min:1',
             'tlfn_solicitante'  => 'phone|min:1',
             'codigo_tipo'       => 'int|min:1'

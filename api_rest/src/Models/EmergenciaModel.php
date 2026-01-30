@@ -37,11 +37,11 @@ class EmergenciaModel
     {
         $this->db->query("
             INSERT INTO Emergencia
-            (n_funcionario, fecha, descripcion, estado, direccion, nombre_solicitante, tlf_solicitante, codigo_tipo)
+            (id_bombero, fecha, descripcion, estado, direccion, nombre_solicitante, tlf_solicitante, codigo_tipo)
             VALUES
-            (:n_funcionario, NOW(), :descripcion, :estado, :direccion, :nombre_solicitante, :tlf_solicitante, :codigo_tipo)
+            (:id_bombero, NOW(), :descripcion, :estado, :direccion, :nombre_solicitante, :tlf_solicitante, :codigo_tipo)
         ")
-        ->bind(":n_funcionario", $data['n_funcionario'] ?? null)
+        ->bind(":id_bombero", $data['id_bombero'] ?? null)
         ->bind(":descripcion", $data['descripcion'])
         ->bind(":estado", $data['estado'])
         ->bind(":direccion", $data['direccion'])
@@ -57,7 +57,7 @@ class EmergenciaModel
     {
         $this->db->query("
             UPDATE Emergencia SET
-                n_funcionario = :n_funcionario,
+                id_bombero = :id_bombero,
                 descripcion = :descripcion,
                 estado = :estado,
                 direccion = :direccion,
@@ -67,7 +67,7 @@ class EmergenciaModel
             WHERE id_emergencia = :id
         ")
         ->bind(":id", $id)
-        ->bind(":n_funcionario", $data['n_funcionario'] ?? null)
+        ->bind(":id_bombero", $data['id_bombero'] ?? null)
         ->bind(":descripcion", $data['descripcion'])
         ->bind(":estado", $data['estado'])
         ->bind(":direccion", $data['direccion'])
@@ -196,11 +196,11 @@ class EmergenciaModel
     {
         $this->db->query("
             INSERT INTO Emergencia_Vehiculo_Persona
-            (n_funcionario, matricula, id_emergencia, cargo)
+            (id_bombero, matricula, id_emergencia, cargo)
             VALUES
-            (:n_funcionario, :matricula, :id_emergencia, :cargo)
+            (:id_bombero, :matricula, :id_emergencia, :cargo)
         ")
-        ->bind(":n_funcionario", $data['n_funcionario'])
+        ->bind(":id_bombero", $data['id_bombero'])
         ->bind(":matricula", $matricula)
         ->bind(":id_emergencia", $data['id_emergencia'])
         ->bind(":cargo", $data['cargo'] ?? null)
@@ -209,15 +209,15 @@ class EmergenciaModel
         return 1;
     }
 
-    public function deletePersonal(string $matricula, int $n_funcionario): int
+    public function deletePersonal(string $matricula, int $id_bombero): int
     {
         $this->db->query("
             DELETE FROM Emergencia_Vehiculo_Persona
             WHERE matricula = :matricula
-              AND n_funcionario = :n_funcionario
+              AND id_bombero = :id_bombero
         ")
         ->bind(":matricula", $matricula)
-        ->bind(":n_funcionario", $n_funcionario)
+        ->bind(":id_bombero", $id_bombero)
         ->execute();
 
         return $this->db

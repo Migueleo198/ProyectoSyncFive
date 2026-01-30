@@ -30,3 +30,9 @@
 2026-01-30T10:30:31+01:00 - Exception: Controller not found: Controllers\CategoriaController
 2026-01-30T10:30:39+01:00 - Exception: Controller not found: Controllers\CategoriaController
 2026-01-30T10:31:25+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T11:23:33+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T11:26:54+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T11:27:18+01:00 - Exception: Too few arguments to function Controllers\EmergenciaController::getTipo(), 2 passed and exactly 3 expected
+2026-01-30T11:36:43+01:00 - Exception: Route not found for PATCH /emergencias
+2026-01-30T11:36:50+01:00 - Exception: Route not found for PUT /emergencias
+2026-01-30T11:39:50+01:00 - Exception: Route not found for GET /emergencias/2/tipo
