@@ -55,12 +55,13 @@ class PersonaController
             $data = $req->json();
 
             // Ahora puede incluir ID_bombero (string)
-            $result = $this->service->createPersona($data);
+            $result = $this->service->registerUser($data);
 
             $res->status(201)->json(
                 [
+                    'ID_bombero'    => $result['id_bombero'],    
                     'n_funcionario' => $result['n_funcionario'],
-                    'ID_bombero'    => $result['ID_bombero'] ?? null
+                    'token_activacion' => $result['token_activacion']
                 ],
                 "Persona creada correctamente"
             );
@@ -74,6 +75,31 @@ class PersonaController
             $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor", 500);
         }
     }
+
+    /**
+     * PATCH /auth/activar-cuenta?token=...
+     */
+    public function activateAccount(Request $req, Response $res): void
+    {
+        try {
+            $token = $req->getParam('token'); // Obtenemos el token de la query string
+
+            if (!$token) {
+                $res->status(422)->json(['token' => 'Token requerido'], "Token no proporcionado");
+                return;
+            }
+
+            $this->service->activateAccount($token);
+
+            $res->status(200)->json([], "Cuenta activada correctamente");
+        } catch (\Validation\ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (\Throwable $e) {
+            $code = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
+            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor", $code);
+        }
+    }
+
 
     /**
      * PATCH /personas/{n_funcionario}

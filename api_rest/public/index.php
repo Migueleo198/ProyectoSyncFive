@@ -11,6 +11,10 @@ declare(strict_types=1);
 // ---------------------------
 require_once __DIR__ . '/../config/config.php';
 
+// ---------------------------
+// Cargar autoloader de Composer
+// ---------------------------
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // ---------------------------
 // Cabeceras de seguridad y CORS
