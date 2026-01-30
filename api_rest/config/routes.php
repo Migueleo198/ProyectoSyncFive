@@ -3,16 +3,19 @@
 declare(strict_types=1);
 
 //++++++++++++++++++++++++++++++ AUTENTICACIÓN / USUARIOS ++++++++++++++++++++++++++++++
-$router->protectedSession('POST', '/auth/login', 'Controllers\\AuthController@login', []);
-$router->protectedSession('POST', '/auth/logout', 'Controllers\\AuthController@logout', [1,2,3,4,5]);
-$router->protectedSession('PATCH', '/auth/activar-cuenta', 'Controllers\\AuthController@activateAccount', []);
-$router->protectedSession('PATCH', '/auth/recuperar-contrasena', 'Controllers\\AuthController@recoverPassword', []);
-$router->protectedSession('PATCH', '/auth/cambiar-contrasena', 'Controllers\\AuthController@changePassword', [1,2,3,4,5]);
-$router->protectedSession('GET', '/auth/me', 'Controllers\\AuthController@me', [1,2,3,4,5]);
+// Rutas públicas (no requieren sesión)
+$router->post('/auth/login', 'Controllers\\AuthSessionController@login');
+$router->patch('/auth/recuperar-contrasena', 'Controllers\\AuthSessionController@recoverPassword');
+$router->patch('/auth/activar-cuenta', 'Controllers\\PersonaController@activateAccount');
+
+// Rutas protegidas (requieren sesión activa)
+$router->protectedSession('POST', '/auth/logout', 'Controllers\\AuthSessionController@logout', [1,2,3,4,5]);
+$router->protectedSession('PATCH', '/auth/cambiar-contrasena', 'Controllers\\AuthSessionController@changePassword', [1,2,3,4,5]);
+$router->protectedSession('GET', '/auth/me', 'Controllers\\AuthSessionController@me', [1,2,3,4,5]);
 
 
 //++++++++++++++++++++++++++++++ PERSONA ++++++++++++++++++++++++++++++
-$router->get('/personas', 'Controllers\\PersonaController@index');
+$router->protectedSession('GET', '/personas', 'Controllers\\PersonaController@index', [1,2,3,4,5]);
 $router->protectedSession('GET', '/personas/{n_funcionario}', 'Controllers\\PersonaController@show', [1,2,3,4,5]);
 $router->protectedSession('POST', '/personas', 'Controllers\\PersonaController@store', [4,5]);
 $router->protectedSession('PATCH', '/personas/{n_funcionario}', 'Controllers\\PersonaController@update', [4,5]);
@@ -148,10 +151,8 @@ $router->protectedSession('DELETE', '/almacenes/{id_almacen}/material/{id_materi
 
 
 //++++++++++++++++++++++++++++++ CATEGORÍA ++++++++++++++++++++++++++++++
-// $router->protectedSession('GET', '/categorias', 'Controllers\\CategoriaController@index', [1,2,3,4,5]);
-$router->get('/categorias', 'Controllers\\CategoriaController@index');
-// $router->protectedSession('POST', '/categorias', 'Controllers\\CategoriaController@store', [4,5]);
-$router->post( '/categorias', 'Controllers\\CategoriaController@store');
+$router->protectedSession('GET', '/categorias', 'Controllers\\CategoriaController@index', [1,2,3,4,5]);
+$router->protectedSession('POST', '/categorias', 'Controllers\\CategoriaController@store', [4,5]);
 $router->protectedSession('DELETE', '/categorias/{id_categoria}', 'Controllers\\CategoriaController@delete', [5]);
 
 
