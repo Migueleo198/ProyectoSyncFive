@@ -8,6 +8,5 @@ services:
       - "8081:80"
     volumes:
       - ./:/var/www/html
-      - ./configVirtualHost/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
-
-
+      - ./configVirtualHost/:/etc/apache2/sites-available/
+    command: apachectl -D FOREGROUND
