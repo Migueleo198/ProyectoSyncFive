@@ -3,7 +3,6 @@ const BASE_PATH = "/frontend"; // Ajusta según tu servidor o entorno
 
 const PATHS = {
     css: `${BASE_PATH}/assets/css/`,
-    js: `${BASE_PATH}/javascript/`,
     img: `${BASE_PATH}/assets/img/`,
     includes: `${BASE_PATH}/includes/`,
     pages: `${BASE_PATH}/pages/`
