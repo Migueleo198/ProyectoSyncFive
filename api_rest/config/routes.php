@@ -5,12 +5,12 @@ declare(strict_types=1);
 //++++++++++++++++++++++++++++++ AUTENTICACIÓN / USUARIOS ++++++++++++++++++++++++++++++
 // Rutas públicas (no requieren sesión)
 $router->post('/auth/login', 'Controllers\\AuthSessionController@login');
-$router->patch('/auth/recuperar-contrasena', 'Controllers\\AuthSessionController@recoverPassword');
 $router->patch('/auth/activar-cuenta', 'Controllers\\PersonaController@activateAccount');
+$router->patch('/auth/recuperar-contrasena', 'Controllers\\AuthSessionController@recoverPassword');
+$router->patch('/auth/cambiar-contrasena', 'Controllers\\AuthSessionController@changePassword');
 
 // Rutas protegidas (requieren sesión activa)
 $router->protectedSession('POST', '/auth/logout', 'Controllers\\AuthSessionController@logout', [1,2,3,4,5]);
-$router->protectedSession('PATCH', '/auth/cambiar-contrasena', 'Controllers\\AuthSessionController@changePassword', [1,2,3,4,5]);
 $router->protectedSession('GET', '/auth/me', 'Controllers\\AuthSessionController@me', [1,2,3,4,5]);
 
 
