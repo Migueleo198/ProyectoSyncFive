@@ -95,7 +95,7 @@ class InstalacionController
     /**
      * DELETE /instalaciones/{id_instalacion}
      */
-    public function destroy(Request $req, Response $res, string $id): void
+    public function delete(Request $req, Response $res, string $id): void
     {
         try {
             $this->service->deleteInstalacion((int) $id);
