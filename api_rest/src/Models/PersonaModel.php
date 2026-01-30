@@ -40,10 +40,11 @@ class PersonaModel
     /**
      * Crear una persona
      */
-    public function create(array $data): int|false
+    public function create(array $data): string|false
     {
-        $this->db->query("
+        $ok = $this->db->query("
             INSERT INTO Persona (
+                id_bombero,
                 n_funcionario,
                 DNI,
                 correo,
@@ -63,6 +64,7 @@ class PersonaModel
                 token_activacion,
                 fecha_exp_token_activacion
             ) VALUES (
+                :id_bombero,
                 :n_funcionario,
                 :DNI,
                 :correo,
@@ -83,6 +85,7 @@ class PersonaModel
                 :fecha_exp_token_activacion
             )
         ")
+        ->bind(':id_bombero', $data['id_bombero'] ?? null)
         ->bind(':n_funcionario', $data['n_funcionario'])
         ->bind(':DNI', $data['DNI'])
         ->bind(':correo', $data['correo'])
@@ -100,10 +103,10 @@ class PersonaModel
         ->bind(':activo', $data['activo'])
         ->bind(':nombre_usuario', $data['nombre_usuario'])
         ->bind(':token_activacion', $data['token_activacion'])
-        ->bind(':fecha_exp_token_activacion', $data['f_exp_token_activacion'])
+        ->bind(':fecha_exp_token_activacion', $data['fecha_exp_token_activacion'])
         ->execute();
 
-        return (int) $this->db->lastId();
+        return $ok ? $data['id_bombero'] : false;
     }
 
     /**
@@ -169,7 +172,6 @@ class PersonaModel
                 SELECT *
                 FROM Persona
                 WHERE nombre_usuario = :login
-                   OR correo = :login
                 LIMIT 1
             ")
             ->bind(':login', $login)
@@ -225,7 +227,7 @@ class PersonaModel
                     activo = TRUE,
                     token_activacion = NULL,
                     fecha_exp_token_activacion = NULL
-                WHERE n_funcionario = :id
+                WHERE id_bombero = :id
             ")
             ->bind(':id', $id_bombero)
             ->execute();

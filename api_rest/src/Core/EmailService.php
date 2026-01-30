@@ -39,7 +39,7 @@ class EmailService
             $this->mailer->Body    = $body;
             $this->mailer->send();
         } catch (Exception $e) {
-            throw new \Exception("No se pudo enviar el correo");
+            throw new \Exception("No se pudo enviar el correo: " . $e->getMessage());
         }
     }
 
@@ -50,7 +50,7 @@ class EmailService
         $subject = "Activa tu cuenta";
         $body = "
             <p>Hola <strong>$nombre</strong>,</p>
-            <p>Para activar tu cuenta, haz clic en el siguiente enlace:</p>
+            <p>Para activar tu cuenta haz clic en el siguiente enlace:</p>
             <p><a href='$url'>$url</a></p>
             <p>Este enlace expirará en 24 horas.</p>
         ";
