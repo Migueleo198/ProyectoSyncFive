@@ -1,15 +1,15 @@
 // Rutas base relativas a la raíz del frontend
-const BASE_PATH = ""; // Ajusta según tu servidor o entorno local
+const BASE_PATH = "/frontend"; // Ajusta según tu servidor o entorno
 
 const PATHS = {
-    css: `${BASE_PATH}/frontend/assets/css/`,
-    js: `${BASE_PATH}/frontend/javascript/`,
-    img: `${BASE_PATH}/frontend/assets/img/`,
-    includes: `${BASE_PATH}/frontend/includes/`,
-    pages: `${BASE_PATH}/frontend/pages/`
+    css: `${BASE_PATH}/assets/css/`,
+    js: `${BASE_PATH}/javascript/`,
+    img: `${BASE_PATH}/assets/img/`,
+    includes: `${BASE_PATH}/includes/`,
+    pages: `${BASE_PATH}/pages/`
 };
 
-// Función para obtener ruta completa de un recurso
+// Obtener ruta completa de un recurso
 function getPath(type, fileName) {
     if (!PATHS[type]) {
         console.error(`Tipo de ruta desconocido: ${type}`);
@@ -18,7 +18,12 @@ function getPath(type, fileName) {
     return PATHS[type] + fileName;
 }
 
-// Funciones de carga dinámica
+// Obtener ruta de página específica
+function pagePath(fileName) {
+    return getPath("pages", fileName);
+}
+
+// Cargar CSS dinámicamente
 function loadCSS(fileName) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -26,13 +31,15 @@ function loadCSS(fileName) {
     document.head.appendChild(link);
 }
 
+// Cargar JS dinámicamente
 function loadJS(fileName) {
     const script = document.createElement("script");
     script.src = getPath("js", fileName);
-    script.defer = true;
-    document.head.appendChild(script);
+    script.defer = false;
+    document.head.appendChild(script); // mejor en body
 }
 
+// Obtener ruta de imágenes
 function imgPath(fileName) {
     return getPath("img", fileName);
 }
