@@ -55,7 +55,7 @@ class GuardiaController
             $data = $req->json();
 
             // Ahora puede incluir id_guardia (string)
-            $result = $this->service->registerGuardia($data);
+            $result = $this->service->createGuardia($data);
 
             $res->status(201)->json(
                 [

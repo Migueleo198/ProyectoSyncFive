@@ -63,10 +63,10 @@ class GuardiaService
     public function createGuardia(array $input): array
     {
         $data = Validator::validate($input, [
-            'ID_Guardia'     => 'required|string',
-            'Fecha'        => 'required|date',
-            'H_inicio'          => 'required|int',
-            'H_fin'          => 'required|int',
+            'id_guardia'     => 'required|string',
+            'fecha'        => 'required|date',
+            'h_inicio'          => 'required|int',
+            'h_fin'          => 'required|int',
             'horas'      => 'int'
         ]);
 
