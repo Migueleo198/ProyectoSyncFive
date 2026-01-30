@@ -23,6 +23,25 @@ CREATE TABLE Edicion (
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
+/* Trigger para asignar id_edicion automáticamente */
+DELIMITER $$
+
+CREATE TRIGGER trg_edicion_before_insert
+BEFORE INSERT ON Edicion
+FOR EACH ROW
+BEGIN
+    IF NEW.id_edicion IS NULL THEN
+        SET NEW.id_edicion = (
+            SELECT COALESCE(MAX(id_edicion), 0) + 1
+            FROM Edicion
+            WHERE id_formacion = NEW.id_formacion
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+
 /* =======================
    3. TURNO_REFUERZO
    ======================= */
@@ -310,11 +329,14 @@ CREATE TABLE Salida_Persona (
 );
 
 /* =======================
-   22. CARNETS
+   22. CARNET
    ======================= */
-CREATE TABLE Carnets (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    tipo VARCHAR(50) NOT NULL
+CREATE TABLE Carnet (
+    id_carnet INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    categoria VARCHAR(20) NOT NULL,
+    duracion_meses INT NOT NULL,
+    CHECK (duracion_meses > 0)
 );
 
 /* =======================
@@ -329,7 +351,7 @@ CREATE TABLE Carnet_Persona (
     CHECK (f_vencimiento > f_obtencion),
     FOREIGN KEY (id_bombero) REFERENCES Persona(id_bombero)
         ON UPDATE CASCADE ON DELETE RESTRICT,
-    FOREIGN KEY (id_carnet) REFERENCES Carnets(id)
+    FOREIGN KEY (id_carnet) REFERENCES Carnet(id_carnet)
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
@@ -459,7 +481,7 @@ CREATE TABLE Permiso (
     fecha DATE NOT NULL,
     h_inicio TIME,
     h_fin TIME,
-    aceptado ENUM('ACEPTADO','REVISION','DENEGADO'),
+    estado ENUM('ACEPTADO','REVISION','DENEGADO') NOT NULL,
     descripcion VARCHAR(255),
     FOREIGN KEY (cod_motivo) REFERENCES Motivo(cod_motivo)
         ON UPDATE CASCADE ON DELETE RESTRICT
@@ -627,14 +649,15 @@ INSERT INTO Salida VALUES
 INSERT INTO Salida_Persona VALUES
 (1,'SE-1234-B','B001','2024-06-05 13:50:00');
 
-/* 22. CARNETS */
-INSERT INTO Carnets (tipo) VALUES
-('B'),
-('C');
+/* 22. CARNET */
+INSERT INTO Carnet (nombre, categoria, duracion_meses) VALUES
+('Carnet B', 'B', 240),
+('Carnet C', 'C', 240);
+
 
 /* 23. CARNET_PERSONA */
-INSERT INTO Carnet_Persona VALUES
-('B001',1,'2010-01-01','2030-01-01');
+INSERT INTO Carnet_Persona (id_bombero, id_carnet, f_obtencion, f_vencimiento) VALUES
+('B001', 1, '2010-01-01', '2030-01-01');
 
 /* 24. AVISO */
 INSERT INTO Aviso (asunto,mensaje,fecha,remitente) VALUES
@@ -673,7 +696,7 @@ INSERT INTO Motivo (nombre,dias) VALUES
 ('Vacaciones',5);
 
 /* 33. PERMISO */
-INSERT INTO Permiso (cod_motivo,fecha,h_inicio,h_fin,aceptado,descripcion) VALUES
+INSERT INTO Permiso (cod_motivo,fecha,h_inicio,h_fin,estado,descripcion) VALUES
 (1,'2024-07-01',NULL,NULL,'ACEPTADO','Vacaciones verano');
 
 /* 34. MANTENIMIENTO */
