@@ -29,9 +29,9 @@ class AuthSessionService
 
         try {
             $user = $this->model->findByLogin($login);
-        } catch (PDOException) {
-            throw new \Exception("Error interno en la base de datos", 500);
-        }
+        } catch (\PDOException $e) {
+    throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+}
 
         if (!$user || !password_verify($password, $user['contrasenia'])) {
             throw new \Exception("Credenciales incorrectas", 401);

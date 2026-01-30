@@ -6,15 +6,18 @@ namespace Services;
 use Models\PersonaModel;
 use Validation\Validator;
 use Validation\ValidationException;
+use Core\EmailService;
 use Throwable;
 
 class PersonaService
 {
     private PersonaModel $model;
+    private EmailService $mailer;
 
     public function __construct()
     {
         $this->model = new PersonaModel();
+        $this->mailer = new EmailService();
     }
 
     /**
@@ -58,77 +61,13 @@ class PersonaService
     }
 
     /**
-     * Crear una persona
+     * Registrar un nuevo usuario y enviar email de activación
      */
-    public function createPersona(array $input): array
-    {
-        // Validación
-        $data = Validator::validate($input, [
-            'n_funcionario'         => 'required|string',
-            'ID_bombero'            => 'required|string',
-
-            'DNI'                   => 'required|string|dni',
-            'nombre'                => 'required|string|min:2|max:100',
-            'apellidos'             => 'required|string|min:2|max:150',
-            'f_nacimiento'          => 'required|date',
-
-            'talla_superior'        => 'required|string|min:1',
-            'talla_inferior'        => 'required|string|min:1',
-            'talla_calzado'         => 'required|int|min:30|max:50',
-
-            'domicilio'             => 'required|string|min:5|max:255',
-            'localidad'             => 'required|string|min:2|max:100',
-
-            'correo'                => 'required|email',
-            'telefono'              => 'required|phone',
-            'telefono_emergencia'   => 'required|phone',
-
-            'f_ingreso_diputacion'  => 'required|date',
-
-            'nombre_usuario'        => 'required|username',
-            'fecha_ult_inicio_sesion' => 'date',
-            'activo'                => 'required|boolean',
-
-            'token_activacion'      => 'string|min:32|max:255',
-            'fecha_exp_token_activacion' => 'date'
-        ]);
-
-        // Generación automática de token
-        $data['token_activacion'] = bin2hex(random_bytes(32));
-        $data['fecha_exp_token_activacion'] = (new \DateTimeImmutable('+1 hour'))
-            ->format('Y-m-d H:i:s');
-
-        try {
-            $pk = $this->model->create($data);
-        } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
-        }
-
-        if (!$pk) {
-            throw new \Exception("No se pudo crear la persona");
-        }
-
-        return [
-            'n_funcionario' => $data['n_funcionario'],
-            'ID_bombero'    => $data['ID_bombero']
-        ];
-    }
-
-    /**
-<<<<<<< HEAD:src/Services/PersonaService.php
-     * Actualizar datos de una persona
-     */
-    public function updatePersona(string $n_funcionario, array $input): array
-=======
-     * Registrar nuevo usuario
-     */
-    public function registerUser(array $data): string
+    public function registerUser(array $data): array
     {
         Validator::validate($data, [
-            'id_bombero'    => 'required|string|max:20',
+            'id_bombero'    => 'required|string|max:4',
+            'n_funcionario' => 'required|string|max:17',
             'nombre'        => 'required|string|max:50',
             'apellidos'     => 'required|string|max:100',
             'correo'        => 'required|email|max:100',
@@ -142,9 +81,13 @@ class PersonaService
         // Generar token de activación
         $data['token_activacion'] = bin2hex(random_bytes(32));
         $data['fecha_exp_token_activacion'] = (new \DateTimeImmutable('+24 hours'))->format('Y-m-d H:i:s');
-        $data['activo'] = false;
+        $data['activo'] = 0;
 
-        $this->model->create($data);
+        $id_bombero = $this->model->create($data);
+
+        if ($id_bombero === false) {
+            throw new \Exception("No se pudo crear la persona", 500);
+        }
 
         // Enviar email de activación
         $this->mailer->sendActivationEmail(
@@ -153,7 +96,12 @@ class PersonaService
             $data['token_activacion']
         );
 
-        return $data['token_activacion'];
+        // Devolver token y datos principales
+        return [
+            'token_activacion' => $data['token_activacion'],
+            'n_funcionario'    => $data['n_funcionario'],
+            'id_bombero'       => $id_bombero,
+        ];
     }
 
     /**
@@ -186,7 +134,6 @@ class PersonaService
     * Actualizar datos de persona
     */
     public function updatePersona(int $n_funcionario, array $input): array
->>>>>>> CRUDAvisos:api_rest/src/Services/PersonaService.php
     {
         Validator::validate(['n_funcionario' => $n_funcionario], [
             'n_funcionario' => 'required|string'
