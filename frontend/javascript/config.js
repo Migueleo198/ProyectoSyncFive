@@ -31,13 +31,7 @@ function loadCSS(fileName) {
     document.head.appendChild(link);
 }
 
-// Cargar JS dinámicamente
-function loadJS(fileName) {
-    const script = document.createElement("script");
-    script.src = getPath("js", fileName);
-    script.defer = false;
-    document.head.appendChild(script); // mejor en body
-}
+
 
 // Obtener ruta de imágenes
 function imgPath(fileName) {
