@@ -17,14 +17,14 @@ class TipoEmergenciaModel
     public function all(): array
     {
         return $this->db
-            ->query("SELECT * FROM TipoEmergencia ORDER BY cod_tipo ASC")
+            ->query("SELECT * FROM Tipo_emergencia ORDER BY codigo_tipo ASC")
             ->fetchAll();
     }
 
     public function find(int $id): ?array
     {
         $result = $this->db
-            ->query("SELECT * FROM TipoEmergencia WHERE cod_tipo = :id")
+            ->query("SELECT * FROM Tipo_emergencia WHERE codigo_tipo = :id")
             ->bind(":id", $id)
             ->fetch();
 
@@ -34,7 +34,7 @@ class TipoEmergenciaModel
     public function create(array $data): int|false
     {
         $this->db->query("
-            INSERT INTO TipoEmergencia (nombre, grupo)
+            INSERT INTO Tipo_emergencia (nombre, grupo)
             VALUES (:nombre, :grupo)
         ")
         ->bind(":nombre",  $data['nombre'])
@@ -47,10 +47,10 @@ class TipoEmergenciaModel
     public function update(int $id, array $data): int
     {
         $this->db->query("
-            UPDATE TipoEmergencia SET
+            UPDATE Tipo_emergencia SET
                 nombre = :nombre,
                 grupo = :grupo
-            WHERE cod_tipo = :id
+            WHERE codigo_tipo = :id
         ")
         ->bind(":id", $id)
         ->bind(":nombre",   $data['nombre'])
@@ -62,7 +62,7 @@ class TipoEmergenciaModel
 
     public function delete(int $id): int
     {
-        $this->db->query("DELETE FROM TipoEmergencia WHERE cod_tipo = :id")
+        $this->db->query("DELETE FROM Tipo_emergencia WHERE codigo_tipo = :id")
                  ->bind(":id", $id)
                  ->execute();
 

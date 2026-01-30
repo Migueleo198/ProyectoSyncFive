@@ -124,12 +124,12 @@ class EmergenciaController
     }
     
     /**
-     * POST /emergencias
+     * POST /emergencias/{id}/vehiculos
      */
-    public function setVehiculo(Request $req, Response $res): void
+    public function setVehiculo(Request $req, Response $res, string $id): void
     {
         try {
-            $result = $this->service->setVehiculoEmergencia($req->json());
+            $result = $this->service->setVehiculoEmergencia((int)$id, $req->json());
 
             $res->status(201)->json(
                 ['id' => $result['id']],
@@ -151,13 +151,13 @@ class EmergenciaController
         }
     }
 
-    public function deleteVehiculo(Request $req, Response $res, string $id): void
+    public function deleteVehiculo(Request $req, Response $res, int $id, string $matricula): void
     {
         try {
             $id = (int) $id;
 
             $service = new \Services\EmergenciaService();
-            $service->deleteVehiculoEmergencia($id);
+            $service->deleteVehiculoEmergencia($id, $matricula);
 
             $res->status(200)->json([], "Vehículo eliminado correctamente");
 
@@ -173,13 +173,13 @@ class EmergenciaController
 //++++++++++++++++++++ Personal en vehiculo ++++++++++++++++++++++
     
     /**
-     * GET /emergencias/vehiculos/{matricula}/personas
+     * GET /emergencias/{id_emergencia}/vehiculos/{matricula}/personas
      */
 
-    public function getPersonal(Request $req, Response $res, string $matricula): void
+    public function getPersonal(Request $req, Response $res, int $id_emergencia, string $matricula): void
     {
         try {
-            $personal = $this->service->getPersonalVehiculo($matricula);
+            $personal = $this->service->getPersonalVehiculo($id_emergencia, $matricula);
             $res->status(200)->json($personal);
 
         } catch (ValidationException $e) {
@@ -192,12 +192,12 @@ class EmergenciaController
     }
 
     /**
-     * POST /emergencias/vehiculos/{matricula}/personas
+     * POST /emergencias/{id_emergencia}/vehiculos/{matricula}/personas
      */
-    public function setPersonal(Request $req, Response $res, string $matricula): void
+    public function setPersonal(Request $req, Response $res, int $id_emergencia, string $matricula): void
     {
         try {
-            $result = $this->service->setPersonalVehiculo($matricula, $req->json());            
+            $result = $this->service->setPersonalVehiculo($id_emergencia, $matricula, $req->json());            
 
             $res->status(201)->json(
                 ['id' => $result['id']],
@@ -217,14 +217,14 @@ class EmergenciaController
     }
 
     /**
-     * DELETE /emergencias/vehiculos/{matricula}/personas/{n_funcionario}
+     * DELETE /emergencias/{id_emergencia}/vehiculos/{matricula}/personas/{id_bombero}
      */
-    public function deletePersonal(Request $req, Response $res, string $matricula, string $n_funcionario): void
+    public function deletePersonal(Request $req, Response $res, int $id_emergencia, string $matricula, string $id_bombero): void
     {
         try {
-            $n_funcionario = (int) $n_funcionario;  
+            $id_bombero = (string) $id_bombero;  
             $service = new \Services\EmergenciaService();
-            $service->deletePersonalVehiculo($matricula, $n_funcionario);
+            $service->deletePersonalVehiculo($id_emergencia, $matricula, $id_bombero);
             $res->status(200)->json([], "Personal eliminado correctamente");
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");

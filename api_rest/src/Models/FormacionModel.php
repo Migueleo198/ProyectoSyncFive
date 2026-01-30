@@ -49,7 +49,7 @@ class FormacionModel
         $this->db->query("
             UPDATE Formacion SET
                 nombre = :nombre,
-                descripcion = :descripcion,
+                descripcion = :descripcion
             WHERE id_formacion = :id
         ")
         ->bind(":id", $id)

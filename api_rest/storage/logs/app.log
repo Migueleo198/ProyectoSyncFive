@@ -39,3 +39,11 @@
 2026-01-30T11:46:45+01:00 - Exception: Route not found for GET /ediciones
 2026-01-30T11:47:18+01:00 - Exception: Class "Models\FormacionModel" not found
 2026-01-30T12:10:24+01:00 - Exception: Route not found for GET /persona
+2026-01-30T12:37:57+01:00 - Exception: Controller not found: Controllers\TiposEmergenciaController
+2026-01-30T12:44:36+01:00 - Exception: Route not found for DELETE /emergencias/1/vehiculos
+2026-01-30T12:47:51+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-01-30T13:15:15+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-01-30T13:31:43+01:00 - Exception: Route not found for PUT /formaciones
+2026-01-30T13:31:52+01:00 - Exception: Route not found for PUT /formaciones
+2026-01-30T13:37:12+01:00 - Exception: Method index not found in controller Controllers\EdicionController
+2026-01-30T14:04:55+01:00 - Exception: Route not found for POST /ediciones/2/1

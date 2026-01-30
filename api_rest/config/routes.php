@@ -66,10 +66,10 @@ $router->protectedSession('DELETE', '/formaciones/{id_formacion}', 'Controllers\
 
 //++++++++++++++++++++++++++++++ EDICIONES ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/ediciones/{id_formacion}', 'Controllers\\EdicionController@index', [1,2,3,4,5]);
-$router->protectedSession('POST', '/ediciones', 'Controllers\\EdicionController@store', [4,5]);
-$router->protectedSession('PUT', '/ediciones/{id_edicion}', 'Controllers\\EdicionController@update', [4,5]);
-$router->protectedSession('DELETE', '/ediciones/{id_edicion}', 'Controllers\\EdicionController@delete', [5]);
-$router->protectedSession('GET', '/ediciones/{id_edicion}/personas', 'Controllers\\EdicionController@personas', [1,2,3,4,5]);
+$router->protectedSession('POST', '/ediciones/{id_formacion}', 'Controllers\\EdicionController@store', [4,5]);
+$router->protectedSession('PUT', '/ediciones/{id_formacion}/{id_edicion}', 'Controllers\\EdicionController@update', [4,5]);
+$router->protectedSession('DELETE', '/ediciones/{id_formacion}/{id_edicion}', 'Controllers\\EdicionController@delete', [5]);
+$router->protectedSession('GET', '/ediciones/{id_formacion}/{id_edicion}/personas', 'Controllers\\EdicionController@personas', [1,2,3,4,5]);
 
 
 //++++++++++++++++++++++++++++++ TURNOS DE REFUERZO ++++++++++++++++++++++++++++++
@@ -88,11 +88,10 @@ $router->protectedSession('DELETE', '/roles/{id_rol}', 'Controllers\\RolControll
 
 
 //++++++++++++++++++++++++++++++ TIPO DE EMERGENCIA ++++++++++++++++++++++++++++++
-$router->protectedSession('GET', '/tipos-emergencia', 'Controllers\\EmergenciaController@index', [1,2,3,4,5]);
-$router->protectedSession('POST', '/tipos-emergencia', 'Controllers\\EmergenciaController@store', [3,4,5]);
-$router->protectedSession('PUT', '/tipos-emergencia/{id_tipo}', 'Controllers\\EmergenciaController@update', [4,5]);
-$router->protectedSession('DELETE', '/tipos-emergencia/{id_tipo}', 'Controllers\\EmergenciaController@delete', [5]);
-
+$router->protectedSession('GET', '/tipos-emergencia', 'Controllers\\TipoEmergenciaController@index', [1,2,3,4,5]);
+$router->protectedSession('POST', '/tipos-emergencia', 'Controllers\\TipoEmergenciaController@store', [3,4,5]);
+$router->protectedSession('PUT', '/tipos-emergencia/{id_tipo}', 'Controllers\\TipoEmergenciaController@update', [4,5]);
+$router->protectedSession('DELETE', '/tipos-emergencia/{id_tipo}', 'Controllers\\TipoEmergenciaController@delete', [5]);
 
 //++++++++++++++++++++++++++++++ EMERGENCIAS ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/emergencias', 'Controllers\\EmergenciaController@index', [1,2,3,4,5]);
@@ -101,14 +100,14 @@ $router->protectedSession('GET', '/emergencias/{id_emergencia}', 'Controllers\\E
 $router->protectedSession('PUT', '/emergencias/{id_emergencia}', 'Controllers\\EmergenciaController@update', [4,5]);
 
 // VEHÍCULOS EN EMERGENCIA
-$router->protectedSession('GET', '/emergencias/vehiculos', 'Controllers\\EmergenciaController@getVehiculo', [1,2,3,4,5]);
+$router->protectedSession('GET', '/emergencias/{id_emergencia}/vehiculos', 'Controllers\\EmergenciaController@getVehiculo', [1,2,3,4,5]);
 $router->protectedSession('POST', '/emergencias/{id_emergencia}/vehiculos', 'Controllers\\EmergenciaController@setVehiculo', [3,4,5]);
 $router->protectedSession('DELETE', '/emergencias/{id_emergencia}/vehiculos/{matricula}', 'Controllers\\EmergenciaController@deleteVehiculo', [3,4,5]);
 
 // PERSONAL EN VEHÍCULO
-$router->protectedSession('GET', '/emergencias/vehiculos/{matricula}/personas', 'Controllers\\EmergenciaController@getPersonal', [1,2,3]);
+$router->protectedSession('GET', '/emergencias/{id_emergencia}/vehiculos/{matricula}/personas', 'Controllers\\EmergenciaController@getPersonal', [1,2,3,4,5]);
 $router->protectedSession('POST', '/emergencias/{id_emergencia}/vehiculos/{matricula}/personas', 'Controllers\\EmergenciaController@setPersonal', [3,4,5]);
-$router->protectedSession('DELETE', '/emergencias/{id_emergencia}/vehiculos/{matricula}/personas/{n_funcionario}', 'Controllers\\EmergenciaController@deletePersonal', [3,4,5]);
+$router->protectedSession('DELETE', '/emergencias/{id_emergencia}/vehiculos/{matricula}/personas/{id_bombero}', 'Controllers\\EmergenciaController@deletePersonal', [3,4,5]);
 
 
 //++++++++++++++++++++++++++++++ VEHÍCULOS ++++++++++++++++++++++++++++++

@@ -18,7 +18,7 @@ class EdicionService
     }
 
 
-    public function getEdicionById(int $id): array
+    public function getEdicionesByFormacion(int $id): array
     {
         Validator::validate(['id_formacion' => $id], [
             'id_formacion' => 'required|int|min:1'
@@ -38,44 +38,46 @@ class EdicionService
     }
 
 
-    public function createEdicion(array $input): array
+    public function createEdicion(array $input, int $id_formacion): array
     {
+        Validator::validate(['id_formacion' => $id_formacion], [
+            'id_formacion' => 'required|int|min:1'
+        ]);
         $data = Validator::validate($input, [
-            'id_formacion'      => 'required|int|min:1',
             'f_inicio'          => 'required|date',
             'f_fin'             => 'required|date',
             'horas'             => 'required|int'
         ]);
 
         try {
-            $id = $this->model->create($data);
+            $ok = $this->model->create($data, $id_formacion);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
-        if (!$id) {
-            throw new \Exception("No se pudo crear la formación");
+        if (!$ok) {
+            throw new \Exception("No se pudo crear la edición", 500);
         }
 
-        return ['id' => $id];
+        return ['status' => 'created', 'id' => $ok];
     }
 
 
-    public function updateEdicion(int $id, array $input): array
+    public function updateEdicion(int $id_formacion, int $id_edicion, array $input): array
     {
-        Validator::validate(['id' => $id], [
-            'id' => 'required|int|min:1'
+        Validator::validate(['id_formacion' => $id_formacion, 'id_edicion' => $id_edicion], [
+            'id_formacion' => 'required|int|min:1',
+            'id_edicion' => 'required|int|min:1'
         ]);
 
         $data = Validator::validate($input, [
-            'id_formacion'      => 'required|int|min:1',
             'f_inicio'          => 'required|date',
             'f_fin'             => 'required|date',
             'horas'             => 'required|int'
         ]);
 
         try {
-            $result = $this->model->update($id, $data);
+            $result = $this->model->update($id_formacion, $id_edicion, $data);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }

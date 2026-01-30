@@ -14,50 +14,42 @@ class EdicionModel
         $this->db = new DB();
     }
 
-    public function all(): array
-    {
-        return $this->db
-            ->query("SELECT * FROM Edicion ORDER BY id_edicion ASC")
-            ->fetchAll();
-    }
-
     public function find(int $id): ?array
     {
         $result = $this->db
             ->query("SELECT * FROM Edicion WHERE id_formacion = :id")
             ->bind(":id", $id)
-            ->fetch();
+            ->fetchAll();
 
         return $result ?: null;
     }
 
-    public function create(array $data): int|false
+    public function create(array $data, int $id_formacion): bool
     {
-        $this->db->query("
+        $stmt = $this->db->query("
             INSERT INTO Edicion (id_formacion, f_inicio, f_fin, horas)
             VALUES (:id_formacion, :f_inicio, :f_fin, :horas)
-        ")
-        ->bind(":id_formacion", $data['id_formacion'])
-        ->bind(":f_inicio", $data['f_inicio'])
-        ->bind(":f_fin", $data['f_fin'])
-        ->bind(":horas", $data['horas'])
-        ->execute();
+        ");
 
-        return (int) $this->db->lastId();
+        $stmt->bind(":id_formacion", $id_formacion);
+        $stmt->bind(":f_inicio", $data['f_inicio']);
+        $stmt->bind(":f_fin", $data['f_fin']);
+        $stmt->bind(":horas", $data['horas']);
+
+        return $stmt->execute();
     }
 
-    public function update(int $id, array $data): int
+    public function update(int $id_formacion, int $id_edicion, array $data): int
     {
         $this->db->query("
             UPDATE Edicion SET
-                id_formacion = :id_formacion,
                 f_inicio = :f_inicio,
                 f_fin = :f_fin,
                 horas = :horas
-            WHERE id_edicion = :id
+            WHERE id_edicion = :id_edicion AND id_formacion = :id_formacion
         ")
-        ->bind(":id", $id)
-        ->bind(":id_formacion", $data['id_formacion'])
+        ->bind(":id_edicion", $id_edicion)
+        ->bind(":id_formacion", $id_formacion)
         ->bind(":f_inicio", $data['f_inicio'])
         ->bind(":f_fin", $data['f_fin'])
         ->bind(":horas", $data['horas'])
