@@ -120,53 +120,6 @@ class CarnetModel
     }
 
     /**
-     * Obtener todas las personas que tienen un carnet (con fechas)
-     */
-    public function getPersonsByCarnet(string $id_carnet): array
-    {
-        return $this->db
-            ->query("
-                SELECT 
-                    p.*,
-                    pc.f_obtencion,
-                    pc.f_vencimiento
-                FROM Persona_Carnet pc
-                INNER JOIN Persona p 
-                    ON p.id_bombero = pc.id_bombero
-                WHERE pc.id_carnet = :id_carnet
-                ORDER BY p.id_bombero ASC
-            ")
-            ->bind(':id_carnet', $id_carnet)
-            ->fetchAll();
-    }
-
-    /**
-     * Actualizar fechas de obtención y vencimiento de un carnet de una persona
-     */
-    public function updatePersonCarnetDates(
-        string $n_funcionario,
-        string $id_carnet,
-        array $data
-    ): int {
-        $this->db->query("
-            UPDATE Persona_Carnet SET
-                f_obtencion = :f_obtencion,
-                f_vencimiento = :f_vencimiento
-            WHERE id_bombero = :id_bombero
-            AND id_carnet = :id_carnet
-        ")
-        ->bind(':id_bombero', $id_bombero)
-        ->bind(':id_carnet', $id_carnet)
-        ->bind(':f_obtencion', $data['f_obtencion'] ?? null)
-        ->bind(':f_vencimiento', $data['f_vencimiento'] ?? null)
-        ->execute();
-
-        return $this->db
-            ->query("SELECT ROW_COUNT() AS affected")
-            ->fetch()['affected'];
-    }
-
-    /**
      * Eliminar la asignación de un carnet a una persona
      */
     public function unassignFromPerson(string $id_bombero, string $id_carnet): int

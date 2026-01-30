@@ -33,31 +33,6 @@ class CarnetService
     }
 
     /**
-     * Obtener un carnet por su ID (string)
-     */
-    public function getCarnetById(string $ID_Carnet): array
-    {
-        Validator::validate(['ID_Carnet' => $ID_Carnet], [
-            'ID_Carnet' => 'required|string'
-        ]);
-
-        try {
-            $carnet = $this->model->find($ID_Carnet);
-        } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
-        }
-
-        if (!$carnet) {
-            throw new \Exception("Carnet no encontrado", 404);
-        }
-
-        return $carnet;
-    }
-
-    /**
      * Crear un carnet
      */
     public function createCarnet(array $input): array
@@ -86,65 +61,6 @@ class CarnetService
         }
 
         return ['ID_Carnet' => $data['ID_Carnet']];
-    }
-
-    /**
-     * Actualizar carnet
-     */
-    public function updateCarnet(string $ID_Carnet, array $input): array
-    {
-        Validator::validate(['ID_Carnet' => $ID_Carnet], [
-            'ID_Carnet' => 'required|string'
-        ]);
-
-        $data = Validator::validate($input, [
-            'Nombre'        => 'string|min:1',
-            'Tipo'          => 'string|min:1',
-            'Duracion'      => 'int|min:1',
-
-            // Asociación a persona (actualizada a string)
-            'n_funcionario' => 'string'
-        ]);
-
-        if (empty($data)) {
-            throw new ValidationException([
-                'body' => ['No se enviaron campos para actualizar']
-            ]);
-        }
-
-        try {
-            $result = $this->model->update($ID_Carnet, $data);
-        } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
-        }
-
-        if ($result === 0) {
-            $exists = $this->model->find($ID_Carnet);
-
-            if (!$exists) {
-                throw new \Exception("Carnet no encontrado", 404);
-            }
-
-            return [
-                'status'  => 'no_changes',
-                'message' => 'No hubo cambios en el carnet'
-            ];
-        }
-
-        if ($result === -1) {
-            throw new \Exception(
-                "No se pudo actualizar el carnet: conflicto con restricciones",
-                409
-            );
-        }
-
-        return [
-            'status'  => 'updated',
-            'message' => 'Carnet actualizado correctamente'
-        ];
     }
 
     /**
