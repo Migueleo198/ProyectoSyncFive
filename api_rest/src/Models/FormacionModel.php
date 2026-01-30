@@ -5,7 +5,7 @@ namespace Models;
 
 use Core\DB;
 
-class ProfesorModel
+class FormacionModel
 {
     private DB $db;
 

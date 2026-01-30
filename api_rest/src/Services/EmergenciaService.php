@@ -107,17 +107,11 @@ class EmergenciaService
 
     public function getTipoEmergencia(int $id): array
     {
-        Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
-
         try {
-            $tipo = $this->model->findTipo($id);
+            return $this->model->all();
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
-
-        if (!$tipo) throw new \Exception("Tipo de emergencia no encontrado", 404);
-
-        return $tipo;
     }
 
     public function setTipoEmergencia(array $input): array

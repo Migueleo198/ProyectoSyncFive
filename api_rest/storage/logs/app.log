@@ -36,3 +36,6 @@
 2026-01-30T11:36:43+01:00 - Exception: Route not found for PATCH /emergencias
 2026-01-30T11:36:50+01:00 - Exception: Route not found for PUT /emergencias
 2026-01-30T11:39:50+01:00 - Exception: Route not found for GET /emergencias/2/tipo
+2026-01-30T11:46:45+01:00 - Exception: Route not found for GET /ediciones
+2026-01-30T11:47:18+01:00 - Exception: Class "Models\FormacionModel" not found
+2026-01-30T12:10:24+01:00 - Exception: Route not found for GET /persona

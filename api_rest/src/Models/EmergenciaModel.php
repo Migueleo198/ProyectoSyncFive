@@ -83,11 +83,10 @@ class EmergenciaModel
 
     //================= TIPO_EMERGENCIA =====================
 
-    public function findTipo(int $id): ?array
+    public function findTipo(): ?array
     {
         $result = $this->db
-            ->query("SELECT * FROM Tipo_emergencia WHERE codigo_tipo = :id")
-            ->bind(":id", $id)
+            ->query("SELECT * FROM Tipo_emergencia")
             ->fetch();
 
         return $result ?: null;

@@ -111,20 +111,15 @@ class EmergenciaController
 //+++++++++++++++++++ Tipo de emergencia ++++++++++++++++++++++
     
     /**
-     * GET /emergencias/{id}
+     * GET /emergencias/tipos
      */
     public function getTipo(Request $req, Response $res, string $id): void
     {
         try {
-            $emergencia = $this->service->getTipoEmergencia((int) $id);
-            $res->status(200)->json($emergencia);
-
-        } catch (ValidationException $e) {
-            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-            return;
+            $tipos = $this->service->getAllTipos();
+            $res->status(200)->json($tipos);
         } catch (Throwable $e) {
-            $status = $e->getCode() === 404 ? 404 : 500;
-            $res->errorJson($e->getMessage(), $status);
+            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
         }
     }
 
@@ -135,11 +130,11 @@ class EmergenciaController
     public function setTipo(Request $req, Response $res): void
     {
         try {
-            $result = $this->service->setTipoEmergencia($req->json());
+            $result = $this->service->createTipoEmergencia($req->json());
 
             $res->status(201)->json(
                 ['id' => $result['id']],
-                "Tipo de emergencia asignado correctamente"
+                "Tipo de emergencia creado correctamente"
             );
 
         } catch (ValidationException $e) {
@@ -165,6 +160,7 @@ class EmergenciaController
     {
         try {
             $result = $this->service->updateTipoEmergencia((int)$id, $req->json());
+
             if ($result['status'] === 'no_changes') {
                 $res->status(200)->json([], $result['message']);
                 return;
