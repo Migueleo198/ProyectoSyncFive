@@ -81,61 +81,7 @@ class EmergenciaModel
             ->fetch()['affected'];
     }
 
-    //================= TIPO_EMERGENCIA =====================
-
-    public function findTipo(): ?array
-    {
-        $result = $this->db
-            ->query("SELECT * FROM Tipo_emergencia")
-            ->fetch();
-
-        return $result ?: null;
-    }
-
-    public function addTipo(array $data): int|false
-    {
-        $this->db->query("
-            INSERT INTO Tipo_emergencia (nombre, grupo)
-            VALUES (:nombre, :grupo)
-        ")
-        ->bind(":nombre", $data['nombre'])
-        ->bind(":grupo", $data['grupo'] ?? null)
-        ->execute();
-
-        return (int) $this->db->lastId();
-    }
-
-    public function updateTipo(int $id, array $data): int
-    {
-        $this->db->query("
-            UPDATE Tipo_emergencia SET
-                nombre = :nombre,
-                grupo = :grupo
-            WHERE codigo_tipo = :id
-        ")
-        ->bind(":id", $id)
-        ->bind(":nombre", $data['nombre'] ?? null)
-        ->bind(":grupo", $data['grupo'] ?? null)
-        ->execute();
-
-        return $this->db
-            ->query("SELECT ROW_COUNT() AS affected")
-            ->fetch()['affected'];
-    }
-
-    public function deleteTipo(int $id): int
-    {
-        $this->db->query("
-            DELETE FROM Tipo_emergencia WHERE codigo_tipo = :id
-        ")
-        ->bind(":id", $id)
-        ->execute();
-
-        return $this->db
-            ->query("SELECT ROW_COUNT() AS affected")
-            ->fetch()['affected'];
-    }
-
+  
     //================= EMERGENCIA_VEHICULO =====================
 
     public function allVehiculos(): array

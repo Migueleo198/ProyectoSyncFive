@@ -87,17 +87,18 @@ $router->protectedSession('PUT', '/roles/{id_rol}', 'Controllers\\RolController@
 $router->protectedSession('DELETE', '/roles/{id_rol}', 'Controllers\\RolController@delete', [5]);
 
 
+//++++++++++++++++++++++++++++++ TIPO DE EMERGENCIA ++++++++++++++++++++++++++++++
+$router->protectedSession('GET', '/tipos-emergencia', 'Controllers\\EmergenciaController@index', [1,2,3,4,5]);
+$router->protectedSession('POST', '/tipos-emergencia', 'Controllers\\EmergenciaController@store', [3,4,5]);
+$router->protectedSession('PUT', '/tipos-emergencia/{id_tipo}', 'Controllers\\EmergenciaController@update', [4,5]);
+$router->protectedSession('DELETE', '/tipos-emergencia/{id_tipo}', 'Controllers\\EmergenciaController@delete', [5]);
+
+
 //++++++++++++++++++++++++++++++ EMERGENCIAS ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/emergencias', 'Controllers\\EmergenciaController@index', [1,2,3,4,5]);
 $router->protectedSession('POST', '/emergencias', 'Controllers\\EmergenciaController@store', [3,4,5]);
 $router->protectedSession('GET', '/emergencias/{id_emergencia}', 'Controllers\\EmergenciaController@show', [1,2,3,4,5]);
 $router->protectedSession('PUT', '/emergencias/{id_emergencia}', 'Controllers\\EmergenciaController@update', [4,5]);
-
-// TIPO EMERGENCIA
-$router->protectedSession('GET', '/emergencias/tipos', 'Controllers\\EmergenciaController@getTipo', [1,2,3,4,5]);
-$router->protectedSession('POST', '/emergencias/tipos', 'Controllers\\EmergenciaController@setTipo', [3,4,5]);
-$router->protectedSession('PUT', '/emergencias/tipos/{id_tipo}', 'Controllers\\EmergenciaController@updateTipo', [4,5]);
-$router->protectedSession('DELETE', '/emergencias/tipos/{id_tipo}', 'Controllers\\EmergenciaController@deleteTipo', [5]);
 
 // VEHÍCULOS EN EMERGENCIA
 $router->protectedSession('GET', '/emergencias/vehiculos', 'Controllers\\EmergenciaController@getVehiculo', [1,2,3,4,5]);

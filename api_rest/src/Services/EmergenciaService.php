@@ -103,72 +103,7 @@ class EmergenciaService
         return ['status' => 'updated', 'message' => 'Emergencia actualizada correctamente'];
     }
 
-    //================= Tipo de emergencias =====================
-
-    public function getTipoEmergencia(int $id): array
-    {
-        try {
-            return $this->model->all();
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
-        }
-    }
-
-    public function setTipoEmergencia(array $input): array
-    {
-        $data = Validator::validate($input, [
-            'nombre' => 'required|string|max:50',
-            'grupo' => 'string|max:50',
-        ]);
-
-        try {
-            $id = $this->model->addTipo($data);
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
-        }
-
-        return ['id' => $id];
-    }
-
-    public function updateTipoEmergencia(int $id, array $input): array
-    {
-        Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
-        $data = Validator::validate($input, [
-            'nombre' => 'string|max:50',
-            'grupo'  => 'string|max:50'
-        ]);
-
-        try {
-            $result = $this->model->updateTipo($id, $data);
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
-        }
-
-        if ($result === 0) {
-            $exists = $this->model->findTipo($id);
-            if (!$exists) throw new \Exception("Tipo de emergencia no encontrado", 404);
-
-            return ['status' => 'no_changes', 'message' => 'No hubo cambios en el tipo de emergencia'];
-        }
-
-        if ($result === -1) throw new \Exception("Conflicto con restricciones al actualizar tipo", 409);
-
-        return ['status' => 'updated', 'message' => 'Tipo de emergencia actualizado correctamente'];
-    }
-
-    public function deleteTipoEmergencia(int $id): void
-    {
-        Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
-
-        try {
-            $result = $this->model->deleteTipo($id);
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
-        }
-
-        if ($result === 0) throw new \Exception("Tipo de emergencia no encontrado", 404);
-        if ($result === -1) throw new \Exception("No se puede eliminar: está en uso", 409);
-    }
+  
 
     //================= Vehículos en emergencias =====================
 
