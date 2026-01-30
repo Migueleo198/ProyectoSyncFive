@@ -1,0 +1,5 @@
+@import "paleta_colores.css";
+
+.calendar-main{
+    background-color: var(--gris);
+}
