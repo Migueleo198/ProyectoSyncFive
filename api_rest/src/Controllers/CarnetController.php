@@ -98,4 +98,72 @@ class CarnetController
             $res->errorJson($e->getMessage(), $code);
         }
     }
+
+
+    /**
+     * GET /carnets/{ID_Carnet}/personas
+     */
+    public function persons(Request $req, Response $res, string $ID_Carnet): void
+    {
+        try {
+            $persons = $this->service->getPersonsByCarnet($ID_Carnet);
+
+            $res->status(200)->json(
+                $persons,
+                "Personas asociadas al carnet obtenidas correctamente"
+            );
+
+        } catch (Throwable $e) {
+            $code = ($e->getCode() >= 400) ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+
+    /**
+     * POST /carnets/asignar
+     */
+    public function assign(Request $req, Response $res): void
+    {
+        try {
+            $data = $req->json();
+
+            $result = $this->service->assignCarnetToPerson($data);
+
+            $res->status(201)->json([], $result['message']);
+
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+
+        } catch (Throwable $e) {
+            $code = $e->getCode() > 0 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+
+    /**
+     * DELETE /carnets/{ID_Carnet}/personas/{n_funcionario}
+     */
+    public function unassign(
+        Request $req,
+        Response $res,
+        string $ID_Carnet,
+        string $n_funcionario
+    ): void {
+        try {
+            $result = $this->service->unassignCarnetFromPerson(
+                $n_funcionario,
+                $ID_Carnet
+            );
+
+            $res->status(200)->json([], $result['message']);
+
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+
+        } catch (Throwable $e) {
+            $code = $e->getCode() > 0 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
 }
+?>

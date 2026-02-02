@@ -1,0 +1,53 @@
+@import "paleta_colores.css";
+
+.calendar-main{
+    background-color: var(--gris);
+}
+
+/* ===== BOTTOM SECTION ===== */
+.cuadrante-bottom {
+    max-width: 900px;
+}
+
+/* Leyenda box */
+.leyenda-box {
+    width: 60%;
+    height: 70px;
+    border: 1px solid #666;
+    background: #d9d9d9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+}
+
+/* Detalles label */
+.detalles-label {
+    font-size: 13px;
+}
+
+/* Detalles table */
+.detalles-table {
+    width: 100%;
+    background: #e6e6e6;
+    font-size: 12px;
+}
+
+.detalles-table th,
+.detalles-table td {
+    border: 1px solid #333;
+    text-align: center;
+    height: 28px;
+}
+
+.detalles-table th {
+    background: #d0d0d0;
+    font-weight: 600;
+}
+
+.cuadrante-bottom {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+

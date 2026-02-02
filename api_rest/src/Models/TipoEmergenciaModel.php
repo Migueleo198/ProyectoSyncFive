@@ -5,7 +5,7 @@ namespace Models;
 
 use Core\DB;
 
-class MaterialModel
+class TipoEmergenciaModel
 {
     private DB $db;
 
@@ -17,14 +17,14 @@ class MaterialModel
     public function all(): array
     {
         return $this->db
-            ->query("SELECT * FROM Material ORDER BY id_material ASC")
+            ->query("SELECT * FROM Tipo_emergencia ORDER BY codigo_tipo ASC")
             ->fetchAll();
     }
 
     public function find(int $id): ?array
     {
         $result = $this->db
-            ->query("SELECT * FROM Material WHERE id_material = :id")
+            ->query("SELECT * FROM Tipo_emergencia WHERE codigo_tipo = :id")
             ->bind(":id", $id)
             ->fetch();
 
@@ -34,13 +34,11 @@ class MaterialModel
     public function create(array $data): int|false
     {
         $this->db->query("
-            INSERT INTO Material (id_categoria, nombre, descripcion, estado)
-            VALUES (:id_categoria, :nombre, :descripcion, :estado)
+            INSERT INTO Tipo_emergencia (nombre, grupo)
+            VALUES (:nombre, :grupo)
         ")
-        ->bind(":id_categoria", $data['id_categoria'])
         ->bind(":nombre",  $data['nombre'])
-        ->bind(":descripcion", $data['descripcion'])
-        ->bind(":estado", $data['estado'])
+        ->bind(":grupo", $data['grupo'] ?? null)
         ->execute();
 
         return (int) $this->db->lastId();
@@ -49,18 +47,14 @@ class MaterialModel
     public function update(int $id, array $data): int
     {
         $this->db->query("
-            UPDATE Material SET
-                id_categoria = :id_categoria,
+            UPDATE Tipo_emergencia SET
                 nombre = :nombre,
-                descripcion = :descripcion,
-                estado = :estado
-            WHERE id_material = :id
+                grupo = :grupo
+            WHERE codigo_tipo = :id
         ")
         ->bind(":id", $id)
-        ->bind(":id_categoria", $data['id_categoria'])
         ->bind(":nombre",   $data['nombre'])
-        ->bind(":descripcion", $data['descripcion'])
-        ->bind(":estado", $data['estado'])
+        ->bind(":grupo", $data['grupo'] ?? null)
         ->execute();
 
         return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
@@ -68,7 +62,7 @@ class MaterialModel
 
     public function delete(int $id): int
     {
-        $this->db->query("DELETE FROM Material WHERE id_material = :id")
+        $this->db->query("DELETE FROM Tipo_emergencia WHERE codigo_tipo = :id")
                  ->bind(":id", $id)
                  ->execute();
 

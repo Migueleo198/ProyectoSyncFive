@@ -37,17 +37,40 @@ class CarnetModel
             ) VALUES (
                 :nombre,
                 :categoria,
-                :duracion
+                :duracion_meses
             )
         ")
+        ->bind(':id_carnet', $data['ID_Carnet'])
         ->bind(':nombre', $data['nombre'])
         ->bind(':categoria', $data['categoria'])
-        ->bind(':duracion', $data['duracion_meses'])
+        ->bind(':duracion_meses', $data['duracion_meses'])
         ->execute();
 
         return (int) $this->db->lastId();
     }
 
+    /**
+     * Actualizar carnet (PATCH)
+     */
+    public function update(string $id_carnet, array $data): int
+    {
+        $this->db->query("
+            UPDATE Carnet SET
+                nombre = :nombre,
+                categoria = :categoria,
+                duracion_meses = :duracion_meses
+            WHERE ID_Carnet = :id_carnet
+        ")
+        ->bind(':id_carnet', $id_carnet)
+        ->bind(':nombre', $data['nombre'] ?? null)
+        ->bind(':categoria', $data['categoria'] ?? null)
+        ->bind(':duracion_meses', $data['duracion_meses'] ?? null)
+        ->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
 
     /**
      * Eliminar carnet
@@ -64,7 +87,29 @@ class CarnetModel
             ->fetch()['affected'];
     }
 
+
     /**
+     * Obtener todas las personas que tienen un carnet (con fechas)
+     */
+    public function getPersonsByCarnet(string $id_carnet): array
+    {
+        return $this->db
+            ->query("
+                SELECT 
+                    p.*,
+                    pc.f_obtencion,
+                    pc.f_vencimiento
+                FROM Carnet_Persona pc
+                INNER JOIN Persona p 
+                    ON p.id_bombero = pc.id_bombero
+                WHERE pc.ID_Carnet = :id_carnet
+                ORDER BY p.id_bombero ASC
+            ")
+            ->bind(':id_carnet', $id_carnet)
+            ->fetchAll();
+    }
+
+  /**
      * Asignar un carnet a una persona con fecha de obtención y vencimiento
      */
     public function assignToPerson(
@@ -74,9 +119,9 @@ class CarnetModel
         string $f_vencimiento
     ): bool {
         $this->db->query("
-            INSERT INTO Persona_Carnet (
+            INSERT INTO Carnet_Persona (
                 id_bombero,
-                id_carnet,
+                ID_Carnet,
                 f_obtencion,
                 f_vencimiento
             ) VALUES (
@@ -86,35 +131,20 @@ class CarnetModel
                 :f_vencimiento
             )
         ")
-        ->bind(':n_funcionario', $n_funcionario)
+        ->bind(':id_bombero', $id_bombero)
         ->bind(':id_carnet', $id_carnet)
         ->bind(':f_obtencion', $f_obtencion)
         ->bind(':f_vencimiento', $f_vencimiento)
         ->execute();
 
-        return $this->db->rowCount() > 0;
+        // Obtener la cantidad de filas afectadas
+        $affected = $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+
+        return $affected > 0;
     }
 
-    /**
-     * Obtener todos los carnets asignados a una persona (con fechas)
-     */
-    public function getCarnetsByPerson(string $id_bombero): array
-    {
-        return $this->db
-            ->query("
-                SELECT 
-                    c.*,
-                    pc.f_obtencion,
-                    pc.f_vencimiento
-                FROM Persona_Carnet pc
-                INNER JOIN Carnet c 
-                    ON c.id_carnet = pc.id_carnet
-                WHERE pc.id_bombero = :id_bombero
-                ORDER BY c.id_carnet ASC
-            ")
-            ->bind(':id_bombero', $id_bombero)
-            ->fetchAll();
-    }
 
     /**
      * Eliminar la asignación de un carnet a una persona
@@ -123,9 +153,9 @@ class CarnetModel
     {
         $this->db
             ->query("
-                DELETE FROM Persona_Carnet
+                DELETE FROM Carnet_Persona
                 WHERE id_bombero = :id_bombero
-                AND id_carnet = :id_carnet
+                AND ID_Carnet = :id_carnet
             ")
             ->bind(':id_bombero', $id_bombero)
             ->bind(':id_carnet', $id_carnet)

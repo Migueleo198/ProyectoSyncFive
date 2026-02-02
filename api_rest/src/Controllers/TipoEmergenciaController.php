@@ -5,52 +5,70 @@ namespace Controllers;
 
 use Core\Request;
 use Core\Response;
-use Services\RolService;
 use Validation\ValidationException;
 use Throwable;
 
-class RolController
+use Services\TipoEmergenciaService;
+
+
+class TipoEmergenciaController
 {
-    private RolService $service;
+    private TipoEmergenciaService $service;
 
     public function __construct()
     {
-        $this->service = new RolService();
+        $this->service = new TipoEmergenciaService();
     }
 
-    // ===========================
-    // Roles
-    // ===========================
-
+    
     /**
-     * GET /roles
+     * GET /tipo_emergencias
      */
     public function index(Request $req, Response $res): void
     {
         try {
-            $roles = $this->service->getAllRoles();
-            $res->status(200)->json($roles, "Listado de roles obtenido correctamente");
+            $tipoEmergencias = $this->service->getAllTipoEmergencias();
+            $res->status(200)->json($tipoEmergencias);
         } catch (Throwable $e) {
-            $res->errorJson($e->getMessage(), 500);
+            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
         }
     }
 
+
     /**
-     * POST /roles
+     * GET /tipo_emergencias/{id}
+     */
+    public function show(Request $req, Response $res, string $id): void
+    {
+        try {
+            $tipoEmergencia = $this->service->getTipoEmergenciaById((int) $id);
+            $res->status(200)->json($tipoEmergencia);
+
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+            return;
+        } catch (Throwable $e) {
+            $status = $e->getCode() === 404 ? 404 : 500;
+            $res->errorJson($e->getMessage(), $status);
+        }
+    }
+
+
+    /**
+     * POST /tipo_emergencias
      */
     public function store(Request $req, Response $res): void
     {
         try {
-            // Obtiene el cuerpo de la petición en formato JSON y llama a service
-            $result = $this->service->createRoles($req->json());
-            
-            // Devuelve 201, el id de la aviso y un mensaje genérico
+            $result = $this->service->createTipoEmergencia($req->json());
+
             $res->status(201)->json(
                 ['id' => $result['id']],
-                "Rol creado correctamente"
+                "Tipo de emergencia creado correctamente"
             );
+
         } catch (ValidationException $e) {
-            // Gestiona errores de validación
+
             $res->status(422)->json(
                 ['errors' => $e->errors],
                 "Errores de validación"
@@ -58,67 +76,56 @@ class RolController
             return;
 
         } catch (Throwable $e) {
-            // Gestiona errores genéricos del servidor
+
             $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor",500);
             return;
-
         }
     }
-    
+
+
     /**
-     * PUT /roles/{id}
+     * PUT /tipo_emergencias/{id}
      */
     public function update(Request $req, Response $res, string $id): void
     {
         try {
-            // Convierte el id a entero, obtiene el cuerpo de la petición en formato JSON y envia datos al servicio
-            $result = $this->service->updateRol((int)$id, $req->json());
+            $result = $this->service->updateTipoEmergencia((int)$id, $req->json());
 
-            // Si no se actualiza nada devuelve 200
             if ($result['status'] === 'no_changes') {
                 $res->status(200)->json([], $result['message']);
                 return;
             }
 
-            // Éxito
             $res->status(200)->json([], $result['message']);
         }
         catch (ValidationException $e) {
-            // Gestiona errores de validación
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
         }
         catch (Throwable $e) {
-            // Gestiona errores genéricos del servidor
             $code = $e->getCode() > 0 ? $e->getCode() : 500;
             $res->errorJson($e->getMessage(), $code);
         }
     }
 
-    
     /**
-     * DELETE /roles/{id}
+     * DELETE /tipo_emergencias/{id}
      */
     public function delete(Request $req, Response $res, string $id): void
     {
         try {
-            // Convierte el id a entero
             $id = (int) $id;
 
-            // Llama al servicio para eliminar la rol
-            $service = new \Services\RolService();
-            $service->deleteRol($id);
+            $service = new \Services\TipoEmergenciaService();
+            $service->deleteTipoEmergencia($id);
 
-            // Éxito
-            $res->status(200)->json([], "Rol eliminado correctamente");
+            $res->status(200)->json([], "Tipo de emergencia eliminado correctamente");
 
         } catch (ValidationException $e) {
-            // Gestiona errores de validación
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
         } catch (Throwable $e) {
-            // Gestiona errores generales del servidor
             $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
             $res->errorJson($e->getMessage(), $code);
         }
     }
+
 }
-?>

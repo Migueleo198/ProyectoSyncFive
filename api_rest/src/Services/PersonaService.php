@@ -229,4 +229,69 @@ class PersonaService
             );
         }
     }
+
+
+    //+++++++++++++++ Persona material +++++++++++++++
+
+    public function getMaterial(int $id_bombero): array
+    {
+        Validator::validate(['id_bombero' => $id_bombero], [
+            'id_bombero' => 'required|int|min:1'
+        ]);
+
+        try {
+            $material = $this->model->getMaterialByBombero($id_bombero);
+        } catch (Throwable $e) {
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
+        }
+
+        return $material;
+    }
+
+    public function setMaterial(int $id_bombero,int $id_material, string $nserie): array
+    {
+        Validator::validate(['id_bombero' => $id_bombero], [
+            'id_bombero' => 'required|int|min:1'
+        ]);
+        Validator::validate(['id_material' => $id_material], [
+            'id_material' => 'required|int|min:1'
+        ]);
+        Validator::validate(['nserie' => $nserie], [
+            'nserie' => 'required|string|max:50'
+        ]);
+        try {
+            $this->model->addMaterialToBombero($id_bombero,  $id_material, $nserie);
+        } catch (Throwable $e) {
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
+        }
+    }
+
+    public function deleteMaterial(int $id_bombero, int $id_material): void
+    {
+        Validator::validate(['id_bombero' => $id_bombero], [
+            'id_bombero' => 'required|int|min:1'
+        ]);
+        Validator::validate(['id_material' => $id_material], [
+            'id_material' => 'required|int|min:1'
+        ]);
+
+        try {
+            $result = $this->model->removeMaterialBombero($id_bombero, $id_material);
+        } catch (Throwable $e) {
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
+        }
+
+        if ($result === 0) {
+            throw new \Exception("Material no encontrado para la persona", 404);
+        }
+    }   
 }

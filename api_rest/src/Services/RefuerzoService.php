@@ -173,5 +173,74 @@ class RefuerzoService
             );
         }
     }
+    /**
+ * Asignar un refuerzo a una persona
+ */
+public function assignRefuerzoToPerson(array $input): array
+{
+    $data = Validator::validate($input, [
+        'n_funcionario' => 'required|string',
+        'ID_Refuerzo'   => 'required|string',
+        'cargo'         => 'required|string',
+    ]);
+
+    try {
+        $success = $this->model->assignToPerson(
+            $data['n_funcionario'],
+            $data['ID_Refuerzo'],
+            $data['cargo']
+        );
+    } catch (Throwable $e) {
+        throw new \Exception(
+            "Error interno al asignar refuerzo: " . $e->getMessage(),
+            500
+        );
+    }
+
+    if (!$success) {
+        throw new \Exception("No se pudo asignar el refuerzo a la persona", 409);
+    }
+
+    return [
+        'status' => 'assigned',
+        'message' => 'Refuerzo asignado correctamente',
+        'n_funcionario' => $data['n_funcionario'],
+        'ID_Refuerzo' => $data['ID_Refuerzo']
+    ];
+}
+
+    /**
+     * Desasignar un refuerzo de una persona
+     */
+    public function unassignRefuerzoFromPerson(string $n_funcionario, string $ID_Refuerzo): array
+    {
+        Validator::validate([
+            'n_funcionario' => $n_funcionario,
+            'ID_Refuerzo'   => $ID_Refuerzo
+        ], [
+            'n_funcionario' => 'required|string',
+            'ID_Refuerzo'   => 'required|string'
+        ]);
+
+        try {
+            $affected = $this->model->unassignFromPerson($n_funcionario, $ID_Refuerzo);
+        } catch (Throwable $e) {
+            throw new \Exception(
+                "Error interno al desasignar refuerzo: " . $e->getMessage(),
+                500
+            );
+        }
+
+        if ($affected === 0) {
+            throw new \Exception("No se encontró la asignación para eliminar", 404);
+        }
+
+        return [
+            'status' => 'unassigned',
+            'message' => 'Refuerzo desasignado correctamente',
+            'n_funcionario' => $n_funcionario,
+            'ID_Refuerzo' => $ID_Refuerzo
+        ];
+    }
 }
 ?>
