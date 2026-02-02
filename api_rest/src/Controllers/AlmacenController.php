@@ -7,7 +7,9 @@ use Core\Request;
 use Core\Response;
 use Validation\ValidationException;
 use Throwable;
+
 use Services\AlmacenService;
+
 
 class AlmacenController
 {
@@ -18,54 +20,76 @@ class AlmacenController
         $this->service = new AlmacenService();
     }
 
-    // ========== ALMACENES DE UNA INSTALACIÓN ==========
-
+    
     /**
-     * GET /instalaciones/{id_instalacion}/almacenes
+     * GET /Almacenes
      */
-    public function index(Request $req, Response $res, string $id_instalacion): void
+    public function index(Request $req, Response $res): void
     {
         try {
-            $almacenes = $this->service->getAlmacenesByInstalacion((int) $id_instalacion);
+            $almacenes = $this->service->getAllAlmacenes();
             $res->status(200)->json($almacenes);
         } catch (Throwable $e) {
             $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
         }
     }
 
+
     /**
-     * POST /instalaciones/{id_instalacion}/almacenes
+     * GET /Almacenes/{id}
      */
-    public function store(Request $req, Response $res, string $id_instalacion): void
+    public function show(Request $req, Response $res, string $id): void
     {
         try {
-            $result = $this->service->createAlmacenEnInstalacion((int) $id_instalacion, $req->json());
+            $almacen = $this->service->getAlmacenById((int) $id);
+            $res->status(200)->json($almacen);
+
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+            return;
+        } catch (Throwable $e) {
+            $status = $e->getCode() === 404 ? 404 : 500;
+            $res->errorJson($e->getMessage(), $status);
+        }
+    }
+
+
+    /**
+     * POST /Almacenes
+     */
+    public function store(Request $req, Response $res): void
+    {
+        try {
+            $result = $this->service->createAlmacen($req->json());
 
             $res->status(201)->json(
-                ['id_almacen' => $result['id_almacen']],
-                "Almacén creado y asociado a la instalación correctamente"
+                ['id' => $result['id']],
+                "Almacén creado correctamente"
             );
+
         } catch (ValidationException $e) {
+
             $res->status(422)->json(
                 ['errors' => $e->errors],
                 "Errores de validación"
             );
+            return;
+
         } catch (Throwable $e) {
-            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
+
+            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor",500);
+            return;
         }
     }
 
+
     /**
-     * PUT /instalaciones/{id_instalacion}/almacenes/{id_almacen}
+     * PUT /Almacenes/{id}
      */
-    public function update(Request $req, Response $res, string $id_instalacion, string $id_almacen): void
+    public function update(Request $req, Response $res, string $id): void
     {
         try {
-            $result = $this->service->updateAlmacenEnInstalacion(
-                (int) $id_instalacion, 
-                (int) $id_almacen, 
-                $req->json()
-            );
+            $result = $this->service->updateAlmacen((int)$id, $req->json());
 
             if ($result['status'] === 'no_changes') {
                 $res->status(200)->json([], $result['message']);
@@ -73,103 +97,30 @@ class AlmacenController
             }
 
             $res->status(200)->json([], $result['message']);
-        } catch (ValidationException $e) {
+        }
+        catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-        } catch (Throwable $e) {
+        }
+        catch (Throwable $e) {
             $code = $e->getCode() > 0 ? $e->getCode() : 500;
             $res->errorJson($e->getMessage(), $code);
         }
     }
 
-    /**
-     * DELETE /instalaciones/{id_instalacion}/almacenes/{id_almacen}
-     */
-    public function delete(Request $req, Response $res, string $id_instalacion, string $id_almacen): void
-    {
-        try {
-            $this->service->deleteAlmacenDeInstalacion((int) $id_instalacion, (int) $id_almacen);
-            $res->status(200)->json([], "Almacén eliminado de la instalación correctamente");
-        } catch (ValidationException $e) {
-            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-        } catch (Throwable $e) {
-            $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
-            $res->errorJson($e->getMessage(), $code);
-        }
-    }
-
-    // ========== MATERIAL EN ALMACÉN ==========
 
     /**
-     * GET /almacenes/{id_almacen}/material
+     * DELETE /Almacenes/{id}
      */
-    public function getMaterial(Request $req, Response $res, string $id_almacen): void
+    public function delete(Request $req, Response $res, string $id): void
     {
         try {
-            $material = $this->service->getMaterialEnAlmacen((int) $id_almacen);
-            $res->status(200)->json($material);
-        } catch (Throwable $e) {
-            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
-        }
-    }
+            $id = (int) $id;
 
-    /**
-     * POST /almacenes/{id_almacen}/material
-     */
-    public function setMaterial(Request $req, Response $res, string $id_almacen): void
-    {
-        try {
-            $result = $this->service->addMaterialToAlmacen((int) $id_almacen, $req->json());
-            $res->status(201)->json([], $result['message']);
-        } catch (ValidationException $e) {
-            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-        } catch (Throwable $e) {
-            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
-        }
-    }
+            $service = new \Services\AlmacenService();
+            $service->deleteAlmacen($id);
 
-    /**
-     * PUT /almacenes/{id_almacen}/material/{id_material}
-     */
-    public function updateMaterial(Request $req, Response $res, string $id_almacen, string $id_material): void
-    {
-        try {
-            $result = $this->service->updateMaterialInAlmacen((int) $id_almacen, (int) $id_material, $req->json());
+            $res->status(200)->json([], "Almacén eliminado correctamente");
 
-            if ($result['status'] === 'no_changes') {
-                $res->status(200)->json([], $result['message']);
-                return;
-            }
-
-            $res->status(200)->json([], $result['message']);
-        } catch (ValidationException $e) {
-            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-        } catch (Throwable $e) {
-            $code = $e->getCode() > 0 ? $e->getCode() : 500;
-            $res->errorJson($e->getMessage(), $code);
-        }
-    }
-
-    /**
-     * DELETE /almacenes/{id_almacen}/material/{id_material}
-     */
-    public function deleteMaterial(Request $req, Response $res, string $id_almacen, string $id_material): void
-    {
-        try {
-            // Necesitamos también el id_instalacion del cuerpo de la petición
-            $data = $req->json();
-            
-            if (!isset($data['id_instalacion'])) {
-                $res->status(400)->json([], "Se requiere el campo id_instalacion");
-                return;
-            }
-
-            $this->service->deleteMaterialFromAlmacen(
-                (int) $id_almacen, 
-                (int) $id_material, 
-                (int) $data['id_instalacion']
-            );
-            
-            $res->status(200)->json([], "Material eliminado del almacén correctamente");
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
         } catch (Throwable $e) {
@@ -178,3 +129,4 @@ class AlmacenController
         }
     }
 }
+?>
