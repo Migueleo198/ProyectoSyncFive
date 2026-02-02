@@ -47,3 +47,8 @@
 2026-01-30T13:31:52+01:00 - Exception: Route not found for PUT /formaciones
 2026-01-30T13:37:12+01:00 - Exception: Method index not found in controller Controllers\EdicionController
 2026-01-30T14:04:55+01:00 - Exception: Route not found for POST /ediciones/2/1
+2026-02-02T11:13:01+01:00 - Exception: Route not found for DELETE /carnets/5/persona/B001
+2026-02-02T11:13:09+01:00 - Exception: Route not found for DELETE /carnets/5/personas/B001
+2026-02-02T11:13:18+01:00 - Exception: Route not found for DELETE /personas/5/carnets/B001
+2026-02-02T11:14:02+01:00 - Exception: Route not found for DELETE /personas/B001/carnets/5
+2026-02-02T11:16:23+01:00 - Exception: Too few arguments to function Controllers\CarnetController::unassign(), 3 passed and exactly 4 expected
