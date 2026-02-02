@@ -34,9 +34,10 @@ class MaterialModel
     public function create(array $data): int|false
     {
         $this->db->query("
-            INSERT INTO Material (nombre, descripcion, estado)
-            VALUES (:nombre, :descripcion, :estado)
+            INSERT INTO Material (id_categoria, nombre, descripcion, estado)
+            VALUES (:id_categoria, :nombre, :descripcion, :estado)
         ")
+        ->bind(":id_categoria", $data['id_categoria'])
         ->bind(":nombre",  $data['nombre'])
         ->bind(":descripcion", $data['descripcion'])
         ->bind(":estado", $data['estado'])
@@ -49,14 +50,17 @@ class MaterialModel
     {
         $this->db->query("
             UPDATE Material SET
+                id_categoria = :id_categoria,
                 nombre = :nombre,
                 descripcion = :descripcion,
                 estado = :estado
             WHERE id_material = :id
         ")
         ->bind(":id", $id)
+        ->bind(":id_categoria", $data['id_categoria'])
         ->bind(":nombre",   $data['nombre'])
         ->bind(":descripcion", $data['descripcion'])
+        ->bind(":estado", $data['estado'])
         ->execute();
 
         return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];

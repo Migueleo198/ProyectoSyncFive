@@ -69,7 +69,9 @@ $router->protectedSession('GET', '/ediciones/{id_formacion}', 'Controllers\\Edic
 $router->protectedSession('POST', '/ediciones/{id_formacion}', 'Controllers\\EdicionController@store', [4,5]);
 $router->protectedSession('PUT', '/ediciones/{id_formacion}/{id_edicion}', 'Controllers\\EdicionController@update', [4,5]);
 $router->protectedSession('DELETE', '/ediciones/{id_formacion}/{id_edicion}', 'Controllers\\EdicionController@delete', [5]);
-$router->protectedSession('GET', '/ediciones/{id_formacion}/{id_edicion}/personas', 'Controllers\\EdicionController@personas', [1,2,3,4,5]);
+$router->protectedSession('GET', '/ediciones/{id_formacion}/{id_edicion}/personas', 'Controllers\\EdicionController@getPersonas', [1,2,3,4,5]);
+$router->protectedSession('POST', '/ediciones/{id_formacion}/{id_edicion}/personas', 'Controllers\\EdicionController@setPersonas', [1,2,3,4,5]);
+$router->protectedSession('DELETE', '/ediciones/{id_formacion}/{id_edicion}/personas/{id_bombero}', 'Controllers\\EdicionController@deletePersonas', [1,2,3,4,5]);
 
 
 //++++++++++++++++++++++++++++++ TURNOS DE REFUERZO ++++++++++++++++++++++++++++++
