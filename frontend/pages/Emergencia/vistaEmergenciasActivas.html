@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tipos de emergencia</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+    <!-- Configuración y rutas absolutas -->
+    <script src="/frontend/config/config.js"></script>
+
+    <!-- CSS del proyecto usando loadCSS() -->
+    <script>
+        loadCSS("header_footer.css");
+        loadCSS("plantilla_css.css");
+    </script>
+
+    <!-- JS dependientes -->
+    <script src="/frontend/javascript/header_footer.js" defer></script>
+    <script src="/frontend/javascript/script_filtro_tabla.js" defer></script>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="bg-white text-dark">
+
+    <!-- HEADER -->
+    <div id="header-placeholder"></div>
+
+    <!-- LAYOUT CON SIDEBAR -->
+    <div class="d-flex flex-grow-1">
+        <div id="sidebar-placeholder"></div>
+        <main class="p-3 w-100">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">Emergencias activas</h1>
+                <span class="badge bg-danger fs-6">EN TIEMPO REAL</span>
+            </div>
+
+            <div class="container-fluid">
+
+                <!-- EMERGENCIA 1 -->
+                <div class="card mb-4 shadow border-danger">
+                    <div class="card-body">
+                        <div class="row">
+
+                            <!-- MAPA -->
+                            <div class="col-md-5 mb-3 mb-md-0">
+                                <div class="ratio ratio-16x9 border rounded">
+                                    <!-- Sustituir por mapa real (Leaflet / Google Maps) -->
+                                    <iframe 
+                                        src="https://maps.google.com/maps?q=40.4168,-3.7038&z=15&output=embed"
+                                        loading="lazy">
+                                    </iframe>
+                                </div>
+                            </div>
+
+                            <!-- INFO -->
+                            <div class="col-md-7">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h4 class="text-danger">
+                                        Incendio urbano
+                                    </h4>
+                                    <span class="badge bg-danger">
+                                        ACTIVA
+                                    </span>
+                                </div>
+
+                                <p class="mb-1">
+                                    <strong>ID Emergencia:</strong> EMG-2024-001
+                                </p>
+
+                                <p class="mb-1">
+                                    <strong>Dirección:</strong> Calle Mayor 25, Madrid
+                                </p>
+
+                                <p class="mb-1">
+                                    <strong>Hora activación:</strong> 12:34
+                                </p>
+
+                                <p class="mb-3">
+                                    <strong>Equipos:</strong> Equipo 1
+                                </p>
+
+                                <p class="mb-3">
+                                    <strong>Vehículos:</strong> BUP-1, Ambulancia
+                                </p>
+
+                                <!-- ACCIONES -->
+                                <div class="d-flex gap-2">        <!-- TODOS ESTOS DATOS SE RELLENARÁN CON JS -->             
+                                    <button                      
+                                        class="btn btn-outline-primary btn-sm btn-ver-emergencia"
+                                        data-id="EMG-2024-001"                 
+                                        data-tipo="Incendio urbano"
+                                        data-direccion="Calle Mayor 25, Madrid"
+                                        data-hora="12:34"
+                                        data-equipos="Equipo 1"
+                                        data-vehiculos="BUP-1, Ambulancia">
+                                        <i class="bi bi-eye"></i> Ver detalle
+                                    </button>
+                                    <button 
+                                        class="btn btn-outline-danger btn-sm btn-cerrar-emergencia"
+                                        data-id="EMG-2024-001">
+                                        <i class="bi bi-check-circle"></i> Cerrar emergencia
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EMERGENCIA 2 -->
+                <div class="card mb-4 shadow border-danger">
+                    <div class="card-body">
+                        <div class="row">
+
+                            <!-- MAPA -->
+                            <div class="col-md-5 mb-3 mb-md-0">
+                                <div class="ratio ratio-16x9 border rounded">
+                                    <iframe 
+                                        src="https://maps.google.com/maps?q=40.4300,-3.7000&z=15&output=embed"
+                                        loading="lazy">
+                                    </iframe>
+                                </div>
+                            </div>
+
+                            <!-- INFO -->
+                            <div class="col-md-7">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h4 class="text-danger">
+                                        Accidente de tráfico
+                                    </h4>
+                                    <span class="badge bg-danger">
+                                        ACTIVA
+                                    </span>
+                                </div>
+
+                                <p class="mb-1">
+                                    <strong>ID Emergencia:</strong> EMG-2024-002
+                                </p>
+
+                                <p class="mb-1">
+                                    <strong>Dirección:</strong> M-30, km 12
+                                </p>
+
+                                <p class="mb-1">
+                                    <strong>Hora activación:</strong> 13:05
+                                </p>
+
+                                 <p class="mb-3">
+                                    <strong>Equipos:</strong> Equipo 2
+                                </p>
+
+                                <p class="mb-3">
+                                    <strong>Vehículos:</strong> BUP-2, Ambulancia
+                                </p>
+
+                                <!-- ACCIONES -->
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-eye"></i> Ver detalle
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-check-circle"></i> Cerrar emergencia
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+    <!-- FOOTER -->
+    <div id="footer-placeholder"></div>
+
+    <!-- MODAL VER DETALLE EMERGENCIA -->
+    <div class="modal fade" id="modalVerEmergencia" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Detalle de la emergencia
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body" id="modalVerEmergenciaBody">
+                    <!-- Contenido dinámico -->
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- MODAL CERRAR EMERGENCIA -->
+    <div class="modal fade" id="modalCerrarEmergencia" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger">
+
+                <div class="modal-header  text-white">
+                    <h5 class="modal-title">
+                        Cerrar emergencia
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>
+                        ¿Estás seguro de que deseas <strong>cerrar esta emergencia</strong>?
+                    </p>
+                    <p class="text-muted mb-0">
+                        Esta acción marcará la emergencia como finalizada.
+                    </p>
+
+                    <input type="hidden" id="cerrarEmergenciaId">
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button class="btn btn-danger" id="btnConfirmarCerrarEmergencia">
+                        Cerrar emergencia
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
