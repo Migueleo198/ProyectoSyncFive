@@ -46,19 +46,19 @@ class CarnetModel
             INSERT INTO Carnet (
                 ID_Carnet,
                 nombre,
-                tipo,
-                duracion
+                categoria,
+                duracion_meses
             ) VALUES (
                 :id_carnet,
                 :nombre,
-                :tipo,
-                :duracion
+                :categoria,
+                :duracion_meses
             )
         ")
         ->bind(':id_carnet', $data['ID_Carnet'])
-        ->bind(':nombre', $data['Nombre'])
-        ->bind(':tipo', $data['Tipo'])
-        ->bind(':duracion', $data['Duracion'])
+        ->bind(':nombre', $data['nombre'])
+        ->bind(':categoria', $data['categoria'])
+        ->bind(':duracion_meses', $data['duracion_meses'])
         ->execute();
 
         return $data['ID_Carnet'];
@@ -72,14 +72,14 @@ class CarnetModel
         $this->db->query("
             UPDATE Carnet SET
                 nombre = :nombre,
-                tipo = :tipo,
-                duracion = :duracion
+                categoria = :categoria,
+                duracion_meses = :duracion_meses
             WHERE ID_Carnet = :id_carnet
         ")
         ->bind(':id_carnet', $id_carnet)
-        ->bind(':nombre', $data['Nombre'] ?? null)
-        ->bind(':tipo', $data['Tipo'] ?? null)
-        ->bind(':duracion', $data['Duracion'] ?? null)
+        ->bind(':nombre', $data['nombre'] ?? null)
+        ->bind(':categoria', $data['categoria'] ?? null)
+        ->bind(':duracion_meses', $data['duracion_meses'] ?? null)
         ->execute();
 
         return $this->db
@@ -114,61 +114,65 @@ class CarnetModel
                     p.*,
                     pc.f_obtencion,
                     pc.f_vencimiento
-                FROM Persona_Carnet pc
+                FROM Carnet_Persona pc
                 INNER JOIN Persona p 
-                    ON p.n_funcionario = pc.n_funcionario
+                    ON p.id_bombero = pc.id_bombero
                 WHERE pc.ID_Carnet = :id_carnet
-                ORDER BY p.n_funcionario ASC
+                ORDER BY p.id_bombero ASC
             ")
             ->bind(':id_carnet', $id_carnet)
             ->fetchAll();
     }
 
-    /**
+  /**
      * Asignar un carnet a una persona con fecha de obtención y vencimiento
      */
     public function assignToPerson(
-        string $n_funcionario,
+        string $id_bombero,
         string $id_carnet,
         string $f_obtencion,
         string $f_vencimiento
     ): bool {
         $this->db->query("
-            INSERT INTO Persona_Carnet (
-                n_funcionario,
+            INSERT INTO Carnet_Persona (
+                id_bombero,
                 ID_Carnet,
                 f_obtencion,
                 f_vencimiento
             ) VALUES (
-                :n_funcionario,
+                :id_bombero,
                 :id_carnet,
                 :f_obtencion,
                 :f_vencimiento
             )
         ")
-        ->bind(':n_funcionario', $n_funcionario)
+        ->bind(':id_bombero', $id_bombero)
         ->bind(':id_carnet', $id_carnet)
         ->bind(':f_obtencion', $f_obtencion)
         ->bind(':f_vencimiento', $f_vencimiento)
         ->execute();
 
-        return $this->db->rowCount() > 0;
-    }
+        // Obtener la cantidad de filas afectadas
+        $affected = $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
 
+        return $affected > 0;
+    }
 
 
     /**
      * Eliminar la asignación de un carnet a una persona
      */
-    public function unassignFromPerson(string $n_funcionario, string $id_carnet): int
+    public function unassignFromPerson(string $id_bombero, string $id_carnet): int
     {
         $this->db
             ->query("
-                DELETE FROM Persona_Carnet
-                WHERE n_funcionario = :n_funcionario
+                DELETE FROM Carnet_Persona
+                WHERE id_bombero = :id_bombero
                 AND ID_Carnet = :id_carnet
             ")
-            ->bind(':n_funcionario', $n_funcionario)
+            ->bind(':id_bombero', $id_bombero)
             ->bind(':id_carnet', $id_carnet)
             ->execute();
 

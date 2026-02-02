@@ -64,9 +64,9 @@ class CarnetService
     {
         $data = Validator::validate($input, [
             'ID_Carnet'     => 'required|string',
-            'Nombre'        => 'required|string',
-            'Tipo'          => 'required|string',
-            'Duracion'      => 'required|int|min:1',
+            'nombre'        => 'required|string',
+            'categoria'          => 'required|string',
+            'duracion_meses'      => 'required|int|min:1',
 
             // Si el carnet pertenece a una persona:
             'n_funcionario' => 'string' // ahora SIEMPRE string
@@ -98,9 +98,9 @@ class CarnetService
         ]);
 
         $data = Validator::validate($input, [
-            'Nombre'        => 'string|min:1',
-            'Tipo'          => 'string|min:1',
-            'Duracion'      => 'int|min:1',
+            'nombre'        => 'string|min:1',
+            'categoria'          => 'string|min:1',
+            'duracion_meses'      => 'int|min:1',
 
             // Asociación a persona (actualizada a string)
             'n_funcionario' => 'string'
