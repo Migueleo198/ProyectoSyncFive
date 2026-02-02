@@ -38,13 +38,12 @@ class CarnetService
     public function createCarnet(array $input): array
     {
         $data = Validator::validate($input, [
-            'ID_Carnet'     => 'required|string',
-            'Nombre'        => 'required|string',
-            'Tipo'          => 'required|string',
-            'Duracion'      => 'required|int|min:1',
+            'nombre'        => 'required|string',
+            'categoria'          => 'required|string',
+            'duracion_meses'      => 'required|int|min:1',
 
             // Si el carnet pertenece a una persona:
-            'n_funcionario' => 'string' // ahora SIEMPRE string
+            'id_bombero' => 'string'
         ]);
 
         try {
@@ -60,16 +59,16 @@ class CarnetService
             throw new \Exception("No se pudo crear el carnet");
         }
 
-        return ['ID_Carnet' => $data['ID_Carnet']];
+        return ['ID_Carnet' => $id];
     }
 
     /**
      * Eliminar un carnet
      */
-    public function deleteCarnet(string $ID_Carnet): void
+    public function deleteCarnet(int $ID_Carnet): void
     {
         Validator::validate(['ID_Carnet' => $ID_Carnet], [
-            'ID_Carnet' => 'required|string'
+            'ID_Carnet' => 'required|int|min:1'
         ]);
 
         try {

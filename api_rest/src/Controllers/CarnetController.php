@@ -54,7 +54,7 @@ class CarnetController
             
             // Devuelve 201, el id del carnet y un mensaje genérico
             $res->status(201)->json(
-                ['id' => $result['id']],
+                ['id' => $result['ID_Carnet']],
                 "Carnet creado correctamente"
             );
         } catch (ValidationException $e) {
@@ -76,7 +76,7 @@ class CarnetController
     /**
      * DELETE /carnets/{id}
      */
-    public function destroy(Request $req, Response $res, string $id): void
+    public function delete(Request $req, Response $res, string $id): void
     {
         try {
             // Convierte el id a entero

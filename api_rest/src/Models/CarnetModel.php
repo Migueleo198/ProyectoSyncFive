@@ -27,35 +27,32 @@ class CarnetModel
     /**
      * Crear un carnet
      */
-    public function create(array $data): string|false
+    public function create(array $data): int|false
     {
         $this->db->query("
             INSERT INTO Carnet (
-                id_carnet,
                 nombre,
-                tipo,
-                duracion
+                categoria,
+                duracion_meses
             ) VALUES (
-                :id_carnet,
                 :nombre,
-                :tipo,
+                :categoria,
                 :duracion
             )
         ")
-        ->bind(':id_carnet', $data['id_carnet'])
         ->bind(':nombre', $data['nombre'])
-        ->bind(':tipo', $data['tipo'])
-        ->bind(':duracion', $data['duracion'])
+        ->bind(':categoria', $data['categoria'])
+        ->bind(':duracion', $data['duracion_meses'])
         ->execute();
 
-        return $data['id_carnet'];
+        return (int) $this->db->lastId();
     }
 
 
     /**
      * Eliminar carnet
      */
-    public function delete(string $id_carnet): int
+    public function delete(int $id_carnet): int
     {
         $this->db
             ->query("DELETE FROM Carnet WHERE id_carnet = :id_carnet")
