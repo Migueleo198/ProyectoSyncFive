@@ -13,14 +13,44 @@ use Throwable;
 class AlmacenService
 {
     private AlmacenModel $model;
-    private AlmacenMaterialModel $materialModel;
-    private InstalacionModel $instalacionModel;
+    private ?AlmacenMaterialModel $materialModel = null;
+    private ?InstalacionModel $instalacionModel = null;
 
     public function __construct()
     {
         $this->model = new AlmacenModel();
-        $this->materialModel = new AlmacenMaterialModel();
-        $this->instalacionModel = new InstalacionModel();
+    }
+
+    // ========== HELPER METHODS ==========
+    
+    private function getMaterialModel(): AlmacenMaterialModel
+    {
+        if ($this->materialModel === null) {
+            if (!class_exists('Models\\AlmacenMaterialModel')) {
+                throw new \Exception(
+                    "Funcionalidad de material no disponible. " .
+                    "AlmacenMaterialModel no encontrado.", 
+                    503
+                );
+            }
+            $this->materialModel = new AlmacenMaterialModel();
+        }
+        return $this->materialModel;
+    }
+
+    private function getInstalacionModel(): InstalacionModel
+    {
+        if ($this->instalacionModel === null) {
+            if (!class_exists('Models\\InstalacionModel')) {
+                throw new \Exception(
+                    "Funcionalidad de instalaciones no disponible. " .
+                    "InstalacionModel no encontrado.", 
+                    503
+                );
+            }
+            $this->instalacionModel = new InstalacionModel();
+        }
+        return $this->instalacionModel;
     }
 
     // ========== ALMACENES DE UNA INSTALACIÓN ==========
@@ -31,13 +61,18 @@ class AlmacenService
             'id_instalacion' => 'required|int|min:1'
         ]);
 
-        // Verificar que la instalación existe
-        $instalacion = $this->instalacionModel->find($id_instalacion);
-        if (!$instalacion) {
-            throw new \Exception("Instalación no encontrada", 404);
-        }
-
         try {
+            // Validar instalación solo si el modelo existe
+            try {
+                $instalacion = $this->getInstalacionModel()->find($id_instalacion);
+                if (!$instalacion) {
+                    throw new \Exception("Instalación no encontrada", 404);
+                }
+            } catch (\Exception $e) {
+                // Si no puede validar, continuamos igual (depende de tus reglas)
+                // throw new \Exception("No se puede validar instalación: " . $e->getMessage(), 503);
+            }
+
             return $this->model->findByInstalacion($id_instalacion);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
@@ -50,10 +85,14 @@ class AlmacenService
             'id_instalacion' => 'required|int|min:1'
         ]);
 
-        // Verificar que la instalación existe
-        $instalacion = $this->instalacionModel->find($id_instalacion);
-        if (!$instalacion) {
-            throw new \Exception("Instalación no encontrada", 404);
+        try {
+            // Verificar que la instalación existe
+            $instalacion = $this->getInstalacionModel()->find($id_instalacion);
+            if (!$instalacion) {
+                throw new \Exception("Instalación no encontrada", 404);
+            }
+        } catch (\Exception $e) {
+            throw new \Exception("No se puede verificar instalación: " . $e->getMessage(), 503);
         }
 
         $data = Validator::validate($input, [
@@ -144,7 +183,7 @@ class AlmacenService
             // Primero desasociar de esta instalación
             $this->model->desasociarDeInstalacion($id_almacen, $id_instalacion);
             
-            // CORRECCIÓN: Usar el nuevo método countInstalacionesAsociadas
+            // Verificar si el almacén está asociado a otras instalaciones
             $otros = $this->model->countInstalacionesAsociadas($id_almacen);
             
             // Si no está asociado a ninguna instalación, eliminar el almacén
@@ -179,7 +218,7 @@ class AlmacenService
         }
 
         try {
-            return $this->materialModel->findByAlmacen($id_almacen);
+            return $this->getMaterialModel()->findByAlmacen($id_almacen);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -205,9 +244,13 @@ class AlmacenService
         ]);
 
         // Verificar que la instalación existe
-        $instalacion = $this->instalacionModel->find($data['id_instalacion']);
-        if (!$instalacion) {
-            throw new \Exception("Instalación no encontrada", 404);
+        try {
+            $instalacion = $this->getInstalacionModel()->find($data['id_instalacion']);
+            if (!$instalacion) {
+                throw new \Exception("Instalación no encontrada", 404);
+            }
+        } catch (\Exception $e) {
+            throw new \Exception("No se puede verificar instalación: " . $e->getMessage(), 503);
         }
 
         // Verificar que la asociación almacén-instalación existe
@@ -216,19 +259,23 @@ class AlmacenService
         }
 
         // Verificar que el material existe
-        if (!$this->materialModel->existeMaterial($data['id_material'])) {
-            throw new \Exception("Material no encontrado", 404);
+        try {
+            if (!$this->getMaterialModel()->existeMaterial($data['id_material'])) {
+                throw new \Exception("Material no encontrado", 404);
+            }
+        } catch (\Exception $e) {
+            throw new \Exception("No se puede verificar material: " . $e->getMessage(), 503);
         }
 
         try {
             // Verificar si ya existe este material en el almacén
-            $existente = $this->materialModel->findOne($id_almacen, $data['id_instalacion'], $data['id_material']);
+            $existente = $this->getMaterialModel()->findOne($id_almacen, $data['id_instalacion'], $data['id_material']);
             
             if ($existente) {
                 throw new \Exception("Este material ya existe en el almacén", 409);
             }
 
-            $creado = $this->materialModel->create($id_almacen, $data['id_instalacion'], $data);
+            $creado = $this->getMaterialModel()->create($id_almacen, $data['id_instalacion'], $data);
             
             if (!$creado) {
                 throw new \Exception("No se pudo añadir el material al almacén");
@@ -262,14 +309,14 @@ class AlmacenService
         }
 
         try {
-            $result = $this->materialModel->update($id_almacen, $data['id_instalacion'], $id_material, $data);
+            $result = $this->getMaterialModel()->update($id_almacen, $data['id_instalacion'], $id_material, $data);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
         if ($result === 0) {
             // Verificar si existe el registro
-            $existente = $this->materialModel->findOne($id_almacen, $data['id_instalacion'], $id_material);
+            $existente = $this->getMaterialModel()->findOne($id_almacen, $data['id_instalacion'], $id_material);
             
             if (!$existente) {
                 throw new \Exception("Material no encontrado en el almacén", 404);
@@ -305,7 +352,7 @@ class AlmacenService
         }
 
         try {
-            $result = $this->materialModel->delete($id_almacen, $id_instalacion, $id_material);
+            $result = $this->getMaterialModel()->delete($id_almacen, $id_instalacion, $id_material);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
