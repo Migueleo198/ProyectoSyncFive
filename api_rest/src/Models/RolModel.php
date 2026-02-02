@@ -89,4 +89,48 @@ class RolModel
             ->query("SELECT ROW_COUNT() AS affected")
             ->fetch()['affected'];
     }
+    /**
+     * Obtener todas las personas que tienen un rol específico
+     */
+    public function getPersonsByRol(string $id_rol): array
+    {
+        return $this->db
+            ->query("
+                SELECT p.*
+                FROM Rol_Persona rp
+                INNER JOIN Persona p ON p.id_bombero = rp.id_bombero
+                WHERE rp.ID_Rol = :id_rol
+                ORDER BY p.id_bombero ASC
+            ")
+            ->bind(':id_rol', $id_rol)
+            ->fetchAll();
+    }
+
+  /**
+     * Asignar un rol a una persona
+     */
+    public function assignToPerson(
+        string $id_bombero,
+        string $id_rol,
+    ): bool {
+        $this->db->query("
+            INSERT INTO Rol_Persona (
+                id_bombero,
+                ID_Rol,
+            ) VALUES (
+                :id_bombero,
+                :id_rol,
+            )
+        ")
+        ->bind(':id_bombero', $id_bombero)
+        ->bind(':id_rol', $id_rol)
+        ->execute();
+
+        // Obtener la cantidad de filas afectadas
+        $affected = $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+
+        return $affected > 0;
+    }
 }

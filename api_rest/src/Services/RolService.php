@@ -141,5 +141,74 @@ class RolService
 
         // Eliminación exitosa → no retorna nada
     }
+    /**
+     * Obtener todas las personas asociadas a un rol
+     */
+    public function getPersonsByRol(int $ID_Rol): array
+    {
+        Validator::validate(['ID_Rol' => $ID_Rol], [
+            'ID_Rol' => 'required|int|min:1'
+        ]);
+
+        try {
+            // Verificamos que el rol exista primero
+            $exists = $this->model->find($ID_Rol);
+            if (!$exists) {
+                throw new \Exception("Rol no encontrado", 404);
+            }
+
+            return $this->model->getPersonsByRol((string)$ID_Rol);
+            
+        } catch (\Exception $e) {
+            // Si ya es una excepción controlada, la relanzamos
+            if ($e->getCode() === 404) {
+                throw $e;
+            }
+            
+            // Errores de base de datos
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
+        }
+    }
+    /**
+     * Asignar Rol a una persona
+     */
+    public function assignRolToPerson(array $input): array
+    {
+        $data = Validator::validate($input, [
+            'n_funcionario' => 'required|string',
+            'ID_Rol'     => 'required|string',
+        ]);
+
+        try {
+            $exists = $this->model->find($data['ID_Rol']);
+
+            if (!$exists) {
+                throw new \Exception("Rol no encontrado", 404);
+            }
+
+            $result = $this->model->assignToPerson(
+                $data['n_funcionario'],
+                $data['ID_Rol']
+            );
+
+        } catch (Throwable $e) {
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
+        }
+
+        if (!$result) {
+            throw new \Exception("No se pudo asignar el rol", 409);
+        }
+
+        return [
+            'status'  => 'assigned',
+            'message' => 'Carnet asignado correctamente'
+        ];
+    }
 }
 ?>

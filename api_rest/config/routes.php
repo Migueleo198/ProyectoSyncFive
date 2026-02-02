@@ -22,8 +22,8 @@ $router->protectedSession('PATCH', '/personas/{n_funcionario}', 'Controllers\\Pe
 $router->protectedSession('DELETE', '/personas/{n_funcionario}', 'Controllers\\PersonaController@delete', [5]);
 
 // ROL PERSONA
-$router->protectedSession('GET', '/personas/{n_funcionario}/roles', 'Controllers\\PersonaController@getRol', [4,5]);
-$router->protectedSession('POST', '/personas/{n_funcionario}/roles', 'Controllers\\PersonaController@setRol', [5]);
+$router->protectedSession('GET', '/personas/{n_funcionario}/roles', 'Controllers\\RolController@persons', [4,5]);
+$router->protectedSession('POST', '/personas/{n_funcionario}/roles/{ID_Rol}', 'Controllers\\RolController@assign', [5]);
 
 // MATERIAL PERSONA
 $router->protectedSession('GET', '/personas/{n_funcionario}/material', 'Controllers\\PersonaController@getMaterial', [1,2,3,4,5]);
