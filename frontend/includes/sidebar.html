@@ -2,7 +2,7 @@
 <div>
 
     <!-- BOTÓN HAMBURGUESA (MÓVIL) -->
-    <div class="d-lg-none d-flex justify-content-end">
+    <div class="d-lg-none d-flex justify-content-end mb-2">
         <button class="btn btn-outline-dark" type="button"
                 data-bs-toggle="offcanvas"
                 data-bs-target="#sidebar">
@@ -17,7 +17,7 @@
         tabindex="-1">
 
         <!-- CABECERA OFFCANVAS (SOLO MÓVIL) -->
-        <div class="offcanvas-header d-lg-none">
+        <div class="offcanvas-header d-lg-none border-bottom">
             <h5 class="offcanvas-title">Menú</h5>
             <button type="button" class="btn-close"
                     data-bs-dismiss="offcanvas"
@@ -26,131 +26,107 @@
         </div>
 
         <!-- CONTENIDO -->
-        <div class=" p-0 overflow-hidden">
-            <aside>
-                <ul class="list-unstyled ps-0">
+        <div class="p-3 overflow-auto">
+            <aside class="d-flex flex-column">
 
-                    <li class="m-0 p-0">
-                        <a href="/frontend/pages/home.html" class="btn btn-toggle w-100 border border-dark rounded-0">
-                            Inicio
+                <!-- INICIO -->
+                <a href="/frontend/pages/home.html" class="d-flex align-items-center mb-2 text-primary text-decoration-none">
+                    <i class="bi bi-house-door me-2"></i> Inicio
+                </a>
+
+                <!-- OPERACIONES -->
+                <div class="mb-3">
+                    <span class="d-block fw-bold text-dark fs-6 mb-2">Operaciones</span>
+                    <a href="/frontend/pages/Emergencia/vistaEmergencias.html" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-fire me-2"></i> Emergencias
+                    </a>
+                    <a href="/frontend/pages/Avisos/vistaAvisos.html" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-bell me-2"></i> Avisos
+                    </a>
+                    <a href="/frontend/pages/Salidas/vistaSalidas.html" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-geo-alt me-2"></i> Salidas
+                    </a>
+                    <a href="#" class="d-flex align-items-center text-primary text-decoration-none">
+                        <i class="bi bi-map me-2"></i> Mapas
+                    </a>
+                </div>
+
+                <!-- PERSONAL -->
+                <div class="mb-3">
+                    <span class="d-block fw-bold text-dark fs-6 mb-2">Personal</span>
+                    <a href="/frontend/pages/Alineacion/vistaAlineacion.html" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-calendar3 me-2"></i> Alineación
+                    </a>
+
+                    <!-- Cuadrante collapse -->
+                    <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 p-0 mb-1"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#cuadrante-sidebar">
+                        <span class="text-primary"><i class="bi bi-grid-1x2 me-2"></i> Cuadrante</span>
+                        <i class="bi bi-caret-down text-primary"></i>
+                    </button>
+                    <div class="collapse ps-3 mb-2" id="cuadrante-sidebar">
+                        <a href="/frontend/pages/Cuadrante/vistaCuadranteAnual.html" class="d-block text-primary text-decoration-none mb-1">
+                            Anual
                         </a>
-                    </li>
-
-                    <li class="m-0 p-0">
-                        <a href="/frontend/pages/Emergencia/vistaEmergencias.html" class="btn btn-toggle w-100 border border-dark rounded-0">
-                            Emergencias
+                        <a href="/frontend/pages/Cuadrante/vistaCuadranteMensual.html" class="d-block text-primary text-decoration-none">
+                            Mensual
                         </a>
-                    </li>
+                    </div>
 
+                    <a href="/frontend/pages/Formacion/vistaFormaciones.html" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-book me-2"></i> Formaciones
+                    </a>
+                    <a href="/frontend/pages/Carnet/CarnetCRUD.html" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-credit-card me-2"></i> Carnets
+                    </a>
+                    <a href="/frontend/pages/AreaPersonal/vistaAreaPersonal.html" class="d-flex align-items-center text-primary text-decoration-none">
+                        <i class="bi bi-person-check me-2"></i> Permisos
+                    </a>
+                </div>
 
-                    <li class="m-0 p-0">
-                        <a href="/frontend/pages/Mantenimiento/vistaMantenimiento.html" class="btn btn-toggle w-100 border border-dark rounded-0">
-                            Mantenimientos
-                        </a>
-                    </li>
+                <!-- RECURSOS -->
+                <div class="mb-3">
+                    <span class="d-block fw-bold text-dark fs-6 mb-2">Recursos</span>
+                    <a href="/frontend/pages/Vehiculo/vistaVehiculo.html" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-truck me-2"></i> Vehículos
+                    </a>
+                    <a href="/frontend/pages/Materiales/vistaMateriales.html" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-box-seam me-2"></i> Materiales
+                    </a>
+                    <a href="/frontend/pages/Materiales/vistaCategorias.html" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-tags me-2"></i> Categorías
+                    </a>
+                    <a href="/frontend/pages/Almacenes/vistaAlmacenes.html" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-inbox me-2"></i> Almacenes
+                    </a>
+                    <a href="/frontend/pages/Instalaciones/vistaInstalaciones.html" class="d-flex align-items-center text-primary text-decoration-none">
+                        <i class="bi bi-building me-2"></i> Instalaciones
+                    </a>
+                </div>
 
+                <!-- GESTIÓN -->
+                <div class="mb-3">
+                    <span class="d-block fw-bold text-dark fs-6 mb-2">Gestión</span>
+                    <a href="#" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-people me-2"></i> Usuarios
+                    </a>
+                    <a href="#" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-person-badge me-2"></i> Cargos
+                    </a>
+                    <a href="/frontend/pages/Edicion/vistaEdiciones.html" class="d-flex align-items-center text-primary text-decoration-none mb-1">
+                        <i class="bi bi-pencil-square me-2"></i> Ediciones
+                    </a>
+                    <a href="#" class="d-flex align-items-center text-primary text-decoration-none">
+                        <i class="bi bi-gear me-2"></i> Configuración
+                    </a>
+                </div>
 
-                    <li class="m-0 p-0">
-                        <a href="" class="btn btn-toggle w-100 border border-dark rounded-0">
-                            Puntos Intervención
-                        </a>
-                    </li>
+                <!-- CERRAR SESIÓN -->
+                <a href="/pages/logout" class="d-flex align-items-center mt-auto text-danger text-decoration-none">
+                    <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+                </a>
 
-                    <li class="m-0 p-0">
-                        <a href="" class="btn btn-toggle w-100 border border-dark rounded-0">
-                            Calendario
-                        </a>
-                    </li>
-
-                    <li class="m-0 p-0">
-                        <a href="" class="btn btn-toggle w-100 border border-dark rounded-0">
-                            Libro de Oficiales
-                        </a>
-                    </li>
-
-                    <li class="m-0 p-0">
-                        <a href="/frontend/pages/Vehiculo/vistaVehiculo.html" class="btn btn-toggle w-100 border border-dark rounded-0">
-                            Control de Vehículos
-                        </a>
-                    </li>
-
-                    <!-- ALINEACIÓN -->
-                    <li class="m-0 p-0">
-                        <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 border border-dark rounded-0"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#alineacion-sidebar">
-                            <span>Alineación</span>
-                            <i class="bi bi-caret-down-square"></i>
-                        </button>
-                        <div class="collapse" id="alineacion-sidebar">
-                            <ul class="list-unstyled border border-dark">
-                                <li class="border-top border-bottom border-dark">
-                                    <a href="/frontend/pages/crear_alineacion.html"
-                                       class="d-flex justify-content-center text-decoration-none text-dark">
-                                        Crear
-                                    </a>
-                                </li>
-                                <li class="border-top border-bottom border-dark">
-                                    <a href="/frontend/pages/Alineacion/vistaAlineacion.html"
-                                       class="d-flex justify-content-center text-decoration-none text-dark">
-                                        Mostrar
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-
-                    <!-- CUADRANTE -->
-                    <li class="m-0 p-0">
-                        <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 border border-dark rounded-0"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#cuadrante-sidebar">
-                            <span>Cuadrante</span>
-                            <i class="bi bi-caret-down-square"></i>
-                        </button>
-                        <div class="collapse" id="cuadrante-sidebar">
-                            <ul class="list-unstyled border border-dark">
-                                <li class="border-top border-bottom border-dark">
-                                    <a href="/frontend/pages/Cuadrante/vistaCuadranteAnual.html"
-                                       class="d-flex justify-content-center text-decoration-none text-dark">
-                                        Anual
-                                    </a>
-                                </li>
-                                <li class="border-top border-bottom border-dark">
-                                    <a href="/frontend/pages/Cuadrante/vistaCuadranteMensual.html"
-                                       class="d-flex justify-content-center text-decoration-none text-dark">
-                                        Mensual
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-
-                    <li class="m-0 p-0">
-                        <a href="/frontend/pages/Materiales/vistaMateriales.html" class="btn btn-toggle w-100 border border-dark rounded-0">
-                            Control de Materiales
-                        </a>
-                    </li>
-
-                    <li class="m-0 p-0">
-                        <a href="" class="btn btn-toggle w-100 border border-dark rounded-0">
-                            Mapas
-                        </a>
-                    </li>
-
-                    <li class="m-0 p-0">
-                        <a href="/frontend/pages/Emergencia/vistaTipoEmergencia.html" class="btn btn-toggle w-100 border border-dark rounded-0">
-                            Tipo de Emergencia
-                        </a>
-                    </li>
-
-                    <li class="m-0 p-0">
-                        <a href="/pages/logout" class="btn btn-toggle w-100 border border-dark rounded-0">
-                            Cerrar Sesión
-                        </a>
-                    </li>
-
-                </ul>
             </aside>
         </div>
     </div>
