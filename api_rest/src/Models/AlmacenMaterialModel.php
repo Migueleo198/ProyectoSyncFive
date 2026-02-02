@@ -62,7 +62,9 @@ class AlmacenMaterialModel
         ->bind(":unidades", $data['unidades'])
         ->execute();
 
-        return $this->db->rowCount() > 0;
+        // CORRECCIÓN: Usar ROW_COUNT() en lugar de rowCount()
+        $result = $this->db->query("SELECT ROW_COUNT() AS affected")->fetch();
+        return $result['affected'] > 0;
     }
 
     public function update(int $id_almacen, int $id_instalacion, int $id_material, array $data): int
@@ -111,3 +113,4 @@ class AlmacenMaterialModel
         return $result !== null;
     }
 }
+?>

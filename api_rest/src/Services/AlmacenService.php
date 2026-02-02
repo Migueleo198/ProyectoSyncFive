@@ -144,12 +144,8 @@ class AlmacenService
             // Primero desasociar de esta instalación
             $this->model->desasociarDeInstalacion($id_almacen, $id_instalacion);
             
-            // Verificar si el almacén está asociado a otras instalaciones
-            $otros = $this->db->query("
-                SELECT COUNT(*) as count 
-                FROM Almacen_Instalacion 
-                WHERE id_almacen = :id_almacen
-            ")->bind(":id_almacen", $id_almacen)->fetch()['count'];
+            // CORRECCIÓN: Usar el nuevo método countInstalacionesAsociadas
+            $otros = $this->model->countInstalacionesAsociadas($id_almacen);
             
             // Si no está asociado a ninguna instalación, eliminar el almacén
             if ($otros == 0) {
@@ -319,3 +315,4 @@ class AlmacenService
         }
     }
 }
+?>

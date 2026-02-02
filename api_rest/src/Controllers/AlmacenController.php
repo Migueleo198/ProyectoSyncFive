@@ -7,7 +7,6 @@ use Core\Request;
 use Core\Response;
 use Validation\ValidationException;
 use Throwable;
-
 use Services\AlmacenService;
 
 class AlmacenController
@@ -85,7 +84,7 @@ class AlmacenController
     /**
      * DELETE /instalaciones/{id_instalacion}/almacenes/{id_almacen}
      */
-    public function destroy(Request $req, Response $res, string $id_instalacion, string $id_almacen): void
+    public function delete(Request $req, Response $res, string $id_instalacion, string $id_almacen): void
     {
         try {
             $this->service->deleteAlmacenDeInstalacion((int) $id_instalacion, (int) $id_almacen);

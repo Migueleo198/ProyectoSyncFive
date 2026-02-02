@@ -68,7 +68,9 @@ class AlmacenModel
         ->bind(":id_instalacion", $id_instalacion)
         ->execute();
 
-        return $this->db->rowCount() > 0;
+        // CORRECCIÓN: Usar ROW_COUNT() en lugar de rowCount()
+        $result = $this->db->query("SELECT ROW_COUNT() AS affected")->fetch();
+        return $result['affected'] > 0;
     }
 
     public function update(int $id, array $data): int
@@ -131,4 +133,19 @@ class AlmacenModel
 
         return $result !== null;
     }
+
+    // MÉTODO NUEVO para AlmacenService
+    public function countInstalacionesAsociadas(int $id_almacen): int
+    {
+        $result = $this->db->query("
+            SELECT COUNT(*) as count 
+            FROM Almacen_Instalacion 
+            WHERE id_almacen = :id_almacen
+        ")
+        ->bind(":id_almacen", $id_almacen)
+        ->fetch();
+        
+        return (int) $result['count'];
+    }
 }
+?>
