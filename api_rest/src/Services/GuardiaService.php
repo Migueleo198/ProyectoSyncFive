@@ -63,10 +63,10 @@ class GuardiaService
     public function createGuardia(array $input): array
     {
         $data = Validator::validate($input, [
-            'ID_Guardia'     => 'required|string',
-            'Fecha'        => 'required|date',
-            'H_inicio'          => 'required|int',
-            'H_fin'          => 'required|int',
+            'id_guardia'     => 'required|string',
+            'fecha'        => 'required|date',
+            'h_inicio'          => 'required|int',
+            'h_fin'          => 'required|int',
             'horas'      => 'int'
         ]);
 
@@ -173,5 +173,68 @@ class GuardiaService
             );
         }
     }
-}
+        /**
+         * POST /Guardia/assign
+         */
+        public function assignGuardiaToPerson(array $data): array
+        {
+            Validator::validate($data, [
+                'n_funcionario' => 'required|int',
+                'ID_Guardia' => 'required|string'
+            ]);
+
+            try {
+                return $this->model->assignGuardiaToPerson($data['n_funcionario'], $data['ID_Guardia']);
+            } catch (Throwable $e) {
+                throw new \Exception(
+                    "Error interno en la base de datos: " . $e->getMessage(),
+                    500
+                );
+            }
+        }
+
+        /**
+         * DELETE /Guardia/unassign
+         */
+        public function unassignGuardiaFromPerson(int $n_funcionario, string $ID_Guardia): array
+        {
+            Validator::validate([
+                'n_funcionario' => $n_funcionario,
+                'ID_Guardia' => $ID_Guardia
+            ], [
+                'n_funcionario' => 'required|int',
+                'ID_Guardia' => 'required|string'
+            ]);
+
+            try {
+                return $this->model->unassignGuardiaFromPerson($n_funcionario, $ID_Guardia);
+            } catch (Throwable $e) {
+                throw new \Exception(
+                    "Error interno en la base de datos: " . $e->getMessage(),
+                    500
+                );
+            }
+        }
+          
+
+        /**
+         * DELETE /Guardia/unassign
+         */
+        public function unassign(Request $req, Response $res): void
+        {
+            try {
+                $data = $req->json();
+                $result = $this->service->unassignGuardiaFromPerson($data['n_funcionario'], $data['ID_Guardia']);
+                $res->status(200)->json($result, $result['message']);
+            } catch (ValidationException $e) {
+                $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+            } catch (Throwable $e) {
+                $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+                $res->errorJson($e->getMessage(), $code);
+            }
+        }
+
+        }
+
+
 ?>
