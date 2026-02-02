@@ -20,36 +20,21 @@ class CarnetModel
     public function all(): array
     {
         return $this->db
-            ->query("SELECT * FROM Carnet ORDER BY ID_Carnet ASC")
+            ->query("SELECT * FROM Carnet ORDER BY id_carnet ASC")
             ->fetchAll();
-    }
-
-    /**
-     * Buscar carnet por ID_Carnet
-     */
-    public function find(string $id_carnet): ?array
-    {
-        $result = $this->db
-            ->query("SELECT * FROM Carnet WHERE ID_Carnet = :id")
-            ->bind(':id', $id_carnet)
-            ->fetch();
-
-        return $result ?: null;
     }
 
     /**
      * Crear un carnet
      */
-    public function create(array $data): string|false
+    public function create(array $data): int|false
     {
         $this->db->query("
             INSERT INTO Carnet (
-                ID_Carnet,
                 nombre,
                 categoria,
                 duracion_meses
             ) VALUES (
-                :id_carnet,
                 :nombre,
                 :categoria,
                 :duracion_meses
@@ -61,7 +46,7 @@ class CarnetModel
         ->bind(':duracion_meses', $data['duracion_meses'])
         ->execute();
 
-        return $data['ID_Carnet'];
+        return (int) $this->db->lastId();
     }
 
     /**
@@ -90,10 +75,10 @@ class CarnetModel
     /**
      * Eliminar carnet
      */
-    public function delete(string $id_carnet): int
+    public function delete(int $id_carnet): int
     {
         $this->db
-            ->query("DELETE FROM Carnet WHERE ID_Carnet = :id_carnet")
+            ->query("DELETE FROM Carnet WHERE id_carnet = :id_carnet")
             ->bind(':id_carnet', $id_carnet)
             ->execute();
 

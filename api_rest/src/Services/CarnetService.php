@@ -33,31 +33,6 @@ class CarnetService
     }
 
     /**
-     * Obtener un carnet por su ID (string)
-     */
-    public function getCarnetById(string $ID_Carnet): array
-    {
-        Validator::validate(['ID_Carnet' => $ID_Carnet], [
-            'ID_Carnet' => 'required|string'
-        ]);
-
-        try {
-            $carnet = $this->model->find($ID_Carnet);
-        } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
-        }
-
-        if (!$carnet) {
-            throw new \Exception("Carnet no encontrado", 404);
-        }
-
-        return $carnet;
-    }
-
-    /**
      * Crear un carnet
      */
     public function createCarnet(array $input): array
@@ -69,7 +44,7 @@ class CarnetService
             'duracion_meses'      => 'required|int|min:1',
 
             // Si el carnet pertenece a una persona:
-            'n_funcionario' => 'string' // ahora SIEMPRE string
+            'id_bombero' => 'string'
         ]);
 
         try {
@@ -150,10 +125,10 @@ class CarnetService
     /**
      * Eliminar un carnet
      */
-    public function deleteCarnet(string $ID_Carnet): void
+    public function deleteCarnet(int $ID_Carnet): void
     {
         Validator::validate(['ID_Carnet' => $ID_Carnet], [
-            'ID_Carnet' => 'required|string'
+            'ID_Carnet' => 'required|int|min:1'
         ]);
 
         try {
