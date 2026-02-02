@@ -10,6 +10,7 @@ use Throwable;
 
 use Services\InstalacionService;
 
+
 class InstalacionController
 {
     private InstalacionService $service;
@@ -19,8 +20,9 @@ class InstalacionController
         $this->service = new InstalacionService();
     }
 
+    
     /**
-     * GET /instalaciones
+     * GET /Instalaciones
      */
     public function index(Request $req, Response $res): void
     {
@@ -32,24 +34,28 @@ class InstalacionController
         }
     }
 
+
     /**
-     * GET /instalaciones/{id_instalacion}
+     * GET /Instalaciones/{id}
      */
     public function show(Request $req, Response $res, string $id): void
     {
         try {
             $instalacion = $this->service->getInstalacionById((int) $id);
             $res->status(200)->json($instalacion);
+
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+            return;
         } catch (Throwable $e) {
             $status = $e->getCode() === 404 ? 404 : 500;
             $res->errorJson($e->getMessage(), $status);
         }
     }
 
+
     /**
-     * POST /instalaciones
+     * POST /Instalaciones
      */
     public function store(Request $req, Response $res): void
     {
@@ -57,26 +63,33 @@ class InstalacionController
             $result = $this->service->createInstalacion($req->json());
 
             $res->status(201)->json(
-                ['id_instalacion' => $result['id_instalacion']],
+                ['id' => $result['id']],
                 "Instalación creada correctamente"
             );
+
         } catch (ValidationException $e) {
+
             $res->status(422)->json(
                 ['errors' => $e->errors],
                 "Errores de validación"
             );
+            return;
+
         } catch (Throwable $e) {
-            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
+
+            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor",500);
+            return;
         }
     }
 
+
     /**
-     * PUT /instalaciones/{id_instalacion}
+     * PUT /Instalaciones/{id}
      */
     public function update(Request $req, Response $res, string $id): void
     {
         try {
-            $result = $this->service->updateInstalacion((int) $id, $req->json());
+            $result = $this->service->updateInstalacion((int)$id, $req->json());
 
             if ($result['status'] === 'no_changes') {
                 $res->status(200)->json([], $result['message']);
@@ -84,40 +97,35 @@ class InstalacionController
             }
 
             $res->status(200)->json([], $result['message']);
-        } catch (ValidationException $e) {
+        }
+        catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-        } catch (Throwable $e) {
+        }
+        catch (Throwable $e) {
             $code = $e->getCode() > 0 ? $e->getCode() : 500;
             $res->errorJson($e->getMessage(), $code);
         }
     }
 
+
     /**
-     * DELETE /instalaciones/{id_instalacion}
+     * DELETE /Instalaciones/{id}
      */
     public function delete(Request $req, Response $res, string $id): void
     {
         try {
-            $this->service->deleteInstalacion((int) $id);
+            $id = (int) $id;
+
+            $service = new \Services\InstalacionService();
+            $service->deleteInstalacion($id);
+
             $res->status(200)->json([], "Instalación eliminada correctamente");
+
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
         } catch (Throwable $e) {
             $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
             $res->errorJson($e->getMessage(), $code);
-        }
-    }
-
-    /**
-     * GET /instalaciones/{id_instalacion}/vehiculos
-     */
-    public function getVehiculos(Request $req, Response $res, string $id_instalacion): void
-    {
-        try {
-            $vehiculos = $this->service->getVehiculosDeInstalacion((int) $id_instalacion);
-            $res->status(200)->json($vehiculos);
-        } catch (Throwable $e) {
-            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
         }
     }
 }
