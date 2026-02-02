@@ -5,12 +5,12 @@ declare(strict_types=1);
 //++++++++++++++++++++++++++++++ AUTENTICACIÓN / USUARIOS ++++++++++++++++++++++++++++++
 // Rutas públicas (no requieren sesión)
 $router->post('/auth/login', 'Controllers\\AuthSessionController@login');
-$router->patch('/auth/recuperar-contrasena', 'Controllers\\AuthSessionController@recoverPassword');
 $router->patch('/auth/activar-cuenta', 'Controllers\\PersonaController@activateAccount');
+$router->patch('/auth/recuperar-contrasena', 'Controllers\\AuthSessionController@recoverPassword');
+$router->patch('/auth/cambiar-contrasena', 'Controllers\\AuthSessionController@changePassword');
 
 // Rutas protegidas (requieren sesión activa)
 $router->protectedSession('POST', '/auth/logout', 'Controllers\\AuthSessionController@logout', [1,2,3,4,5]);
-$router->protectedSession('PATCH', '/auth/cambiar-contrasena', 'Controllers\\AuthSessionController@changePassword', [1,2,3,4,5]);
 $router->protectedSession('GET', '/auth/me', 'Controllers\\AuthSessionController@me', [1,2,3,4,5]);
 
 
@@ -196,14 +196,14 @@ $router->protectedSession('DELETE', '/salidas/{id_registro}/personas/{n_funciona
 
 //++++++++++++++++++++++++++++++ AVISOS ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/avisos', 'Controllers\\AvisoController@index', [1,2,3,4,5]);
-$router->protectedSession('POST', '/avisos', 'Controllers\\AvisoController@store', [2,3,4,5]);
 $router->protectedSession('GET', '/avisos/{id_aviso}', 'Controllers\\AvisoController@show', [1,2,3,4,5]);
+$router->protectedSession('POST', '/avisos', 'Controllers\\AvisoController@store', [2,3,4,5]);
 $router->protectedSession('DELETE', '/avisos/{id_aviso}', 'Controllers\\AvisoController@delete', [5]);
 
 // DESTINATARIOS
 $router->protectedSession('GET', '/avisos/{id_aviso}/destinatarios', 'Controllers\\AvisoController@getDestinatario', [1,2,3,4,5]);
-$router->protectedSession('POST', '/avisos/{id_aviso}/destinatarios', 'Controllers\\AvisoDestinatarioController@setDestinatario', [2,3,4,5]);
-$router->protectedSession('DELETE', '/avisos/{id_aviso}/destinatarios/{n_funcionario}', 'Controllers\\AvisoDestinatarioController@deleteDestinatario', [2,3,4,5]);
+$router->protectedSession('POST', '/avisos/{id_aviso}/destinatarios', 'Controllers\\AvisoController@setDestinatario', [2,3,4,5]);
+$router->protectedSession('DELETE', '/avisos/{id_aviso}/destinatarios/{n_funcionario}', 'Controllers\\AvisoController@deleteDestinatario', [2,3,4,5]);
 
 // REMITENTE
 $router->protectedSession('GET', '/avisos/{id_aviso}/remitente', 'Controllers\\AvisoController@getRemitente', [1,2,3,4,5]);
@@ -241,3 +241,5 @@ $router->protectedSession('DELETE', '/permisos/{id_permiso}', 'Controllers\\Perm
 $router->protectedSession('GET', '/motivos', 'Controllers\\MotivoController@index', [1,2,3,4,5]);
 $router->protectedSession('POST', '/motivos', 'Controllers\\MotivoController@store', [4,5]);
 $router->protectedSession('DELETE', '/motivos/{cod_motivo}', 'Controllers\\MotivoController@delete', [5]);
+
+?>
