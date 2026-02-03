@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emergencias</title>
 
     <!-- Bootstrap CSS -->
@@ -28,184 +29,184 @@
 </head>
 
 <body class="bg-white text-dark">
-
     <!-- HEADER -->
     <div id="header-placeholder"></div>
 
     <!-- LAYOUT CON SIDEBAR -->
-    <div class="d-flex flex-grow-1">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- SIDEBAR -->
+            <div id="sidebar-placeholder" class="col-auto p-0"></div>
 
-        <!-- SIDEBAR -->
-        <div id="sidebar-placeholder" class="sidebar-bg"></div>
-
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="p-3 w-100">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">Emergencias</h1>
-                <!-- Icono de ayuda que redirige a Notion -->
-                <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
-                   class="text-dark" title="Abrir ayuda en Notion">
-                    <i class="bi bi-question-circle fs-3"></i>
-                </a>
-            </div>
-
-            <div>
-                <p>[Migas de pan]</p>
-            </div>
-
-            <!-- Contenedor tabla con filtro-->
-            <div class="container mt-4 p-0"> 
-                <div id="filtroTabla" class="m-0 row d-flex justify-content-around"> <!-- Filtro -->
-                    <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
-                        <label class="m-2" for="nombre">Nombre:</label>
-                        <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="1">
-                    </div>
-                    <div class="col-md-5 d-flex align-items-center m-1">
-                        <label class="m-2" for="grupo">Tipo:</label>
-                        <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="2">
-                            <option value="">Todos</option>
-                            <option>Incendio urbano</option>
-                            <option>Incendio forestal</option>
-                            <option>Accidente de tráfico</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 d-flex align-items-center m-1">
-                        <label class="m-2" for="grupo">Estado:</label>
-                        <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="2">
-                            <option value="">Todos</option>
-                            <option>Activa</option>
-                            <option>Cerrada</option>
-                        </select>
-                    </div>
-                </div>
-                <table class="table table-bordered table-striped" id="tabla">
-                    <thead class="table-dark">
-                        <tr> <!-- Cabecera de la tabla -->
-                            <th class="d-none d-md-table-cell">Codigo</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
-                            <th>Fecha</th>
-                            <th class="d-none d-md-table-cell">Descripción</th>
-                            <th>Estado</th>
-                            <th class="d-none d-md-table-cell">Dirección</th>
-                            <th>Tipo</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="d-none d-md-table-cell">cod1234</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->   
-                            <td>19/06/2025</td>
-                            <td class="d-none d-md-table-cell">Incencio en una casa</td>
-                            <td>Activa</td>
-                            <td class="d-none d-md-table-cell">Calle Valjunquera</td>
-                            <td>Incendio Urbano</td>
-                            <td class="d-flex justify-content-around">
-                                
-                                <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-
-                                <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                
-                                <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
-                                    <i class="bi bi-trash3"></i>
-                                </button>
-                                
-                            </td>
-                        </tr>
-
-                        <!-- Aquí puedes agregar más filas de datos -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Contenedor insertar -->
-            <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar emergencia</h5>
-                <form id="formIncidencia" class="mx-auto">
-
-                <!-- Fila 1 -->
-                <div class="row mb-3">
-                    <div class="col-mg-6 col-lg-4">
-                        <label for="fecha" class="form-label">Fecha</label>
-                        <input type="date" class="form-control" id="fecha" name="fecha" required>
-                    </div>
-                    <div class="col-mg-6 col-lg-4">
-                        <label for="estado" class="form-label">Estado</label>
-                        <select class="form-select" id="estado" name="estado">
-                            <option value="">Seleccione...</option>
-                            <option value="activa">Activa</option>
-                            <option value="cerrada">Cerrada</option>
-                        </select>
-                    </div>
-                    <div class="col-mg-6 col-lg-4">
-                        <label for="direccion" class="form-label">Dirección</label>
-                        <input type="text" class="form-control" id="direccion" name="direccion">
-                    </div>
+            <!-- CONTENIDO PRINCIPAL -->
+            <main class="col p-3 p-md-4 main-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0">Emergencias</h1>
+                    <!-- Icono de ayuda que redirige a Notion -->
+                    <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
+                    class="text-dark" title="Abrir ayuda en Notion">
+                        <i class="bi bi-question-circle fs-3"></i>
+                    </a>
                 </div>
 
-                <!-- Fila 2 -->
-                <div class="row mb-3">
-                    <div class="col-mg-6 col-lg-4">
-                        <label for="tipo" class="form-label">Tipo</label>
-                        <select class="form-select" id="tipo" name="tipo">
-                            <option value="">Seleccione...</option>
-                            <option value="averia">Avería</option>
-                            <option value="instalacion">Instalación</option>
-                            <option value="revision">Revisión</option>
-                        </select>
-                    </div>
-                    <div class="col-mg-6 col-lg-4">
-                        <label for="operador" class="form-label">Nom Operador</label>
-                        <input type="text" class="form-control" id="operador" name="operador">
-                    </div>
-                    <div class="col-mg-6 col-lg-4">
-                        <label for="solicitante" class="form-label">Nom Solicitante</label>
-                        <input type="text" class="form-control" id="solicitante" name="solicitante">
-                    </div>
+                <div>
+                    <p>[Migas de pan]</p>
                 </div>
 
-                <!-- Fila 3 -->
-                <div class="row mb-3">
-                    <div class="col-mg-6 col-lg-4">
-                        <label for="tlfSolicitante" class="form-label">Tlfn Solicitante</label>
-                        <input type="tel" class="form-control" id="tlfSolicitante" name="tlfSolicitante">
-                    </div>
-                    <div class="col-md-8">
-                        <label for="equipos" class="form-label">Equipos asignados</label>
-                        <div class="input-group">
-                            <select class="form-select" id="equipos" name="equipos">
-                                <option value="">Seleccione equipo...</option>
-                                <option value="equipo1">Equipo 1</option>
-                                <option value="equipo2">Equipo 2</option>
-                                <option value="equipo3">Equipo 3</option>
+                <!-- Contenedor tabla con filtro-->
+                <div class="container mt-4 p-0"> 
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-around"> <!-- Filtro -->
+                        <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
+                            <label class="m-2" for="nombre">Nombre:</label>
+                            <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="1">
+                        </div>
+                        <div class="col-md-5 d-flex align-items-center m-1">
+                            <label class="m-2" for="grupo">Tipo:</label>
+                            <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="2">
+                                <option value="">Todos</option>
+                                <option>Incendio urbano</option>
+                                <option>Incendio forestal</option>
+                                <option>Accidente de tráfico</option>
                             </select>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalInsertarEquipo">+</button>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-center m-1">
+                            <label class="m-2" for="grupo">Estado:</label>
+                            <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="2">
+                                <option value="">Todos</option>
+                                <option>Activa</option>
+                                <option>Cerrada</option>
+                            </select>
                         </div>
                     </div>
+                    <table class="table table-bordered table-striped" id="tabla">
+                        <thead class="table-dark">
+                            <tr> <!-- Cabecera de la tabla -->
+                                <th class="d-none d-md-table-cell">Codigo</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
+                                <th>Fecha</th>
+                                <th class="d-none d-md-table-cell">Descripción</th>
+                                <th>Estado</th>
+                                <th class="d-none d-md-table-cell">Dirección</th>
+                                <th>Tipo</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="d-none d-md-table-cell">cod1234</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->   
+                                <td>19/06/2025</td>
+                                <td class="d-none d-md-table-cell">Incencio en una casa</td>
+                                <td>Activa</td>
+                                <td class="d-none d-md-table-cell">Calle Valjunquera</td>
+                                <td>Incendio Urbano</td>
+                                <td class="d-flex justify-content-around">
+                                    
+                                    <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+
+                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    
+                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                    
+                                </td>
+                            </tr>
+
+                            <!-- Aquí puedes agregar más filas de datos -->
+                        </tbody>
+                    </table>
                 </div>
+                
+                <!-- Contenedor insertar -->
+                <div class="contenedorInsertar container mt-5 p-4 border rounded">
+                    <h5 class="text-center mb-4">Insertar emergencia</h5>
+                    <form id="formIncidencia" class="mx-auto">
 
-                <!-- Descripción -->
-                <div class="mb-4">
-                    <label for="descripcion" class="form-label">Descripción</label>
-                    <textarea class="form-control" id="descripcion" name="descripcion" rows="4"></textarea>
+                    <!-- Fila 1 -->
+                    <div class="row mb-3">
+                        <div class="col-mg-6 col-lg-4">
+                            <label for="fecha" class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="fecha" name="fecha" required>
+                        </div>
+                        <div class="col-mg-6 col-lg-4">
+                            <label for="estado" class="form-label">Estado</label>
+                            <select class="form-select" id="estado" name="estado">
+                                <option value="">Seleccione...</option>
+                                <option value="activa">Activa</option>
+                                <option value="cerrada">Cerrada</option>
+                            </select>
+                        </div>
+                        <div class="col-mg-6 col-lg-4">
+                            <label for="direccion" class="form-label">Dirección</label>
+                            <input type="text" class="form-control" id="direccion" name="direccion">
+                        </div>
+                    </div>
+
+                    <!-- Fila 2 -->
+                    <div class="row mb-3">
+                        <div class="col-mg-6 col-lg-4">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select class="form-select" id="tipo" name="tipo">
+                                <option value="">Seleccione...</option>
+                                <option value="averia">Avería</option>
+                                <option value="instalacion">Instalación</option>
+                                <option value="revision">Revisión</option>
+                            </select>
+                        </div>
+                        <div class="col-mg-6 col-lg-4">
+                            <label for="operador" class="form-label">Nom Operador</label>
+                            <input type="text" class="form-control" id="operador" name="operador">
+                        </div>
+                        <div class="col-mg-6 col-lg-4">
+                            <label for="solicitante" class="form-label">Nom Solicitante</label>
+                            <input type="text" class="form-control" id="solicitante" name="solicitante">
+                        </div>
+                    </div>
+
+                    <!-- Fila 3 -->
+                    <div class="row mb-3">
+                        <div class="col-mg-6 col-lg-4">
+                            <label for="tlfSolicitante" class="form-label">Tlfn Solicitante</label>
+                            <input type="tel" class="form-control" id="tlfSolicitante" name="tlfSolicitante">
+                        </div>
+                        <div class="col-md-8">
+                            <label for="equipos" class="form-label">Equipos asignados</label>
+                            <div class="input-group">
+                                <select class="form-select" id="equipos" name="equipos">
+                                    <option value="">Seleccione equipo...</option>
+                                    <option value="equipo1">Equipo 1</option>
+                                    <option value="equipo2">Equipo 2</option>
+                                    <option value="equipo3">Equipo 3</option>
+                                </select>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalInsertarEquipo">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="mb-4">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="4"></textarea>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="reset" class="btn btn-secondary">
+                            Limpiar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Guardar
+                        </button>
+                    </div>
+
+                </form>
+
                 </div>
-
-                <!-- Botones -->
-                <div class="d-flex justify-content-center gap-2">
-                    <button type="reset" class="btn btn-secondary">
-                        Limpiar
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        Guardar
-                    </button>
-                </div>
-
-            </form>
-
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <!-- Modal de eliminación -->
