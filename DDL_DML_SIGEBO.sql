@@ -23,6 +23,25 @@ CREATE TABLE Edicion (
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
+/* Trigger para asignar id_edicion automáticamente */
+DELIMITER $$
+
+CREATE TRIGGER trg_edicion_before_insert
+BEFORE INSERT ON Edicion
+FOR EACH ROW
+BEGIN
+    IF NEW.id_edicion IS NULL THEN
+        SET NEW.id_edicion = (
+            SELECT COALESCE(MAX(id_edicion), 0) + 1
+            FROM Edicion
+            WHERE id_formacion = NEW.id_formacion
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+
 /* =======================
    3. TURNO_REFUERZO
    ======================= */
@@ -310,11 +329,14 @@ CREATE TABLE Salida_Persona (
 );
 
 /* =======================
-   22. CARNETS
+   22. CARNET
    ======================= */
-CREATE TABLE Carnets (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    tipo VARCHAR(50) NOT NULL
+CREATE TABLE Carnet (
+    id_carnet INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    categoria VARCHAR(20) NOT NULL,
+    duracion_meses INT NOT NULL,
+    CHECK (duracion_meses > 0)
 );
 
 /* =======================
@@ -329,7 +351,7 @@ CREATE TABLE Carnet_Persona (
     CHECK (f_vencimiento > f_obtencion),
     FOREIGN KEY (id_bombero) REFERENCES Persona(id_bombero)
         ON UPDATE CASCADE ON DELETE RESTRICT,
-    FOREIGN KEY (id_carnet) REFERENCES Carnets(id)
+    FOREIGN KEY (id_carnet) REFERENCES Carnet(id_carnet)
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
@@ -459,7 +481,7 @@ CREATE TABLE Permiso (
     fecha DATE NOT NULL,
     h_inicio TIME,
     h_fin TIME,
-    aceptado ENUM('ACEPTADO','REVISION','DENEGADO'),
+    estado ENUM('ACEPTADO','REVISION','DENEGADO') NOT NULL,
     descripcion VARCHAR(255),
     FOREIGN KEY (cod_motivo) REFERENCES Motivo(cod_motivo)
         ON UPDATE CASCADE ON DELETE RESTRICT
@@ -514,183 +536,234 @@ CREATE TABLE Mantenimiento_Material (
    DATOS DE EJEMPLO
    ======================= */
 
-SET FOREIGN_KEY_CHECKS = 0;
+/* =======================
+   1. FORMACION
+   ======================= */
+INSERT INTO Formacion (nombre, descripcion)
+VALUES ('Prevención Incendios', 'Curso básico de prevención de incendios');
 
-/* 1. FORMACION */
-INSERT INTO Formacion (nombre, descripcion) VALUES
-('Primeros Auxilios', 'Atención básica en emergencias'),
-('Conducción de Vehículos de Emergencia', 'Uso seguro de vehículos'),
-('Rescate en Altura', 'Técnicas de rescate vertical');
+/* =======================
+   2. EDICION
+   ======================= */
+INSERT INTO Edicion (id_formacion, f_inicio, f_fin, horas)
+VALUES (1, '2024-01-10', '2024-01-20', 40);
 
-/* 2. EDICION */
-INSERT INTO Edicion VALUES
-(1, 1, '2024-01-10', '2024-01-20', 40),
-(2, 1, '2024-03-01', '2024-03-10', 30),
-(1, 2, '2024-02-05', '2024-02-15', 25);
+/* =======================
+   3. TURNO_REFUERZO
+   ======================= */
+INSERT INTO Turno_refuerzo (f_inicio, f_fin, horas)
+VALUES ('2024-02-01 08:00:00', '2024-02-01 16:00:00', 8);
 
-/* 3. TURNO_REFUERZO */
-INSERT INTO Turno_refuerzo (f_inicio, f_fin, horas) VALUES
-('2024-06-01 08:00:00','2024-06-01 20:00:00',12),
-('2024-06-02 20:00:00','2024-06-03 08:00:00',12);
+/* =======================
+   4. ROL (COMPLETA)
+   ======================= */
+INSERT INTO Rol (id_rol, nombre, descripcion) VALUES
+(1, 'BOMBERO', 'Bombero operativo'),
+(2, 'OFICIAL', 'Oficial de guardia'),
+(3, 'JEFE DE INTERVENCIÓN', 'Jefe de intervención'),
+(4, 'JEFE DE MANDO', 'Jefe de mando'),
+(5, 'INSPECTOR', 'Inspector del cuerpo');
 
-/* 4. ROL */
-INSERT INTO Rol (nombre, descripcion) VALUES
-('BOMBERO','Bombero operativo'),
-('OFICIAL','Oficial de guardia'),
-('INSPECTOR','Inspector del cuerpo');
+/* =======================
+   5. TIPO_EMERGENCIA
+   ======================= */
+INSERT INTO Tipo_emergencia (nombre, grupo)
+VALUES ('Incendio urbano', 'Incendios');
 
-/* 5. TIPO_EMERGENCIA */
-INSERT INTO Tipo_emergencia (nombre, grupo) VALUES
-('Incendio Urbano','Incendios'),
-('Accidente Tráfico','Rescate'),
-('Inundación','Catástrofes');
+/* =======================
+   6. CATEGORIA
+   ======================= */
+INSERT INTO Categoria (nombre, inventariable)
+VALUES ('Protección personal', TRUE);
 
-/* 6. CATEGORIA */
-INSERT INTO Categoria (nombre, inventariable) VALUES
-('Protección', TRUE),
-('Herramientas', TRUE);
+/* =======================
+   7. MATERIAL
+   ======================= */
+INSERT INTO Material (id_categoria, nombre, descripcion, estado)
+VALUES (1, 'Casco', 'Casco ignífugo', 'ALTA');
 
-/* 7. MATERIAL */
-INSERT INTO Material (id_categoria, nombre, descripcion, estado) VALUES
-(1,'Casco','Casco ignífugo','ALTA'),
-(2,'Manguera','Manguera de alta presión','ALTA');
+/* =======================
+   8. LOCALIDAD
+   ======================= */
+INSERT INTO Localidad (localidad, provincia)
+VALUES ('Almería', 'Almería');
 
-/* 8. LOCALIDAD */
-INSERT INTO Localidad VALUES
-('Sevilla','Sevilla'),
-('Dos Hermanas','Sevilla');
+/* =======================
+   9. INSTALACION
+   ======================= */
+INSERT INTO Instalacion (nombre, direccion, telefono, correo, localidad)
+VALUES ('Parque Central', 'Calle Fuego 1', '950000000', 'parque@bomberos.es', 'Almería');
 
-/* 9. INSTALACION */
-INSERT INTO Instalacion (nombre, direccion, telefono, correo, localidad) VALUES
-('Parque Central','Av. Principal 1','600111222','central@bomberos.es','Sevilla'),
-('Parque Sur','Calle Sur 5','600333444','sur@bomberos.es','Dos Hermanas');
+/* =======================
+   10. ALMACEN
+   ======================= */
+INSERT INTO Almacen (planta, nombre)
+VALUES (0, 'Almacén Principal');
 
-/* 10. ALMACEN */
-INSERT INTO Almacen (planta, nombre) VALUES
-(0,'Almacén Principal'),
-(1,'Almacén Secundario');
+INSERT INTO Almacen_Instalacion (id_almacen, id_instalacion)
+VALUES (1, 1);
 
-/* ALMACEN_INSTALACION */
-INSERT INTO Almacen_Instalacion VALUES
-(1,1),
-(2,2);
+/* =======================
+   11. ALMACEN_MATERIAL
+   ======================= */
+INSERT INTO Almacen_material (id_almacen, id_instalacion, id_material, n_serie, unidades)
+VALUES (1, 1, 1, 1001, 10);
 
-/* 11. ALMACEN_MATERIAL */
-INSERT INTO Almacen_material VALUES
-(1,1,1,1001,10),
-(2,2,2,2001,5);
+/* =======================
+   12. VEHICULO
+   ======================= */
+INSERT INTO Vehiculo
+(matricula, nombre, id_instalacion, marca, modelo, tipo, disponibilidad)
+VALUES
+('1234ABC', 'Bomba 1', 1, 'Mercedes', 'Atego', 'Camión', 1);
 
-/* 12. VEHICULO */
-INSERT INTO Vehiculo VALUES
-('SE-1234-B','Camión Alpha',1,'MAN','TGS','Camión',1,37.389,-5.984),
-('SE-5678-C','Ambulancia Beta',2,'Mercedes','Sprinter','Ambulancia',1,NULL,NULL);
+/* =======================
+   13. PERSONA (INSPECTOR id_rol = 5)
+   ======================= */
+INSERT INTO Persona (
+    id_bombero, n_funcionario, dni, correo, telefono,
+    f_ingreso_diputacion, nombre, apellidos, f_nacimiento,
+    localidad, id_rol, activo, nombre_usuario, contrasenia
+) VALUES (
+    'B001', 'FUNC001', '12345678A', 'inspector@bomberos.es', '600000000',
+    '2015-01-01', 'Juan', 'Pérez Inspector', '1985-05-10',
+    'Almería', 5, 1, 'inspector1', 'hashpassword'
+);
 
-/* 13. PERSONA */
-INSERT INTO Persona VALUES
-('B001','FUNC-001','12345678A','juan@bomberos.es','600000001','2015-01-10',NULL,NULL,NULL,
- 'Juan','Pérez','1990-05-10','600999999','C/ Real 1','Sevilla',1,1,'juanp','hash1',NULL,NULL,NULL,NULL,NULL),
-('B002','FUNC-002','87654321B','ana@bomberos.es','600000002','2018-03-15',NULL,NULL,NULL,
- 'Ana','García','1992-08-20','600888888','C/ Sur 3','Dos Hermanas',2,1,'anag','hash2',NULL,NULL,NULL,NULL,NULL);
+/* =======================
+   14. PERSONA_MATERIAL
+   ======================= */
+INSERT INTO Persona_Material (id_bombero, id_material, nserie)
+VALUES ('B001', 1, 'CASCO-001');
 
-/* 14. PERSONA_MATERIAL */
-INSERT INTO Persona_Material VALUES
-('B001',1,'CAS-001'),
-('B002',2,'MAN-002');
+/* =======================
+   15. EMERGENCIA
+   ======================= */
+INSERT INTO Emergencia (id_bombero, fecha, descripcion, estado, direccion, codigo_tipo)
+VALUES ('B001', NOW(), 'Incendio en vivienda', 'ACTIVA', 'Calle Mayor 10', 1);
 
-/* 15. EMERGENCIA */
-INSERT INTO Emergencia (id_bombero,fecha,descripcion,estado,direccion,nombre_solicitante,tlf_solicitante,codigo_tipo) VALUES
-('B001','2024-06-05 14:00:00','Incendio en vivienda','ACTIVA','C/ Fuego 10','Pedro López','611222333',1);
+/* =======================
+   16. EMERGENCIA_VEHICULO
+   ======================= */
+INSERT INTO Emergencia_Vehiculo (matricula, id_emergencia, f_salida)
+VALUES ('1234ABC', 1, NOW());
 
-/* 16. EMERGENCIA_VEHICULO */
-INSERT INTO Emergencia_Vehiculo VALUES
-('SE-1234-B',1,'2024-06-05 14:10:00','2024-06-05 14:25:00',NULL);
+/* =======================
+   17. EMERGENCIA_VEHICULO_PERSONA
+   ======================= */
+INSERT INTO Emergencia_Vehiculo_Persona
+(id_bombero, matricula, id_emergencia, cargo)
+VALUES ('B001', '1234ABC', 1, 'Inspector');
 
-/* 17. EMERGENCIA_VEHICULO_PERSONA */
-INSERT INTO Emergencia_Vehiculo_Persona VALUES
-('B001','SE-1234-B',1,'Conductor');
+/* =======================
+   18. PERSONA_EDICION
+   ======================= */
+INSERT INTO Persona_Edicion (id_formacion, id_edicion, id_bombero)
+VALUES (1, 1, 'B001');
 
-/* 18. PERSONA_EDICION */
-INSERT INTO Persona_Edicion VALUES
-(1,1,'B001'),
-(1,2,'B002');
+/* =======================
+   19. PERSONA_TURNO
+   ======================= */
+INSERT INTO Persona_Turno (id_turno, id_bombero)
+VALUES (1, 'B001');
 
-/* 19. PERSONA_TURNO */
-INSERT INTO Persona_Turno VALUES
-(1,'B001'),
-(2,'B002');
+/* =======================
+   20. SALIDA
+   ======================= */
+INSERT INTO Salida (matricula, f_recogida, f_entrega, km_inicio, km_fin)
+VALUES ('1234ABC', NOW(), DATE_ADD(NOW(), INTERVAL 2 HOUR), 10000, 10050);
 
-/* 20. SALIDA */
-INSERT INTO Salida VALUES
-(1,'SE-1234-B','2024-06-05 13:50:00','2024-06-05 18:00:00',12000,12050);
+/* =======================
+   21. SALIDA_PERSONA
+   ======================= */
+INSERT INTO Salida_Persona (id_registro, matricula, id_bombero, fecha)
+VALUES (1, '1234ABC', 'B001', NOW());
 
-/* 21. SALIDA_PERSONA */
-INSERT INTO Salida_Persona VALUES
-(1,'SE-1234-B','B001','2024-06-05 13:50:00');
+/* =======================
+   22. CARNET
+   ======================= */
+INSERT INTO Carnet (nombre, categoria, duracion_meses)
+VALUES ('Carnet C', 'Camión', 120);
 
-/* 22. CARNETS */
-INSERT INTO Carnets (tipo) VALUES
-('B'),
-('C');
+/* =======================
+   23. CARNET_PERSONA
+   ======================= */
+INSERT INTO Carnet_Persona (id_bombero, id_carnet, f_obtencion, f_vencimiento)
+VALUES ('B001', 1, '2020-01-01', '2030-01-01');
 
-/* 23. CARNET_PERSONA */
-INSERT INTO Carnet_Persona VALUES
-('B001',1,'2010-01-01','2030-01-01');
+/* =======================
+   24. AVISO
+   ======================= */
+INSERT INTO Aviso (asunto, mensaje, fecha, remitente)
+VALUES ('Aviso general', 'Revisión de material', NOW(), 'B001');
 
-/* 24. AVISO */
-INSERT INTO Aviso (asunto,mensaje,fecha,remitente) VALUES
-('Guardia','Recuerda tu turno','2024-06-01 10:00:00','B002');
+/* =======================
+   25. PERSONA_RECIBE_AVISO
+   ======================= */
+INSERT INTO Persona_Recibe_Aviso (id_aviso, id_bombero)
+VALUES (1, 'B001');
 
-/* 25. PERSONA_RECIBE_AVISO */
-INSERT INTO Persona_Recibe_Aviso VALUES
-(1,'B001');
+/* =======================
+   26. GUARDIA
+   ======================= */
+INSERT INTO Guardia (fecha, h_inicio, h_fin)
+VALUES ('2024-03-01', '08:00:00', '16:00:00');
 
-/* 26. GUARDIA */
-INSERT INTO Guardia (fecha,h_inicio,h_fin,notas) VALUES
-('2024-06-10','08:00','20:00','Guardia completa');
+/* =======================
+   27. PERSONA_HACE_GUARDIA
+   ======================= */
+INSERT INTO Persona_Hace_Guardia (id_bombero, id_guardia, cargo)
+VALUES ('B001', 1, 'Inspector');
 
-/* 27. PERSONA_HACE_GUARDIA */
-INSERT INTO Persona_Hace_Guardia VALUES
-('B001',1,'Jefe de Guardia');
+/* =======================
+   28. MERITO
+   ======================= */
+INSERT INTO Merito (nombre, descripcion)
+VALUES ('Actuación destacada', 'Intervención ejemplar');
 
-/* 28. MERITO */
-INSERT INTO Merito (nombre,descripcion) VALUES
-('Medalla al Mérito','Actuación destacada');
+/* =======================
+   29. PERSONA_TIENE_MERITO
+   ======================= */
+INSERT INTO Persona_Tiene_Merito (id_bombero, id_merito)
+VALUES ('B001', 1);
 
-/* 29. PERSONA_TIENE_MERITO */
-INSERT INTO Persona_Tiene_Merito VALUES
-('B001',1);
+/* =======================
+   30. VEHICULO_CARGA_MATERIAL
+   ======================= */
+INSERT INTO Vehiculo_Carga_Material (id_material, matricula, nserie, unidades)
+VALUES (1, '1234ABC', 'CASCO-001', 2);
 
-/* 30. VEHICULO_CARGA_MATERIAL */
-INSERT INTO Vehiculo_Carga_Material VALUES
-(2,'SE-1234-B','MAN-002',2);
+/* =======================
+   31. INCIDENCIA
+   ======================= */
+INSERT INTO Incidencia
+(id_material, id_bombero, matricula, fecha, asunto, estado)
+VALUES (1, 'B001', '1234ABC', CURDATE(), 'Casco dañado', 'ABIERTA');
 
-/* 31. INCIDENCIA */
-INSERT INTO Incidencia (id_material,id_bombero,matricula,fecha,asunto,estado,tipo) VALUES
-(2,'B001','SE-1234-B','2024-06-06','Manguera dañada','ABIERTA','Material');
+/* =======================
+   32. MOTIVO
+   ======================= */
+INSERT INTO Motivo (nombre, dias)
+VALUES ('Asuntos propios', 2);
 
-/* 32. MOTIVO */
-INSERT INTO Motivo (nombre,dias) VALUES
-('Vacaciones',5);
+/* =======================
+   33. PERMISO
+   ======================= */
+INSERT INTO Permiso (cod_motivo, fecha, estado)
+VALUES (1, CURDATE(), 'REVISION');
 
-/* 33. PERMISO */
-INSERT INTO Permiso (cod_motivo,fecha,h_inicio,h_fin,aceptado,descripcion) VALUES
-(1,'2024-07-01',NULL,NULL,'ACEPTADO','Vacaciones verano');
+/* =======================
+   34. MANTENIMIENTO
+   ======================= */
+INSERT INTO Mantenimiento
+(id_bombero, estado, f_inicio, descripcion)
+VALUES ('B001', 'ABIERTO', CURDATE(), 'Revisión general');
 
-/* 34. MANTENIMIENTO */
-INSERT INTO Mantenimiento (id_bombero,estado,f_inicio,f_fin,descripcion) VALUES
-('B002','ABIERTO','2024-06-07',NULL,'Revisión vehículo');
+INSERT INTO Mantenimiento_Persona (cod_mantenimiento, id_bombero)
+VALUES (1, 'B001');
 
-/* MANTENIMIENTO_PERSONA */
-INSERT INTO Mantenimiento_Persona VALUES
-(1,'B002');
+INSERT INTO Mantenimiento_Vehiculo (cod_mantenimiento, matricula)
+VALUES (1, '1234ABC');
 
-/* MANTENIMIENTO_VEHICULO */
-INSERT INTO Mantenimiento_Vehiculo VALUES
-(1,'SE-1234-B');
-
-/* MANTENIMIENTO_MATERIAL */
-INSERT INTO Mantenimiento_Material VALUES
-(1,2);
-
-SET FOREIGN_KEY_CHECKS = 1;
-
+INSERT INTO Mantenimiento_Material (cod_mantenimiento, cod_material)
+VALUES (1, 1);
