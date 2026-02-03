@@ -3,22 +3,22 @@ declare(strict_types=1);
 
 namespace Services;
 
-use Models\MaterialModel;
+use Models\TipoEmergenciaModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
 
-class MaterialService
+class TipoEmergenciaService
 {
-    private MaterialModel $model;
+    private TipoEmergenciaModel $model;
 
     public function __construct()
     {
-        $this->model = new MaterialModel();
+        $this->model = new TipoEmergenciaModel();
     }
 
 
-    public function getAllMateriales(): array
+    public function getAllTipoEmergencias(): array
     {
         try {
             return $this->model->all();
@@ -28,33 +28,31 @@ class MaterialService
     }
 
 
-    public function getMaterialById(int $id): array
+    public function getTipoEmergenciaById(int $id): array
     {
         Validator::validate(['id' => $id], [
             'id' => 'required|int|min:1'
         ]);
 
         try {
-            $material = $this->model->find($id);
+            $formacion = $this->model->find($id);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
-        if (!$material) {
-            throw new \Exception("Material no encontrado", 404);
+        if (!$formacion) {
+            throw new \Exception("Tipo de emergencia no encontrada", 404);
         }
 
-        return $material;
+        return $formacion;
     }
 
 
-    public function createMaterial(array $input): array
+    public function createTipoEmergencia(array $input): array
     {
         $data = Validator::validate($input, [
-            'id_categoria'      => 'required|int|min:1',
-            'nombre'            => 'required|string|max:100',
-            'descripcion'       => 'required|string|max:300',
-            'estado'            => 'required|string'
+            'nombre' => 'required|string|max:50',
+            'grupo' => 'string|max:50',
         ]);
 
         try {
@@ -64,24 +62,22 @@ class MaterialService
         }
 
         if (!$id) {
-            throw new \Exception("No se pudo crear el material");
+            throw new \Exception("No se pudo crear la formación");
         }
 
         return ['id' => $id];
     }
 
 
-    public function updateMaterial(int $id, array $input): array
+    public function updateTipoEmergencia(int $id, array $input): array
     {
         Validator::validate(['id' => $id], [
             'id' => 'required|int|min:1'
         ]);
 
         $data = Validator::validate($input, [
-            'id_categoria'      => 'required||min:1',
-            'nombre'            => 'required|string|max:100',
-            'descripcion'       => 'required|string|max:300',
-            'estado'            => 'required|string'
+            'nombre' => 'required|string|max:50',
+            'grupo' => 'string|max:50',
         ]);
 
         try {
@@ -94,26 +90,26 @@ class MaterialService
             $exists = $this->model->find($id);
 
             if (!$exists) {
-                throw new \Exception("Material no encontrado", 404);
+                throw new \Exception("Tipo de emergencia no encontrado", 404);
             }
 
             return [
                 'status' => 'no_changes',
-                'message' => 'No hubo cambios en los datos del material'
+                'message' => 'No hubo cambios en los datos del tipo de emergencia'
             ];
         }
 
         if ($result === -1) {
-            throw new \Exception("No se pudo actualizar el material: conflicto con restricciones", 409);
+            throw new \Exception("No se pudo actualizar el tipo de emergencia: conflicto con restricciones", 409);
         }
 
         return [
             'status' => 'updated',
-            'message' => 'Material actualizado correctamente'
+            'message' => 'Tipo de emergencia actualizado correctamente'
         ];
     }
 
-    public function deleteMaterial(int $id): void
+    public function deleteTipoEmergencia(int $id): void
     {
         // Validar ID
         Validator::validate(['id' => $id], [
@@ -128,15 +124,18 @@ class MaterialService
 
         if ($result === 0) {
             // No existe el registro
-            throw new \Exception("Material no encontrado", 404);
+            throw new \Exception("Tipo de emergencia no encontrado", 404);
         }
 
         if ($result === -1) {
             // Conflicto por FK u otra restricción
-            throw new \Exception("No se puede eliminar el material: el registro está en uso", 409);
+            throw new \Exception("No se puede eliminar el tipo de emergencia: el registro está en uso", 409);
         }
 
         // Eliminación exitosa → no retorna nada
     }
-   
+
+    
+
+    
 }

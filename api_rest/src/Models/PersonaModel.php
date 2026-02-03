@@ -321,4 +321,49 @@ class PersonaModel
             ->fetch()['affected'];
     }
 
+
+    //++++++++++++++++++++ Persona material ++++++++++++++++++++++
+
+    public function getMaterialByBombero(int $id_bombero): array
+    {
+        return $this->db
+            ->query("
+                SELECT m.*
+                FROM Material m
+                JOIN Persona_Material pm ON m.id_material = pm.id_material
+                WHERE pm.id_bombero = :id_bombero
+            ")
+            ->bind(':id_bombero', $id_bombero)
+            ->fetchAll();
+    }
+
+    public function addMaterialToBombero(int $id_bombero, int $id_material, string $nserie): void
+    {
+        $this->db
+            ->query("
+                INSERT INTO Persona_Material (id_bombero, id_material, nserie)
+                VALUES (:id_bombero, :id_material, :nserie)
+            ")
+            ->bind(':id_bombero', $id_bombero)
+            ->bind(':id_material', $id_material)
+            ->bind(':nserie', $nserie ?? null)
+            ->execute();
+    }
+
+    public function removeMaterialBombero(int $id_bombero, int $id_material): int
+    {
+        $this->db
+            ->query("
+                DELETE FROM Persona_Material
+                WHERE id_bombero = :id_bombero
+                  AND id_material = :id_material
+            ")
+            ->bind(':id_bombero', $id_bombero)
+            ->bind(':id_material', $id_material)
+            ->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
 }

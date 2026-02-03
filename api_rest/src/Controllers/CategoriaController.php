@@ -1,56 +1,86 @@
 <?php
 declare(strict_types=1);
 
-namespace Models;
+namespace Controllers;
 
-use Core\DB;
+use Core\Request;
+use Core\Response;
+use Validation\ValidationException;
+use Throwable;
 
-class CategoriaModel
+use Services\CategoriaService;
+
+
+class CategoriaController
 {
-    private DB $db;
+    private CategoriaService $service;
 
     public function __construct()
     {
-        $this->db = new DB();
+        $this->service = new CategoriaService();
     }
 
-    public function all(): array
+    
+    /**
+     * GET /categorias
+     */
+    public function index(Request $req, Response $res): void
     {
-        return $this->db
-            ->query("SELECT * FROM Categoria ORDER BY id_categoria ASC")
-            ->fetchAll();
+        try {
+            $categorias = $this->service->getAllCategorias();
+            $res->status(200)->json($categorias);
+        } catch (Throwable $e) {
+            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
+        }
     }
 
-     public function find(int $id): ?array
+    /**
+     * POST /categorias 
+     */
+    public function store(Request $req, Response $res): void
     {
-        $result = $this->db
-            ->query("SELECT * FROM Categoria WHERE id_categoria = :id")
-            ->bind(":id", $id)
-            ->fetch();
+        try {
+            $result = $this->service->createCategoria($req->json());
 
-        return $result ?: null;
+            $res->status(201)->json(
+                ['id' => $result['id']],
+                "Categoría creada correctamente"
+            );
+
+        } catch (ValidationException $e) {
+
+            $res->status(422)->json(
+                ['errors' => $e->errors],
+                "Errores de validación"
+            );
+            return;
+
+        } catch (Throwable $e) {
+
+            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor",500);
+            return;
+        }
     }
 
-    public function create(array $data): int|false
+    /**
+     * DELETE /categorias/{id}
+     */
+    public function delete(Request $req, Response $res, string $id): void
     {
-        $this->db->query("
-            INSERT INTO Categoria (nombre, inventariable)
-            VALUES (:nombre, :inventariable)
-        ")
-        ->bind(":nombre", $data['nombre'])
-        ->bind(":inventariable", $data['inventariable'])
-        ->execute();
+        try {
+            $id = (int) $id;
 
-        return (int) $this->db->lastId();
+            $service = new \Services\CategoriaService();
+            $service->deleteCategoria($id);
+
+            $res->status(200)->json([], "Categoría eliminada correctamente");
+
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
     }
 
-
-    public function delete(int $id): int
-    {
-        $this->db->query("DELETE FROM Categoria WHERE id_categoria = :id")
-                 ->bind(":id", $id)
-                 ->execute();
-
-        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-    }
 }
