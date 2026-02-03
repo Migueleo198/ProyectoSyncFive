@@ -68,12 +68,11 @@ class RolController
     /**
      * PUT /roles/{id}
      */
-    public function update(Request $req, Response $res, string $id): void
+    public function update(Request $req, Response $res, int $id): void
     {
         try {
             // Convierte el id a entero, obtiene el cuerpo de la petición en formato JSON y envia datos al servicio
-            $result = $this->service->updateRol((int)$id, $req->json());
-
+            $result = $this->service->updateRol($id, $req->json());
             // Si no se actualiza nada devuelve 200
             if ($result['status'] === 'no_changes') {
                 $res->status(200)->json([], $result['message']);
@@ -98,7 +97,7 @@ class RolController
     /**
      * DELETE /roles/{id}
      */
-    public function delete(Request $req, Response $res, string $id): void
+    public function delete(Request $req, Response $res, int $id): void
     {
         try {
             // Convierte el id a entero
@@ -117,6 +116,45 @@ class RolController
         } catch (Throwable $e) {
             // Gestiona errores generales del servidor
             $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+    /**
+     * GET /roles/{ID_Rol}/personas
+     */
+    public function persons(Request $req, Response $res, int $ID_Rol): void
+    {
+        try {
+            $persons = $this->service->getPersonsByRol($ID_Rol);
+
+            $res->status(200)->json(
+                $persons,
+                "Personas asociadas al rol obtenidas correctamente"
+            );
+
+        } catch (Throwable $e) {
+            $code = ($e->getCode() >= 400) ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+
+      /**
+     * POST /roles/asignar
+     */
+    public function assign(Request $req, Response $res): void
+    {
+        try {
+            $data = $req->json();
+
+            $result = $this->service->assignRolToPerson($data);
+
+            $res->status(201)->json([], $result['message']);
+
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+
+        } catch (Throwable $e) {
+            $code = $e->getCode() > 0 ? $e->getCode() : 500;
             $res->errorJson($e->getMessage(), $code);
         }
     }

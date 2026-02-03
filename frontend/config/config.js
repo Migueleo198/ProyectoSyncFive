@@ -32,6 +32,14 @@ function loadCSS(fileName) {
     document.head.appendChild(link);
 }
 
+// Cargar favicon dinámicamente
+function loadFavicon(faviconPath) {
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.type = 'image/png';
+    link.href = `${BASE_PATH}/assets/img/${faviconPath}`;
+    document.head.appendChild(link);
+}
 
 
 // Obtener ruta de imágenes
