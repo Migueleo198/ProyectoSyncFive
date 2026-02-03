@@ -3,19 +3,14 @@
 
     <!-- BOTÓN HAMBURGUESA (MÓVIL) -->
     <div class="d-lg-none d-flex justify-content-end mb-3 p-2">
-        <button class="btn btn-primary" type="button"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#sidebar">
+        <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
             <i class="bi bi-list fs-4"></i>
         </button>
     </div>
 
     <!-- SIDEBAR / OFFCANVAS -->
-    <div id="sidebar" class="offcanvas-lg offcanvas-start border-end w-150"
-        data-bs-scroll="true"
-        data-bs-backdrop="true"
-        tabindex="-1"
-        >
+    <div id="sidebar" class="offcanvas-lg offcanvas-start border-end w-150" data-bs-scroll="true"
+        data-bs-backdrop="true" tabindex="-1">
 
         <!-- CABECERA OFFCANVAS (SOLO MÓVIL) -->
         <div class="offcanvas-header d-lg-none border-bottom bg-light">
@@ -23,10 +18,8 @@
                 <i class="bi bi-fire text-danger me-2"></i>
                 SIGEBO
             </h5>
-            <button type="button" class="btn-close"
-                    data-bs-dismiss="offcanvas"
-                    data-bs-target="#sidebar"
-                    aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar"
+                aria-label="Close"></button>
         </div>
 
         <!-- CONTENIDO -->
@@ -34,8 +27,8 @@
             <aside class="d-flex flex-column p-3" style="min-height: 100%;">
 
                 <!-- INICIO -->
-                <a href="/frontend/pages/home.html" 
-                   class="d-flex align-items-center p-2 mb-3 text-decoration-none bg-opacity-10 rounded">
+                <a href="/frontend/pages/home.html"
+                    class="d-flex align-items-center p-2 mb-3 text-decoration-none bg-opacity-10 rounded">
                     <i class="bi bi-house-door-fill fs-5 text-primary me-2"></i>
                     <span class="fw-semibold text-primary">Inicio</span>
                 </a>
@@ -48,23 +41,22 @@
                         Operaciones
                     </h6>
                     <nav class="nav flex-column gap-1">
-                        <a href="/frontend/pages/Emergencia/vistaEmergencias.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Emergencia/vistaEmergencias.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-fire text-danger me-2"></i>
                             <span>Emergencias</span>
                         </a>
-                        <a href="/frontend/pages/Avisos/vistaAvisos.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Avisos/vistaAvisos.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-bell text-warning me-2"></i>
                             <span>Avisos</span>
                         </a>
-                        <a href="/frontend/pages/Salidas/vistaSalidas.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Salidas/vistaSalidas.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-geo-alt text-success me-2"></i>
                             <span>Salidas</span>
                         </a>
-                        <a href="#" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Mapa/vistaMapa.html" class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-map text-secondary me-2"></i>
                             <span>Mapas</span>
                         </a>
@@ -79,18 +71,17 @@
                         Personal
                     </h6>
                     <nav class="nav flex-column gap-1">
-                        <a href="/frontend/pages/Alineacion/vistaAlineacion.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Alineacion/vistaAlineacion.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-calendar3 text-info me-2"></i>
                             <span>Alineación</span>
                         </a>
 
                         <!-- Cuadrante collapse -->
                         <div>
-                            <button class="nav-link link-dark d-flex justify-content-between align-items-center p-2 rounded w-100 border-0 bg-transparent"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#cuadrante-sidebar"
-                                    aria-expanded="false">
+                            <button
+                                class="nav-link link-dark d-flex justify-content-between align-items-center p-2 rounded w-100 border-0 bg-transparent"
+                                data-bs-toggle="collapse" data-bs-target="#cuadrante-sidebar" aria-expanded="false">
                                 <span>
                                     <i class="bi bi-grid-1x2 text-primary me-2"></i>
                                     Cuadrante
@@ -99,13 +90,13 @@
                             </button>
                             <div class="collapse" id="cuadrante-sidebar">
                                 <nav class="nav flex-column ms-4 mt-1 gap-1">
-                                    <a href="/frontend/pages/Cuadrante/vistaCuadranteAnual.html" 
-                                       class="nav-link link-dark py-1 px-2 rounded small">
+                                    <a href="/frontend/pages/Cuadrante/vistaCuadranteAnual.html"
+                                        class="nav-link link-dark py-1 px-2 rounded small">
                                         <i class="bi bi-calendar-week me-2"></i>
                                         Anual
                                     </a>
-                                    <a href="/frontend/pages/Cuadrante/vistaCuadranteMensual.html" 
-                                       class="nav-link link-dark py-1 px-2 rounded small">
+                                    <a href="/frontend/pages/Cuadrante/vistaCuadranteMensual.html"
+                                        class="nav-link link-dark py-1 px-2 rounded small">
                                         <i class="bi bi-calendar-month me-2"></i>
                                         Mensual
                                     </a>
@@ -113,23 +104,35 @@
                             </div>
                         </div>
 
-                        <a href="/frontend/pages/Formacion/vistaFormaciones.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Formacion/vistaFormaciones.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-book text-primary me-2"></i>
                             <span>Formaciones</span>
                         </a>
-                        <a href="/frontend/pages/Carnet/CarnetCRUD.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Carnet/CarnetCRUD.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-credit-card text-success me-2"></i>
                             <span>Carnets</span>
                         </a>
-                        <a href="/frontend/pages/AreaPersonal/vistaAreaPersonal.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/AreaPersonal/vistaAreaPersonal.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-person-check text-info me-2"></i>
                             <span>Permisos</span>
                         </a>
+
+                        <!--GUARDIA-->
+
+                        <a href="/frontend/pages/Guardia/vistaGuardia.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                            <i class="bi bi-person-badge text-info me-2"></i>
+                            <span>Guardias</span>
+                        </a>
                     </nav>
+
+
                 </div>
+
+
 
                 <hr class="my-2">
 
@@ -139,28 +142,28 @@
                         Recursos
                     </h6>
                     <nav class="nav flex-column gap-1">
-                        <a href="/frontend/pages/Vehiculo/vistaVehiculo.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Vehiculo/vistaVehiculo.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-truck text-success me-2"></i>
                             <span>Vehículos</span>
                         </a>
-                        <a href="/frontend/pages/Materiales/vistaMateriales.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Materiales/vistaMateriales.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-box-seam text-primary me-2"></i>
                             <span>Materiales</span>
                         </a>
-                        <a href="/frontend/pages/Materiales/vistaCategorias.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Materiales/vistaCategorias.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-tags text-warning me-2"></i>
                             <span>Categorías</span>
                         </a>
-                        <a href="/frontend/pages/Almacenes/vistaAlmacenes.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Almacenes/vistaAlmacenes.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-inbox text-info me-2"></i>
                             <span>Almacenes</span>
                         </a>
-                        <a href="/frontend/pages/Instalaciones/vistaInstalaciones.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Instalaciones/vistaInstalaciones.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-building text-secondary me-2"></i>
                             <span>Instalaciones</span>
                         </a>
@@ -175,23 +178,20 @@
                         Gestión
                     </h6>
                     <nav class="nav flex-column gap-1">
-                        <a href="#" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="#" class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-people text-primary me-2"></i>
                             <span>Usuarios</span>
                         </a>
-                        <a href="#" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="#" class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-person-badge text-info me-2"></i>
                             <span>Cargos</span>
                         </a>
-                        <a href="/frontend/pages/Edicion/vistaEdiciones.html" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="/frontend/pages/Edicion/vistaEdiciones.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-pencil-square text-warning me-2"></i>
                             <span>Ediciones</span>
                         </a>
-                        <a href="#" 
-                           class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                        <a href="#" class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-gear text-secondary me-2"></i>
                             <span>Configuración</span>
                         </a>
@@ -204,8 +204,8 @@
                 <hr class="my-2">
 
                 <!-- CERRAR SESIÓN -->
-                <a href="/pages/logout" 
-                   class="nav-link link-danger d-flex align-items-center p-2 rounded bg-danger bg-opacity-10 fw-semibold">
+                <a href="/pages/logout"
+                    class="nav-link link-danger d-flex align-items-center p-2 rounded bg-danger bg-opacity-10 fw-semibold">
                     <i class="bi bi-box-arrow-right me-2"></i>
                     <span>Cerrar Sesión</span>
                 </a>
@@ -216,12 +216,12 @@
 </div>
 
 <style>
-/* Solo la animación del chevron (no se puede hacer con Bootstrap) */
-button[aria-expanded="true"] .bi-chevron-down {
-    transform: rotate(180deg);
-}
+    /* Solo la animación del chevron (no se puede hacer con Bootstrap) */
+    button[aria-expanded="true"] .bi-chevron-down {
+        transform: rotate(180deg);
+    }
 
-.transition-rotate {
-    transition: transform 0.2s ease;
-}
+    .transition-rotate {
+        transition: transform 0.2s ease;
+    }
 </style>
