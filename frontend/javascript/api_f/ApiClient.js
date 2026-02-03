@@ -1,4 +1,4 @@
-import {API_BASE_PATH} from 'frontend/javascript/config/config.js';
+import {API_BASE_PATH} from 'frontend/config/config.js';
 
 class ApiClient {
   async request(method, url, data = null) {
