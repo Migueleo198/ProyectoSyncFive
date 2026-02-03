@@ -57,10 +57,10 @@ class AlmacenController
     /**
      * POST /Almacenes
      */
-    public function store(Request $req, Response $res): void
+    public function store(Request $req, Response $res, string $id_instalacion): void
     {
         try {
-            $result = $this->service->createAlmacen($req->json());
+            $result = $this->service->createAlmacen($req->json(), (int) $id_instalacion);
 
             $res->status(201)->json(
                 ['id' => $result['id']],
@@ -84,12 +84,11 @@ class AlmacenController
 
 
     /**
-     * PUT /Almacenes/{id}
+     * PUT /Almacenes/{id_instalacion}/{id_almacen}
      */
-    public function update(Request $req, Response $res, string $id): void
-    {
+    public function update(Request $req, Response $res, string $id_instalacion, string $id_almacen): void    {
         try {
-            $result = $this->service->updateAlmacen((int)$id, $req->json());
+            $result = $this->service->updateAlmacen((int)$id_almacen, $req->json());
 
             if ($result['status'] === 'no_changes') {
                 $res->status(200)->json([], $result['message']);
@@ -109,15 +108,16 @@ class AlmacenController
 
 
     /**
-     * DELETE /Almacenes/{id}
+     * DELETE, /instalaciones/{id_instalacion}/almacenes/{id_almacen}
      */
-    public function delete(Request $req, Response $res, string $id): void
+    public function delete(Request $req, Response $res, string $id_instalacion, string $id_almacen): void
     {
         try {
-            $id = (int) $id;
+            $id_instalacion = (int) $id_instalacion;
+            $id_almacen = (int) $id_almacen;
 
             $service = new \Services\AlmacenService();
-            $service->deleteAlmacen($id);
+            $service->deleteAlmacen($id_almacen, $id_instalacion);
 
             $res->status(200)->json([], "Almacén eliminado correctamente");
 

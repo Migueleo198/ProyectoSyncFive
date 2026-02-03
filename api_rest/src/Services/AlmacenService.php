@@ -3,15 +3,15 @@ declare(strict_types=1);
 
 namespace Services;
 
-use Models\AlmacencionModel;
+use Models\AlmacenModel;
+use Models\MaterialModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
 
 class AlmacenService
 {
-    private AlmacenModel $model;
-
+        private AlmacenModel $model;
     public function __construct()
     {
         $this->model = new AlmacenModel();
@@ -48,15 +48,16 @@ class AlmacenService
     }
 
 
-    public function createAlmacen(array $input): array
+    public function createAlmacen(array $input, int $id_instalacion): array
     {
         $data = Validator::validate($input, [
-            'n_serie'           => 'required|string|max:100',
-            'unidades'          => 'required|int|min:0'
+            'planta'           => 'required|string|max:100',
+            'nombre'          => 'required|string|max:100'
         ]);
 
         try {
             $id = $this->model->create($data);
+            $this->model->asociarConInstalacion($id, $id_instalacion);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -76,8 +77,8 @@ class AlmacenService
         ]);
 
         $data = Validator::validate($input, [
-            'n_serie'           => 'required|string|max:100',
-            'unidades'          => 'required|int|min:0'
+            'planta'           => 'required|string|max:100',
+            'nombre'          => 'required|string|max:100'
         ]);
 
 
@@ -110,15 +111,17 @@ class AlmacenService
         ];
     }
 
-    public function deleteAlmacen(int $id): void
+    
+    public function deleteAlmacen(int $id_almacen, int $id_instalacion): void
     {
         // Validar ID
-        Validator::validate(['id' => $id], [
-            'id' => 'required|int|min:1'
+        Validator::validate(['id_almacen' => $id_almacen, 'id_instalacion' => $id_instalacion], [
+            'id_almacen' => 'required|int|min:1',
+            'id_instalacion' => 'required|int|min:1'
         ]);
 
         try {
-            $result = $this->model->delete($id);
+            $result = $this->model->delete($id_almacen, $id_instalacion);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -135,4 +138,76 @@ class AlmacenService
 
         // Eliminación exitosa → no retorna nada
     }
+    // GET /almacenes/{id_almacen}/material
+    public function getMaterialesEnAlmacen(int $id_almacen): array
+    {
+        $materialModel = new MaterialModel();
+
+        try {
+            return $materialModel->getByAlmacenId($id_almacen);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+
+    // POST /almacenes/{id_almacen}/material
+    public function addMaterialToAlmacen(int $id_almacen, int $id_material): void
+    {
+        // Validar IDs
+        Validator::validate(['id_almacen' => $id_almacen, 'id_material' => $id_material], [
+            'id_almacen' => 'required|int|min:1',
+            'id_material' => 'required|int|min:1'
+        ]);
+
+        try {
+            $this->model->asociarMaterial($id_almacen, $id_material);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+    // PUT /almacenes/{id_almacen}/material/{id_material}'
+    public function updateMaterialInAlmacen(int $id_almacen, int $id_material, array $data): void
+    {
+        // Validar IDs
+        Validator::validate(['id_almacen' => $id_almacen, 'id_material' => $id_material], [
+            'id_almacen' => 'required|int|min:1',
+            'id_material' => 'required|int|min:1'
+        ]);
+
+        // Validar datos (ejemplo: cantidad)
+        Validator::validate($data, [
+            'cantidad' => 'required|int|min:0'
+        ]);
+
+        try {
+            $this->model->actualizarMaterialEnAlmacen($id_almacen, $id_material, $data['cantidad']);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+    // DELETE /almacenes/{id_almacen}/material/{id_material}'
+    public function removeMaterialFromAlmacen(int $id_almacen, int $id_material): void
+    {
+        // Validar IDs
+        Validator::validate(['id_almacen' => $id_almacen, 'id_material' => $id_material], [
+            'id_almacen' => 'required|int|min:1',
+            'id_material' => 'required|int|min:1'
+        ]);
+
+        try {
+            $this->model->desasociarMaterial($id_almacen, $id_material);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+    // GET /almacenes/{id_almacen}/materiales
+    public function getAllMateriales(): array
+    {
+        try {
+            return $this->model->all();
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+
 }
