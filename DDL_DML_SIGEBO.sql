@@ -23,25 +23,6 @@ CREATE TABLE Edicion (
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
-/* Trigger para asignar id_edicion automáticamente */
-DELIMITER $$
-
-CREATE TRIGGER trg_edicion_before_insert
-BEFORE INSERT ON Edicion
-FOR EACH ROW
-BEGIN
-    IF NEW.id_edicion IS NULL THEN
-        SET NEW.id_edicion = (
-            SELECT COALESCE(MAX(id_edicion), 0) + 1
-            FROM Edicion
-            WHERE id_formacion = NEW.id_formacion
-        );
-    END IF;
-END$$
-
-DELIMITER ;
-
-
 /* =======================
    3. TURNO_REFUERZO
    ======================= */
@@ -120,17 +101,11 @@ CREATE TABLE Instalacion (
    10. ALMACEN
    ======================= */
 CREATE TABLE Almacen (
-    id_almacen INT AUTO_INCREMENT PRIMARY KEY,
-    planta INT NOT NULL,
-    nombre VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE Almacen_Instalacion (
     id_almacen INT,
     id_instalacion INT,
+    planta INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
     PRIMARY KEY (id_almacen, id_instalacion),
-    FOREIGN KEY (id_almacen) REFERENCES Almacen(id_almacen)
-        ON UPDATE CASCADE ON DELETE RESTRICT,
     FOREIGN KEY (id_instalacion) REFERENCES Instalacion(id_instalacion)
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
@@ -531,7 +506,6 @@ CREATE TABLE Mantenimiento_Material (
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
-
 /* =======================
    DATOS DE EJEMPLO
    ======================= */
@@ -767,3 +741,24 @@ VALUES (1, '1234ABC');
 
 INSERT INTO Mantenimiento_Material (cod_mantenimiento, cod_material)
 VALUES (1, 1);
+
+/* =======================
+   Función para obtener id_edicion automático
+   ======================= */
+DELIMITER $$
+
+CREATE FUNCTION siguiente_id_edicion(p_id_formacion INT)
+RETURNS INT
+NOT DETERMINISTIC
+BEGIN
+    DECLARE v_id_edicion INT;
+    
+    SELECT COALESCE(MAX(id_edicion), 0) + 1
+    INTO v_id_edicion
+    FROM Edicion
+    WHERE id_formacion = p_id_formacion;
+    
+    RETURN v_id_edicion;
+END$$
+
+DELIMITER ;
