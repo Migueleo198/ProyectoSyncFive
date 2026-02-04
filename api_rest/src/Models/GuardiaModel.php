@@ -43,7 +43,7 @@ class GuardiaModel
     public function create(array $data): string|false
     {
         $this->db->query("
-            INSERT INTO guardia (
+            INSERT INTO Guardia (
                 id_guardia,
                 fecha,
                 h_inicio,
@@ -116,7 +116,7 @@ class GuardiaModel
         string $cargo,
     ): bool {
         $this->db->query("
-            INSERT INTO Persona_Carnet (
+            INSERT INTO Persona_Guardia (
                 n_funcionario,
                 id_guardia,
                 cargo

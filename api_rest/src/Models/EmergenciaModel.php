@@ -37,11 +37,11 @@ class EmergenciaModel
     {
         $this->db->query("
             INSERT INTO Emergencia
-            (n_funcionario, fecha, descripcion, estado, direccion, nombre_solicitante, tlf_solicitante, codigo_tipo)
+            (id_bombero, fecha, descripcion, estado, direccion, nombre_solicitante, tlf_solicitante, codigo_tipo)
             VALUES
-            (:n_funcionario, NOW(), :descripcion, :estado, :direccion, :nombre_solicitante, :tlf_solicitante, :codigo_tipo)
+            (:id_bombero, NOW(), :descripcion, :estado, :direccion, :nombre_solicitante, :tlf_solicitante, :codigo_tipo)
         ")
-        ->bind(":n_funcionario", $data['n_funcionario'] ?? null)
+        ->bind(":id_bombero", $data['id_bombero'] ?? null)
         ->bind(":descripcion", $data['descripcion'])
         ->bind(":estado", $data['estado'])
         ->bind(":direccion", $data['direccion'])
@@ -57,7 +57,7 @@ class EmergenciaModel
     {
         $this->db->query("
             UPDATE Emergencia SET
-                n_funcionario = :n_funcionario,
+                id_bombero = :id_bombero,
                 descripcion = :descripcion,
                 estado = :estado,
                 direccion = :direccion,
@@ -67,7 +67,7 @@ class EmergenciaModel
             WHERE id_emergencia = :id
         ")
         ->bind(":id", $id)
-        ->bind(":n_funcionario", $data['n_funcionario'] ?? null)
+        ->bind(":id_bombero", $data['id_bombero'] ?? null)
         ->bind(":descripcion", $data['descripcion'])
         ->bind(":estado", $data['estado'])
         ->bind(":direccion", $data['direccion'])
@@ -81,62 +81,7 @@ class EmergenciaModel
             ->fetch()['affected'];
     }
 
-    //================= TIPO_EMERGENCIA =====================
-
-    public function findTipo(int $id): ?array
-    {
-        $result = $this->db
-            ->query("SELECT * FROM Tipo_emergencia WHERE codigo_tipo = :id")
-            ->bind(":id", $id)
-            ->fetch();
-
-        return $result ?: null;
-    }
-
-    public function addTipo(array $data): int|false
-    {
-        $this->db->query("
-            INSERT INTO Tipo_emergencia (nombre, grupo)
-            VALUES (:nombre, :grupo)
-        ")
-        ->bind(":nombre", $data['nombre'])
-        ->bind(":grupo", $data['grupo'] ?? null)
-        ->execute();
-
-        return (int) $this->db->lastId();
-    }
-
-    public function updateTipo(int $id, array $data): int
-    {
-        $this->db->query("
-            UPDATE Tipo_emergencia SET
-                nombre = :nombre,
-                grupo = :grupo
-            WHERE codigo_tipo = :id
-        ")
-        ->bind(":id", $id)
-        ->bind(":nombre", $data['nombre'] ?? null)
-        ->bind(":grupo", $data['grupo'] ?? null)
-        ->execute();
-
-        return $this->db
-            ->query("SELECT ROW_COUNT() AS affected")
-            ->fetch()['affected'];
-    }
-
-    public function deleteTipo(int $id): int
-    {
-        $this->db->query("
-            DELETE FROM Tipo_emergencia WHERE codigo_tipo = :id
-        ")
-        ->bind(":id", $id)
-        ->execute();
-
-        return $this->db
-            ->query("SELECT ROW_COUNT() AS affected")
-            ->fetch()['affected'];
-    }
-
+  
     //================= EMERGENCIA_VEHICULO =====================
 
     public function allVehiculos(): array
@@ -146,31 +91,33 @@ class EmergenciaModel
             ->fetchAll();
     }
 
-    public function addVehiculo(array $data): int|false
+    public function addVehiculo(array $data, int $id_emergencia): int|false
     {
         $this->db->query("
             INSERT INTO Emergencia_Vehiculo
-            (matricula, id_emergencia, f_salida, f_llegada, f_regreso)
+            (id_emergencia, matricula, f_salida, f_llegada, f_regreso)
             VALUES
-            (:matricula, :id_emergencia, :f_salida, :f_llegada, :f_regreso)
+            (:id_emergencia, :matricula, :f_salida, :f_llegada, :f_regreso)
         ")
+        ->bind(":id_emergencia", $id_emergencia)
         ->bind(":matricula", $data['matricula'])
-        ->bind(":id_emergencia", $data['id_emergencia'])
         ->bind(":f_salida", $data['f_salida'])
         ->bind(":f_llegada", $data['f_llegada'] ?? null)
         ->bind(":f_regreso", $data['f_regreso'] ?? null)
         ->execute();
 
-        return 1; // PK compuesta, no hay lastId real
+        return 1; // PK compuesta
     }
 
-    public function deleteVehiculo(int $id): int
+
+    public function deleteVehiculo(int $id, string $matricula): int
     {
         // id = id_emergencia
         $this->db->query("
-            DELETE FROM Emergencia_Vehiculo WHERE id_emergencia = :id
+            DELETE FROM Emergencia_Vehiculo WHERE id_emergencia = :id AND matricula = :matricula
         ")
         ->bind(":id", $id)
+        ->bind(":matricula", $matricula)
         ->execute();
 
         return $this->db
@@ -180,44 +127,47 @@ class EmergenciaModel
 
     //================= EMERGENCIA_VEHICULO_PERSONA =====================
 
-    public function getPersonal(string $matricula): array
+    public function getPersonal(int $id_emergencia, string $matricula): array
     {
         return $this->db
             ->query("
                 SELECT * 
                 FROM Emergencia_Vehiculo_Persona
-                WHERE matricula = :matricula
+                WHERE matricula = :matricula AND id_emergencia = :id_emergencia
             ")
             ->bind(":matricula", $matricula)
+            ->bind(":id_emergencia", $id_emergencia)
             ->fetchAll();
     }
 
-    public function addPersonal(string $matricula, array $data): int|false
+    public function addPersonal(int $id_emergencia, string $matricula, array $data): int|false
     {
         $this->db->query("
             INSERT INTO Emergencia_Vehiculo_Persona
-            (n_funcionario, matricula, id_emergencia, cargo)
+            (id_bombero, matricula, id_emergencia, cargo)
             VALUES
-            (:n_funcionario, :matricula, :id_emergencia, :cargo)
+            (:id_bombero, :matricula, :id_emergencia, :cargo)
         ")
-        ->bind(":n_funcionario", $data['n_funcionario'])
+        ->bind(":id_bombero", $data['id_bombero'])
         ->bind(":matricula", $matricula)
-        ->bind(":id_emergencia", $data['id_emergencia'])
+        ->bind(":id_emergencia", $id_emergencia)
         ->bind(":cargo", $data['cargo'] ?? null)
         ->execute();
 
         return 1;
     }
 
-    public function deletePersonal(string $matricula, int $n_funcionario): int
+    public function deletePersonal(int $id_emergencia, string $matricula, string $id_bombero): int
     {
         $this->db->query("
             DELETE FROM Emergencia_Vehiculo_Persona
-            WHERE matricula = :matricula
-              AND n_funcionario = :n_funcionario
+            WHERE id_emergencia = :id_emergencia
+              AND matricula = :matricula
+              AND id_bombero = :id_bombero
         ")
+        ->bind(":id_emergencia", $id_emergencia)
         ->bind(":matricula", $matricula)
-        ->bind(":n_funcionario", $n_funcionario)
+        ->bind(":id_bombero", $id_bombero)
         ->execute();
 
         return $this->db
