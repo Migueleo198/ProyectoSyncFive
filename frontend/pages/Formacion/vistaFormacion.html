@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formaciones</title>
 
     <!-- Bootstrap CSS -->
@@ -28,102 +29,102 @@
 </head>
 
 <body class="bg-white text-dark">
-
     <!-- HEADER -->
     <div id="header-placeholder"></div>
 
     <!-- LAYOUT CON SIDEBAR -->
-    <div class="d-flex flex-grow-1">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- SIDEBAR -->
+            <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
 
-        <!-- SIDEBAR -->
-        <div id="sidebar-placeholder" class="sidebar-bg"></div>
-
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="p-3 w-100">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">Formaciones</h1>
-                <!-- Icono de ayuda que redirige a Notion -->
-                <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
-                   class="text-dark" title="Abrir ayuda en Notion">
-                    <i class="bi bi-question-circle fs-3"></i>
-                </a>
-            </div>
-
-            <div>
-                <p>[Migas de pan]</p>
-            </div>
-
-            <!-- Contenedor tabla con filtro-->
-            <div class="container mt-4 p-0"> 
-                <div id="filtroTabla" class="m-0 row d-flex justify-content-around"> <!-- Filtro -->
-                    <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
-                        <label class="m-2" for="nombre">Nombre:</label>
-                        <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="0">
-                    </div>
+            <!-- CONTENIDO PRINCIPAL -->
+            <main class="col p-3 p-md-4 main-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0">Formaciones</h1>
+                    <!-- Icono de ayuda que redirige a Notion -->
+                    <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
+                    class="text-dark" title="Abrir ayuda en Notion">
+                        <i class="bi bi-question-circle fs-3"></i>
+                    </a>
                 </div>
-                <table class="table table-bordered table-striped" id="tabla">
-                    <thead class="table-dark">
-                        <tr> <!-- Cabecera de la tabla -->
-                            <th class="d-none">Codigo</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
-                            <th>Nombre</th>
-                            <th>Descripción</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>abc</td>
-                            <td>Descripción</td>
-                            <td class="d-flex justify-content-around">
-                                
-                                <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
-                                    <i class="bi bi-eye"></i>
-                                </button>
 
-                                <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                
-                                <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
-                                    <i class="bi bi-trash3"></i>
-                                </button>
-                                
-                            </td>
-                        </tr>
+                <div>
+                    <p>[Migas de pan]</p>
+                </div>
 
-                        <!-- Aquí puedes agregar más filas de datos -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Contenedor insertar -->
-            <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar registro</h5>
-                <form id="formInsertar" class="mx-auto">
-                    <!-- Campos en la misma fila -->
-                    <div class="row mb-3 d-flex">
-                        <div class="col-md-4 justify-content-center">
-                            <label for="insertNombre" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="insertNombre" name="nombre" required>
+                <!-- Contenedor tabla con filtro-->
+                <div class="container mt-4 p-0"> 
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-around"> <!-- Filtro -->
+                        <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
+                            <label class="m-2" for="nombre">Nombre:</label>
+                            <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="0">
                         </div>
                     </div>
-                    <!-- Descripción -->
-                    <div class="mb-4">
-                        <label for="descripcion" class="form-label">Descripción</label>
-                        <textarea class="form-control" id="descripcion" name="descripcion" rows="4"></textarea>
-                    </div>
-                    <!-- Botones centrados debajo -->
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">
-                            Limpiar
-                        </button>
-                        <button type="submit" class="btn btn-primary" id="btnInsertar">
-                            Insertar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </main>
+                    <table class="table table-bordered table-striped" id="tabla">
+                        <thead class="table-dark">
+                            <tr> <!-- Cabecera de la tabla -->
+                                <th class="d-none">Codigo</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>abc</td>
+                                <td>Descripción</td>
+                                <td class="d-flex justify-content-around">
+                                    
+                                    <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+
+                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    
+                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                    
+                                </td>
+                            </tr>
+
+                            <!-- Aquí puedes agregar más filas de datos -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Contenedor insertar -->
+                <div class="contenedorInsertar container mt-5 p-4 border rounded">
+                    <h5 class="text-center mb-4">Insertar registro</h5>
+                    <form id="formInsertar" class="mx-auto">
+                        <!-- Campos en la misma fila -->
+                        <div class="row mb-3 d-flex">
+                            <div class="col-md-4 justify-content-center">
+                                <label for="insertNombre" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="insertNombre" name="nombre" required>
+                            </div>
+                        </div>
+                        <!-- Descripción -->
+                        <div class="mb-4">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="4"></textarea>
+                        </div>
+                        <!-- Botones centrados debajo -->
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="reset" class="btn btn-secondary">
+                                Limpiar
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btnInsertar">
+                                Insertar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
     </div>
 
     <!-- Modal de eliminación -->

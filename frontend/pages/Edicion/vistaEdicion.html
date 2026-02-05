@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ediciones</title>
 
     <!-- Bootstrap CSS -->
@@ -33,95 +34,96 @@
     <div id="header-placeholder"></div>
 
     <!-- LAYOUT CON SIDEBAR -->
-    <div class="d-flex flex-grow-1">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- SIDEBAR -->
+            <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
 
-        <!-- SIDEBAR -->
-        <div id="sidebar-placeholder" class="sidebar-bg"></div>
-
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="p-3 w-100">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">Ediciones</h1>
-                <!-- Icono de ayuda que redirige a Notion -->
-                <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
-                   class="text-dark" title="Abrir ayuda en Notion">
-                    <i class="bi bi-question-circle fs-3"></i>
-                </a>
-            </div>
-
-            <div>
-                <p>[Migas de pan]</p>
-            </div>
-
-            <!-- Contenedor tabla con filtro-->
-            <div class="container mt-4 p-0"> 
-                <div id="filtroTabla" class="m-0 row d-flex justify-content-around"> <!-- Filtro -->
-                    <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
-                        <label class="m-2" for="nombre">Nombre:</label>
-                        <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="0">
-                    </div>
-                    <div class="col-md-3 m-1 d-flex gap-2">
-                        <label class="m-2" >Fecha:</label>
-                        <input type="date" class="form-control form-control-sm" id="f_ini" title="F_Ini" data-col="2">
-                    </div>
-                </div>
-                <table class="table table-bordered table-striped" id="tabla">
-                    <thead class="table-dark">
-                        <tr> <!-- Cabecera de la tabla -->
-                            <th class="d-none">ID_Edicion</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
-                            <th>Nombre</th>
-                            <th>f_Inicio</th>
-                            <th class="d-none d-md-table-cell">f_Fin</th>
-                            <th>Horas</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        
-
-                        <!-- Aquí puedes agregar más filas de datos -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Contenedor insertar -->
-            <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar edición</h5>
-                <form id="formIncidencia" class="mx-auto">
-
-                <!-- Fila 1 -->
-                <div class="row mb-3">
-                    <div class="col-mg-6 col-lg-4">
-                        <label for="nombre" class="form-label">Nombre</label>
-                        <input type="text" class="form-control" id="nombre" name="nombre">
-                    </div>
-                    <div class="col-mg-6 col-lg-4">
-                        <label for="f_inicio" class="form-label">f_Inicio</label>
-                        <input type="date" class="form-control" id="f_inicio" name="f_inicio" required>
-                    </div>
-                    <div class="col-mg-6 col-lg-4">
-                        <label for="f_fin" class="form-label">f_fin</label>
-                        <input type="date" class="form-control" id="f_fin" name="f_fin" required>
-                    </div>
-                    <div class="col-mg-6 col-lg-4">
-                        <label for="horas" class="form-label">Horas</label>
-                        <input type="number" class="form-control" id="horas" name="horas">
-                    </div>
+            <!-- CONTENIDO PRINCIPAL -->
+            <main class="col p-3 p-md-4 main-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0">Ediciones</h1>
+                    <!-- Icono de ayuda que redirige a Notion -->
+                    <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
+                    class="text-dark" title="Abrir ayuda en Notion">
+                        <i class="bi bi-question-circle fs-3"></i>
+                    </a>
                 </div>
 
-                <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">
-                            Limpiar
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            Guardar 
-                        </button>
+                <div>
+                    <p>[Migas de pan]</p>
+                </div>
+
+                <!-- Contenedor tabla con filtro-->
+                <div class="container mt-4 p-0"> 
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-around"> <!-- Filtro -->
+                        <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
+                            <label class="m-2" for="nombre">Nombre:</label>
+                            <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="0">
+                        </div>
+                        <div class="col-md-3 m-1 d-flex gap-2">
+                            <label class="m-2" >Fecha:</label>
+                            <input type="date" class="form-control form-control-sm" id="f_ini" title="F_Ini" data-col="2">
+                        </div>
+                    </div>
+                    <table class="table table-bordered table-striped" id="tabla">
+                        <thead class="table-dark">
+                            <tr> <!-- Cabecera de la tabla -->
+                                <th class="d-none">ID_Edicion</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
+                                <th>Nombre</th>
+                                <th>f_Inicio</th>
+                                <th class="d-none d-md-table-cell">f_Fin</th>
+                                <th>Horas</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+
+                            <!-- Aquí puedes agregar más filas de datos -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Contenedor insertar -->
+                <div class="contenedorInsertar container mt-5 p-4 border rounded">
+                    <h5 class="text-center mb-4">Insertar edición</h5>
+                    <form id="formIncidencia" class="mx-auto">
+
+                    <!-- Fila 1 -->
+                    <div class="row mb-3">
+                        <div class="col-mg-6 col-lg-4">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre">
+                        </div>
+                        <div class="col-mg-6 col-lg-4">
+                            <label for="f_inicio" class="form-label">f_Inicio</label>
+                            <input type="date" class="form-control" id="f_inicio" name="f_inicio" required>
+                        </div>
+                        <div class="col-mg-6 col-lg-4">
+                            <label for="f_fin" class="form-label">f_fin</label>
+                            <input type="date" class="form-control" id="f_fin" name="f_fin" required>
+                        </div>
+                        <div class="col-mg-6 col-lg-4">
+                            <label for="horas" class="form-label">Horas</label>
+                            <input type="number" class="form-control" id="horas" name="horas">
+                        </div>
                     </div>
 
-                </form>
+                    <div class="d-flex justify-content-center gap-2">
+                            <button type="reset" class="btn btn-secondary">
+                                Limpiar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                Guardar 
+                            </button>
+                        </div>
 
-            </div>
-        </main>
+                    </form>
+
+                </div>
+            </main>
+        </div>
     </div>
 
     <!-- Modal de eliminación -->

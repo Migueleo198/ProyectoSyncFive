@@ -36,7 +36,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- SIDEBAR -->
-            <div id="sidebar-placeholder" class="col-auto p-0"></div>
+            <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
 
             <!-- CONTENIDO PRINCIPAL -->
             <main class="col p-3 p-md-4 main-container">
@@ -125,84 +125,84 @@
                     <h5 class="text-center mb-4">Insertar emergencia</h5>
                     <form id="formIncidencia" class="mx-auto">
 
-                    <!-- Fila 1 -->
-                    <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="fecha" class="form-label">Fecha</label>
-                            <input type="date" class="form-control" id="fecha" name="fecha" required>
-                        </div>
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="estado" class="form-label">Estado</label>
-                            <select class="form-select" id="estado" name="estado">
-                                <option value="">Seleccione...</option>
-                                <option value="activa">Activa</option>
-                                <option value="cerrada">Cerrada</option>
-                            </select>
-                        </div>
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="direccion" class="form-label">Dirección</label>
-                            <input type="text" class="form-control" id="direccion" name="direccion">
-                        </div>
-                    </div>
-
-                    <!-- Fila 2 -->
-                    <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="tipo" class="form-label">Tipo</label>
-                            <select class="form-select" id="tipo" name="tipo">
-                                <option value="">Seleccione...</option>
-                                <option value="averia">Avería</option>
-                                <option value="instalacion">Instalación</option>
-                                <option value="revision">Revisión</option>
-                            </select>
-                        </div>
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="operador" class="form-label">Nom Operador</label>
-                            <input type="text" class="form-control" id="operador" name="operador">
-                        </div>
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="solicitante" class="form-label">Nom Solicitante</label>
-                            <input type="text" class="form-control" id="solicitante" name="solicitante">
-                        </div>
-                    </div>
-
-                    <!-- Fila 3 -->
-                    <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="tlfSolicitante" class="form-label">Tlfn Solicitante</label>
-                            <input type="tel" class="form-control" id="tlfSolicitante" name="tlfSolicitante">
-                        </div>
-                        <div class="col-md-8">
-                            <label for="equipos" class="form-label">Equipos asignados</label>
-                            <div class="input-group">
-                                <select class="form-select" id="equipos" name="equipos">
-                                    <option value="">Seleccione equipo...</option>
-                                    <option value="equipo1">Equipo 1</option>
-                                    <option value="equipo2">Equipo 2</option>
-                                    <option value="equipo3">Equipo 3</option>
+                        <!-- Fila 1 -->
+                        <div class="row mb-3">
+                            <div class="col-lg-4">
+                                <label for="fecha" class="form-label">Fecha</label>
+                                <input type="date" class="form-control" id="fecha" name="fecha" required>
+                            </div>
+                            <div class="col-lg-4">
+                                <label for="estado" class="form-label">Estado</label>
+                                <select class="form-select" id="estado" name="estado">
+                                    <option value="">Seleccione...</option>
+                                    <option value="activa">Activa</option>
+                                    <option value="cerrada">Cerrada</option>
                                 </select>
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalInsertarEquipo">+</button>
+                            </div>
+                            <div class="col-lg-4">
+                                <label for="direccion" class="form-label">Dirección</label>
+                                <input type="text" class="form-control" id="direccion" name="direccion">
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Descripción -->
-                    <div class="mb-4">
-                        <label for="descripcion" class="form-label">Descripción</label>
-                        <textarea class="form-control" id="descripcion" name="descripcion" rows="4"></textarea>
-                    </div>
+                        <!-- Fila 2 -->
+                        <div class="row mb-3">
+                            <div class="col-lg-4">
+                                <label for="tipo" class="form-label">Tipo</label>
+                                <select class="form-select" id="tipo" name="tipo">
+                                    <option value="">Seleccione...</option>
+                                    <option value="averia">Avería</option>
+                                    <option value="instalacion">Instalación</option>
+                                    <option value="revision">Revisión</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-4">
+                                <label for="operador" class="form-label">Nom Operador</label>
+                                <input type="text" class="form-control" id="operador" name="operador">
+                            </div>
+                            <div class="col-lg-4">
+                                <label for="solicitante" class="form-label">Nom Solicitante</label>
+                                <input type="text" class="form-control" id="solicitante" name="solicitante">
+                            </div>
+                        </div>
 
-                    <!-- Botones -->
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">
-                            Limpiar
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            Guardar
-                        </button>
-                    </div>
+                        <!-- Fila 3 -->
+                        <div class="row mb-3">
+                            <div class="col-lg-4">
+                                <label for="tlfSolicitante" class="form-label">Tlfn Solicitante</label>
+                                <input type="tel" class="form-control" id="tlfSolicitante" name="tlfSolicitante">
+                            </div>
+                            <div class="col-lg-8">
+                                <label for="equipos" class="form-label">Equipos asignados</label>
+                                <div class="input-group">
+                                    <select class="form-select" id="equipos" name="equipos">
+                                        <option value="">Seleccione equipo...</option>
+                                        <option value="equipo1">Equipo 1</option>
+                                        <option value="equipo2">Equipo 2</option>
+                                        <option value="equipo3">Equipo 3</option>
+                                    </select>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalInsertarEquipo">+</button>
+                                </div>
+                            </div>
+                        </div>
 
-                </form>
+                        <!-- Descripción -->
+                        <div class="mb-4">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="4"></textarea>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="reset" class="btn btn-secondary">
+                                Limpiar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                Guardar
+                            </button>
+                        </div>
+
+                    </form>
 
                 </div>
             </main>

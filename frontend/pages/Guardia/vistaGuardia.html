@@ -2,221 +2,224 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Tipos de emergencia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardias</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
-    <!-- CSS del proyecto -->
-    <link rel="stylesheet" href="../../assets/css/header_footer.css">
-    <link rel="stylesheet" href="../../assets/css/plantilla_css.css">
+    <!-- Configuración y rutas absolutas -->
+    <script src="/frontend/config/config.js"></script>
 
-    <!-- Configuración (basePath) -->
-    <script src="../../assets/javascript/config.js"></script>
+    <!-- CSS del proyecto usando loadCSS() -->
+    <script>
+        loadCSS("header_footer.css");
+        loadCSS("plantilla_css.css");
+        // Cargar favicon dinámicamente
+        loadFavicon("favicon.png");
+    </script>
 
-    <!-- Script Filtro de la tabla -->
-    <script src="../../assets/javascript/script_filtro_tabla.js"></script>
-
-    <!-- Header / Footer / Sidebar -->
-    <script src="../../assets/javascript/header_footer.js"></script>
-
- <!-- FullCalendar -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@latest/main.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@latest/index.global.min.js"></script>
-
+    <!-- JS dependientes -->
+    <script src="/frontend/javascript/header_footer.js" defer></script>
+    <script src="/frontend/javascript/script_filtro_tabla.js" defer></script>
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- FullCalendar -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@latest/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@latest/index.global.min.js"></script>
 </head>
 
 <body class="bg-white text-dark">
-
     <!-- HEADER -->
     <div id="header-placeholder"></div>
 
     <!-- LAYOUT CON SIDEBAR -->
-    <div class="d-flex flex-grow-1">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- SIDEBAR -->
+            <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
 
-        <!-- SIDEBAR -->
-        <div id="sidebar-placeholder" class="sidebar-bg"></div>
-
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="p-3 w-100">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">Control de Guardias</h1>
-                <!-- Icono de ayuda que redirige a Notion -->
-                <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
-                   class="text-dark" title="Abrir ayuda en Notion">
-                    <i class="bi bi-question-circle fs-3"></i>
-                </a>
-            </div>
-
-            <div>
-                <p>[Migas de pan]</p>
-            </div>
-            <!-- CALENDARIO INCOMPLETO -->
-            <div class="container mt-4 p-0"> 
-                <h2 class="d-flex">Calendario</h2>
-                <div id="calendar"></div>
-                    <script>
-                    document.addEventListener("DOMContentLoaded", function () {
-                        var calendarEl = document.getElementById("calendar");
-
-                        var calendar = new FullCalendar.Calendar(calendarEl, {
-                            themeSystem: "bootstrap5",
-                            initialView: "dayGridMonth",
-                            selectable: true,
-
-                            dateClick: function(info) {
-                                // Aquí decides qué hacer cuando se hace clic en un día
-                                const titulo = prompt("Título del aviso:");
-                                if (!titulo) return;
-
-                                calendar.addEvent({
-                                    title: titulo,
-                                    start: info.dateStr,
-                                    allDay: true
-                                });
-                            }
-                        });
-
-                        calendar.render();
-                    });
-                    </script>
-            </div>
-            <!-- Contenedor tabla con filtro-->
-            <div class="container mt-4 p-0"> 
-                 <h2 class="d-flex align-items-center">Guardias</h2>
-
-                <div id="filtroTabla" class="m-0 row d-flex justify-content-center"> <!-- Filtro -->
-                    <div class="col-md-5 d-flex align-items-center m-1">
-                        <label class="m-2" >Fecha:</label>
-                        <input type="datetime-local" class="form-control form-control-sm" id="f_ini" title="F_Ini" data-col="2">
-                        <label class="m-2" >Fecha fin:</label>
-                        <input type="datetime-local" class="form-control form-control-sm" id="f_fin" title="F_Fin" data-col="3">
-                        <label class="m-2" for="matricula">Matricula:</label>
-                        <input placeholder="Matricula" id="matricula" type="text" class="form-control form-control-sm mt-1 filtro" data-col="0">
-                    </div>
+            <!-- CONTENIDO PRINCIPAL -->
+            <main class="col p-3 p-md-4 main-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0">Control de Guardias</h1>
+                    <!-- Icono de ayuda que redirige a Notion -->
+                    <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
+                    class="text-dark" title="Abrir ayuda en Notion">
+                        <i class="bi bi-question-circle fs-3"></i>
+                    </a>
                 </div>
 
+                <div>
+                    <p>[Migas de pan]</p>
+                </div>
+                <!-- CALENDARIO INCOMPLETO -->
+                <div class="container mt-4 p-0"> 
+                    <h2 class="d-flex">Calendario</h2>
+                    <div id="calendar"></div>
+                        <script>
+                        document.addEventListener("DOMContentLoaded", function () {
+                            var calendarEl = document.getElementById("calendar");
 
-                <table class="table table-bordered table-striped" id="tabla">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID Guardia</th>
-                            <th>Nombre Personas</th>
-                            <th>Fecha</th>
-                            <th>H_inicio</th>
-                            <th>H_fin</th>
-                            <th>Accion</th>
-                        </tr>
-                    </thead>
+                            var calendar = new FullCalendar.Calendar(calendarEl, {
+                                themeSystem: "bootstrap5",
+                                initialView: "dayGridMonth",
+                                selectable: true,
 
-                    <tbody>
-                        <tr>
-                            <td class="d-none d-md-table-cell">INUR1</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->   
-                            <td>Incendio edificio</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td class="d-flex justify-content-around">                            
-                                <button id="toggleColumns" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalVer">
-                                    <i class="bi bi-eye"></i>
-                                </button>
+                                dateClick: function(info) {
+                                    // Aquí decides qué hacer cuando se hace clic en un día
+                                    const titulo = prompt("Título del aviso:");
+                                    if (!titulo) return;
 
-                                <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                
-                                <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
-                                    <i class="bi bi-trash3"></i>
-                                </button>
-                            </td>
-                        </tr>
+                                    calendar.addEvent({
+                                        title: titulo,
+                                        start: info.dateStr,
+                                        allDay: true
+                                    });
+                                }
+                            });
 
-                        <!-- Aquí puedes agregar más filas de datos -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Contenedor insertar Usuario -->
-            <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar nueva guardia</h5>
-                <form id="formInsertar" class="mx-auto">
-                    <!-- Campos en la misma fila -->
-                    <div class="row mb-3">
-                        <div class="col-md-4 col-sm-6 ">
-                            <label class="m-2" for="Fecha">Fecha:</label>
-                            <input type="date" class="form-control form-control-sm mt-1 filtro" id="Fecha" data-col="2">
-                        </div>
-                        <div class="col-md-4 col-sm-6 ">
-                            <label class="m-2" for="h_inicio">Hora inicio:</label>
-                            <input type="text" class="form-control form-control-sm mt-1 filtro" id="h_inicio" data-col="2">
-                        </div>
-                        <div class="col-md-4 col-sm-6 ">
-                            <label class="m-2" for="h_fin">Hora fin:</label>
-                            <input type="text" class="form-control form-control-sm mt-1 filtro" id="h_fin" data-col="2">
-                        </div>
-                        <div class="col-md-4 col-sm-6 ">
-                            <label class="m-2" for="Correo">Correo:</label>
-                            <input type="email" class="form-control form-control-sm mt-1 filtro" id="Correo" data-col="2">
-                        </div>
+                            calendar.render();
+                        });
+                        </script>
+                </div>
+                <!-- Contenedor tabla con filtro-->
+                <div class="container mt-4 p-0"> 
+                    <h2 class="d-flex align-items-center">Guardias</h2>
 
-                    </div>
-                    <!-- Botones centrados debajo -->
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">
-                            Limpiar
-                        </button>
-                        <button type="submit" class="btn btn-primary" id="btnInsertar">
-                            Insertar
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar usuario a guardia</h5>
-                <form id="formInsertar" class="mx-auto">
-                    <!-- Campos en la misma fila -->
-                    <div class="row mb-3">
-                        <div class="col-md-4 col-sm-6 ">
-                            <label for="ID_Guardia" class="m-2 form-label">ID_Guardia</label>
-                            <select class="form-select" id="ID_Guardia">
-                                <option value="">Seleccione guardia...</option>
-                                <option value="1">Vehículo 1</option>
-                                <option value="2">Vehículo 2</option>
-                            </select>       
-                        </div>
-                        <div class="col-md-4 col-sm-6 ">
-                            <label for="ID_persona" class="m-2 form-label">ID_persona</label>
-                            <select class="form-select" id="ID_persona">
-                                <option value="">Seleccione Id persona...</option>
-                                <option value="1">Vehículo 1</option>
-                                <option value="2">Vehículo 2</option>
-                            </select>       
-                        </div>
-                        <div class="col-md-4 col-sm-6 ">
-                            <label for="nombre_persona" class="m-2 form-label">Nombre Persona</label>
-                            <select class="form-select" id="nombre_persona">
-                                <option value="">Seleccione Nombre persona...</option>
-                                <option value="1">Vehículo 1</option>
-                                <option value="2">Vehículo 2</option>
-                            </select>       
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-center"> <!-- Filtro -->
+                        <div class="col-md-5 d-flex align-items-center m-1">
+                            <label class="m-2" >Fecha:</label>
+                            <input type="datetime-local" class="form-control form-control-sm" id="f_ini" title="F_Ini" data-col="2">
+                            <label class="m-2" >Fecha fin:</label>
+                            <input type="datetime-local" class="form-control form-control-sm" id="f_fin" title="F_Fin" data-col="3">
+                            <label class="m-2" for="matricula">Matricula:</label>
+                            <input placeholder="Matricula" id="matricula" type="text" class="form-control form-control-sm mt-1 filtro" data-col="0">
                         </div>
                     </div>
-                    <!-- Botones centrados debajo -->
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">
-                            Limpiar
-                        </button>
-                        <button type="submit" class="btn btn-primary" id="btnInsertar">
-                            Insertar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </main>
+
+
+                    <table class="table table-bordered table-striped" id="tabla">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID Guardia</th>
+                                <th>Nombre Personas</th>
+                                <th>Fecha</th>
+                                <th>H_inicio</th>
+                                <th>H_fin</th>
+                                <th>Accion</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td class="d-none d-md-table-cell">INUR1</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->   
+                                <td>Incendio edificio</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td class="d-flex justify-content-around">                            
+                                    <button id="toggleColumns" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalVer">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+
+                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    
+                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Aquí puedes agregar más filas de datos -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Contenedor insertar Guardia -->
+                <div class="contenedorInsertar container mt-5 p-4 border rounded">
+                    <h5 class="text-center mb-4">Insertar nueva guardia</h5>
+                    <form id="formInsertarGuardia" class="mx-auto">
+                        <!-- Campos en la misma fila -->
+                        <div class="row mb-3">
+                            <div class="col-md-4 col-sm-6 ">
+                                <label class="m-2" for="Fecha">Fecha:</label>
+                                <input type="date" class="form-control form-control-sm mt-1 filtro" id="Fecha" data-col="2">
+                            </div>
+                            <div class="col-md-4 col-sm-6 ">
+                                <label class="m-2" for="h_inicio">Hora inicio:</label>
+                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="h_inicio" data-col="2">
+                            </div>
+                            <div class="col-md-4 col-sm-6 ">
+                                <label class="m-2" for="h_fin">Hora fin:</label>
+                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="h_fin" data-col="2">
+                            </div>
+                            <div class="col-md-4 col-sm-6 ">
+                                <label class="m-2" for="Correo">Correo:</label>
+                                <input type="email" class="form-control form-control-sm mt-1 filtro" id="Correo" data-col="2">
+                            </div>
+
+                        </div>
+                        <!-- Botones centrados debajo -->
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="reset" class="btn btn-secondary">
+                                Limpiar
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btnInsertarGuardia">
+                                Insertar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Contenedor insertar Usuario a Guardia -->
+                <div class="contenedorInsertar container mt-5 p-4 border rounded">
+                    <h5 class="text-center mb-4">Insertar usuario a guardia</h5>
+                    <form id="formInsertarUsuario" class="mx-auto">
+                        <!-- Campos en la misma fila -->
+                        <div class="row mb-3">
+                            <div class="col-md-4 col-sm-6 ">
+                                <label for="ID_Guardia" class="m-2 form-label">ID_Guardia</label>
+                                <select class="form-select" id="ID_Guardia">
+                                    <option value="">Seleccione guardia...</option>
+                                    <option value="1">Vehículo 1</option>
+                                    <option value="2">Vehículo 2</option>
+                                </select>       
+                            </div>
+                            <div class="col-md-4 col-sm-6 ">
+                                <label for="ID_persona" class="m-2 form-label">ID_persona</label>
+                                <select class="form-select" id="ID_persona">
+                                    <option value="">Seleccione Id persona...</option>
+                                    <option value="1">Vehículo 1</option>
+                                    <option value="2">Vehículo 2</option>
+                                </select>       
+                            </div>
+                            <div class="col-md-4 col-sm-6 ">
+                                <label for="nombre_persona" class="m-2 form-label">Nombre Persona</label>
+                                <select class="form-select" id="nombre_persona">
+                                    <option value="">Seleccione Nombre persona...</option>
+                                    <option value="1">Vehículo 1</option>
+                                    <option value="2">Vehículo 2</option>
+                                </select>       
+                            </div>
+                        </div>
+                        <!-- Botones centrados debajo -->
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="reset" class="btn btn-secondary">
+                                Limpiar
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btnInsertarUsuario">
+                                Insertar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
     </div>
 
 
@@ -229,28 +232,32 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                <form id="formEditar" class="mx-auto">
-                    <!-- Campos en la misma fila -->
-                    <div class="row mb-3">
-                        <div class="col-md-4 col-sm-6 ">
-                            <label class="m-2" for="Fecha">Fecha:</label>
-                            <input type="date" class="form-control form-control-sm mt-1 filtro" id="Fecha" data-col="2">
+                    <form id="formEditar" class="mx-auto">
+                        <!-- Campos en la misma fila -->
+                        <div class="row mb-3">
+                            <div class="col-md-4 col-sm-6 ">
+                                <label class="m-2" for="Fecha">Fecha:</label>
+                                <input type="date" class="form-control form-control-sm mt-1 filtro" id="Fecha" data-col="2">
+                            </div>
+                            <div class="col-md-4 col-sm-6 ">
+                                <label class="m-2" for="h_inicio">Hora inicio:</label>
+                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="h_inicio" data-col="2">
+                            </div>
+                            <div class="col-md-4 col-sm-6 ">
+                                <label class="m-2" for="h_fin">Hora fin:</label>
+                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="h_fin" data-col="2">
+                            </div>
+                            <div class="col-md-4 col-sm-6 ">
+                                <label class="m-2" for="Correo">Correo:</label>
+                                <input type="email" class="form-control form-control-sm mt-1 filtro" id="Correo" data-col="2">
+                            </div>
                         </div>
-                        <div class="col-md-4 col-sm-6 ">
-                            <label class="m-2" for="h_inicio">Hora inicio:</label>
-                            <input type="text" class="form-control form-control-sm mt-1 filtro" id="h_inicio" data-col="2">
-                        </div>
-                        <div class="col-md-4 col-sm-6 ">
-                            <label class="m-2" for="h_fin">Hora fin:</label>
-                            <input type="text" class="form-control form-control-sm mt-1 filtro" id="h_fin" data-col="2">
-                        </div>
-                        <div class="col-md-4 col-sm-6 ">
-                            <label class="m-2" for="Correo">Correo:</label>
-                            <input type="email" class="form-control form-control-sm mt-1 filtro" id="Correo" data-col="2">
-                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+    <!-- Modal de eliminación -->
     <div class="modal fade" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -300,7 +307,7 @@
     <!-- FOOTER -->
     <div id="footer-placeholder"></div>
 
-
+    
 </body>
 
 </html> 
