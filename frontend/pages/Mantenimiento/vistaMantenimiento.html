@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mantenimiento</title>
 
     <!-- Bootstrap CSS -->
@@ -17,6 +18,8 @@
         loadCSS("header_footer.css");
         loadCSS("plantilla_css.css");
         loadCSS("vistaMantenimiento.css");
+        // Cargar favicon dinámicamente
+        loadFavicon("favicon.png");
     </script>
 
     <!-- JS dependientes -->
@@ -31,183 +34,182 @@
     <!-- HEADER -->
     <div id="header-placeholder"></div>
 
-    <!-- LAYOUT -->
-    <div class="d-flex flex-grow-1">
+    <!-- LAYOUT CON SIDEBAR -->
+    <div class="container-fluid">
+        <div class="row">
 
-        <!-- SIDEBAR -->
-        <div id="sidebar-placeholder" class="sidebar-bg"></div>
+            <!-- SIDEBAR -->
+            <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
+            <!-- MAIN -->
+            <main class="col p-3 p-md-4 main-container">
 
-        <!-- MAIN -->
-        <main class="p-3 w-100">
-
-            <!-- TÍTULO -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">Mantenimientos</h1>
-                <a href="https://www.notion.so/TU_PAGINA" target="_blank" class="text-dark">
-                    <i class="bi bi-question-circle fs-3"></i>
-                </a>
-            </div>
-
-            <p>[Migas de pan]</p>
-
-            <!-- FILTROS -->
-            <div class="container-fluid mt-4 p-0">
-                <div id="filtroTabla" class="row d-flex justify-content-around m-0">
-
-                    <div class="col-md-2 d-flex align-items-center m-1">
-                        <label class="me-2">Identificador:</label>
-                        <input id="filtroIdentificador" type="text" class="form-control form-control-sm filtro"
-                            data-col="1" placeholder="Nombre">
-                    </div>
-
-                    <div class="col-md-2 d-flex align-items-center m-1">
-                        <label class="me-2">Tipo Recurso:</label>
-                        <select class="form-select form-select-sm filtro" data-col="2">
-                            <option value="">Todos</option>
-                            <option>Incendio urbano</option>
-                            <option>Incendio forestal</option>
-                            <option>Accidente tráfico</option>
-                            <option>Rescate</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-2 d-flex align-items-center m-1">
-                        <label class="me-2">F_Ini:</label>
-                        <input type="date" class="form-control form-control-sm filtro" data-col="4">
-                    </div>
-
-                    <div class="col-md-2 d-flex align-items-center m-1">
-                        <label class="me-2">F_Fin:</label>
-                        <input type="date" class="form-control form-control-sm filtro" data-col="5">
-                    </div>
-
-                    <div class="col-md-2 d-flex align-items-center m-1">
-                        <label class="me-2">Estado:</label>
-                        <select class="form-select form-select-sm filtro" data-col="6">
-                            <option value="">Todos</option>
-                            <option>Pendiente</option>
-                            <option>En progreso</option>
-                            <option>Finalizado</option>
-                        </select>
-                    </div>
+                <!-- TÍTULO -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0">Mantenimientos</h1>
+                    <a href="https://www.notion.so/TU_PAGINA" target="_blank" class="text-dark">
+                        <i class="bi bi-question-circle fs-3"></i>
+                    </a>
                 </div>
 
-                <!-- TABLA -->
-                <table class="table table-bordered table-striped mt-3" id="tabla">
-                    <thead class="table-dark">
-                        <tr>
-                            <th class="d-none d-md-table-cell">ID_Mant</th>
-                            <th>Identificador Recurso</th>
-                            <th>Tipo Recurso</th>
-                            <th>Descripción</th>
-                            <th class="d-none d-md-table-cell">Fecha Ini</th>
-                            <th class="d-none d-md-table-cell">Fecha Fin</th>
-                            <th class="d-none d-md-table-cell">Estado</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody class="tableBody">
-                        <!-- Datos de ejemplo -->
-                        <tr>
-                            <td class="d-none d-md-table-cell">INUR1</td>
-                            <td>REC-001</td>
-                            <td>Incendio urbano</td>
-                            <td>Incendio en edificio residencial</td>
-                            <td class="d-none d-md-table-cell">2026-01-10</td>
-                            <td class="d-none d-md-table-cell">2026-01-11</td>
-                            <td class="d-none d-md-table-cell">Finalizado</td>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                <p>[Migas de pan]</p>
 
-            <!-- INSERTAR MANTENIMIENTO VEHÍCULO -->
-            <div class="container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar Mantenimiento Vehículo</h5>
+                <!-- FILTROS -->
+                <div class="container-fluid mt-4 p-0">
+                    <div id="filtroTabla" class="row d-flex justify-content-around m-0">
 
-                <form id="formInsertarVehiculo">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Matrícula</label>
-                            <input type="text" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">F_Ini</label>
-                            <input type="date" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">F_Fin</label>
-                            <input type="date" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Estado</label>
-                            <select class="form-select" required>
-                                <option value="">Seleccione…</option>
-                                <option>Pendiente</option>
-                                <option>En proceso</option>
-                                <option>Completado</option>
-                            </select>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Descripción</label>
-                            <input type="text" class="form-control" required>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">Limpiar</button>
-                        <button type="submit" class="btn btn-primary">Insertar</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- INSERTAR MANTENIMIENTO MATERIAL -->
-            <div class="container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar Mantenimiento Material</h5>
-
-                <form id="formInsertarMaterial">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Identificador Material</label>
-                            <input type="text" class="form-control" required>
+                        <div class="col-md-2 d-flex align-items-center m-1">
+                            <label class="me-2">Identificador:</label>
+                            <input id="filtroIdentificador" type="text" class="form-control form-control-sm filtro"
+                                data-col="1" placeholder="Nombre">
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">F_Ini</label>
-                            <input type="date" class="form-control" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">F_Fin</label>
-                            <input type="date" class="form-control" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Estado</label>
-                            <select class="form-select" required>
-                                <option value="">Seleccione…</option>
-                                <option>Pendiente</option>
-                                <option>En proceso</option>
-                                <option>Completado</option>
+                        <div class="col-md-2 d-flex align-items-center m-1">
+                            <label class="me-2">Tipo Recurso:</label>
+                            <select class="form-select form-select-sm filtro" data-col="2">
+                                <option value="">Todos</option>
+                                <option>Incendio urbano</option>
+                                <option>Incendio forestal</option>
+                                <option>Accidente tráfico</option>
+                                <option>Rescate</option>
                             </select>
                         </div>
 
-                        <div class="col-md-12">
-                            <label class="form-label">Descripción</label>
-                            <input type="text" class="form-control" required>
+                        <div class="col-md-2 d-flex align-items-center m-1">
+                            <label class="me-2">F_Ini:</label>
+                            <input type="date" class="form-control form-control-sm filtro" data-col="4">
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-center m-1">
+                            <label class="me-2">F_Fin:</label>
+                            <input type="date" class="form-control form-control-sm filtro" data-col="5">
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-center m-1">
+                            <label class="me-2">Estado:</label>
+                            <select class="form-select form-select-sm filtro" data-col="6">
+                                <option value="">Todos</option>
+                                <option>Pendiente</option>
+                                <option>En progreso</option>
+                                <option>Finalizado</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">Limpiar</button>
-                        <button type="submit" class="btn btn-primary">Insertar</button>
-                    </div>
-                </form>
-            </div>
+                    <!-- TABLA -->
+                    <table class="table table-bordered table-striped mt-3" id="tabla">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="d-none d-md-table-cell">ID_Mant</th>
+                                <th>Identificador Recurso</th>
+                                <th>Tipo Recurso</th>
+                                <th>Descripción</th>
+                                <th class="d-none d-md-table-cell">Fecha Ini</th>
+                                <th class="d-none d-md-table-cell">Fecha Fin</th>
+                                <th class="d-none d-md-table-cell">Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tableBody">
+                            <!-- Datos de ejemplo -->
+                            <tr>
+                                <td class="d-none d-md-table-cell">INUR1</td>
+                                <td>REC-001</td>
+                                <td>Incendio urbano</td>
+                                <td>Incendio en edificio residencial</td>
+                                <td class="d-none d-md-table-cell">2026-01-10</td>
+                                <td class="d-none d-md-table-cell">2026-01-11</td>
+                                <td class="d-none d-md-table-cell">Finalizado</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
+                <!-- INSERTAR MANTENIMIENTO VEHÍCULO -->
+                <div class="container mt-5 p-4 border rounded">
+                    <h5 class="text-center mb-4">Insertar Mantenimiento Vehículo</h5>
 
-        </main>
+                    <form id="formInsertarVehiculo">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Matrícula</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">F_Ini</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">F_Fin</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Estado</label>
+                                <select class="form-select" required>
+                                    <option value="">Seleccione…</option>
+                                    <option>Pendiente</option>
+                                    <option>En proceso</option>
+                                    <option>Completado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Descripción</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="reset" class="btn btn-secondary">Limpiar</button>
+                            <button type="submit" class="btn btn-primary">Insertar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- INSERTAR MANTENIMIENTO MATERIAL -->
+                <div class="container mt-5 p-4 border rounded">
+                    <h5 class="text-center mb-4">Insertar Mantenimiento Material</h5>
+
+                    <form id="formInsertarMaterial">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Identificador Material</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">F_Ini</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">F_Fin</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Estado</label>
+                                <select class="form-select" required>
+                                    <option value="">Seleccione…</option>
+                                    <option>Pendiente</option>
+                                    <option>En proceso</option>
+                                    <option>Completado</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label">Descripción</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="reset" class="btn btn-secondary">Limpiar</button>
+                            <button type="submit" class="btn btn-primary">Insertar</button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
     </div>
 
     <!-- FOOTER -->

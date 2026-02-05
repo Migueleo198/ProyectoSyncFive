@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cuadrante Mensual</title>
 
     <!-- Bootstrap CSS -->
@@ -32,59 +33,59 @@
     <div id="header-placeholder"></div>
 
     <!-- LAYOUT -->
-    <div class="d-flex flex-grow-1">
+    <div class="container-fluid">
+        <div class="row">
 
-        <!-- SIDEBAR -->
-        <div id="sidebar-placeholder" class="sidebar-bg"></div>
+            <!-- SIDEBAR -->
+            <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
 
-        <!-- MAIN -->
-        <main class="p-3 w-100">
+            <!-- MAIN -->
+            <main class="col p-3 p-md-4 main-container">
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">Cuadrante mensual</h1>
-                <a href="https://www.notion.so/TU_PAGINA" target="_blank" class="text-dark">
-                    <i class="bi bi-question-circle fs-3"></i>
-                </a>
-            </div>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0">Cuadrante mensual</h1>
+                    <a href="https://www.notion.so/TU_PAGINA" target="_blank" class="text-dark">
+                        <i class="bi bi-question-circle fs-3"></i>
+                    </a>
+                </div>
 
-            <p>[Migas de pan]</p>
+                <p>[Migas de pan]</p>
 
-            <div class="container-fluid">
+                <div class="container-fluid">
 
-                <!-- CABECERA MES -->
-                <div class="d-flex justify-content-end align-items-center mb-3 bg-light p-2 rounded">
-                   
-                    <div class="fw-bold">
-                        <i class="bi bi-calendar3"></i>
-                        <span id="monthYear"></span>
+                    <!-- CABECERA MES -->
+                    <div class="d-flex justify-content-end align-items-center mb-3 bg-light p-2 rounded">
+                        
+                        <div class="fw-bold">
+                            <i class="bi bi-calendar3"></i>
+                            <span id="monthYear"></span>
+                        </div>
+                    </div>
+
+                    <!-- TABLA CUADRANTE -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle text-center">
+                            <thead class="table-secondary">
+                                <tr id="daysHeader">
+                                    <th style="min-width:140px">Bombero</th>
+                                </tr>
+                            </thead>
+                            <tbody id="calendarBody">
+                                <tr>
+                                    <td class="fw-bold">24</td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr class="table-secondary fw-bold">
+                                    <td>total guardia</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-
-                <!-- TABLA CUADRANTE -->
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm align-middle text-center">
-                        <thead class="table-secondary">
-                            <tr id="daysHeader">
-                                <th style="min-width:140px">Bombero</th>
-                            </tr>
-                        </thead>
-                        <tbody id="calendarBody">
-                            <tr>
-                                <td class="fw-bold">24</td>
-                            </tr>
-                            <tr>
-                                <td>&nbsp;</td>
-                            </tr>
-                            <tr class="table-secondary fw-bold">
-                                <td>total guardia</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-            </div>
-
-        </main>
+            </main>
+        </div>
     </div>
 
     <!-- FOOTER -->
