@@ -41,23 +41,24 @@
                         Operaciones
                     </h6>
                     <nav class="nav flex-column gap-1">
-                        <a href="/frontend/pages/Emergencia/vistaEmergencias.html"
+                        <a href="/frontend/pages/Emergencia/vistaEmergencia.html"
                             class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-fire text-danger me-2"></i>
                             <span>Emergencias</span>
                         </a>
-                        <a href="/frontend/pages/Avisos/vistaAvisos.html"
+                        <a href="/frontend/pages/Emergencia/vistaTipoEmergencia.html"
                             class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-bell text-warning me-2"></i>
+                            <i class="bi bi-collection text-danger me-2"></i>
+                            <span>Tipos - Emergencias</span>
+                        </a>
+                        <a href="/frontend/pages/Aviso/vistaAviso.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                            <i class="bi bi-bell text-danger me-2"></i>
                             <span>Avisos</span>
                         </a>
-                        <a href="/frontend/pages/Salidas/vistaSalidas.html"
-                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-geo-alt text-success me-2"></i>
-                            <span>Salidas</span>
-                        </a>
+                        
                         <a href="/frontend/pages/Mapa/vistaMapa.html" class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-map text-secondary me-2"></i>
+                            <i class="bi bi-map text-danger me-2"></i>
                             <span>Mapas</span>
                         </a>
                     </nav>
@@ -76,6 +77,16 @@
                             <i class="bi bi-calendar3 text-info me-2"></i>
                             <span>Alineación</span>
                         </a>
+                        <a href="/frontend/pages/Guardia/vistaGuardia.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                            <i class="bi bi-person-lock text-info me-2"></i>
+                            <span>Guardias</span>
+                        </a>
+                        <a href="/frontend/pages/TurnoRefuerzo/vistaRefuerzo.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                            <i class="bi bi-person-raised-hand text-info me-2"></i>
+                            <span>Turno Refuerzo</span>
+                        </a>
 
                         <!-- Cuadrante collapse -->
                         <div>
@@ -83,7 +94,7 @@
                                 class="nav-link link-dark d-flex justify-content-between align-items-center p-2 rounded w-100 border-0 bg-transparent"
                                 data-bs-toggle="collapse" data-bs-target="#cuadrante-sidebar" aria-expanded="false">
                                 <span>
-                                    <i class="bi bi-grid-1x2 text-primary me-2"></i>
+                                    <i class="bi bi-grid-1x2 text-info me-2"></i>
                                     Cuadrante
                                 </span>
                                 <i class="bi bi-chevron-down small transition-rotate"></i>
@@ -104,14 +115,19 @@
                             </div>
                         </div>
 
-                        <a href="/frontend/pages/Formacion/vistaFormaciones.html"
+                        <a href="/frontend/pages/Formacion/vistaFormacion.html"
                             class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-book text-primary me-2"></i>
+                            <i class="bi bi-book text-info me-2"></i>
                             <span>Formaciones</span>
                         </a>
-                        <a href="/frontend/pages/Carnet/CarnetCRUD.html"
+                        <a href="/frontend/pages/Edicion/vistaEdicion.html"
                             class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-credit-card text-success me-2"></i>
+                            <i class="bi bi-pencil-square text-info me-2"></i>
+                            <span>Ediciones</span>
+                        </a>
+                        <a href="/frontend/pages/Carnet/vistaCarnet.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                            <i class="bi bi-credit-card text-info me-2"></i>
                             <span>Carnets</span>
                         </a>
                         <a href="/frontend/pages/Permiso/vistaPermiso.html"
@@ -119,20 +135,13 @@
                             <i class="bi bi-person-check text-info me-2"></i>
                             <span>Permisos</span>
                         </a>
-
-                        <!--GUARDIA-->
-
-                        <a href="/frontend/pages/Guardia/vistaGuardia.html"
+                        <a href="/frontend/pages/Permiso/vistaMotivo.html"
                             class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-person-badge text-info me-2"></i>
-                            <span>Guardias</span>
+                            <i class="bi bi-clipboard-check text-info me-2"></i>
+                            <span>Motivos - Permisos</span>
                         </a>
                     </nav>
-
-
                 </div>
-
-
 
                 <hr class="my-2">
 
@@ -147,24 +156,34 @@
                             <i class="bi bi-truck text-success me-2"></i>
                             <span>Vehículos</span>
                         </a>
-                        <a href="/frontend/pages/Materiales/vistaMateriales.html"
+                        <a href="/frontend/pages/Material/vistaMaterial.html"
                             class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-box-seam text-primary me-2"></i>
+                            <i class="bi bi-box-seam text-success me-2"></i>
                             <span>Materiales</span>
                         </a>
-                        <a href="/frontend/pages/Materiales/vistaCategorias.html"
+                        <a href="/frontend/pages/Mantenimiento/vistaMantenimiento.html"
                             class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-tags text-warning me-2"></i>
-                            <span>Categorías</span>
+                            <i class="bi bi-wrench text-success me-2"></i>
+                            <span>Mantenimiento</span>
                         </a>
-                        <a href="/frontend/pages/Almacenes/vistaAlmacenes.html"
+                        <a href="/frontend/pages/Incidencia/vistaIncidencia.html"
                             class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-inbox text-info me-2"></i>
+                            <i class="bi bi-exclamation-triangle text-success me-2"></i>
+                            <span>Incidencias</span>
+                        </a>
+                        <a href="/frontend/pages/Material/vistaCategoria.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                            <i class="bi bi-tags text-success me-2"></i>
+                            <span>Categorías - Material </span>
+                        </a>
+                        <a href="/frontend/pages/Almacen/vistaAlmacen.html"
+                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
+                            <i class="bi bi-inbox text-success me-2"></i>
                             <span>Almacenes</span>
                         </a>
-                        <a href="/frontend/pages/Instalaciones/vistaInstalaciones.html"
+                        <a href="/frontend/pages/Instalacion/vistaInstalacion.html"
                             class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-building text-secondary me-2"></i>
+                            <i class="bi bi-building text-success me-2"></i>
                             <span>Instalaciones</span>
                         </a>
                     </nav>
@@ -179,17 +198,12 @@
                     </h6>
                     <nav class="nav flex-column gap-1">
                         <a href="/frontend/pages/Persona/vistaPersona.html" class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-people text-primary me-2"></i>
+                            <i class="bi bi-people text-secondary me-2"></i>
                             <span>Usuarios</span>
                         </a>
                         <a href="#" class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-person-badge text-info me-2"></i>
+                            <i class="bi bi-person-badge text-secondary me-2"></i>
                             <span>Cargos</span>
-                        </a>
-                        <a href="/frontend/pages/Edicion/vistaEdiciones.html"
-                            class="nav-link link-dark d-flex align-items-center p-2 rounded">
-                            <i class="bi bi-pencil-square text-warning me-2"></i>
-                            <span>Ediciones</span>
                         </a>
                         <a href="#" class="nav-link link-dark d-flex align-items-center p-2 rounded">
                             <i class="bi bi-gear text-secondary me-2"></i>
