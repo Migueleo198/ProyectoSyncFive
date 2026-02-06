@@ -5,7 +5,7 @@ namespace Models;
 
 use Core\DB;
 
-class ProfesorModel
+class FormacionModel
 {
     private DB $db;
 
@@ -49,7 +49,7 @@ class ProfesorModel
         $this->db->query("
             UPDATE Formacion SET
                 nombre = :nombre,
-                descripcion = :descripcion,
+                descripcion = :descripcion
             WHERE id_formacion = :id
         ")
         ->bind(":id", $id)

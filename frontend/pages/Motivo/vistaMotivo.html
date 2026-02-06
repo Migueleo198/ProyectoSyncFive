@@ -2,24 +2,24 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Control de Incidencias</title>
+    <title>Tipos de emergencia</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
-    <!-- CSS del proyecto -->
-    <link rel="stylesheet" href="../../assets/css/header_footer.css">
-    <link rel="stylesheet" href="../../assets/css/plantilla_css.css">
+    <!-- Configuración y rutas absolutas -->
+    <script src="/frontend/config/config.js"></script>
 
-    <!-- Configuración (basePath) -->
-    <script src="../../assets/javascript/config.js"></script>
+    <!-- CSS del proyecto usando loadCSS() -->
+    <script>
+        loadCSS("header_footer.css");
+        loadCSS("plantilla_css.css");
+    </script>
 
-    <!-- Script Filtro de la tabla -->
-    <script src="../../assets/javascript/script_filtro_tabla.js"></script>
-
-    <!-- Header / Footer / Sidebar -->
-    <script src="../../assets/javascript/header_footer.js"></script>
+    <!-- JS dependientes -->
+    <script src="/frontend/javascript/header_footer.js" defer></script>
+    <script src="/frontend/javascript/script_filtro_tabla.js" defer></script>
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -39,7 +39,7 @@
         <!-- CONTENIDO PRINCIPAL -->
         <main class="p-3 w-100">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">Incidencias</h1>
+                <h1 class="mb-0">Categorias</h1>
                 <!-- Icono de ayuda que redirige a Notion -->
                 <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
                    class="text-dark" title="Abrir ayuda en Notion">
@@ -55,11 +55,11 @@
             <div class="container mt-4 p-0"> 
                 <div id="filtroTabla" class="m-0 row d-flex justify-content-around"> <!-- Filtro -->
                     <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
-                        <label class="m-2" for="NombreResponsable">Nombre Responsable:</label>
-                        <input placeholder="NombreResponsable" id="NombreResponsable" type="text" class="form-control form-control-sm mt-1 filtro" data-col="1">
+                        <label class="m-2" for="nombre">Nombre:</label>
+                        <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="1">
                     </div>
                     <div class="col-md-5 d-flex align-items-center m-1">
-                        <label class="m-2" for="Asunto">Asunto:</label>
+                        <label class="m-2" for="Inventariable">Inventariable:</label>
                         <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="2">
                             <option value="">Todos</option>
                             <option>Incendio urbano</option>
@@ -71,23 +71,17 @@
                 <table class="table table-bordered table-striped" id="tabla">
                     <thead class="table-dark">
                         <tr> <!-- Cabecera de la tabla -->
-                            <th>Identificador Incidencia</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
-                            <th>Nombre Responsable</th>
-                            <th class="d-none d-md-table-cell">Fecha</th>
-                            <th>Asunto</th>
-                            <th class="d-none d-md-table-cell">Tipo</th>
-                            <th class="d-none d-md-table-cell">Estado</th>
+                            <th>Identificador Categoria</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
+                            <th>Nombre</th>
+                            <th>Inventariable</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Identificador Incidencia</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
-                            <td>Nombre Responsable</td>
-                            <td class="d-none d-md-table-cell">Fecha</td>
-                            <td>Asunto</td>
-                            <td class="d-none d-md-table-cell">Tipo</td>
-                            <td class="d-none d-md-table-cell">Estado</td>
+                            <td>Identificador Categoria</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
+                            <td>Nombre</td>
+                            <td>Inventariable</td>
                             <td class="d-flex justify-content-around">
                                 
                                 <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
@@ -112,34 +106,23 @@
             
             <!-- Contenedor insertar -->
             <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar Incidencia Vehiculo</h5>
+                <h5 class="text-center mb-4">Insertar Categoria</h5>
                 <form id="formInsertar" class="mx-auto">
                     <!-- Campos en la misma fila -->
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="insertMatricula" class="form-label">Matricula</label>
-                            <input type="text" class="form-control" id="insertMatricula" name="Matricula" required>
+                            <label for="insertIdentificador Categoria" class="form-label">Identificador Categoria</label>
+                            <input type="text" class="form-control" id="insertIdentificador Categoria" name="Identificador Categoria" required>
                         </div>
                         <div class="col-md-6">
-                            <label for="insertFecha" class="form-label">Fecha</label>
-                            <input type="text" class="form-control" id="insertFecha" name="Fecha" required>
+                            <label for="insertNombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="insertNombre" name="Nombre" required>
                         </div>
                         <div class="col-md-6">
-                            <label for="insertAsunto" class="form-label">Asunto</label>
-                            <input type="text" class="form-control" id="insertAsunto" name="Asunto" required>
+                            <label for="insertInventariable" class="form-label">Inventariable</label>
+                            <input type="text" class="form-control" id="insertInventariable" name="Inventariable" required>
                         </div>
-                        <div class="col-md-6">
-                            <label for="insertTipo" class="form-label">Tipo</label>
-                            <input type="text" class="form-control" id="insertTipo" name="Tipo" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="insertResponsable" class="form-label">Responsable</label>
-                            <input type="text" class="form-control" id="insertResponsable" name="Responsable" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="insertEstado" class="form-label">Estado</label>
-                            <input type="text" class="form-control" id="insertEstado" name="Estado" required>
-                        </div>
+                        
                     </div>
                     <!-- Botones centrados debajo -->
                     <div class="d-flex justify-content-center gap-2">
@@ -152,49 +135,6 @@
                     </div>
                 </form>
             </div>
-            
-            <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar Incidencia Material</h5>
-                <form id="formInsertar" class="mx-auto">
-                    <!-- Campos en la misma fila -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="insertMaterial" class="form-label">Material</label>
-                            <input type="text" class="form-control" id="insertMaterial" name="Material" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="insertFecha" class="form-label">Fecha</label>
-                            <input type="text" class="form-control" id="insertFecha" name="Fecha" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="insertAsunto" class="form-label">Asunto</label>
-                            <input type="text" class="form-control" id="insertAsunto" name="Asunto" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="insertTipo" class="form-label">Tipo</label>
-                            <input type="text" class="form-control" id="insertTipo" name="Tipo" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="insertResponsable" class="form-label">Responsable</label>
-                            <input type="text" class="form-control" id="insertResponsable" name="Responsable" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="insertEstado" class="form-label">Estado</label>
-                            <input type="text" class="form-control" id="insertEstado" name="Estado" required>
-                        </div>
-                    </div>
-                    <!-- Botones centrados debajo -->
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">
-                            Limpiar
-                        </button>
-                        <button type="submit" class="btn btn-primary" id="btnInsertar">
-                            Insertar
-                        </button>
-                    </div>
-                </form>
-            </div>
-            
         </main>
     </div>
 
@@ -237,8 +177,8 @@
                             <input type="text" class="form-control" id="editIdTipo" name="id_tipo" readonly>
                         </div>
                         <div class="mb-3">
-                            <label for="editNombreResponsable" class="form-label">Nombre Responsable</label>
-                            <input type="text" class="form-control" id="editNombreResponsable" name="NombreResponsable" required>
+                            <label for="editNombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="editNombre" name="nombre" required>
                         </div>
                         <div class="mb-3">
                             <label for="editGrupo" class="form-label">Grupo</label>
