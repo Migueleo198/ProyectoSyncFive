@@ -26,30 +26,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Modal VER dinámico
-    const modalVer = document.getElementById('modalVer');
+    // // Modal VER dinámico
+    // const modalVer = document.getElementById('modalVer');
 
-    modalVer.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget;
-        const row = button.closest('tr');
-        const cells = row.querySelectorAll('td');
-        const headerCells = document.querySelectorAll('#tabla thead tr th');
+    // modalVer.addEventListener('show.bs.modal', function (event) {
+    //     const button = event.relatedTarget;
+    //     const row = button.closest('tr');
+    //     const cells = row.querySelectorAll('td');
+    //     const headerCells = document.querySelectorAll('#tabla thead tr th');
 
-        const modalBody = document.getElementById('modalVerBody');
-        modalBody.innerHTML = ''; // Limpiar contenido previo
+    //     const modalBody = document.getElementById('modalVerBody');
+    //     modalBody.innerHTML = ''; // Limpiar contenido previo
 
-        cells.forEach((cell, index) => {
-            // Omitimos la columna de acciones si tiene botones
-            if (cell.querySelector('button')) return;
+    //     cells.forEach((cell, index) => {
+    //         // Omitimos la columna de acciones si tiene botones
+    //         if (cell.querySelector('button')) return;
 
-            // Tomamos el nombre de la columna desde el encabezado
-            const headerText = headerCells[index].textContent.trim();
-            const cellText = cell.textContent.trim();
+    //         // Tomamos el nombre de la columna desde el encabezado
+    //         const headerText = headerCells[index].textContent.trim();
+    //         const cellText = cell.textContent.trim();
 
-            const p = document.createElement('p');
-            p.innerHTML = `<strong>${headerText}:</strong> ${cellText}`;
-            modalBody.appendChild(p);
-        });
-    });
+    //         const p = document.createElement('p');
+    //         p.innerHTML = `<strong>${headerText}:</strong> ${cellText}`;
+    //         modalBody.appendChild(p);
+    //     });
+    // });
 
 });

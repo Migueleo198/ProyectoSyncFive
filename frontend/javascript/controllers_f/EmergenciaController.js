@@ -13,6 +13,7 @@ async function cargarEmergencias() {
   try {
     const response = await EmergenciaApi.getAll();
     emergencias = response.data; // guardamos globalmente
+    console.log('Emergencias cargadas:', emergencias);
     renderTablaEmergencias(emergencias);
   } catch (e) {
     mostrarError(e.message || 'Error cargando emergencias');
@@ -23,7 +24,7 @@ async function cargarEmergencias() {
 // ================================
 // RENDER TABLA
 // ================================
-function renderTablaEmergencias(emergencias,nombresColumnas) {
+function renderTablaEmergencias(emergencias) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
 
@@ -38,7 +39,10 @@ function renderTablaEmergencias(emergencias,nombresColumnas) {
       <td class="d-none d-md-table-cell">${e.direccion ?? ''}</td>
       <td>${e.nombre_tipo ?? ''}</td>
       <td class="d-flex justify-content-around">                     
-        <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
+        <button type="button" class="btn p-0 btn-ver" 
+                data-bs-toggle="modal" 
+                data-bs-target="#modalVer"
+                data-id="${e.id_emergencia}">
             <i class="bi bi-eye"></i>
         </button>
 
@@ -49,14 +53,15 @@ function renderTablaEmergencias(emergencias,nombresColumnas) {
             <i class="bi bi-pencil"></i>
         </button>
         
-        <button type="button" class="btn p-0 btn-eliminar" 
-                data-bs-toggle="modal" 
-                data-bs-target="#modalEliminar" 
-                data-id="${e.id_emergencia}">
-            <i class="bi bi-trash3"></i>
-        </button>
+        
       </td>  
     `;
+        // <button type="button" class="btn p-0 btn-eliminar" 
+        //         data-bs-toggle="modal"                                              BOTON ELIMINAR (AÑADIR SI SE REQUIERE)
+        //         data-bs-target="#modalEliminar" 
+        //         data-id="${e.id_emergencia}">
+        //     <i class="bi bi-trash3"></i>
+        // </button>
 
     tbody.appendChild(tr);
   });
@@ -152,55 +157,76 @@ document.addEventListener('click', async function(e) {
   }
 });
 
-// Guardar cambios
-// document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-//   const id = document.getElementById('btnGuardarCambios').dataset.id;
-//   const data = {
-//     nombre_tipo: document.getElementById('editNombre').value,
-//     grupo: document.getElementById('editGrupo').value
-//   };
+// ================================
+// MODAL VER
+// ================================
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.btn-ver');
+  if (!btn) return;
 
-//   try {
-//     await EmergenciaApi.update(id, data);
-//     // Actualizar tabla después de modificar
-//     await cargarEmergencias();
+  const id = btn.dataset.id;
 
-//     // Cerrar modal
-//     const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
-//     modal.hide();
-//   } catch (error) {
-//     console.error('Error al actualizar emergencia:', error);
-//   }
+  // Buscar la emergencia correspondiente
+  const emergencia = emergencias.find(em => em.id_emergencia == id);
+  if (!emergencia) return;
+
+  const modalBody = document.getElementById('modalVerBody');
+
+  // Limpiar contenido previo
+  while (modalBody.firstChild) {
+    modalBody.removeChild(modalBody.firstChild);
+  }
+
+  nombresCampos.forEach((nombre, index) => {
+    const p = document.createElement('p');
+
+    const strong = document.createElement('strong');
+    strong.textContent = nombre + ': ';
+
+    const value = document.createTextNode(
+      emergencia[camposBd[index]] ?? ''
+    );
+
+    p.appendChild(strong);
+    p.appendChild(value);
+    modalBody.appendChild(p);
+  });
+});
+
+// ================================
+// MODAL ELIMINAR (AÑADIR SI SE REQUIERE)   
+// ================================
+// document.addEventListener('click', function (e) {
+//   const btn = e.target.closest('.btn-eliminar');
+//   if (!btn) return;
+
+//   const id = btn.dataset.id;
+
+//   const btnConfirm = document.getElementById('btnConfirmarEliminar');
+//   btnConfirm.dataset.id = id;
 // });
 
-// ================================
-// MODAL ELIMINAR
-// ================================
-document.addEventListener('click', function(e) {
-  if (e.target.closest('.btn-eliminar')) {
-    const btn = e.target.closest('.btn-eliminar');
-    const id = btn.dataset.id;
+// document.getElementById('btnConfirmarEliminar')
+//   .addEventListener('click', async function () {
 
-    // Guardar el ID en el botón de confirmar
-    const btnConfirm = document.getElementById('btnConfirmarEliminar');
-    btnConfirm.dataset.id = id;
-  }
-});
+//     const id = this.dataset.id;
+//     if (!id) return;
 
-// Confirmar eliminación
-document.getElementById('btnConfirmarEliminar').addEventListener('click', async function() {
-  const id = this.dataset.id;
-  try {
-    await EmergenciaApi.delete(id); // eliminamos la emergencia
-    await cargarEmergencias();
+//     try {
+//       await EmergenciaApi.delete(id);
+//       await cargarEmergencias();
 
-    // Cerrar modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('modalEliminar'));
-    modal.hide();
-  } catch (error) {
-    console.error('Error al eliminar emergencia:', error);
-  }
-});
+//       // Cerrar modal
+//       const modal = bootstrap.Modal.getInstance(
+//         document.getElementById('modalEliminar')
+//       );
+//       modal.hide();
+
+//     } catch (error) {
+//       console.error('Error al eliminar emergencia:', error);
+//     }
+// });
+
 
 // ================================
 // ERRORES
