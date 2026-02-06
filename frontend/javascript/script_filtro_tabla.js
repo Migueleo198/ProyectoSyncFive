@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = event.relatedTarget;
         const row = button.closest('tr');
         const cells = row.querySelectorAll('td');
-        const headerCells = document.querySelectorAll('#tabla thead th');
+        const headerCells = document.querySelectorAll('#tabla thead tr th');
 
         const modalBody = document.getElementById('modalVerBody');
         modalBody.innerHTML = ''; // Limpiar contenido previo

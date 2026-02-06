@@ -19,7 +19,15 @@ class EmergenciaModel
     public function all(): array
     {
         return $this->db
-            ->query("SELECT * FROM Emergencia ORDER BY id_emergencia DESC")
+            ->query("
+                SELECT 
+                    e.*,
+                    t.nombre AS nombre_tipo
+                FROM Emergencia e
+                INNER JOIN Tipo_emergencia t 
+                    ON e.codigo_tipo = t.codigo_tipo
+                ORDER BY e.id_emergencia DESC
+            ")
             ->fetchAll();
     }
 

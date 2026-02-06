@@ -1,5 +1,4 @@
-// Ruta base para la API
-export const API_BASE_PATH = "/api";
+
 // Rutas base relativas a la raíz del frontend
 const BASE_PATH = "/frontend"; // Ajusta según tu servidor o entorno
 

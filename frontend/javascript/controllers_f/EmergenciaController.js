@@ -1,8 +1,9 @@
 import EmergenciaApi from '../api_f/EmergenciaApi.js';
 
+let emergencias = []; // GLOBAL para acceder desde los listeners
+
 document.addEventListener('DOMContentLoaded', () => {
   cargarEmergencias();
-  setupFormularioInsertar();
 });
 
 // ================================
@@ -10,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================================
 async function cargarEmergencias() {
   try {
-    const emergencias = await EmergenciaApi.getAll();
+    const response = await EmergenciaApi.getAll();
+    emergencias = response.data; // guardamos globalmente
     renderTablaEmergencias(emergencias);
   } catch (e) {
     mostrarError(e.message || 'Error cargando emergencias');
@@ -18,224 +20,160 @@ async function cargarEmergencias() {
 }
 
 // ================================
+// OBTENER CAMPOS DE LA TABLA
+// ================================
+// Seleccionamos todos los th dentro del thead de la tabla
+const thElements = document.querySelectorAll('#miTabla thead th');
+
+// Creamos un array con los textos de cada th
+const nombresColumnas = Array.from(thElements).map(th => th.textContent.trim());
+console.log(nombresColumnas); // Imprime los nombres de las columnas en la consola
+
+// ================================
 // RENDER TABLA
 // ================================
-function renderTablaEmergencias(emergencias) {
-  const tbody = document.querySelector('#tablaEmergencias tbody');
+function renderTablaEmergencias(emergencias,nombresColumnas) {
+  const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
 
   emergencias.forEach(e => {
     const tr = document.createElement('tr');
+
     tr.innerHTML = `
-      <td class="d-none d-md-table-cell">${e.id_emergencia || ''}</td>
-      <td>${formatearFecha(e.fecha) || ''}</td>
-      <td class="d-none d-md-table-cell">${e.descripcion || ''}</td>
-      <td>${e.estado || ''}</td>
-      <td class="d-none d-md-table-cell">${e.direccion || ''}</td>
-      <td>${e.tipo || ''}</td>
-      <td class="d-flex justify-content-around">
-        <button type="button" class="btn p-0 d-md-none btn-ver" 
-                data-id="${e.id_emergencia}" 
-                data-bs-toggle="modal" 
-                data-bs-target="#modalVer">
-          <i class="bi bi-eye"></i>
+      <td class="d-none d-md-table-cell">${e.id_emergencia}</td>
+      <td>${e.fecha}</td>
+      <td class="d-none d-md-table-cell">${e.descripcion ?? ''}</td>
+      <td>${e.estado}</td>
+      <td class="d-none d-md-table-cell">${e.direccion ?? ''}</td>
+      <td>${e.nombre_tipo ?? ''}</td>
+      <td class="d-flex justify-content-around">                     
+        <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
+            <i class="bi bi-eye"></i>
         </button>
+
         <button type="button" class="btn p-0 btn-editar" 
-                data-id="${e.id_emergencia}"
                 data-bs-toggle="modal" 
-                data-bs-target="#modalEditar">
-          <i class="bi bi-pencil"></i>
+                data-bs-target="#modalEditar" 
+                data-id="${e.id_emergencia}"
+                data-campos="${nombresColumnas}">
+            <i class="bi bi-pencil"></i>
         </button>
+        
         <button type="button" class="btn p-0 btn-eliminar" 
-                data-id="${e.id_emergencia}"
                 data-bs-toggle="modal" 
-                data-bs-target="#modalEliminar">
-          <i class="bi bi-trash3"></i>
+                data-bs-target="#modalEliminar" 
+                data-id="${e.id_emergencia}">
+            <i class="bi bi-trash3"></i>
         </button>
-      </td>
+      </td>  
     `;
+
     tbody.appendChild(tr);
   });
-
-  // Agregar event listeners
-  document.querySelectorAll('.btn-ver').forEach(btn => {
-    btn.addEventListener('click', () => verEmergencia(btn.dataset.id));
-  });
-
-  document.querySelectorAll('.btn-editar').forEach(btn => {
-    btn.addEventListener('click', () => editarEmergencia(btn.dataset.id));
-  });
-
-  document.querySelectorAll('.btn-eliminar').forEach(btn => {
-    btn.addEventListener('click', () => prepararEliminar(btn.dataset.id));
-  });
 }
 
 // ================================
-// VER DETALLE
+// MODAL EDITAR
 // ================================
-async function verEmergencia(idEmergencia) {
-  try {
-    const emergencia = await EmergenciaApi.getById(idEmergencia);
-    const modalBody = document.getElementById('modalVerBody');
-    
-    modalBody.innerHTML = `
-      <div class="mb-2"><strong>Código:</strong> ${emergencia.id_emergencia || ''}</div>
-      <div class="mb-2"><strong>Fecha:</strong> ${formatearFecha(emergencia.fecha) || ''}</div>
-      <div class="mb-2"><strong>Estado:</strong> ${emergencia.estado || ''}</div>
-      <div class="mb-2"><strong>Tipo:</strong> ${emergencia.tipo || ''}</div>
-      <div class="mb-2"><strong>Dirección:</strong> ${emergencia.direccion || ''}</div>
-      <div class="mb-2"><strong>Descripción:</strong> ${emergencia.descripcion || ''}</div>
-      <div class="mb-2"><strong>Operador:</strong> ${emergencia.nom_operador || ''}</div>
-      <div class="mb-2"><strong>Solicitante:</strong> ${emergencia.nom_solicitante || ''}</div>
-      <div class="mb-2"><strong>Teléfono:</strong> ${emergencia.tlfn_solicitante || ''}</div>
-    `;
-  } catch (e) {
-    mostrarError(e.message || 'Error al cargar el detalle');
-  }
-}
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.btn-editar')) {
+    const btn = e.target.closest('.btn-editar');
+    const id = btn.dataset.id;
 
-// ================================
-// EDITAR EMERGENCIA
-// ================================
-async function editarEmergencia(idEmergencia) {
-  try {
-    const emergencia = await EmergenciaApi.getById(idEmergencia);
-    
-    // Rellenar el formulario del modal de edición
-    document.getElementById('editIdEmergencia').value = emergencia.id_emergencia || '';
-    document.getElementById('editFecha').value = emergencia.fecha || '';
-    document.getElementById('editEstado').value = emergencia.estado || '';
-    document.getElementById('editTipo').value = emergencia.tipo || '';
-    document.getElementById('editDireccion').value = emergencia.direccion || '';
-    document.getElementById('editDescripcion').value = emergencia.descripcion || '';
-    document.getElementById('editOperador').value = emergencia.nom_operador || '';
-    document.getElementById('editSolicitante').value = emergencia.nom_solicitante || '';
-    document.getElementById('editTelefono').value = emergencia.tlfn_solicitante || '';
-    
-    // Guardar el ID para usarlo al guardar cambios
-    document.getElementById('btnGuardarCambios').dataset.id = idEmergencia;
-  } catch (e) {
-    mostrarError(e.message || 'Error al cargar datos para editar');
-  }
-}
-
-// Guardar cambios de edición
-document.addEventListener('DOMContentLoaded', () => {
-  const btnGuardar = document.getElementById('btnGuardarCambios');
-  if (btnGuardar) {
-    btnGuardar.addEventListener('click', async () => {
-      const idEmergencia = btnGuardar.dataset.id;
-      const datos = {
-        fecha: document.getElementById('editFecha').value,
-        estado: document.getElementById('editEstado').value,
-        tipo: document.getElementById('editTipo').value,
-        direccion: document.getElementById('editDireccion').value,
-        descripcion: document.getElementById('editDescripcion').value,
-        nom_operador: document.getElementById('editOperador').value,
-        nom_solicitante: document.getElementById('editSolicitante').value,
-        tlfn_solicitante: document.getElementById('editTelefono').value
-      };
+    // // Buscar la emergencia correspondiente
+    // const emergencia = emergencias.getById(em => em.id_emergencia == id);
+    // if (!emergencia) return;
+    const form = document.getElementById('formEditar');
+    // Rellenar el modal
+    nombresColumnas.forEach((nombre) => {
       
-      try {
-        await EmergenciaApi.update(idEmergencia, datos);
-        
-        // Cerrar modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
-        modal.hide();
-        
-        // Recargar tabla
-        cargarEmergencias();
-        
-        mostrarExito('Emergencia actualizada correctamente');
-      } catch (e) {
-        mostrarError(e.message || 'Error al actualizar');
-      }
+      // contenedor
+      const div = document.createElement('div');
+      div.className = 'mb-3';
+
+      // label
+      const label = document.createElement('label');
+      label.className = 'form-label';
+      label.textContent = nombre;
+
+      // input
+      // const input = document.createElement('input');
+      // input.className = 'form-control';
+      // input.name = nombre.toLowerCase();
+      // input.value = emergencia[nombre.toLowerCase()] ?? '';
+
+      // // readonly si es ID
+      // if (field === 'id_emergencia') {
+      //   input.readOnly = true;
+      // }
+      
+      // Añadir al formulario
+      div.append(label, input);
+      form.appendChild(div);
     });
+    // Guardar id en el botón de guardar cambios
+    const btnGuardarCambios = document.createElement('button');
+    btnGuardarCambios.id = 'btnGuardarCambios';
+    btnGuardarCambios.dataset.id = id;
+    btnGuardarCambios.textContent = 'Guardar Cambios';
+    form.appendChild(btnGuardarCambios);
+  }
+
+});
+
+// Guardar cambios
+document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
+  const id = document.getElementById('btnGuardarCambios').dataset.id;
+  const data = {
+    nombre_tipo: document.getElementById('editNombre').value,
+    grupo: document.getElementById('editGrupo').value
+  };
+
+  try {
+    await EmergenciaApi.update(id, data);
+    // Actualizar tabla después de modificar
+    await cargarEmergencias();
+
+    // Cerrar modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
+    modal.hide();
+  } catch (error) {
+    console.error('Error al actualizar emergencia:', error);
   }
 });
 
 // ================================
-// ELIMINAR EMERGENCIA
+// MODAL ELIMINAR
 // ================================
-let idEmergenciaEliminar = null;
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.btn-eliminar')) {
+    const btn = e.target.closest('.btn-eliminar');
+    const id = btn.dataset.id;
 
-function prepararEliminar(idEmergencia) {
-  idEmergenciaEliminar = idEmergencia;
-}
+    // Guardar el ID en el botón de confirmar
+    const btnConfirm = document.getElementById('btnConfirmarEliminar');
+    btnConfirm.dataset.id = id;
+  }
+});
 
-document.addEventListener('DOMContentLoaded', () => {
-  const btnConfirmar = document.getElementById('btnConfirmarEliminar');
-  if (btnConfirmar) {
-    btnConfirmar.addEventListener('click', async () => {
-      if (!idEmergenciaEliminar) return;
-      
-      try {
-        await EmergenciaApi.delete(`/${idEmergenciaEliminar}`);
-        
-        // Cerrar modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('modalEliminar'));
-        modal.hide();
-        
-        // Recargar tabla
-        cargarEmergencias();
-        
-        mostrarExito('Emergencia eliminada correctamente');
-        idEmergenciaEliminar = null;
-      } catch (e) {
-        mostrarError(e.message || 'Error al eliminar');
-      }
-    });
+// Confirmar eliminación
+document.getElementById('btnConfirmarEliminar').addEventListener('click', async function() {
+  const id = this.dataset.id;
+  try {
+    await EmergenciaApi.delete(id); // eliminamos la emergencia
+    await cargarEmergencias();
+
+    // Cerrar modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalEliminar'));
+    modal.hide();
+  } catch (error) {
+    console.error('Error al eliminar emergencia:', error);
   }
 });
 
 // ================================
-// FORMULARIO INSERTAR
+// ERRORES
 // ================================
-function setupFormularioInsertar() {
-  const form = document.getElementById('formIncidencia');
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const formData = new FormData(form);
-      const datos = {
-        fecha: formData.get('fecha'),
-        estado: formData.get('estado'),
-        direccion: formData.get('direccion'),
-        tipo: formData.get('tipo'),
-        nom_operador: formData.get('operador'),
-        nom_solicitante: formData.get('solicitante'),
-        tlfn_solicitante: formData.get('tlfSolicitante'),
-        descripcion: formData.get('descripcion')
-      };
-      
-      try {
-        await EmergenciaApi.create(datos);
-        form.reset();
-        cargarEmergencias();
-        mostrarExito('Emergencia creada correctamente');
-      } catch (e) {
-        mostrarError(e.message || 'Error al crear emergencia');
-      }
-    });
-  }
-}
-
-// ================================
-// UTILIDADES
-// ================================
-function formatearFecha(fecha) {
-  if (!fecha) return '';
-  const date = new Date(fecha);
-  return date.toLocaleDateString('es-ES');
-}
-
 function mostrarError(msg) {
-  alert('Error: ' + msg);
-  console.error(msg);
-}
-
-function mostrarExito(msg) {
   alert(msg);
 }
