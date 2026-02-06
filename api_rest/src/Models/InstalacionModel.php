@@ -17,25 +17,25 @@ class InstalacionModel
     public function all(): array
     {
         return $this->db
-            ->query("
-                SELECT i.*, l.provincia 
-                FROM Instalacion i
-                INNER JOIN Localidad l ON i.localidad = l.localidad
-                ORDER BY i.id_instalacion ASC
-            ")
+            ->query("SELECT * FROM Instalacion ORDER BY id_instalacion ASC")
             ->fetchAll();
     }
 
     public function find(int $id): ?array
     {
         $result = $this->db
-            ->query("
-                SELECT i.*, l.provincia 
-                FROM Instalacion i
-                INNER JOIN Localidad l ON i.localidad = l.localidad
-                WHERE i.id_instalacion = :id
-            ")
+            ->query("SELECT * FROM Instalacion WHERE id_instalacion = :id")
             ->bind(":id", $id)
+            ->fetch();
+
+        return $result ?: null;
+    }
+
+    public function findByLogin(string $login): ?array
+    {
+        $result = $this->db
+            ->query("SELECT * FROM Instalacion WHERE login = :login")
+            ->bind(":login", $login)
             ->fetch();
 
         return $result ?: null;
@@ -44,14 +44,14 @@ class InstalacionModel
     public function create(array $data): int|false
     {
         $this->db->query("
-            INSERT INTO Instalacion (nombre, direccion, telefono, correo, localidad)
-            VALUES (:nombre, :direccion, :telefono, :correo, :localidad)
+            INSERT INTO Instalacion ( nombre, direccion, localidad, telefono, correo)
+            VALUES (:nombre, :direccion, :localidad, :telefono, :correo)
         ")
-        ->bind(":nombre", $data['nombre'])
-        ->bind(":direccion", $data['direccion'])
-        ->bind(":telefono", $data['telefono'])
-        ->bind(":correo", $data['correo'])
-        ->bind(":localidad", $data['localidad'])
+        ->bind(":nombre",   $data['nombre'])
+        ->bind(":direccion",   $data['direccion'])
+        ->bind(":localidad",   $data['localidad'])
+        ->bind(":telefono",   $data['telefono'])
+        ->bind(":correo",   $data['correo'])
         ->execute();
 
         return (int) $this->db->lastId();
@@ -60,20 +60,34 @@ class InstalacionModel
     public function update(int $id, array $data): int
     {
         $this->db->query("
-            UPDATE Instalacion SET
+            UPDATE Instalacion SET 
                 nombre = :nombre,
                 direccion = :direccion,
+                localidad = :localidad,
                 telefono = :telefono,
-                correo = :correo,
-                localidad = :localidad
+                correo = :correo
             WHERE id_instalacion = :id
         ")
         ->bind(":id", $id)
-        ->bind(":nombre", $data['nombre'])
-        ->bind(":direccion", $data['direccion'])
-        ->bind(":telefono", $data['telefono'])
-        ->bind(":correo", $data['correo'])
-        ->bind(":localidad", $data['localidad'])
+        ->bind(":nombre",   $data['nombre'] ?? null)
+        ->bind(":direccion",   $data['direccion'] ?? null)
+        ->bind(":localidad",   $data['localidad'] ?? null)
+        ->bind(":telefono",   $data['telefono'] ?? null)
+        ->bind(":correo",   $data['correo'] ?? null)
+        ->execute();
+
+        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+    }
+
+    public function updateEmail(int $id, array $data): int
+    {
+        $this->db->query("
+            UPDATE Instalacion SET
+                email = :email
+            WHERE id_instalacion = :id
+        ")
+        ->bind(":id", $id)
+        ->bind(":email",    $data['email'])
         ->execute();
 
         return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
@@ -86,28 +100,5 @@ class InstalacionModel
                  ->execute();
 
         return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-    }
-
-    public function existeLocalidad(string $localidad): bool
-    {
-        $result = $this->db
-            ->query("SELECT 1 FROM Localidad WHERE localidad = :localidad")
-            ->bind(":localidad", $localidad)
-            ->fetch();
-
-        return $result !== null;
-    }
-
-    public function getVehiculos(int $id_instalacion): array
-    {
-        return $this->db
-            ->query("
-                SELECT v.* 
-                FROM Vehiculo v
-                WHERE v.id_instalacion = :id_instalacion
-                ORDER BY v.matricula ASC
-            ")
-            ->bind(":id_instalacion", $id_instalacion)
-            ->fetchAll();
     }
 }

@@ -17,6 +17,7 @@ class InstalacionService
         $this->model = new InstalacionModel();
     }
 
+
     public function getAllInstalaciones(): array
     {
         try {
@@ -25,6 +26,7 @@ class InstalacionService
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
     }
+
 
     public function getInstalacionById(int $id): array
     {
@@ -45,20 +47,16 @@ class InstalacionService
         return $instalacion;
     }
 
+
     public function createInstalacion(array $input): array
     {
         $data = Validator::validate($input, [
-            'nombre'     => 'required|string|min:3|max:100',
-            'direccion'  => 'required|string|min:5|max:150',
-            'telefono'   => 'required|string|min:9|max:15',
-            'correo'     => 'required|email|max:100',
-            'localidad'  => 'required|string|max:100'
+            'nombre'            => 'required|string|max:100',
+            'direccion'         => 'required|string|max:255',
+            'localidad'         => 'required|string|max:100',
+            'telefono'          => 'string|max:20',
+            'correo'            => 'required|string|max:120'
         ]);
-
-        // Verificar que la localidad existe
-        if (!$this->model->existeLocalidad($data['localidad'])) {
-            throw new \Exception("Localidad no encontrada", 400);
-        }
 
         try {
             $id = $this->model->create($data);
@@ -70,8 +68,9 @@ class InstalacionService
             throw new \Exception("No se pudo crear la instalación");
         }
 
-        return ['id_instalacion' => $id];
+        return ['id' => $id];
     }
+
 
     public function updateInstalacion(int $id, array $input): array
     {
@@ -80,17 +79,13 @@ class InstalacionService
         ]);
 
         $data = Validator::validate($input, [
-            'nombre'     => 'required|string|min:3|max:100',
-            'direccion'  => 'required|string|min:5|max:150',
-            'telefono'   => 'required|string|min:9|max:15',
-            'correo'     => 'required|email|max:100',
-            'localidad'  => 'required|string|max:100'
+            'nombre'            => 'required|string|max:100',
+            'direccion'         => 'required|string|max:255',
+            'localidad'         => 'required|string|max:100',
+            'telefono'          => 'string|max:20',
+            'correo'            => 'required|string|max:120'
         ]);
 
-        // Verificar que la localidad existe
-        if (!$this->model->existeLocalidad($data['localidad'])) {
-            throw new \Exception("Localidad no encontrada", 400);
-        }
 
         try {
             $result = $this->model->update($id, $data);
@@ -123,6 +118,7 @@ class InstalacionService
 
     public function deleteInstalacion(int $id): void
     {
+        // Validar ID
         Validator::validate(['id' => $id], [
             'id' => 'required|int|min:1'
         ]);
@@ -134,30 +130,15 @@ class InstalacionService
         }
 
         if ($result === 0) {
+            // No existe el registro
             throw new \Exception("Instalación no encontrada", 404);
         }
 
         if ($result === -1) {
-            throw new \Exception("No se puede eliminar la instalación: hay vehículos o almacenes asociados", 409);
-        }
-    }
-
-    public function getVehiculosDeInstalacion(int $id_instalacion): array
-    {
-        Validator::validate(['id_instalacion' => $id_instalacion], [
-            'id_instalacion' => 'required|int|min:1'
-        ]);
-
-        // Verificar que la instalación existe
-        $instalacion = $this->model->find($id_instalacion);
-        if (!$instalacion) {
-            throw new \Exception("Instalación no encontrada", 404);
+            // Conflicto por FK u otra restricción
+            throw new \Exception("No se puede eliminar la instalación: el registro está en uso", 409);
         }
 
-        try {
-            return $this->model->getVehiculos($id_instalacion);
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
-        }
+        // Eliminación exitosa → no retorna nada
     }
 }
