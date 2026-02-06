@@ -14,69 +14,85 @@ class IncidenciaModel
         $this->db = new DB();
     }
 
+    // GET, /incidencias
     public function all(): array
     {
         return $this->db
             ->query("
                 SELECT i.*, 
-                       m.nombre as material_nombre,
                        p.nombre as bombero_nombre, 
                        p.apellidos as bombero_apellidos,
-                       v.nombre as vehiculo_nombre
+                       m.nombre as material_nombre,
+                       v.modelo as vehiculo_modelo
                 FROM Incidencia i
-                LEFT JOIN Material m ON i.id_material = m.id_material
                 LEFT JOIN Persona p ON i.id_bombero = p.id_bombero
+                LEFT JOIN Material m ON i.id_material = m.id_material
                 LEFT JOIN Vehiculo v ON i.matricula = v.matricula
-                ORDER BY i.id_incidencia DESC
+                ORDER BY i.id_incidencia ASC
             ")
             ->fetchAll();
     }
-
-    public function find(int $id_incidencia): ?array
+    public function find(int $id): ?array
     {
         $result = $this->db
             ->query("
                 SELECT i.*, 
-                       m.nombre as material_nombre,
                        p.nombre as bombero_nombre, 
                        p.apellidos as bombero_apellidos,
-                       v.nombre as vehiculo_nombre
+                       m.nombre as material_nombre,
+                       v.modelo as vehiculo_modelo
                 FROM Incidencia i
-                LEFT JOIN Material m ON i.id_material = m.id_material
                 LEFT JOIN Persona p ON i.id_bombero = p.id_bombero
+                LEFT JOIN Material m ON i.id_material = m.id_material
                 LEFT JOIN Vehiculo v ON i.matricula = v.matricula
                 WHERE i.id_incidencia = :id
             ")
-            ->bind(":id", $id_incidencia)
+            ->bind(":id", $id)
             ->fetch();
 
         return $result ?: null;
     }
-
+    // POST, /incidencias
     public function create(array $data): int|false
     {
         $this->db->query("
-            INSERT INTO Incidencia (id_material, id_bombero, matricula, fecha, asunto, estado, tipo)
-            VALUES (:id_material, :id_bombero, :matricula, :fecha, :asunto, :estado, :tipo)
+            INSERT INTO Incidencia (
+                id_bombero, 
+                id_material, 
+                matricula, 
+                fecha, 
+                asunto, 
+                estado, 
+                tipo
+            ) VALUES (
+                :id_bombero, 
+                :id_material, 
+                :matricula, 
+                :fecha, 
+                :asunto, 
+                :estado, 
+                :tipo
+            )
         ")
+        ->bind(":id_bombero", $data['id_bombero'])
         ->bind(":id_material", $data['id_material'] ?? null)
-        ->bind(":id_bombero", $data['id_bombero'] ?? null)
         ->bind(":matricula", $data['matricula'] ?? null)
         ->bind(":fecha", $data['fecha'])
         ->bind(":asunto", $data['asunto'])
         ->bind(":estado", $data['estado'])
-        ->bind(":tipo", $data['tipo'] ?? null)
+        ->bind(":tipo", $data['tipo'])
         ->execute();
 
         return (int) $this->db->lastId();
     }
 
-    public function update(int $id_incidencia, array $data): int
+    // PUT, /incidencias/{id_incidencia}'
+    public function update(int $id, array $data): int
     {
         $this->db->query("
             UPDATE Incidencia SET
-                id_material = :id_material,
                 id_bombero = :id_bombero,
+                id_material = :id_material,
                 matricula = :matricula,
                 fecha = :fecha,
                 asunto = :asunto,
@@ -84,39 +100,59 @@ class IncidenciaModel
                 tipo = :tipo
             WHERE id_incidencia = :id
         ")
-        ->bind(":id", $id_incidencia)
+        ->bind(":id", $id)
+        ->bind(":id_bombero", $data['id_bombero'])
         ->bind(":id_material", $data['id_material'] ?? null)
-        ->bind(":id_bombero", $data['id_bombero'] ?? null)
         ->bind(":matricula", $data['matricula'] ?? null)
         ->bind(":fecha", $data['fecha'])
         ->bind(":asunto", $data['asunto'])
         ->bind(":estado", $data['estado'])
-        ->bind(":tipo", $data['tipo'] ?? null)
+        ->bind(":tipo", $data['tipo'])
         ->execute();
 
-        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+        return $this->getAffectedRows();
     }
 
-    public function updateEstado(int $id_incidencia, string $estado): int
+    // PATCH, /incidencias/{id_incidencia}'
+    public function patch(int $id, array $data): int
     {
-        $this->db->query("
-            UPDATE Incidencia SET
-                estado = :estado
-            WHERE id_incidencia = :id
-        ")
-        ->bind(":id", $id_incidencia)
-        ->bind(":estado", $estado)
-        ->execute();
-
-        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+        // Construir dinámicamente la consulta SET
+        $fields = [];
+        foreach ($data as $key => $value) {
+            $fields[] = "$key = :$key";
+        }
+        
+        if (empty($fields)) {
+            return 0;
+        }
+        
+        $setClause = implode(", ", $fields);
+        $query = "UPDATE Incidencia SET $setClause WHERE id_incidencia = :id";
+        
+        $stmt = $this->db->query($query)->bind(":id", $id);
+        
+        foreach ($data as $key => $value) {
+            $stmt->bind(":$key", $value);
+        }
+        
+        $stmt->execute();
+        return $this->getAffectedRows();
     }
 
-    public function delete(int $id_incidencia): int
+    // DELETE, /incidencias/{id_incidencia}'
+    public function delete(int $id): int
     {
         $this->db->query("DELETE FROM Incidencia WHERE id_incidencia = :id")
-                 ->bind(":id", $id_incidencia)
+                 ->bind(":id", $id)
                  ->execute();
+        
+        return $this->getAffectedRows();
+    }
 
-        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+    // Método auxiliar para obtener el número de filas afectadas
+    private function getAffectedRows(): int
+    {
+        $result = $this->db->query("SELECT ROW_COUNT() AS affected")->fetch();
+        return (int) ($result['affected'] ?? 0);
     }
 }

@@ -18,10 +18,8 @@ class IncidenciaController
     {
         $this->service = new IncidenciaService();
     }
-
-    /**
-     * GET /incidencias
-     */
+    //++++++++++++++++++++++++++++++ Incidencia ++++++++++++++++++++++++++++++
+    // GET, /incidencias
     public function index(Request $req, Response $res): void
     {
         try {
@@ -31,83 +29,57 @@ class IncidenciaController
             $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
         }
     }
-
-    /**
-     * POST /incidencias
-     */
+    // POST, /incidencias
     public function store(Request $req, Response $res): void
     {
         try {
-            $result = $this->service->createIncidencia($req->json());
-
-            $res->status(201)->json(
-                ['cod_incidencia' => $result['cod_incidencia']],
-                "Incidencia creada correctamente"
-            );
+            $input = $req->json();
+            $incidencia = $this->service->createincidencia($input);
+            $res->status(201)->json($incidencia);
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
         } catch (Throwable $e) {
             $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
         }
     }
-
-    /**
-     * PUT /incidencias/{cod_incidencia}
-     */
-    public function update(Request $req, Response $res, string $cod): void
+    // PUT, /incidencias/{cod_incidencia}'
+    public function update(Request $req, Response $res, string $id): void
     {
         try {
-            $result = $this->service->updateIncidencia((int) $cod, $req->json());
-
-            if ($result['status'] === 'no_changes') {
-                $res->status(200)->json([], $result['message']);
-                return;
-            }
-
-            $res->status(200)->json([], $result['message']);
+            $input = $req->json();
+            $incidencia = $this->service->updateincidencia((int) $id, $input);
+            $res->status(200)->json($incidencia);
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
         } catch (Throwable $e) {
-            $code = $e->getCode() > 0 ? $e->getCode() : 500;
-            $res->errorJson($e->getMessage(), $code);
+            $status = $e->getCode() === 404 ? 404 : 500;
+            $res->errorJson($e->getMessage(), $status);
         }
     }
-
-    /**
-     * PATCH /incidencias/{cod_incidencia}
-     */
-    public function patch(Request $req, Response $res, string $cod): void
+    // PATCH, /incidencias/{cod_incidencia}'
+    public function patch(Request $req, Response $res, string $id): void
     {
         try {
-            $result = $this->service->patchIncidencia((int) $cod, $req->json());
-
-            if ($result['status'] === 'no_changes') {
-                $res->status(200)->json([], $result['message']);
-                return;
-            }
-
-            $res->status(200)->json([], $result['message']);
+            $input = $req->json();
+            $incidencia = $this->service->patchincidencia((int) $id, $input);
+            $res->status(200)->json($incidencia);
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
         } catch (Throwable $e) {
-            $code = $e->getCode() > 0 ? $e->getCode() : 500;
-            $res->errorJson($e->getMessage(), $code);
+            $status = $e->getCode() === 404 ? 404 : 500;
+            $res->errorJson($e->getMessage(), $status);
+        }
+    }
+    // DELETE, /incidencias/{cod_incidencia}'
+    public function delete(Request $req, Response $res, string $id): void
+    {
+        try {
+            $this->service->deleteincidencia((int) $id);
+            $res->status(204)->json(['message' => "incidencia eliminado correctamente"]);
+        } catch (Throwable $e) {
+            $status = $e->getCode() === 404 ? 404 : 500;
+            $res->errorJson($e->getMessage(), $status);
         }
     }
 
-    /**
-     * DELETE /incidencias/{cod_incidencia}
-     */
-    public function destroy(Request $req, Response $res, string $cod): void
-    {
-        try {
-            $this->service->deleteIncidencia((int) $cod);
-            $res->status(200)->json([], "Incidencia eliminada correctamente");
-        } catch (ValidationException $e) {
-            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-        } catch (Throwable $e) {
-            $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
-            $res->errorJson($e->getMessage(), $code);
-        }
-    }
 }
