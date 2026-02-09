@@ -157,11 +157,11 @@ class VehiculoService
 
         $data = Validator::validate($input, [
             'nombre'      => 'required|string|max:100',
-            'descripcion' => 'nullable|string|max:255',
+            'descripcion' => 'string|max:255',
             'unidades'    => 'required|int|min:1',  // CAMBIADO: 'cantidad' → 'unidades'
             'id_categoria' => 'required|int',
             'estado'      => 'required|string|in:ALTA,BAJA',
-            'nserie'      => 'nullable|string|max:50'
+            'nserie'      => 'string|max:50'
         ]);
 
         try {
@@ -184,11 +184,11 @@ class VehiculoService
 
         $data = Validator::validate($input, [
             'nombre'      => 'required|string|max:100',
-            'descripcion' => 'nullable|string|max:255',
+            'descripcion' => 'string|max:255',
             'unidades'    => 'required|int|min:1',  // CAMBIADO: 'cantidad' → 'unidades'
             'id_categoria' => 'required|int',
             'estado'      => 'required|string|in:ALTA,BAJA',
-            'nserie'      => 'nullable|string|max:50'
+            'nserie'      => 'string|max:50'
         ]);
 
         try {

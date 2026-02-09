@@ -30,11 +30,11 @@ class VehiculoModel
             VALUES (:matricula, :nombre, :marca, :modelo, :tipo, :disponibilidad)
         ")
         ->bind(":matricula", $data['matricula'])
-        ->bind(":nombre",  $data['nombre'] ?? $data['matricula'])
+        ->bind(":nombre",  $data['nombre'])
         ->bind(":marca", $data['marca'])
         ->bind(":modelo", $data['modelo'])
-        ->bind(":tipo", $data['tipo'] ?? 'Desconocido')
-        ->bind(":disponibilidad", $data['disponibilidad'] ?? 1)
+        ->bind(":tipo", $data['tipo'])
+        ->bind(":disponibilidad", $data['disponibilidad'])
         ->execute();
 
         $insertado = $this->find($data['matricula']);
@@ -70,11 +70,11 @@ class VehiculoModel
             WHERE matricula = :matricula
         ")
         ->bind(":matricula", $matricula)
-        ->bind(":nombre", $data['nombre'] ?? $data['matricula'])
+        ->bind(":nombre", $data['nombre'])
         ->bind(":marca", $data['marca'])
         ->bind(":modelo", $data['modelo'])
-        ->bind(":tipo", $data['tipo'] ?? 'Desconocido')
-        ->bind(":disponibilidad", $data['disponibilidad'] ?? 1)
+        ->bind(":tipo", $data['tipo'])
+        ->bind(":disponibilidad", $data['disponibilidad'])
         ->execute();
         
         $actualizado = $this->find($matricula);
