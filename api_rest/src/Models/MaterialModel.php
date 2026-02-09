@@ -39,7 +39,7 @@ class MaterialModel
         ")
         ->bind(":id_categoria", $data['id_categoria'])
         ->bind(":nombre",  $data['nombre'])
-        ->bind(":descripcion", $data['descripcion'] ?? null)
+        ->bind(":descripcion", $data['descripcion'])
         ->bind(":estado", $data['estado'])
         ->execute();
 
@@ -59,7 +59,7 @@ class MaterialModel
         ->bind(":id", $id)
         ->bind(":id_categoria", $data['id_categoria'])
         ->bind(":nombre",   $data['nombre'])
-        ->bind(":descripcion", $data['descripcion'] ?? null)
+        ->bind(":descripcion", $data['descripcion'])
         ->bind(":estado", $data['estado'])
         ->execute();
 
@@ -90,40 +90,24 @@ class MaterialModel
             ->fetchAll();
     }
 
-    public function createForVehiculo(string $matricula, array $data): int|false
+    public function createForVehiculo(string $matricula, int $id_material, array $data): bool
     {
         try {
-            $this->db->beginTransaction();
-            
-            // Primero crea el material (SIN cantidad)
-            $this->db->query("
-                INSERT INTO Material (nombre, descripcion, id_categoria, estado)
-                VALUES (:nombre, :descripcion, :id_categoria, :estado)
-            ")
-            ->bind(":nombre", $data['nombre'])
-            ->bind(":descripcion", $data['descripcion'] ?? null)
-            ->bind(":id_categoria", $data['id_categoria'] ?? 1)
-            ->bind(":estado", $data['estado'] ?? 'ALTA')
-            ->execute();
-
-            $id_material = (int) $this->db->lastId();
-
-            // Luego lo asocia al vehículo en Vehiculo_Carga_Material con unidades
+           
+            // Se asocia al vehículo en Vehiculo_Carga_Material con unidades o número de serie
             $this->db->query("
                 INSERT INTO Vehiculo_Carga_Material (id_material, matricula, nserie, unidades)
                 VALUES (:id_material, :matricula, :nserie, :unidades)
             ")
             ->bind(":id_material", $id_material)
             ->bind(":matricula", $matricula)
-            ->bind(":nserie", $data['nserie'] ?? null)
-            ->bind(":unidades", $data['unidades'] ?? 1)
+            ->bind(":nserie", $data['nserie'])
+            ->bind(":unidades", $data['unidades'])
             ->execute();
 
-            $this->db->commit();
-            return $id_material;
+            return true;
 
         } catch (\Exception $e) {
-            $this->db->rollBack();
             error_log("Error en createForVehiculo: " . $e->getMessage());
             return false;
         }
@@ -157,9 +141,9 @@ class MaterialModel
             ")
             ->bind(":id_material", $id_material)
             ->bind(":nombre", $data['nombre'])
-            ->bind(":descripcion", $data['descripcion'] ?? null)
-            ->bind(":id_categoria", $data['id_categoria'] ?? 1)
-            ->bind(":estado", $data['estado'] ?? 'ALTA')
+            ->bind(":descripcion", $data['descripcion'])
+            ->bind(":id_categoria", $data['id_categoria'])
+            ->bind(":estado", $data['estado'])
             ->execute();
 
             // Actualiza las unidades en la tabla de relación (y nserie si se proporciona)

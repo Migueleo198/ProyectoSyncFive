@@ -438,7 +438,7 @@ CREATE TABLE Vehiculo_Carga_Material (
     nserie VARCHAR(50),
     unidades INT,
     PRIMARY KEY (id_material, matricula),
-    CHECK (unidades > 0),
+    CHECK (unidades IS NULL OR unidades > 0),
     FOREIGN KEY (id_material) REFERENCES Material(id_material),
     FOREIGN KEY (matricula) REFERENCES Vehiculo(matricula)
 );

@@ -110,18 +110,19 @@ class VehiculoController
     }
     
     // POST, /vehiculos/{matricula}/materiales
-    public function setMaterial(Request $req, Response $res, string $matricula): void
+    public function setMaterial(Request $req, Response $res, string $matricula, int $id_material): void
     {
         try {
             $data = $req->json();
-            $id = $this->service->addMaterialToVehiculo($matricula, $data);
+
+            $this->service->addMaterialToVehiculo($matricula, $id_material, $data);
+
             $res->status(201)->json([
                 'message' => 'Material añadido al vehículo correctamente',
-                'id_material' => $id
+                'id_material' => $id_material
             ]);
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-            return;
         } catch (Throwable $e) {
             $status = $e->getCode() === 404 ? 404 : 500;
             $res->errorJson($e->getMessage(), $status);

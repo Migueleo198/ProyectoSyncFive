@@ -149,29 +149,44 @@ class VehiculoService
     }
     
     // POST, /vehiculos/{matricula}/materiales
-    public function addMaterialToVehiculo(string $matricula, array $input): int
+    public function addMaterialToVehiculo(string $matricula, int $id_material, array $input): void
     {
-        Validator::validate(['matricula' => $matricula], [
-            'matricula' => 'required|string'
-        ]);
+        Validator::validate(
+            ['matricula' => $matricula, 'id_material' => $id_material],
+            [
+                'matricula'   => 'required|string|max:15',
+                'id_material' => 'required|int|min:1'
+            ]
+        );
 
         $data = Validator::validate($input, [
-            'nombre'      => 'required|string|max:100',
-            'descripcion' => 'string|max:255',
-            'unidades'    => 'required|int|min:1',  // CAMBIADO: 'cantidad' → 'unidades'
-            'id_categoria' => 'required|int',
-            'estado'      => 'required|string|in:ALTA,BAJA',
-            'nserie'      => 'string|max:50'
+            'nserie'        => 'string|max:50',
+            'unidades'      => 'int|min:1'
         ]);
 
-        try {
-            $newId = $this->materialModel->createForVehiculo($matricula, $data);
-            if ($newId === false) {
-                throw new \Exception("No se pudo agregar el material al vehículo", 500);
-            }
-            return $newId;
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        // Convertir string a int si es necesario
+        if (isset($data['unidades'])) {
+            $data['unidades'] = (int)$data['unidades'];
+        }
+
+        // Regla de negocio
+        $hasNserie   = !empty($data['nserie']);
+        $hasUnidades = !empty($data['unidades']);
+
+        if ($hasNserie === $hasUnidades) {
+            throw new ValidationException([
+                'material' => 'Debe indicar exactamente uno: nserie o unidades'
+            ]);
+        }
+
+        $ok = $this->materialModel->createForVehiculo(
+            $matricula,
+            $id_material,
+            $data
+        );
+
+        if ($ok === false) {
+            throw new \Exception("No se pudo agregar el material al vehículo", 500);
         }
     }
     
