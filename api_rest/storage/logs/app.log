@@ -52,3 +52,8 @@
 2026-02-02T11:13:18+01:00 - Exception: Route not found for DELETE /personas/5/carnets/B001
 2026-02-02T11:14:02+01:00 - Exception: Route not found for DELETE /personas/B001/carnets/5
 2026-02-02T11:16:23+01:00 - Exception: Too few arguments to function Controllers\CarnetController::unassign(), 3 passed and exactly 4 expected
+2026-02-09T09:02:06+01:00 - Exception: Error de conexión a la base de datos.
+2026-02-09T09:02:33+01:00 - Exception: Error de conexión a la base de datos.
+2026-02-09T09:04:48+01:00 - Exception: Error de conexión a la base de datos.
+2026-02-09T09:05:21+01:00 - Exception: Error de conexión a la base de datos.
+2026-02-09T09:59:54+01:00 - Exception: No autorizado

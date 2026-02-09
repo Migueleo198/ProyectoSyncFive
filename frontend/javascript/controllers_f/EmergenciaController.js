@@ -1,6 +1,7 @@
 import EmergenciaApi from '../api_f/EmergenciaApi.js';
+import TipoEmergenciaApi from '../api_f/TipoEmergenciaApi.js';
 
-let emergencias = []; // GLOBAL para acceder desde los listeners
+let emergencias = []; // variable global para almacenar emergencias
 
 document.addEventListener('DOMContentLoaded', () => {
   cargarEmergencias();
@@ -17,6 +18,38 @@ async function cargarEmergencias() {
     renderTablaEmergencias(emergencias);
   } catch (e) {
     mostrarError(e.message || 'Error cargando emergencias');
+  }
+}
+
+// ================================
+// CARGAR TIPOS DE EMERGENCIA (AÑADIR SI SE REQUIERE)
+// ================================
+async function cargarTiposEmergencia(tipoSeleccionado) {
+  const select = document.getElementById('selectTipoEmergencia');
+  if (!select) return;
+
+  try {
+    const response = await TipoEmergenciaApi.getAll();
+    const tipos = response.data;
+
+    select.innerHTML = '<option value="">Seleccione...</option>';
+
+    tipos.forEach(tipo => {
+      const option = document.createElement('option');
+
+      option.value = tipo.codigo_tipo;   // ID numérico
+      option.textContent = tipo.nombre; // Nombre descriptivo
+
+      // comparación correcta (número vs número)
+      if (Number(tipo.codigo_tipo) === Number(tipoSeleccionado)) {
+        option.selected = true;
+      }
+
+      select.appendChild(option);
+    });
+
+  } catch (e) {
+    mostrarError(e.message || 'Error cargando tipos de emergencia');
   }
 }
 
@@ -94,68 +127,123 @@ function renderTablaEmergencias(emergencias) {
 // ================================
 // MODAL EDITAR
 // ================================
-document.addEventListener('click', async function(e) {
-  if (e.target.closest('.btn-editar')) {
-    const btn = e.target.closest('.btn-editar');
-    const id = btn.dataset.id;
+document.addEventListener('click', async function (e) {
+  const btn = e.target.closest('.btn-editar');
+  if (!btn) return;
 
+  const id = btn.dataset.id;
 
-    // Buscar la emergencia correspondiente
+  try {
+    // Obtener datos de la emergencia
     const response = await EmergenciaApi.getById(id);
     const emergencia = response.data;
     if (!emergencia) return;
-    const form = document.getElementById('formEditar');
-    // Rellenar el modal
-    nombresCampos.forEach((nombre, index) => {
-      
-      // contenedor
-      const div = document.createElement('div');
-      div.className = 'mb-3';
 
-      // label
-      const label = document.createElement('label');
-      label.className = 'form-label';
-      label.textContent = nombre;
-      
-      // input
-      const input = document.createElement('input');
-      input.className = 'form-control';
-      input.name = camposBd[index];
-      input.value = emergencia[camposBd[index]] ?? '';
-      
-      // Añadir al formulario
-      div.append(label, input);
-      form.innerHTML = ''; // Limpiar contenido previo
-      form.appendChild(div);
-    });
-    // Guardar id en el botón de guardar cambios
-    const btnGuardarCambios = document.createElement('button');
-    btnGuardarCambios.id = 'btnGuardarCambios';
-    btnGuardarCambios.dataset.id = id;
-    btnGuardarCambios.textContent = 'Guardar Cambios';
-    btnGuardarCambios.className = 'btn btn-primary';
-    btnGuardarCambios.type = 'button'; // para evitar submit del form
-    btnGuardarCambios.addEventListener('click', async () => {
+    const form = document.getElementById('formEditar');
+    form.innerHTML = ''; // Limpiar contenido previo
+
+    // Insertar formulario
+    form.innerHTML = `
+      <div class="row mb-3">
+        <div class="col-lg-4">
+          <label class="form-label">Fecha</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            value="${emergencia.fecha || ''}" 
+            disabled
+          >
+        </div>
+
+        <div class="col-lg-4">
+          <label class="form-label">Estado</label>
+          <select class="form-select" name="estado">
+            <option value="${emergencia.estado || ''}">${emergencia.estado || 'Seleccionar estado'}</option>
+            <option value="ACTIVA">ACTIVA</option>
+            <option value="CERRADA">CERRADA</option>
+          </select>
+        </div>
+
+        <div class="col-lg-4">
+          <label class="form-label">Dirección</label>
+          <input type="text" class="form-control" name="direccion" value="${emergencia.direccion || ''}">
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-lg-4">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" name="codigo_tipo" id="selectTipoEmergencia">
+            <option value="">Seleccione...</option>
+          </select>
+        </div>
+
+        <div class="col-lg-4">
+          <label class="form-label">ID Bombero</label>
+          <input type="text" class="form-control" name="id_bombero" value="${emergencia.id_bombero || ''}">
+        </div>
+
+        <div class="col-lg-4">
+          <label class="form-label">Nombre Solicitante</label>
+          <input type="text" class="form-control" name="solicitante" value="${emergencia.solicitante || ''}">
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-lg-4">
+          <label class="form-label">Teléfono Solicitante</label>
+          <input type="tel" class="form-control" name="tlfSolicitante" value="${emergencia.tlfSolicitante || ''}">
+        </div>
+
+        <div class="col-lg-8">
+          <label class="form-label">Equipos</label>
+          <select class="form-select" name="equipos">
+            <option value="">Seleccione...</option>
+            <option value="equipo1" ${emergencia.equipos === 'equipo1' ? 'selected' : ''}>Equipo 1</option>
+            <option value="equipo2" ${emergencia.equipos === 'equipo2' ? 'selected' : ''}>Equipo 2</option>
+            <option value="equipo3" ${emergencia.equipos === 'equipo3' ? 'selected' : ''}>Equipo 3</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Descripción</label>
+        <textarea class="form-control" name="descripcion" rows="4">${emergencia.descripcion || ''}</textarea>
+      </div>
+
+      <div class="text-center">
+        <button type="button" id="btnGuardarCambios" class="btn btn-primary">
+          Guardar cambios
+        </button>
+      </div>
+    `;
+    await cargarTiposEmergencia(emergencia.codigo_tipo); // Cargar tipos y marcar el seleccionado
+
+    // Guardar cambios
+    document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
       const data = {};
+
       camposBd.forEach(campo => {
-        data[campo] = form.querySelector(`[name="${campo}"]`).value;
+        const input = form.querySelector(`[name="${campo}"]`);
+        if (input) data[campo] = input.value;
       });
 
-      try {
-        await EmergenciaApi.update(id, data);
-        await cargarEmergencias();
+      await EmergenciaApi.update(id, data);
+      await cargarEmergencias();
 
-        // Cerrar modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
-        modal.hide();
-      } catch (error) {
-        console.error('Error al actualizar emergencia:', error);
-      }
-    
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById('modalEditar')
+      );
+      modal.hide();
     });
-    form.appendChild(btnGuardarCambios);
+
+  } catch (error) {
+    console.error('Error al editar emergencia:', error);
   }
 });
+
+    
+
 
 // ================================
 // MODAL VER

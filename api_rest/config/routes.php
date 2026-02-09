@@ -92,7 +92,8 @@ $router->protectedSession('DELETE', '/roles/{id_rol}', 'Controllers\\RolControll
 
 
 //++++++++++++++++++++++++++++++ TIPO DE EMERGENCIA ++++++++++++++++++++++++++++++
-$router->protectedSession('GET', '/tipos-emergencia', 'Controllers\\TipoEmergenciaController@index', [1,2,3,4,5]);
+// $router->protectedSession('GET', '/tipos-emergencia', 'Controllers\\TipoEmergenciaController@index', [1,2,3,4,5]);
+$router->get('/tipos-emergencia', 'Controllers\\TipoEmergenciaController@index');
 $router->protectedSession('GET', '/tipos-emergencia/{nombre_emergencia}', 'Controllers\\TipoEmergenciaController@getId', [1,2,3,4,5]);
 $router->protectedSession('POST', '/tipos-emergencia', 'Controllers\\TipoEmergenciaController@store', [3,4,5]);
 $router->protectedSession('PUT', '/tipos-emergencia/{id_tipo}', 'Controllers\\TipoEmergenciaController@update', [4,5]);

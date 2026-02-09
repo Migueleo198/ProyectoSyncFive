@@ -62,17 +62,11 @@
             <!-- Contenedor tabla con filtro-->
             <div class="container mt-4 p-0"> 
                 <div id="filtroTabla" class="m-0 row d-flex justify-content-around"> <!-- Filtro -->
-                    <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
-                        <label class="m-2" for="nombre">Nombre:</label>
-                        <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="">
-                    </div>
+                    
                     <div class="col-md-5 d-flex align-items-center m-1">
                         <label class="m-2" for="grupo">Tipo:</label>
-                        <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="5">
-                            <option value="">Todos</option>
-                            <option>Incendio urbano</option>
-                            <option>Incendio forestal</option>
-                            <option>Accidente de tráfico</option>
+                        <select class="form-select"  id="filtroTipoEmergencia">
+                            <option value="">Seleccione...</option>
                         </select>
                     </div>
                     <div class="col-md-3 d-flex align-items-center m-1">
@@ -192,7 +186,7 @@
 
     <!-- Modal de edición -->
     <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
