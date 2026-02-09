@@ -18,8 +18,12 @@ const EmergenciaApi = {
   },
 
   // Vehículos en emergencia
-  getVehiculos(idEmergencia) {
+  getVehiculosEmergencia(idEmergencia) {
     return ApiClient.get(`/emergencias/${idEmergencia}/vehiculos`);
+  },
+
+  getVehiculos(){
+    return ApiClient.get('/vehiculos');
   },
 
   addVehiculo(idEmergencia, data) {

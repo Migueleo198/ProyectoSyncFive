@@ -109,8 +109,10 @@ $router->post('/emergencias', 'Controllers\\EmergenciaController@store');
 $router->get('/emergencias/{id_emergencia}', 'Controllers\\EmergenciaController@show');
 $router->put('/emergencias/{id_emergencia}', 'Controllers\\EmergenciaController@update');
 
-// VEHÍCULOS EN EMERGENCIA
-$router->protectedSession('GET', '/emergencias/{id_emergencia}/vehiculos', 'Controllers\\EmergenciaController@getVehiculo', [1,2,3,4,5]);
+// // VEHÍCULOS EN EMERGENCIA
+// $router->protectedSession('GET', '/emergencias/{id_emergencia}/vehiculos', 'Controllers\\EmergenciaController@getVehiculo', [1,2,3,4,5]);
+
+$router->get('/emergencias/{id_emergencia}/vehiculos', 'Controllers\\EmergenciaController@getVehiculo');
 $router->protectedSession('POST', '/emergencias/{id_emergencia}/vehiculos', 'Controllers\\EmergenciaController@setVehiculo', [3,4,5]);
 $router->protectedSession('DELETE', '/emergencias/{id_emergencia}/vehiculos/{matricula}', 'Controllers\\EmergenciaController@deleteVehiculo', [3,4,5]);
 
@@ -121,7 +123,9 @@ $router->protectedSession('DELETE', '/emergencias/{id_emergencia}/vehiculos/{mat
 
 
 //++++++++++++++++++++++++++++++ VEHÍCULOS ++++++++++++++++++++++++++++++
-$router->protectedSession('GET', '/vehiculos', 'Controllers\\VehiculoController@index', [1,2,3,4,5]);
+// $router->protectedSession('GET', '/vehiculos', 'Controllers\\VehiculoController@index', [1,2,3,4,5]);
+$router->get('/vehiculos', 'Controllers\\VehiculoController@index');
+
 $router->protectedSession('POST', '/vehiculos', 'Controllers\\VehiculoController@store', [4,5]);
 $router->protectedSession('GET', '/vehiculos/{matricula}', 'Controllers\\VehiculoController@show', [1,2,3,4,5]);
 $router->protectedSession('PUT', '/vehiculos/{matricula}', 'Controllers\\VehiculoController@update', [4,5]);

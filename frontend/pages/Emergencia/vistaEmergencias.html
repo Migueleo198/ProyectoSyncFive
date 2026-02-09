@@ -65,13 +65,13 @@
                     
                     <div class="col-md-5 d-flex align-items-center m-1">
                         <label class="m-2" for="grupo">Tipo:</label>
-                        <select class="form-select"  id="filtroTipoEmergencia">
+                        <select class="form-select m-1"  id="filtroTipoEmergencia">
                             <option value="">Seleccione...</option>
                         </select>
                     </div>
                     <div class="col-md-3 d-flex align-items-center m-1">
                         <label class="m-2" for="grupo">Estado:</label>
-                        <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="3">
+                        <select class="form-select m-1 filtro" id="grupo" data-col="3">
                             <option value="">Todos</option>
                             <option>Activa</option>
                             <option>Cerrada</option>
@@ -261,14 +261,19 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label for="vehiculo" class="form-label">Vehículo Asignados</label>
-                            <select class="form-select" id="vehiculo">
-                                <option value="">Seleccione vehículo...</option>
-                                <option value="1">Vehículo 1</option>
-                                <option value="2">Vehículo 2</option>
+                            <select class="form-select" id="selectVehiculo">
                             </select>
                         </div>
                     </div>
 
+                    <!-- Vehículo -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="equipo" class="form-label">Equipo Asignados</label>
+                            <select class="form-select" id="selectEquipo">
+                            </select>
+                        </div>
+                    </div>
                     <!-- Personal asignado -->
                     <div class="mb-2 fw-bold">
                         Personal Asignado

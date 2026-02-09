@@ -5,6 +5,8 @@ let emergencias = []; // variable global para almacenar emergencias
 
 document.addEventListener('DOMContentLoaded', () => {
   cargarEmergencias();
+  cargarTiposEmergenciaFiltro();
+  cargarSelectVehiculos();
 });
 
 // ================================
@@ -14,7 +16,6 @@ async function cargarEmergencias() {
   try {
     const response = await EmergenciaApi.getAll();
     emergencias = response.data; // guardamos globalmente
-    console.log('Emergencias cargadas:', emergencias);
     renderTablaEmergencias(emergencias);
   } catch (e) {
     mostrarError(e.message || 'Error cargando emergencias');
@@ -53,6 +54,51 @@ async function cargarTiposEmergencia(tipoSeleccionado) {
   }
 }
 
+// ================================
+// CARGAR TIPOS DE EMERGENCIA AL FILTRO
+// ================================
+async function cargarTiposEmergenciaFiltro() {
+  const select = document.getElementById('filtroTipoEmergencia');
+  if (!select) return;
+
+  try {
+    const response = await TipoEmergenciaApi.getAll();
+    const tipos = response.data;
+
+    // Limpiar select y dejar opción por defecto
+    select.innerHTML = '<option value="">Seleccione...</option>';
+
+    // Llenar select con los tipos
+    tipos.forEach(tipo => {
+      const option = document.createElement('option');
+      option.value = tipo.codigo_tipo;   // ID numérico
+      option.textContent = tipo.nombre;  // Nombre descriptivo
+      select.appendChild(option);
+    });
+
+  } catch (e) {
+    mostrarError(e.message || 'Error cargando tipos de emergencia');
+  }
+}
+
+// ================================
+// CARGAR VEHÍCULOS (AÑADIR SI SE REQUIERE)
+// ================================
+async function cargarSelectVehiculos() {
+        const select = document.getElementById("selectVehiculo");
+        const vehiculos = await EmergenciaApi.getVehiculos();
+
+        // Limpiar opciones existentes, excepto la primera
+        select.innerHTML = '<option value="">Seleccione vehículo...</option>';
+
+        // Agregar opciones dinámicamente
+        vehiculos.forEach(vehiculo => {
+            const option = document.createElement("option");
+            option.value = vehiculo.id;
+            option.textContent = vehiculo.nombre;
+            select.appendChild(option);
+        });
+    }
 
 // ================================
 // RENDER TABLA
