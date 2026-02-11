@@ -5,7 +5,7 @@ let emergencias = []; // variable global para almacenar emergencias
 
 document.addEventListener('DOMContentLoaded', () => {
   cargarEmergencias();
-  cargarTiposEmergenciaFiltro();
+  cargarTiposEmergencia(0,'filtroTipoEmergencia');
   cargarSelectVehiculos();
 });
 
@@ -27,8 +27,8 @@ async function cargarEmergencias() {
 // CARGAR TIPOS DE EMERGENCIA (AÑADIR SI SE REQUIERE)   Se carga al abrir el modal editar para marcar el tipo seleccionado    
 
 // ================================
-async function cargarTiposEmergencia(tipoSeleccionado) {
-  const select = document.getElementById('selectTipoEmergencia');
+async function cargarTiposEmergencia(tipoSeleccionado, ubicacion) {
+  const select = document.getElementById(ubicacion);
   if (!select) return;
 
   try {
@@ -44,7 +44,7 @@ async function cargarTiposEmergencia(tipoSeleccionado) {
       option.textContent = tipo.nombre; // Nombre descriptivo
 
       // comparación correcta (número vs número)
-      if (Number(tipo.codigo_tipo) === Number(tipoSeleccionado)) {
+      if (tipoSeleccionado === 0 && Number(tipo.codigo_tipo) === Number(tipoSeleccionado)) {
         option.selected = true;
       }
 
@@ -56,32 +56,7 @@ async function cargarTiposEmergencia(tipoSeleccionado) {
   }
 }
 
-// ================================
-// CARGAR TIPOS DE EMERGENCIA AL FILTRO
-// ================================
-async function cargarTiposEmergenciaFiltro() {
-  const select = document.getElementById('filtroTipoEmergencia');
-  if (!select) return;
 
-  try {
-    const response = await TipoEmergenciaApi.getAll();
-    const tipos = response.data;
-
-    // Limpiar select y dejar opción por defecto
-    select.innerHTML = '<option value="">Seleccione...</option>';
-
-    // Llenar select con los tipos
-    tipos.forEach(tipo => {
-      const option = document.createElement('option');
-      option.value = tipo.codigo_tipo;   // ID numérico
-      option.textContent = tipo.nombre;  // Nombre descriptivo
-      select.appendChild(option);
-    });
-
-  } catch (e) {
-    mostrarError(e.message || 'Error cargando tipos de emergencia');
-  }
-}
 
 // ================================
 // CARGAR VEHÍCULOS (AÑADIR SI SE REQUIERE)
@@ -140,9 +115,9 @@ function renderTablaEmergencias(emergencias) {
       </td>  
     `;
         // <button type="button" class="btn p-0 btn-eliminar" 
-        //         data-bs-toggle="modal"                                              BOTON ELIMINAR (AÑADIR SI SE REQUIERE)
+        //         data-bs-toggle="modal"                                              BOTON ELIMINAR (AÑADIR SI SE REQUIERE) meter dentro del td de botones
         //         data-bs-target="#modalEliminar" 
-        //         data-id="${e.id_emergencia}">
+        //         data-id="${e.id_emergencia}">          IMPORTANTE: el data-id debe ser el mismo que el del botón editar para identificar la emergencia a eliminar
         //     <i class="bi bi-trash3"></i>
         // </button>
 
@@ -150,29 +125,6 @@ function renderTablaEmergencias(emergencias) {
   });
 }
 
-// ================================
-// CAMPOS DE LA TABLA
-// ================================
-  const nombresCampos = [
-    'Fecha',
-    'Estado',
-    'Dirección',
-    'Tipo Emergencia',
-    'ID Bombero',
-    'Nombre Solicitante',
-    'Teléfono Solicitante',
-    'Descripción'
-  ];
-  const camposBd = [
-    'fecha',
-    'estado',
-    'direccion',
-    'codigo_tipo',
-    'id_bombero',
-    'nombre_solicitante',
-    'tlfn_solicitante',
-    'descripcion'
-  ];
 
 // ================================
 // MODAL EDITAR
@@ -268,7 +220,7 @@ document.addEventListener('click', async function (e) {
       </div>
     `;
 
-    await cargarTiposEmergencia(emergencia.codigo_tipo); // DENTRO DEL HTML PREVIO hemos creado un select vacío con id= selectTipoEmergencia, donde se cargarán tipos y marcará el seleccionado
+    await cargarTiposEmergencia(emergencia.codigo_tipo, 'selectTipoEmergencia'); // DENTRO DEL HTML PREVIO hemos creado un select vacío con id= selectTipoEmergencia, donde se cargarán tipos y marcará el seleccionado
 
 
     // Guardar cambios
@@ -280,10 +232,10 @@ document.addEventListener('click', async function (e) {
         if (input) data[campo] = input.value;
       });
 
-      await EmergenciaApi.update(id, data);
-      await cargarEmergencias();
+      await EmergenciaApi.update(id, data);             // Enviar datos al backend para actualizar la emergencia
+      await cargarEmergencias();                        // Recargar tabla para mostrar cambios
 
-      const modal = bootstrap.Modal.getInstance(
+      const modal = bootstrap.Modal.getInstance(        // Cerrar modal
         document.getElementById('modalEditar')
       );
       modal.hide();
@@ -295,7 +247,29 @@ document.addEventListener('click', async function (e) {
 });
 
     
-
+// ================================
+// CAMPOS DE LA TABLA      estos arrays se usan para mostrar los campos en el modal ver (arriba como lo quieres ver, abajo como están en la base de datos, el orden debe coincidir)  
+// ================================
+  const nombresCampos = [
+    'Fecha',
+    'Estado',
+    'Dirección',
+    'Tipo Emergencia',
+    'ID Bombero',
+    'Nombre Solicitante',
+    'Teléfono Solicitante',
+    'Descripción'
+  ];
+  const camposBd = [      //tambien se usan para el modal editar, para recoger los datos de los inputs y enviarlos al backend, por eso deben coincidir con los name de los inputs del formulario editar
+    'fecha',
+    'estado',
+    'direccion',
+    'codigo_tipo',
+    'id_bombero',
+    'nombre_solicitante',
+    'tlfn_solicitante',
+    'descripcion'
+  ];
 
 // ================================
 // MODAL VER
