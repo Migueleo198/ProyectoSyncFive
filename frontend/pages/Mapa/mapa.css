@@ -1,0 +1,23 @@
+ /* Full height for html/body so flex layout works */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Map container fills remaining space in main */
+        #map-container {
+            flex: 1; /* Fill remaining height */
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }

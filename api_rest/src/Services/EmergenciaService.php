@@ -48,10 +48,10 @@ class EmergenciaService
     public function createEmergencia(array $input): array
     {
         $data = Validator::validate($input, [
-            'n_funcionario'     => 'string|min:1',
+            'id_bombero'        => 'string|min:1',
             'descripcion'       => 'required|string|min:1',
             'estado'            => 'required|string|max:30',
-            'direccion'         => 'required|int|min:1',
+            'direccion'         => 'required|string|min:1',
             'nombre_solicitante'=> 'string|min:1',
             'tlfn_solicitante'  => 'phone|min:1',
             'codigo_tipo'       => 'int|min:1'
@@ -74,10 +74,10 @@ class EmergenciaService
         Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
 
         $data = Validator::validate($input, [
-            'n_funcionario'     => 'string|min:1',
+            'id_bombero'        => 'string|min:1',
             'descripcion'       => 'required|string|min:1',
             'estado'            => 'required|string|max:30',
-            'direccion'         => 'required|int|min:1',
+            'direccion'         => 'required|string|min:1',
             'nombre_solicitante'=> 'string|min:1',
             'tlfn_solicitante'  => 'phone|min:1',
             'codigo_tipo'       => 'int|min:1'
@@ -103,78 +103,7 @@ class EmergenciaService
         return ['status' => 'updated', 'message' => 'Emergencia actualizada correctamente'];
     }
 
-    //================= Tipo de emergencias =====================
-
-    public function getTipoEmergencia(int $id): array
-    {
-        Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
-
-        try {
-            $tipo = $this->model->findTipo($id);
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
-        }
-
-        if (!$tipo) throw new \Exception("Tipo de emergencia no encontrado", 404);
-
-        return $tipo;
-    }
-
-    public function setTipoEmergencia(array $input): array
-    {
-        $data = Validator::validate($input, [
-            'nombre' => 'required|string|max:50',
-            'grupo' => 'string|max:50',
-        ]);
-
-        try {
-            $id = $this->model->addTipo($data);
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
-        }
-
-        return ['id' => $id];
-    }
-
-    public function updateTipoEmergencia(int $id, array $input): array
-    {
-        Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
-        $data = Validator::validate($input, [
-            'nombre' => 'string|max:50',
-            'grupo'  => 'string|max:50'
-        ]);
-
-        try {
-            $result = $this->model->updateTipo($id, $data);
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
-        }
-
-        if ($result === 0) {
-            $exists = $this->model->findTipo($id);
-            if (!$exists) throw new \Exception("Tipo de emergencia no encontrado", 404);
-
-            return ['status' => 'no_changes', 'message' => 'No hubo cambios en el tipo de emergencia'];
-        }
-
-        if ($result === -1) throw new \Exception("Conflicto con restricciones al actualizar tipo", 409);
-
-        return ['status' => 'updated', 'message' => 'Tipo de emergencia actualizado correctamente'];
-    }
-
-    public function deleteTipoEmergencia(int $id): void
-    {
-        Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
-
-        try {
-            $result = $this->model->deleteTipo($id);
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
-        }
-
-        if ($result === 0) throw new \Exception("Tipo de emergencia no encontrado", 404);
-        if ($result === -1) throw new \Exception("No se puede eliminar: está en uso", 409);
-    }
+  
 
     //================= Vehículos en emergencias =====================
 
@@ -187,18 +116,19 @@ class EmergenciaService
         }
     }
 
-    public function setVehiculoEmergencia(array $input): array
+    public function setVehiculoEmergencia(int $id_emergencia, array $input): array
     {
+        Validator::validate(['id_emergencia' => $id_emergencia], ['id_emergencia' => 'required|int|min:1']);
+
         $data = Validator::validate($input, [
             'matricula' => 'required|string|max:10',
-            'id_emergencia' => 'int|min:1',
             'f_salida' => 'datetime',
             'f_llegada' => 'datetime',
             'f_regreso' => 'datetime',
         ]);
 
         try {
-            $id = $this->model->addVehiculo($data);
+            $id = $this->model->addVehiculo($data, $id_emergencia);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -206,12 +136,15 @@ class EmergenciaService
         return ['id' => $id];
     }
 
-    public function deleteVehiculoEmergencia(int $id): void
+    public function deleteVehiculoEmergencia(int $id, string $matricula): void
     {
-        Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
+        Validator::validate(['id' => $id, 'matricula' => $matricula], [
+            'id' => 'required|int|min:1',
+            'matricula' => 'required|string|max:10'
+        ]);
 
         try {
-            $result = $this->model->deleteVehiculo($id);
+            $result = $this->model->deleteVehiculo($id, $matricula);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -222,27 +155,34 @@ class EmergenciaService
 
     //================= Personal en vehículos =====================
 
-    public function getPersonalVehiculo(string $matricula): array
+    public function getPersonalVehiculo(int $id_emergencia, string $matricula): array
     {
-        Validator::validate(['matricula' => $matricula], ['matricula' => 'required|string|max:10']);
+        Validator::validate(['id_emergencia' => $id_emergencia, 'matricula' => $matricula], [
+            'id_emergencia' => 'required|int|min:1',
+            'matricula' => 'required|string|max:10'
+        ]);
 
         try {
-            return $this->model->getPersonal($matricula);
+            return $this->model->getPersonal($id_emergencia, $matricula);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
     }
 
-    public function setPersonalVehiculo(string $matricula, array $input): array
+    public function setPersonalVehiculo(int $id_emergencia, string $matricula, array $input): array
     {
-        Validator::validate(['matricula' => $matricula, 'n_funcionario' => $n_funcionario], [
-            'matricula' => 'string|max:10',
-            'n_funcionario' => 'int|min:1',
-            'cargo'     => 'string|max:50'
+        Validator::validate(['id_emergencia' => $id_emergencia, 'matricula' => $matricula], [
+            'id_emergencia' => 'required|int|min:1',
+            'matricula' => 'required|string|max:10'
+        ]);
+
+        $data = Validator::validate($input, [
+            'id_bombero' => 'required|string|min:1',
+            'cargo'     => 'required|string|max:50'
         ]);
 
         try {
-            $id = $this->model->addPersonal($matricula, $data);
+            $id = $this->model->addPersonal($id_emergencia, $matricula, $data);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -250,16 +190,16 @@ class EmergenciaService
         return ['id' => $id];
     }
 
-    public function deletePersonalVehiculo(string $matricula, int $n_funcionario): void
+    public function deletePersonalVehiculo(int $id_emergencia, string $matricula, string $id_bombero): void
     {
-        Validator::validate(['matricula' => $matricula, 'n_funcionario' => $n_funcionario], [
-            'matricula' => 'string|max:10',
-            'n_funcionario' => 'int|min:1',
-            'cargo'     => 'string|max:50'
-        ]);
+        Validator::validate(['id_emergencia' => $id_emergencia, 'matricula' => $matricula, 'id_bombero' => $id_bombero], [
+            'id_emergencia' => 'required|int|min:1',
+            'matricula' => 'required|string|max:10',
+            'id_bombero' => 'required|string|min:1'
+        ]); 
 
         try {
-            $result = $this->model->deletePersonal($matricula, $n_funcionario);
+            $result = $this->model->deletePersonal($id_emergencia, $matricula, $id_bombero);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }

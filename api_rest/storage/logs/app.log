@@ -1,3 +1,54 @@
 2026-01-28T11:21:50+01:00 - Exception: No autorizado
 2026-01-29T11:42:54+01:00 - Exception: Route not found for GET /
 2026-01-29T11:48:04+01:00 - Exception: Route not found for GET /
+2026-01-29T13:50:58+01:00 - Exception: No autorizado
+2026-01-29T13:56:02+01:00 - Exception: No autorizado
+2026-01-29T13:56:24+01:00 - Exception: No autorizado
+2026-01-29T13:56:25+01:00 - Exception: No autorizado
+2026-01-29T13:56:26+01:00 - Exception: No autorizado
+2026-01-29T14:01:48+01:00 - Exception: No autorizado
+2026-01-29T14:02:01+01:00 - Exception: No autorizado
+2026-01-29T14:05:22+01:00 - Exception: No autorizado
+2026-01-29T14:05:23+01:00 - Exception: No autorizado
+2026-01-29T14:05:24+01:00 - Exception: No autorizado
+2026-01-29T14:05:25+01:00 - Exception: No autorizado
+2026-01-29T14:05:26+01:00 - Exception: No autorizado
+2026-01-29T14:05:27+01:00 - Exception: No autorizado
+2026-01-29T14:13:42+01:00 - Exception: Controller not found: Controllers\AuthSessionController
+2026-01-29T14:13:44+01:00 - Exception: Controller not found: Controllers\AuthSessionController
+2026-01-29T14:13:49+01:00 - Exception: Controller not found: Controllers\AuthSessionController
+2026-01-29T14:14:16+01:00 - Exception: Undefined array key "email"
+2026-01-29T14:14:18+01:00 - Exception: Undefined array key "email"
+2026-01-29T14:22:05+01:00 - Exception: Class "PHPMailer\PHPMailer\PHPMailer" not found
+2026-01-29T14:22:12+01:00 - Exception: Class "PHPMailer\PHPMailer\PHPMailer" not found
+2026-01-29T14:22:13+01:00 - Exception: Class "PHPMailer\PHPMailer\PHPMailer" not found
+2026-01-30T09:21:03+01:00 - Exception: Route not found for POST /auth/me
+2026-01-30T09:21:28+01:00 - Exception: No autorizado
+2026-01-30T09:23:59+01:00 - Exception: No autorizado
+2026-01-30T09:24:08+01:00 - Exception: Route not found for POST /login
+2026-01-30T10:15:06+01:00 - Exception: Route not found for PATCH /auth/me
+2026-01-30T10:30:31+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T10:30:39+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T10:31:25+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T11:23:33+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T11:26:54+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T11:27:18+01:00 - Exception: Too few arguments to function Controllers\EmergenciaController::getTipo(), 2 passed and exactly 3 expected
+2026-01-30T11:36:43+01:00 - Exception: Route not found for PATCH /emergencias
+2026-01-30T11:36:50+01:00 - Exception: Route not found for PUT /emergencias
+2026-01-30T11:39:50+01:00 - Exception: Route not found for GET /emergencias/2/tipo
+2026-01-30T11:46:45+01:00 - Exception: Route not found for GET /ediciones
+2026-01-30T11:47:18+01:00 - Exception: Class "Models\FormacionModel" not found
+2026-01-30T12:10:24+01:00 - Exception: Route not found for GET /persona
+2026-01-30T12:37:57+01:00 - Exception: Controller not found: Controllers\TiposEmergenciaController
+2026-01-30T12:44:36+01:00 - Exception: Route not found for DELETE /emergencias/1/vehiculos
+2026-01-30T12:47:51+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-01-30T13:15:15+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-01-30T13:31:43+01:00 - Exception: Route not found for PUT /formaciones
+2026-01-30T13:31:52+01:00 - Exception: Route not found for PUT /formaciones
+2026-01-30T13:37:12+01:00 - Exception: Method index not found in controller Controllers\EdicionController
+2026-01-30T14:04:55+01:00 - Exception: Route not found for POST /ediciones/2/1
+2026-02-02T11:13:01+01:00 - Exception: Route not found for DELETE /carnets/5/persona/B001
+2026-02-02T11:13:09+01:00 - Exception: Route not found for DELETE /carnets/5/personas/B001
+2026-02-02T11:13:18+01:00 - Exception: Route not found for DELETE /personas/5/carnets/B001
+2026-02-02T11:14:02+01:00 - Exception: Route not found for DELETE /personas/B001/carnets/5
+2026-02-02T11:16:23+01:00 - Exception: Too few arguments to function Controllers\CarnetController::unassign(), 3 passed and exactly 4 expected
