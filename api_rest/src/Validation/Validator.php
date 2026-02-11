@@ -128,7 +128,6 @@ class Validator
                             }
                         }
                         break;
-    
 
                     case 'username':
                         if ($value !== null && !preg_match('/^[a-zA-Z0-9_]{4,50}$/', $value)) {
@@ -136,7 +135,14 @@ class Validator
                         }
                         break;
 
-
+                    case 'in':
+                        if ($value !== null) {
+                            $allowed = explode(',', $param);
+                            if (!in_array((string)$value, $allowed, true)) {
+                                $errors[$field][] = "El campo $field debe ser uno de: " . implode(', ', $allowed) . ".";
+                            }
+                        }
+                        break;
 
                 }
             }

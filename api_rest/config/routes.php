@@ -133,7 +133,7 @@ $router->protectedSession('DELETE', '/vehiculos/{matricula}', 'Controllers\\Vehi
 
 // MATERIAL CARGADO EN VEHÍCULOS
 $router->protectedSession('GET', '/vehiculos/{matricula}/materiales', 'Controllers\\VehiculoController@getMaterial', [1,2,3,4,5]);
-$router->protectedSession('POST', '/vehiculos/{matricula}/materiales', 'Controllers\\VehiculoController@setMaterial', [4,5]);
+$router->protectedSession('POST', '/vehiculos/{matricula}/materiales/{id_material}', 'Controllers\\VehiculoController@setMaterial', [4,5]);
 $router->protectedSession('PUT', '/vehiculos/{matricula}/materiales/{id_material}', 'Controllers\\VehiculoController@updateMaterial', [4,5]);
 $router->protectedSession('DELETE', '/vehiculos/{matricula}/materiales/{id_material}', 'Controllers\\VehiculoController@deleteMaterial', [4,5]);
 
