@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarEmergencias();
   cargarTiposEmergencia(0,'filtroTipoEmergencia');
   cargarTiposEmergencia(0,'tipoEmergenciaInsert');
-  cargarSelectVehiculos();
+  bindCrearEmergencia();
+  // cargarSelectVehiculos();
 });
 
 // ================================
@@ -45,7 +46,7 @@ async function cargarTiposEmergencia(tipoSeleccionado, id_select) {
       option.textContent = tipo.nombre; // Nombre descriptivo
 
       // comparación correcta (número vs número)
-      if (tipoSeleccionado === 0 && Number(tipo.codigo_tipo) === Number(tipoSeleccionado)) {
+      if (tipoSeleccionado !== 0 && Number(tipo.codigo_tipo) === Number(tipoSeleccionado)) {
         option.selected = true;
       }
 
@@ -123,6 +124,38 @@ function renderTablaEmergencias(emergencias) {
         // </button>
 
     tbody.appendChild(tr);
+  });
+}
+// ================================
+// CREAR / INSERTAR EMERGENCIA
+// ================================
+function bindCrearEmergencia() {
+  const form = document.getElementById('formIncidencia');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const f = new FormData(form);
+
+    const data = {
+      fecha: f.get('fecha'),
+      estado: f.get('estado'),
+      direccion: f.get('direccion'),
+      codigo_tipo: Number(f.get('codigo_tipo')),
+      id_bombero: f.get('id_bombero'),
+      nombre_solicitante: f.get('solicitante'),
+      tlf_solicitante: f.get('tlfSolicitante'),
+      descripcion: f.get('descripcion'),
+    };
+
+    try {
+      await EmergenciaApi.create(data); // ← INSERT al backend
+      await cargarEmergencias();        // ← refrescar tabla
+      form.reset();
+      alert('Emergencia creada correctamente');
+    } catch (err) {
+      mostrarError(err.message || 'Error creando emergencia');
+    }
   });
 }
 
