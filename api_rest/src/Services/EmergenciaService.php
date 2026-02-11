@@ -45,7 +45,7 @@ class EmergenciaService
         return $emergencia;
     }
 
-   public function createEmergencia(array $input): array
+    public function createEmergencia(array $input): array
     {
         $data = Validator::validate($input, [
             'id_bombero'        => 'string|min:1',
@@ -54,7 +54,7 @@ class EmergenciaService
             'direccion'         => 'required|string|min:1',
             'nombre_solicitante'=> 'string|min:1',
             'tlfn_solicitante'  => 'phone|min:1',
-            'codigo_tipo'       => 'int'
+            'codigo_tipo'       => 'int|min:1'
         ]);
         try {
             $id = $this->model->create($data);
