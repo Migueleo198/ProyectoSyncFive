@@ -71,8 +71,7 @@ class EmergenciaController
 
             $res->status(422)->json(
                 ['errors' => $e->errors],
-                
-                "Errores de validación" 
+                "Errores de validación"
             );
             return;
 
@@ -82,7 +81,6 @@ class EmergenciaController
             return;
         }
     }
-
 
 
     /**
