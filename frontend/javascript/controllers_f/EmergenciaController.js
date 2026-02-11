@@ -289,6 +289,44 @@ document.addEventListener('click', async function (e) {
 });
 
     
+// ================================
+// CREAR / INSERTAR EMERGENCIA
+// ================================
+function bindCrearEmergencia() {
+  const form = document.getElementById('formIncidencia');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const f = new FormData(form);
+
+    const data = {
+      fecha: f.get('fecha'),
+      estado: f.get('estado'),
+      direccion: f.get('direccion'),
+      codigo_tipo: Number(f.get('codigo_tipo')),
+      id_bombero: f.get('id_bombero'),
+      nombre_solicitante: f.get('solicitante'),
+      tlf_solicitante: f.get('tlfSolicitante'),
+      descripcion: f.get('descripcion'),
+    };
+
+    try {
+      await EmergenciaApi.create(data); // ← INSERT al backend
+      await cargarEmergencias();        // ← refrescar tabla
+      form.reset();
+      alert('Emergencia creada correctamente');
+    } catch (err) {
+      mostrarError(err.message || 'Error creando emergencia');
+    }
+  });
+}
+
+
+// Activar el binding cuando carga la página
+document.addEventListener('DOMContentLoaded', () => {
+  bindCrearEmergencia();
+});
 
 
 // ================================
