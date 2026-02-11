@@ -194,9 +194,8 @@ document.addEventListener('click', async function (e) {
         <div class="col-lg-4">
           <label class="form-label">Estado</label>
           <select class="form-select" name="estado">
-            <option value="${emergencia.estado || ''}">${emergencia.estado || 'Seleccionar estado'}</option>
-            <option value="ACTIVA">ACTIVA</option>
-            <option value="CERRADA">CERRADA</option>
+            <option value="ACTIVA" ${emergencia.estado === 'ACTIVA' ? 'selected' : ''}>ACTIVA</option>
+            <option value="CERRADA" ${emergencia.estado === 'CERRADA' ? 'selected' : ''}>CERRADA</option>
           </select>
         </div>
 
