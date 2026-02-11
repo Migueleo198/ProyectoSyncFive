@@ -112,143 +112,40 @@ class MaterialModel
             return false;
         }
     }
-
     public function updateForVehiculo(string $matricula, int $id_material, array $data): int
     {
         try {
-            // Primero verifica que el material esté asociado al vehículo
-            $exists = $this->db
-                ->query("
-                    SELECT 1 FROM Vehiculo_Carga_Material 
-                    WHERE matricula = :matricula AND id_material = :id_material
-                ")
-                ->bind(":matricula", $matricula)
-                ->bind(":id_material", $id_material)
-                ->fetch();
-
-            if (!$exists) {
-                return 0;
-            }
-
-            // Actualiza el material (SIN cantidad)
             $this->db->query("
-                UPDATE Material SET
-                    nombre = :nombre,
-                    descripcion = :descripcion,
-                    id_categoria = :id_categoria,
-                    estado = :estado
-                WHERE id_material = :id_material
+                UPDATE Vehiculo_Carga_Material SET
+                    nserie = :nserie,
+                    unidades = :unidades
+                WHERE id_material = :id_material and matricula=:matricula
             ")
             ->bind(":id_material", $id_material)
-            ->bind(":nombre", $data['nombre'])
-            ->bind(":descripcion", $data['descripcion'])
-            ->bind(":id_categoria", $data['id_categoria'])
-            ->bind(":estado", $data['estado'])
+            ->bind(":matricula", $matricula)
+            ->bind(":nserie", $data['nserie'])
+            ->bind(":unidades", $data['unidades'])
             ->execute();
-
-            // Actualiza las unidades en la tabla de relación (y nserie si se proporciona)
-            if (isset($data['unidades']) || isset($data['nserie'])) {
-                $query = "UPDATE Vehiculo_Carga_Material SET ";
-                $params = [];
-                
-                if (isset($data['nserie'])) {
-                    $query .= "nserie = :nserie";
-                    $params[':nserie'] = $data['nserie'];
-                }
-                
-                if (isset($data['unidades'])) {
-                    if (isset($data['nserie'])) {
-                        $query .= ", ";
-                    }
-                    $query .= "unidades = :unidades";
-                    $params[':unidades'] = $data['unidades'];
-                }
-                
-                $query .= " WHERE matricula = :matricula AND id_material = :id_material";
-                $params[':matricula'] = $matricula;
-                $params[':id_material'] = $id_material;
-                
-                $stmt = $this->db->query($query);
-                foreach ($params as $key => $value) {
-                    $stmt->bind($key, $value);
-                }
-                $stmt->execute();
-            }
-
-            return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-
-        } catch (\Exception $e) {
-            error_log("Error en updateForVehiculo: " . $e->getMessage());
+            
+            $result = $this->db->query("SELECT ROW_COUNT() AS affected")->fetch();
+            return (int) $result['affected'];
+            
+        } catch (Exception $e) {
+            error_log("Error en updatease: " . $e->getMessage());
             return 0;
         }
     }
 
     public function deleteForVehiculo(string $matricula, int $id_material): int
     {
-        try {
-            // Primero verificar que existe la relación
-            $existe = $this->db
-                ->query("
-                    SELECT COUNT(*) as count 
-                    FROM Vehiculo_Carga_Material 
-                    WHERE matricula = :matricula AND id_material = :id_material
-                ")
-                ->bind(":matricula", $matricula)
-                ->bind(":id_material", $id_material)
-                ->fetch();
-            
-            if (!$existe || $existe['count'] == 0) {
-                error_log("DEBUG: No se encontró relación para matrícula: $matricula, id_material: $id_material");
-                return 0;
-            }
-            
-            error_log("DEBUG: Encontradas {$existe['count']} relaciones para eliminar");
-            
-            // Eliminar TODOS los registros (maneja NULL en nserie correctamente)
-            $this->db->query("
-                DELETE FROM Vehiculo_Carga_Material 
-                WHERE matricula = :matricula AND id_material = :id_material
-            ")
-            ->bind(":matricula", $matricula)
-            ->bind(":id_material", $id_material)
-            ->execute();
-            
-            $rowsAffected = $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-            error_log("DEBUG: Filas eliminadas de Vehiculo_Carga_Material: $rowsAffected");
-            
-            if ($rowsAffected > 0) {
-                // Verificar si el material aún está en uso
-                $enUso = $this->db
-                    ->query("
-                        SELECT COUNT(*) as count 
-                        FROM Vehiculo_Carga_Material 
-                        WHERE id_material = :id_material
-                    ")
-                    ->bind(":id_material", $id_material)
-                    ->fetch();
-                
-                // Solo eliminar el material si no está en uso
-                if ($enUso['count'] == 0) {
-                    $this->db->query("
-                        DELETE FROM Material 
-                        WHERE id_material = :id_material
-                    ")
-                    ->bind(":id_material", $id_material)
-                    ->execute();
-                    
-                    $materialDeleted = $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-                    error_log("DEBUG: Material eliminado de tabla Material: $materialDeleted");
-                } else {
-                    error_log("DEBUG: Material $id_material sigue en uso por otros vehículos");
-                }
-            }
-            
-            return $rowsAffected;
+        $this->db->query("
+            DELETE FROM Vehiculo_Carga_Material 
+            WHERE matricula = :matricula AND id_material = :id_material
+        ")
+        ->bind(":matricula", $matricula)
+        ->bind(":id_material", $id_material)
+        ->execute();
 
-        } catch (\Exception $e) {
-            error_log("ERROR en deleteForVehiculo: " . $e->getMessage());
-            error_log("TRACE: " . $e->getTraceAsString());
-            return 0;
-        }
+        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
     }
 }

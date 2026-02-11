@@ -193,16 +193,13 @@ class VehiculoService
     // PUT, /vehiculos/{matricula}/materiales/{id_material}
     public function updateMaterialOfVehiculo(string $matricula, int $id_material, array $input): void
     {
-        Validator::validate(['matricula' => $matricula], [
-            'matricula' => 'required|string'
+        Validator::validate(['matricula' => $matricula, 'id_material' => $id_material], [
+            'matricula' => 'required|string',
+            'id_material' => 'required|int'
         ]);
 
         $data = Validator::validate($input, [
-            'nombre'      => 'required|string|max:100',
-            'descripcion' => 'string|max:255',
-            'unidades'    => 'required|int|min:1',  // CAMBIADO: 'cantidad' → 'unidades'
-            'id_categoria' => 'required|int',
-            'estado'      => 'required|string|in:ALTA,BAJA',
+            'unidades'    => 'required|int|min:1', 
             'nserie'      => 'string|max:50'
         ]);
 
