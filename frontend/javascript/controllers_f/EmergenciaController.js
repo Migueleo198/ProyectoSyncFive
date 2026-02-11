@@ -23,7 +23,9 @@ async function cargarEmergencias() {
 }
 
 // ================================
-// CARGAR TIPOS DE EMERGENCIA (AÑADIR SI SE REQUIERE)
+
+// CARGAR TIPOS DE EMERGENCIA (AÑADIR SI SE REQUIERE)   Se carga al abrir el modal editar para marcar el tipo seleccionado    
+
 // ================================
 async function cargarTiposEmergencia(tipoSeleccionado) {
   const select = document.getElementById('selectTipoEmergencia');
@@ -84,21 +86,23 @@ async function cargarTiposEmergenciaFiltro() {
 // ================================
 // CARGAR VEHÍCULOS (AÑADIR SI SE REQUIERE)
 // ================================
-async function cargarSelectVehiculos() {
-        const select = document.getElementById("selectVehiculo");
-        const vehiculos = await EmergenciaApi.getVehiculos();
 
-        // Limpiar opciones existentes, excepto la primera
-        select.innerHTML = '<option value="">Seleccione vehículo...</option>';
+// async function cargarSelectVehiculos() {
+//         const select = document.getElementById("selectVehiculo");
+//         const vehiculos = await EmergenciaApi.getVehiculos();
 
-        // Agregar opciones dinámicamente
-        vehiculos.forEach(vehiculo => {
-            const option = document.createElement("option");
-            option.value = vehiculo.id;
-            option.textContent = vehiculo.nombre;
-            select.appendChild(option);
-        });
-    }
+//         // Limpiar opciones existentes, excepto la primera
+//         select.innerHTML = '<option value="">Seleccione vehículo...</option>';
+
+//         // Agregar opciones dinámicamente
+//         vehiculos.forEach(vehiculo => {
+//             const option = document.createElement("option");
+//             option.value = vehiculo.id;
+//             option.textContent = vehiculo.nombre;
+//             select.appendChild(option);
+//         });
+// }
+
 
 // ================================
 // RENDER TABLA
@@ -219,7 +223,7 @@ document.addEventListener('click', async function (e) {
       <div class="row mb-3">
         <div class="col-lg-4">
           <label class="form-label">Tipo</label>
-          <select class="form-select" name="codigo_tipo" id="selectTipoEmergencia">
+          <select class="form-select" name="codigo_tipo" id="selectTipoEmergencia">   
             <option value="">Seleccione...</option>
           </select>
         </div>
@@ -263,7 +267,9 @@ document.addEventListener('click', async function (e) {
         </button>
       </div>
     `;
-    await cargarTiposEmergencia(emergencia.codigo_tipo); // Cargar tipos y marcar el seleccionado
+
+    await cargarTiposEmergencia(emergencia.codigo_tipo); // DENTRO DEL HTML PREVIO hemos creado un select vacío con id= selectTipoEmergencia, donde se cargarán tipos y marcará el seleccionado
+
 
     // Guardar cambios
     document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
