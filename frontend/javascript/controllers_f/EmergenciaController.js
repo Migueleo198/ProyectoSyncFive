@@ -6,6 +6,7 @@ let emergencias = []; // variable global para almacenar emergencias
 document.addEventListener('DOMContentLoaded', () => {
   cargarEmergencias();
   cargarTiposEmergencia(0,'filtroTipoEmergencia');
+  cargarTiposEmergencia(0,'tipoEmergenciaInsert');
   cargarSelectVehiculos();
 });
 
@@ -27,8 +28,8 @@ async function cargarEmergencias() {
 // CARGAR TIPOS DE EMERGENCIA (AÑADIR SI SE REQUIERE)   Se carga al abrir el modal editar para marcar el tipo seleccionado    
 
 // ================================
-async function cargarTiposEmergencia(tipoSeleccionado, ubicacion) {
-  const select = document.getElementById(ubicacion);
+async function cargarTiposEmergencia(tipoSeleccionado, id_select) {
+  const select = document.getElementById(id_select);
   if (!select) return;
 
   try {

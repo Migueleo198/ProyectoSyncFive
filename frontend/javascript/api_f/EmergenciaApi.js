@@ -22,9 +22,9 @@ const EmergenciaApi = {
     return ApiClient.get(`/emergencias/${idEmergencia}/vehiculos`);
   },
 
-  getVehiculos(){
-    return ApiClient.get('/vehiculos');
-  },
+  // getVehiculos(){
+  //   return ApiClient.get('/vehiculos');
+  // },
 
   addVehiculo(idEmergencia, data) {
     return ApiClient.post(`/emergencias/${idEmergencia}/vehiculos`, data);
