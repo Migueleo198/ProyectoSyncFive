@@ -34,8 +34,8 @@ class MantenimientoService
             'id_bombero' => 'required|string|min:1',      
             'estado' => 'required|string|in:ABIERTO,REALIZADO',  
             'f_inicio' => 'required|date',            
-            'f_fin' => 'nullable|date',              
-            'descripcion' => 'nullable|string'        
+            'f_fin' => 'date',              
+            'descripcion' => 'string'        
         ]);
 
         try {
@@ -53,8 +53,8 @@ class MantenimientoService
             'id_bombero' => 'required|string|min:1',      
             'estado' => 'required|string|in:ABIERTO,REALIZADO',  
             'f_inicio' => 'required|date',            
-            'f_fin' => 'nullable|date',              
-            'descripcion' => 'nullable|string'        
+            'f_fin' => 'date',              
+            'descripcion' => 'string'        
         ]);
 
         try {
@@ -72,11 +72,11 @@ class MantenimientoService
     public function patchMantenimiento(int $id, array $input): array
     {
         $data = Validator::validate($input, [
-            'id_bombero' => 'nullable|string|min:1',      
-            'estado' => 'nullable|string|in:ABIERTO,REALIZADO',  
-            'f_inicio' => 'nullable|date',            
-            'f_fin' => 'nullable|date',              
-            'descripcion' => 'nullable|string'        
+            'id_bombero' => 'string|min:1',      
+            'estado' => 'string|in:ABIERTO,REALIZADO',  
+            'f_inicio' => 'date',            
+            'f_fin' => 'date',              
+            'descripcion' => 'string'        
         ]);
 
         try {
