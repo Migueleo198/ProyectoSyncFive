@@ -32,8 +32,8 @@ class IncidenciaService
     {
         $data = Validator::validate($input, [
             'id_bombero' => 'required|integer|min:1',
-            'id_material' => 'nullable|integer|min:1',
-            'matricula' => 'nullable|string|max:15',
+            'id_material' => 'integer|min:1',
+            'matricula' => 'string|max:15',
             'fecha' => 'required|date',
             'asunto' => 'required|string|max:150',
             'estado' => 'required|string|in:ABIERTA,CERRADA',
@@ -53,8 +53,8 @@ class IncidenciaService
     {
         $data = Validator::validate($input, [
             'id_bombero' => 'required|integer|min:1',
-            'id_material' => 'nullable|integer|min:1',
-            'matricula' => 'nullable|string|max:15',
+            'id_material' => 'integer|min:1',
+            'matricula' => 'string|max:15',
             'fecha' => 'required|date',
             'asunto' => 'required|string|max:150',
             'estado' => 'required|string|in:ABIERTA,CERRADA',
@@ -84,13 +84,13 @@ class IncidenciaService
     public function patchIncidencia(int $id, array $input): array
     {
         $data = Validator::validate($input, [
-            'id_bombero' => 'nullable|integer|min:1',
-            'id_material' => 'nullable|integer|min:1',
-            'matricula' => 'nullable|string|max:15',
-            'fecha' => 'nullable|date',
-            'asunto' => 'nullable|string|max:150',
-            'estado' => 'nullable|string|in:ABIERTA,CERRADA',
-            'tipo' => 'nullable|string|max:50'
+            'id_bombero' => 'integer|min:1',
+            'id_material' => 'integer|min:1',
+            'matricula' => 'string|max:15',
+            'fecha' => 'date',
+            'asunto' => 'string|max:150',
+            'estado' => 'string|in:ABIERTA,CERRADA',
+            'tipo' => 'string|max:50'
         ]);
 
         // Si el array está vacío, no hay nada que actualizar
