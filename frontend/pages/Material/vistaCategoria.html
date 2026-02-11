@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vehiculo</title>
+    <title>Tipos de emergencia</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
@@ -42,7 +42,7 @@
             <!-- CONTENIDO PRINCIPAL -->
             <main class="col p-3 p-md-4 main-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 class="mb-0">Vehiculo</h1>
+                    <h1 class="mb-0">Categorias</h1>
                     <!-- Icono de ayuda que redirige a Notion -->
                     <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
                     class="text-dark" title="Abrir ayuda en Notion">
@@ -62,7 +62,7 @@
                             <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="1">
                         </div>
                         <div class="col-md-5 d-flex align-items-center m-1">
-                            <label class="m-2" for="grupo">Grupo:</label>
+                            <label class="m-2" for="Inventariable">Inventariable:</label>
                             <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="2">
                                 <option value="">Todos</option>
                                 <option>Incendio urbano</option>
@@ -74,24 +74,17 @@
                     <table class="table table-bordered table-striped" id="tabla">
                         <thead class="table-dark">
                             <tr> <!-- Cabecera de la tabla -->
-                                <th>Matricula</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
+                                <th>Identificador Categoria</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
                                 <th>Nombre</th>
-                                <th class="d-none d-md-table-cell">Ultima ubicacion</th>
-                                <th>Disponibilidad</th>
-                                <th class="d-none d-md-table-cell">Ultimo mantenimiento</th>
-                                <th class="d-none d-md-table-cell">Instalación</th>
+                                <th>Inventariable</th>
                                 <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Matricula</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
+                                <td>Identificador Categoria</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
                                 <td>Nombre</td>
-                                <td class="d-none d-md-table-cell">Ultima ubicacion</td>
-                                <td>Disponibilidad</td>
-                                <td class="d-none d-md-table-cell">Ultimo mantenimiento</td>
-                                <td class="d-none d-md-table-cell">Instalación</td>
-                                
+                                <td>Inventariable</td>
                                 <td class="d-flex justify-content-around">
                                     
                                     <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
@@ -105,7 +98,7 @@
                                     <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
                                         <i class="bi bi-trash3"></i>
                                     </button>
-                                    
+
                                 </td>
                             </tr>
 
@@ -116,38 +109,23 @@
                 
                 <!-- Contenedor insertar -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Insertar vehiculo</h5>
+                    <h5 class="text-center mb-4">Insertar Categoria</h5>
                     <form id="formInsertar" class="mx-auto">
                         <!-- Campos en la misma fila -->
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="insertMatricula" class="form-label">Matricula</label>
-                                <input type="text" class="form-control" id="insertMatricula" name="Matricula" required>
+                                <label for="insertIdentificador Categoria" class="form-label">Identificador Categoria</label>
+                                <input type="text" class="form-control" id="insertIdentificador Categoria" name="Identificador Categoria" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertNombre" class="form-label">Nombre</label>
                                 <input type="text" class="form-control" id="insertNombre" name="Nombre" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="insertUltimaUbicacion" class="form-label">Ultima ubicacion</label>
-                                <input type="text" class="form-control" id="insertUltimaUbicacion" name="UltimaUbicacion" required>
+                                <label for="insertInventariable" class="form-label">Inventariable</label>
+                                <input type="text" class="form-control" id="insertInventariable" name="Inventariable" required>
                             </div>
-                            <div class="col-md-6">
-                                <label for="insertDisponibilidad" class="form-label">Disponibilidad</label>
-                                <input type="text" class="form-control" id="insertDisponibilidad" name="Disponibilidad" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="insertUltimoMantenimiento" class="form-label">Ultimo mantenimiento</label>
-                                <input type="text" class="form-control" id="insertUltimoMantenimiento" name="UltimoMantenimiento" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="insertInstalacion" class="form-label">Instalación</label>
-                                <input type="text" class="form-control" id="insertInstalacion" name="Instalacion" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="insertTipo" class="form-label">Tipo</label>
-                                <input type="text" class="form-control" id="insertTipo" name="Tipo" required>
-                            </div>
+                            
                         </div>
                         <!-- Botones centrados debajo -->
                         <div class="d-flex justify-content-center gap-2">

@@ -19,7 +19,8 @@
     }
 
     header img {
-        width: 50%;
+        width: 205px;
+        min-width: 100px;
     }
 
     .gris{
@@ -38,11 +39,7 @@
     /* Footer siempre abajo - VERSIÓN MÁS SEGURA */
     body {
         min-height: 100vh;
-        display: flex;
-        flex-direction: column;
     }
-
-    /* Selecciona solo el div que está justo después del header */
     
 
     #sidebar{
@@ -65,6 +62,7 @@
 
     aside{
         background-color: var(--gris);
+        
     }
 
 

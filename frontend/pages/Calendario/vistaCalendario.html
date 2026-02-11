@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendario</title>
 
     <!-- Bootstrap CSS -->
@@ -26,78 +26,79 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-white text-dark">
+<body class="bg-white text-dark d-flex flex-column">
 
     <!-- HEADER -->
     <div id="header-placeholder"></div>
 
     <!-- LAYOUT -->
-    <div class="d-flex flex-grow-1">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- SIDEBAR -->
+            <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
 
-        <!-- SIDEBAR -->
-        <div id="sidebar-placeholder" class="sidebar-bg"></div>
+            <!-- MAIN -->
+            <main class="col p-3 p-md-4 main-container">
 
-        <!-- MAIN -->
-        <main class="p-3 w-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0 text-danger">Calendario</h1>
+                    <a href="https://www.notion.so/TU_PAGINA" target="_blank" class="text-dark">
+                        <i class="bi bi-question-circle fs-3"></i>
+                    </a>
+                </div>
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0 text-danger">Calendario</h1>
-                <a href="https://www.notion.so/TU_PAGINA" target="_blank" class="text-dark">
-                    <i class="bi bi-question-circle fs-3"></i>
-                </a>
-            </div>
+                <p>Home &nbsp; <span class="text-muted">[Migas de pan]</span></p>
 
-            <p>Home &nbsp; <span class="text-muted">[Migas de pan]</span></p>
+                <div class="container-fluid calendar-container">
 
-            <div class="container-fluid calendar-container">
+                    <!-- CONTROLES -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
 
-                <!-- CONTROLES -->
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <button class="btn btn-outline-secondary btn-sm" id="prevMonth">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" id="nextMonth">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
 
-                    <div>
-                        <button class="btn btn-outline-secondary btn-sm" id="prevMonth">
-                            <i class="bi bi-chevron-left"></i>
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm" id="nextMonth">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
+                        <div class="fw-bold fs-5" id="monthYear"></div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm">mes</button>
+                            <button class="btn btn-outline-secondary btn-sm">semana</button>
+                            <button class="btn btn-outline-secondary btn-sm">día</button>
+                        </div>
+
                     </div>
 
-                    <div class="fw-bold fs-5" id="monthYear"></div>
-
-                    <div class="btn-group">
-                        <button class="btn btn-outline-secondary btn-sm">mes</button>
-                        <button class="btn btn-outline-secondary btn-sm">semana</button>
-                        <button class="btn btn-outline-secondary btn-sm">día</button>
+                    <!-- TABLA CALENDARIO -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered calendar-table">
+                            <thead class="table-secondary text-center">
+                                <tr>
+                                    <th>Lunes</th>
+                                    <th>Martes</th>
+                                    <th>Miércoles</th>
+                                    <th>Jueves</th>
+                                    <th>Viernes</th>
+                                    <th>Sábado</th>
+                                    <th>Domingo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="calendarBody"></tbody>
+                        </table>
                     </div>
 
                 </div>
 
-                <!-- TABLA CALENDARIO -->
-                <div class="table-responsive">
-                    <table class="table table-bordered calendar-table">
-                        <thead class="table-secondary text-center">
-                            <tr>
-                                <th>Lunes</th>
-                                <th>Martes</th>
-                                <th>Miércoles</th>
-                                <th>Jueves</th>
-                                <th>Viernes</th>
-                                <th>Sábado</th>
-                                <th>Domingo</th>
-                            </tr>
-                        </thead>
-                        <tbody id="calendarBody"></tbody>
-                    </table>
-                </div>
-
-            </div>
-
-        </main>
+            </main>
+        </div>
     </div>
 
     <!-- FOOTER -->
-    <div id="footer-placeholder"></div>
+    <div id="footer-placeholder" class="mt-auto"></div>
 
     <!-- JS CALENDARIO -->
     <script src="scriptCalendario.js"></script>
