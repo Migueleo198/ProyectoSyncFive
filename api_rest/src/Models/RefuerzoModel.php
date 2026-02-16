@@ -20,18 +20,18 @@ class RefuerzoModel
     public function all(): array
     {
         return $this->db
-            ->query("SELECT * FROM Refuerzo ORDER BY ID_Refuerzo ASC")
+            ->query("SELECT * FROM Turno_refuerzo ORDER BY id_turno_refuerzo ASC")
             ->fetchAll();
     }
 
     /**
-     * Buscar refuerzo por ID_Refuerzo
+     * Buscar refuerzo por id_turno_refuerzo
      */
-    public function find(string $id_refuerzo): ?array
+    public function find(string $id_turno_refuerzo): ?array
     {
         $result = $this->db
-            ->query("SELECT * FROM Refuerzo WHERE ID_Refuerzo = :id")
-            ->bind(':id', $id_refuerzo)
+            ->query("SELECT * FROM Turno_refuerzo WHERE id_turno_refuerzo = :id")
+            ->bind(':id', $id_turno_refuerzo)
             ->fetch();
 
         return $result ?: null;
@@ -43,48 +43,44 @@ class RefuerzoModel
     public function create(array $data): string|false
     {
         $this->db->query("
-            INSERT INTO refuerzo (
-                id_refuerzo,
-                fecha,
+            INSERT INTO Turno_refuerzo (
+                id_turno_refuerzo,
                 h_inicio,
                 h_fin,
-                notas
+                horas
             ) VALUES (
-                :id_refuerzo,
+                :id_turno_refuerzo,
                 :fecha,
                 :h_inicio,
                 :h_fin,
-                :notas
+                :horas
             )
         ")
-        ->bind(':id_refuerzo', $data['id_refuerzo'])
-        ->bind(':fecha', $data['fecha'])
+        ->bind(':id_turno_refuerzo', $data['id_turno_refuerzo'])
         ->bind(':h_inicio', $data['h_inicio'])
         ->bind(':h_fin', $data['h_fin'])
-        ->bind(':notas', $data['notas'] ?? null)
+        ->bind(':horas', $data['horas'] ?? null)
         ->execute();
 
-        return $data['id_refuerzo'];
+        return $data['id_turno_refuerzo'];
     }
 
     /**
      * Actualizar refuerzo (PATCH)
      */
-    public function update(string $id_refuerzo, array $data): int
+    public function update(string $id_turno_refuerzo, array $data): int
     {
         $this->db->query("
-            UPDATE refuerzo SET
-                fecha = :fecha,
+            UPDATE Turno_refuerzo SET
                 h_inicio = :h_inicio,
                 h_fin = :h_fin,
-                notas = :notas
-            WHERE ID_Refuerzo = :id_refuerzo
+                horas = :horas
+            WHERE id_turno_refuerzo = :id_turno_refuerzo
         ")
-        ->bind(':id_refuerzo', $id_refuerzo)
-        ->bind(':fecha', $data['fecha'])
+        ->bind(':id_turno_refuerzo', $id_turno_refuerzo)
         ->bind(':h_inicio', $data['h_inicio'])
         ->bind(':h_fin', $data['h_fin'])
-        ->bind(':notas', $data['notas'] ?? null)
+        ->bind(':horas', $data['horas'] ?? null)
         ->execute();
 
         return $this->db
@@ -95,11 +91,11 @@ class RefuerzoModel
     /**
      * Eliminar refuerzo
      */
-    public function delete(string $id_refuerzo): int
+    public function delete(string $id_turno_refuerzo): int
     {
         $this->db
-            ->query("DELETE FROM refuerzo WHERE id_refuerzo = :id_refuerzo")
-            ->bind(':id_refuerzo', $id_refuerzo)
+            ->query("DELETE FROM Turno_refuerzo WHERE id_turno_refuerzo = :id_turno_refuerzo")
+            ->bind(':id_turno_refuerzo', $id_turno_refuerzo)
             ->execute();
 
         return $this->db
@@ -116,18 +112,18 @@ class RefuerzoModel
         string $cargo,
     ): bool {
         $this->db->query("
-            INSERT INTO Persona_Carnet (
+            INSERT INTO Persona_Turno (
                 n_funcionario,
-                id_refuerzo,
+                id_turno_refuerzo,
                 cargo
             ) VALUES (
                 :n_funcionario,
-                :id_refuerzo,
+                :id_turno_refuerzo,
                 :cargo
             )
         ")
         ->bind(':n_funcionario', $n_funcionario)
-        ->bind(':id_refuerzo', $id_refuerzo)
+        ->bind(':id_turno_refuerzo', $id_turno_refuerzo)
         ->bind(':cargo', $cargo)
         ->execute();
 
@@ -137,7 +133,7 @@ class RefuerzoModel
     /**
      * Obtener todas las personas que tienen un refuerzo (con fechas)
      */
-    public function getPersonsByRefuerzo(string $id_refuerzo): array
+    public function getPersonsByRefuerzo(string $id_turno_refuerzo): array
     {
         return $this->db
             ->query("
@@ -145,29 +141,29 @@ class RefuerzoModel
                     p.*,
                     pc.f_obtencion,
                     pc.f_vencimiento
-                FROM Persona_Refuerzo pc
+                FROM Persona_Turno pc
                 INNER JOIN Persona p 
                     ON p.n_funcionario = pc.n_funcionario
-                WHERE pc.id_refuerzo = :id_refuerzo
+                WHERE pc.id_turno_refuerzo = :id_turno_refuerzo
                 ORDER BY p.n_funcionario ASC
             ")
-            ->bind(':id_refuerzo', $id_refuerzo)
+            ->bind(':id_turno_refuerzo', $id_turno_refuerzo)
             ->fetchAll();
     }
 
     /**
      * Eliminar la asignación de un refuerzo a una persona
      */
-    public function unassignFromPerson(string $n_funcionario, string $id_refuerzo): int
+    public function unassignFromPerson(string $n_funcionario, string $id_turno_refuerzo): int
     {
         $this->db
             ->query("
-                DELETE FROM Persona_Refuerzo
+                DELETE FROM Persona_Turno
                 WHERE n_funcionario = :n_funcionario
-                AND id_refuerzo = :id_refuerzo
+                AND id_turno_refuerzo = :id_turno_refuerzo
             ")
             ->bind(':n_funcionario', $n_funcionario)
-            ->bind(':id_refuerzo', $id_refuerzo)
+            ->bind(':id_turno_refuerzo', $id_turno_refuerzo)
             ->execute();
 
         return $this->db

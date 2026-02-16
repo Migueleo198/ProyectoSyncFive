@@ -9,7 +9,7 @@ use Services\RefuerzoService;
 use Validation\ValidationException;
 use Throwable;
 
-class RefuerzoController
+class TurnoController
 {
     private RefuerzoService $service;
 
@@ -59,7 +59,7 @@ class RefuerzoController
 
             $res->status(201)->json(
                 [
-                    'id_refuerzo'    => $result['id_refuerzo'],    
+                    'id_refuerzo'    => $result['id_turno_refuerzo'],    
                     'f_inicio' => $result['f_inicio'],
                     'f_fin' => $result['f_fin'],
                     'horas' => $result['horas']
