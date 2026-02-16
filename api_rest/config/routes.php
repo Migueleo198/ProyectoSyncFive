@@ -137,8 +137,7 @@ $router->protectedSession('DELETE', '/vehiculos/{matricula}/instalacion', 'Contr
 
 
 //++++++++++++++++++++++++++++++ INSTALACIONES ++++++++++++++++++++++++++++++
-// $router->protectedSession('GET', '/instalaciones', 'Controllers\\InstalacionController@index', [1,2,3,4,5]);
-$router->get('/instalaciones', 'Controllers\\InstalacionController@index');
+$router->protectedSession('GET', '/instalaciones', 'Controllers\\InstalacionController@index', [1,2,3,4,5]);
 $router->protectedSession('POST', '/instalaciones', 'Controllers\\InstalacionController@store', [4,5]);
 $router->protectedSession('GET', '/instalaciones/{id_instalacion}', 'Controllers\\InstalacionController@show', [1,2,3,4,5]);
 $router->protectedSession('PUT', '/instalaciones/{id_instalacion}', 'Controllers\\InstalacionController@update', [4,5]);
