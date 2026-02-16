@@ -601,7 +601,7 @@ INSERT INTO Persona (
 ) VALUES (
     'B001', 'FUNC001', '12345678A', 'inspector@bomberos.es', '600000000',
     '2015-01-01', 'Juan', 'Pérez Inspector', '1985-05-10',
-    'Almería', 5, 1, 'inspector1', 'hashpassword'
+    'Almería', 5, 1, 'inspector', '$2a$12$XN7BvIR7cmdSJtVGow3aI.wM.GJBu4P9sx34A0b7TwhpheBynhDnS'
 );
 
 /* =======================
