@@ -23,9 +23,11 @@
     <!-- JS dependientes -->
     <script src="/frontend/javascript/header_footer.js" defer></script>
     <script src="/frontend/javascript/script_filtro_tabla.js" defer></script>
-
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module"
+        src="/frontend/javascript/controllers_f/MaterialController.js">
+    </script>
 </head>
 
 <body class="bg-white text-dark d-flex flex-column">
@@ -66,16 +68,15 @@
                             <label class="m-2" for="Estado">Estado:</label>
                             <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="2">
                                 <option value="">Todos</option>
-                                <option>Incendio urbano</option>
-                                <option>Incendio forestal</option>
-                                <option>Accidente de tráfico</option>
+                                <option>ALTA</option>
+                                <option>BAJA</option>
                             </select>
                         </div>
                     </div>
                     <table class="table table-bordered table-striped" id="tabla">
                         <thead class="table-dark">
                             <tr> <!-- Cabecera de la tabla -->
-                                <th>Identificador Material</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
+                                <th>ID</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
                                 <th>Nombre</th>
                                 <th class="d-none d-md-table-cell">Descripcion</th>
                                 <th>Estado</th>
@@ -87,33 +88,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Identificador Material</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
-                                <td>Nombre</td>
-                                <td class="d-none d-md-table-cell">Descripcion</td>
-                                <td>Estado</td>
-                                <td class="d-none d-md-table-cell">Fech_Compra</td>
-                                <td class="d-none d-md-table-cell">Caducidad</td>
-                                <td class="d-none d-md-table-cell">Periodicidad</td>
-                                <td class="d-none d-md-table-cell">Unidades</td>
-                                <td class="d-flex justify-content-around">
-                                    
-                                    <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-
-                                </td>
-                            </tr>
-
-                            <!-- Aquí puedes agregar más filas de datos -->
                         </tbody>
                     </table>
                 </div>
@@ -126,39 +100,39 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="insertIdentificador Material" class="form-label">Identificador Material</label>
-                                <input type="text" class="form-control" id="insertIdentificador Material" name="Identificador Material" required>
+                                <input type="text" class="form-control" id="insertIdentificador Material" name="id_material" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertNombre" class="form-label">Nombre</label>
-                                <input type="text" class="form-control" id="insertNombre" name="Nombre" required>
+                                <input type="text" class="form-control" id="insertNombre" name="nombre" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertDescripcion" class="form-label">Descripcion</label>
-                                <input type="text" class="form-control" id="insertDescripcion" name="Descripcion" required>
+                                <input type="text" class="form-control" id="insertDescripcion" name="descripcion" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertEstado" class="form-label">Estado</label>
-                                <input type="text" class="form-control" id="insertEstado" name="Estado" required>
+                                <input type="text" class="form-control" id="insertEstado" name="estado" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertFech_Compra" class="form-label">Fech_Compra</label>
-                                <input type="text" class="form-control" id="insertFech_Compra" name="Fech_Compra" required>
+                                <input type="text" class="form-control" id="insertFech_Compra" name="fech_compra" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertCaducidad" class="form-label">Caducidad</label>
-                                <input type="text" class="form-control" id="insertCaducidad" name="Caducidad" required>
+                                <input type="text" class="form-control" id="insertCaducidad" name="caducidad" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertPeriodicidad" class="form-label">Periodicidad</label>
-                                <input type="text" class="form-control" id="insertPeriodicidad" name="Periodicidad" required>
+                                <input type="text" class="form-control" id="insertPeriodicidad" name="periodicidad" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertUnidades" class="form-label">Unidades</label>
-                                <input type="text" class="form-control" id="insertUnidades" name="Unidades" required>
+                                <input type="text" class="form-control" id="insertUnidades" name="unidades" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertTipo" class="form-label">Tipo</label>
-                                <input type="text" class="form-control" id="insertTipo" name="Tipo" required>
+                                <input type="text" class="form-control" id="insertTipo" name="tipo" required>
                             </div>
                         </div>
                         <!-- Botones centrados debajo -->
@@ -208,9 +182,9 @@
                         </div>
                     </form>
                 </div>
-                <!-- Contenedor Asignar a Vehiculo -->
+                <!-- Contenedor Asignar a Funcionario -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Asignar Material a Vehiculo</h5>
+                    <h5 class="text-center mb-4">Asignar Material a Funcionario</h5>
                     <form id="formInsertar" class="mx-auto">
                         <!-- Campos en la misma fila -->
                         <div class="row mb-3">
@@ -243,9 +217,9 @@
                         </div>
                     </form>
                 </div>
-                <!-- Contenedor Asignar a Vehiculo -->
+                <!-- Contenedor Asignar a Almacen -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Asignar Material a Vehiculo</h5>
+                    <h5 class="text-center mb-4">Asignar Material a Almacen</h5>
                     <form id="formInsertar" class="mx-auto">
                         <!-- Campos en la misma fila -->
                         <div class="row mb-3">
