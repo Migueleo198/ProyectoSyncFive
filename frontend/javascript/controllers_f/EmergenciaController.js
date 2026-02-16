@@ -370,7 +370,7 @@ document.addEventListener('click', function (e) {
 //       modal.hide();
 
 //     } catch (error) {
-//       console.error('Error al eliminar emergencia:', error);
+//       mostrarError('Error al eliminar emergencia: ' + error.message);
 //     }
 // });
 
