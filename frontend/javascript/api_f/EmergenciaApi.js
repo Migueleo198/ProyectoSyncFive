@@ -30,7 +30,7 @@ const EmergenciaApi = {
     return ApiClient.post(`/emergencias/${idEmergencia}/vehiculos`, data);
   },
 
-  removeVehiculo(idEmergencia, matricula) {
+  deleteVehiculo(idEmergencia, matricula) {
     return ApiClient.delete(
       `/emergencias/${idEmergencia}/vehiculos/${matricula}`
     );
