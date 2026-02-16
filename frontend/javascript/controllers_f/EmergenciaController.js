@@ -379,5 +379,15 @@ document.addEventListener('click', function (e) {
 // ERRORES
 // ================================
 function mostrarError(msg) {
-  alert(msg);
+  const container = document.getElementById("alert-container");
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = `
+    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+      <strong>Error:</strong> ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  `;
+
+  container.append(wrapper);
 }

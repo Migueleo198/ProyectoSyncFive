@@ -76,7 +76,7 @@ class TipoEmergenciaService
         ]);
 
         $data = Validator::validate($input, [
-            'nombre' => 'required|string|max:50',
+            'nombre' => 'string|max:50',
             'grupo' => 'string|max:50',
         ]);
 
