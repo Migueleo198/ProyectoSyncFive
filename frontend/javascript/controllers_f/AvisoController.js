@@ -1,201 +1,346 @@
 import AvisoApi from '../api_f/AvisoApi.js';
+import PersonaApi from '../api_f/PersonaApi.js';
 
-let avisos = []; // variable global para almacenar avisos
+let avisos = [];
+let personas = [];
+
+// Usuario actual leído del sessionStorage
+const usuarioActual = JSON.parse(sessionStorage.getItem('user') || 'null');
 
 document.addEventListener('DOMContentLoaded', () => {
+    cargarPersonas();
     cargarAvisos();
     bindCrearAviso();
+    bindModalVer();
+    bindModalEliminar();
 });
+
+
+// ================================
+// CARGAR PERSONAS (para el select de destinatarios)
+// ================================
+async function cargarPersonas() {
+    try {
+        const response = await PersonaApi.getAll();
+        personas = response.data;
+        poblarSelectDestinatarios(personas);
+    } catch (e) {
+        console.error('Error cargando personas:', e.message);
+    }
+}
+
+function poblarSelectDestinatarios(lista) {
+    const select = document.getElementById('insertDestinatarios');
+    if (!select) return;
+
+    // Limpiar opciones previas excepto la vacía
+    select.innerHTML = '';
+
+    lista.forEach(p => {
+        // No incluir al usuario actual como destinatario de su propio aviso
+        if (usuarioActual && p.id_bombero === usuarioActual.id_bombero) return;
+
+        const option   = document.createElement('option');
+        option.value   = p.id_bombero;
+        option.textContent = `${p.nombre} ${p.apellidos} (${p.nombre_usuario})`;
+        select.appendChild(option);
+    });
+}
 
 // ================================
 // CARGAR AVISOS
 // ================================
 async function cargarAvisos() {
-  try {
-    const response = await AvisoApi.getAll();
-    avisos = response.data; // guardamos globalmente
-    renderTablaAvisos(avisos);
-  } catch (e) {
-    mostrarError(e.message || 'Error cargando avisos');
-  }
+    try {
+        const response = await AvisoApi.getAll();
+        const todosLosAvisos = response.data;
+
+        // Filtrar: solo los avisos donde el usuario actual es destinatario
+        // Para ello necesitamos consultar los destinatarios de cada aviso,
+        // pero como no hay endpoint de "mis avisos", filtramos en cliente
+        // usando los destinatarios ya cargados en paralelo
+        const misAvisos = await filtrarAvisosDelUsuario(todosLosAvisos);
+
+        avisos = misAvisos;
+        renderTablaAvisos(avisos);
+    } catch (e) {
+        mostrarAlerta(e.message || 'Error cargando avisos', 'danger');
+    }
+}
+
+async function filtrarAvisosDelUsuario(lista) {
+    if (!usuarioActual) return lista;
+
+    // Consultamos destinatarios de cada aviso en paralelo
+    const resultados = await Promise.allSettled(
+        lista.map(a => AvisoApi.getDestinatarios(a.id_aviso))
+    );
+
+    return lista.filter((aviso, index) => {
+        const resultado = resultados[index];
+        if (resultado.status !== 'fulfilled') return false;
+
+        const destinatarios = resultado.value.data ?? [];
+
+        // Mostrar si: el usuario es destinatario O es el remitente
+        const esDestinatario = destinatarios.some(
+            d => String(d.id_bombero) === String(usuarioActual.id_bombero)
+        );
+        const esRemitente = String(aviso.remitente) === String(usuarioActual.id_bombero);
+
+        return esDestinatario || esRemitente;
+    });
 }
 
 // ================================
 // RENDER TABLA
 // ================================
-function renderTablaAvisos(avisos) {
-  const tbody = document.querySelector('#tabla tbody');
-  tbody.innerHTML = '';
+function renderTablaAvisos(lista) {
+    const tbody = document.querySelector('#tabla tbody');
+    tbody.innerHTML = '';
 
-  avisos.forEach(a => {
-    const tr = document.createElement('tr');
+    if (!lista.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    No hay avisos registrados
+                </td>
+            </tr>`;
+        return;
+    }
 
-    tr.innerHTML = `
-      <td class="d-none d-md-table-cell">${a.id_aviso}</td>
-      <td>${a.asunto ?? ''}</td>
-      <td>${a.mensaje ?? ''}</td>
-      <td class="d-none d-md-table-cell">${a.fecha ?? ''}</td>
-      <td class="d-none d-md-table-cell">${a.remitente ?? ''}</td>
-      <td class="d-flex justify-content-around">
-        <button type="button" class="btn p-0 btn-ver"
-                data-bs-toggle="modal"
-                data-bs-target="#modalVer"
-                data-id="${a.id_aviso}">
-            <i class="bi bi-eye"></i>
-        </button>
-
-        <button type="button" class="btn p-0 btn-eliminar"
-                data-bs-toggle="modal"
-                data-bs-target="#modalEliminar"
-                data-id="${a.id_aviso}">
-            <i class="bi bi-trash3"></i>
-        </button>
-      </td>
-    `;
-
-    tbody.appendChild(tr);
-  });
+    lista.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="d-none d-md-table-cell">${a.id_aviso}</td>
+            <td>${a.asunto ?? ''}</td>
+            <td>${truncar(a.mensaje, 60)}</td>
+            <td class="d-none d-md-table-cell">${formatearFecha(a.fecha)}</td>
+            <td class="d-none d-md-table-cell">${a.remitente ?? '—'}</td>
+            <td class="d-flex justify-content-around">
+                <button type="button" class="btn p-0 btn-ver"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalVer"
+                        data-id="${a.id_aviso}"
+                        title="Ver detalle">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <button type="button" class="btn p-0 btn-eliminar"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalEliminar"
+                        data-id="${a.id_aviso}"
+                        title="Eliminar">
+                    <i class="bi bi-trash3 text-danger"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 // ================================
-// CREAR / INSERTAR AVISO
+// CREAR AVISO
 // ================================
 function bindCrearAviso() {
-  const form = document.getElementById('formInsertar');
+    const form = document.getElementById('formInsertar');
+    if (!form) return;
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    const f = new FormData(form);
+        const asunto  = document.getElementById('insertAsunto').value.trim();
+        const mensaje = document.getElementById('insertMensaje').value.trim();
 
-    const asunto = f.get('asunto');
-    const mensaje = f.get('mensaje');
+        // ✅ ID corregido — coincide con el HTML
+        const selectDest = document.getElementById('insertDestinatarios');
+        const destinatarios = selectDest
+            ? Array.from(selectDest.selectedOptions)
+                   .map(opt => opt.value)
+                   .filter(v => v !== '')
+            : [];
 
-    const selectDest = document.getElementById('insertDestinatarios');
+        try {
+            // 1. Crear el aviso
+            const response = await AvisoApi.create({
+                asunto,
+                mensaje,
+                fecha: new Date().toISOString().slice(0, 19).replace('T', ' ')
+            });
 
-    const destinatarios = Array.from(selectDest.selectedOptions)
-      .map(opt => opt.value);
+            const idAviso = response.data.id;
 
-    try {
-      
-      // Crear aviso (SIN remitente)
-      const response = await AvisoApi.create({
-        asunto,
-        mensaje,
-        fecha: new Date().toISOString()
-      });
+            // 2. Asignar remitente automáticamente (usuario actual)
+            if (usuarioActual?.id_bombero) {
+                await AvisoApi.setRemitente(idAviso, usuarioActual.id_bombero);
+            }
 
-      const idAviso = response.data.id;
+            // 3. Asignar destinatarios seleccionados
+            for (const idBombero of destinatarios) {
+                await AvisoApi.setDestinatario(idAviso, idBombero);
+            }
 
-      // Asignar destinatarios
-      for (const idBombero of destinatarios) {
-        await AvisoApi.setDestinatario(idAviso, idBombero);
-      }
+            await cargarAvisos();
+            form.reset();
+            mostrarAlerta('Aviso creado correctamente', 'success');
 
-      await cargarAvisos();
-      form.reset();
-
-      alert('Aviso creado correctamente');
-    } catch (err) {
-      mostrarError(err.message || 'Error creando aviso');
-    }
-  });
+        } catch (err) {
+            // Mostrar errores de validación si los hay
+            if (err.errors) {
+                const msgs = Object.values(err.errors).flat().join(', ');
+                mostrarAlerta(msgs, 'danger');
+            } else {
+                mostrarAlerta(err.message || 'Error creando aviso', 'danger');
+            }
+        }
+    });
 }
-
-    
-// ================================
-// CAMPOS DE LA TABLA      estos arrays se usan para mostrar los campos en el modal ver (arriba como lo quieres ver, abajo como están en la base de datos, el orden debe coincidir)  
-// ================================
-  const nombresCampos = [
-    'ID',
-    'Asunto',
-    'Mensaje',
-    'Fecha',
-    'Remitente'
-  ];
-
-  const camposBd = [      //tambien se usan para el modal editar, para recoger los datos de los inputs y enviarlos al backend, por eso deben coincidir con los name de los inputs del formulario editar
-    'id_aviso',
-    'asunto',
-    'mensaje',
-    'fecha',
-    'remitente'
-  ];
 
 // ================================
 // MODAL VER
 // ================================
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.btn-ver');
-  if (!btn) return;
+function bindModalVer() {
+    document.addEventListener('click', async function (e) {
+        const btn = e.target.closest('.btn-ver');
+        if (!btn) return;
 
-  const id = btn.dataset.id;
+        const id    = btn.dataset.id;
+        const aviso = avisos.find(a => String(a.id_aviso) === String(id));
+        if (!aviso) return;
 
-  // Buscar el aviso correspondiente
-  const avisos = aviso.find(em => em.id_aviso == id);
-  if (!avisos) return;
+        const modalBody = document.getElementById('modalVerBody');
+        modalBody.innerHTML = '<p class="text-muted text-center">Cargando...</p>';
 
-  const modalBody = document.getElementById('modalVerBody');
+        // Datos básicos del aviso
+        const campos = [
+            { label: 'ID',       valor: aviso.id_aviso },
+            { label: 'Asunto',   valor: aviso.asunto },
+            { label: 'Mensaje',  valor: aviso.mensaje },
+            { label: 'Fecha',    valor: formatearFecha(aviso.fecha) },
+            { label: 'Remitente',valor: aviso.remitente ?? '—' },
+        ];
 
-  // Limpiar contenido previo
-  while (modalBody.firstChild) {
-    modalBody.removeChild(modalBody.firstChild);
-  }
+        modalBody.innerHTML = '';
+        campos.forEach(({ label, valor }) => {
+            const p = document.createElement('p');
+            p.innerHTML = `<strong>${label}:</strong> ${valor ?? ''}`;
+            modalBody.appendChild(p);
+        });
 
-  nombresCampos.forEach((nombre, index) => {
-    const p = document.createElement('p');
+        // Cargar destinatarios desde la API
+        try {
+            const res     = await AvisoApi.getDestinatarios(id);
+            const destList = res.data ?? [];
 
-    const strong = document.createElement('strong');
-    strong.textContent = nombre + ': ';
+            const hr = document.createElement('hr');
+            modalBody.appendChild(hr);
 
-    const value = document.createTextNode(
-      aviso[camposBd[index]] ?? ''
-    );
+            const titulo = document.createElement('p');
+            titulo.innerHTML = `<strong>Destinatarios:</strong>`;
+            modalBody.appendChild(titulo);
 
-    p.appendChild(strong);
-    p.appendChild(value);
-    modalBody.appendChild(p);
-  });
-});
+            if (destList.length === 0) {
+                const vacio = document.createElement('p');
+                vacio.textContent = 'Sin destinatarios asignados';
+                vacio.className   = 'text-muted';
+                modalBody.appendChild(vacio);
+            } else {
+                const ul = document.createElement('ul');
+                ul.className = 'mb-0';
+                destList.forEach(d => {
+                    const li      = document.createElement('li');
+                    // Mostrar nombre si está en la lista de personas cargadas
+                    const persona = personas.find(
+                        p => String(p.id_bombero) === String(d.id_bombero)
+                    );
+                    li.textContent = persona
+                        ? `${persona.nombre} ${persona.apellidos}`
+                        : d.id_bombero;
+                    ul.appendChild(li);
+                });
+                modalBody.appendChild(ul);
+            }
+        } catch {
+            // Si falla la carga de destinatarios no bloqueamos el modal
+        }
+    });
+}
 
 // ================================
-// MODAL ELIMINAR (AÑADIR SI SE REQUIERE)   
+// MODAL ELIMINAR
 // ================================
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.btn-eliminar');
-  if (!btn) return;
+function bindModalEliminar() {
+    // Capturar el ID al abrir el modal
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-eliminar');
+        if (!btn) return;
 
-  const id = btn.dataset.id;
+        document.getElementById('btnConfirmarEliminar').dataset.id = btn.dataset.id;
+    });
 
-  const btnConfirm = document.getElementById('btnConfirmarEliminar');
-  btnConfirm.dataset.id = id;
-});
+    // Confirmar eliminación
+    document.getElementById('btnConfirmarEliminar')
+        .addEventListener('click', async function () {
+            const id = this.dataset.id;
+            if (!id) return;
 
-document.getElementById('btnConfirmarEliminar')
-  .addEventListener('click', async function () {
+            try {
+                await AvisoApi.remove(id);
+                await cargarAvisos();
 
-    const id = this.dataset.id;
-    if (!id) return;
+                bootstrap.Modal.getInstance(
+                    document.getElementById('modalEliminar')
+                ).hide();
 
+                mostrarAlerta('Aviso eliminado correctamente', 'success');
+
+            } catch (error) {
+                mostrarAlerta(error.message || 'Error al eliminar el aviso', 'danger');
+            }
+        });
+}
+
+// ================================
+// UTILIDADES
+// ================================
+function truncar(texto, max) {
+    if (!texto) return '';
+    return texto.length > max ? texto.substring(0, max) + '…' : texto;
+}
+
+function formatearFecha(fecha) {
+    if (!fecha) return '—';
     try {
-      await AvisoApi.delete(id);
-      await cargarAvisos();
-
-      // Cerrar modal
-      const modal = bootstrap.Modal.getInstance(
-        document.getElementById('modalEliminar')
-      );
-      modal.hide();
-
-    } catch (error) {
-      console.error('Error al eliminar aviso:', error);
+        return new Date(fecha).toLocaleDateString('es-ES', {
+            day:   '2-digit',
+            month: '2-digit',
+            year:  'numeric',
+            hour:  '2-digit',
+            minute:'2-digit'
+        });
+    } catch {
+        return fecha;
     }
-});
+}
 
+function mostrarAlerta(msg, tipo = 'info') {
+    const container = document.getElementById('alert-container');
+    if (!container) { alert(msg); return; }
 
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  alert(msg);
+    const id    = `alert-${Date.now()}`;
+    const div   = document.createElement('div');
+    div.id        = id;
+    div.className = `alert alert-${tipo} alert-dismissible fade show shadow-sm`;
+    div.role      = 'alert';
+    div.innerHTML = `
+        ${msg}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    container.appendChild(div);
+
+    // Auto-cerrar a los 4 segundos
+    setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    }, 4000);
 }
