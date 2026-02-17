@@ -7,8 +7,36 @@ ErrorDocument 500 /frontend/errores/err500.html
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # ROOT → HOME
-    RewriteRule ^$ /frontend/pages/home.html [L]
+    # 1️⃣ No tocar archivos reales
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # ROOT → /home
+   RewriteRule ^$ home [R=302,L]
+
+   RewriteRule ^home(?:/.*)?$ frontend/pages/home.html [L]
+
+    # EMERGENCIAS
+
+     RewriteRule ^emergencias$ /frontend/pages/Emergencia/vistaEmergencias.html [L]
+
+
+     RewriteRule ^avisos$ /frontend/pages/Avisos/vistaAvisos.html [L] 
+
+     RewriteRule ^salidas$ /frontend/pages/Salidas/vistaSalidas.html [L]  
+
+     RewriteRule ^mapa$ /frontend/pages/Mapa/vistaMapa.html [L]  
+
+     RewriteRule ^alineacion$ /frontend/pages/Alineacion/vistaAlineacion.html [L] 
+
+     RewriteRule ^cuadranteAnual$ /frontend/pages/Cuadrante/vistaCuadranteAnual.html [L] 
+
+     RewriteRule ^cuadranteMensual$ /frontend/pages/Cuadrante/vistaCuadranteMensual.html [L] 
+
+
+     
+    
 
     # Si el archivo o directorio existe, no tocar
     RewriteCond %{REQUEST_FILENAME} -f [OR]
