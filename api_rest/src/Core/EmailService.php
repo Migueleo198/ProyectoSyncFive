@@ -45,7 +45,7 @@ class EmailService
 
     public function sendActivationEmail(string $to, string $nombre, string $token): void
     {
-        $url = "https://midominio.com" . BASE_PATH . "/auth/activar-cuenta?token=$token";
+        $url = "http://192.168.13.108:8085/frontend/pages/Login/activarCuenta.html?token=$token";
 
         $subject = "Activa tu cuenta";
         $body = "
@@ -60,7 +60,7 @@ class EmailService
 
     public function sendPasswordResetEmail(string $to, string $nombre, string $token): void
     {
-        $url = "https://midominio.com" . BASE_PATH . "/auth/cambiar-contrasena?token=$token";
+        $url = "http://192.168.13.108:8085/frontend/pages/Login/cambiarPassword.html?token=$token";
 
         $subject = "Recupera tu contraseña";
         $body = "
