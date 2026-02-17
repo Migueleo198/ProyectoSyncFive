@@ -1,4 +1,4 @@
-import CarnetApiApi from '../api_f/CarnetApiApi.js';
+import CarnetApiApi from '../api_f/CarnetApi.js';
 
 let carnets = []; // variable global para almacenar carnets
 
@@ -33,7 +33,7 @@ async function cargarTiposCarnet(tipoSeleccionado, id_select) {
   if (!select) return;
 
   try {
-    const response = await TipoCarnetApi.getAll();
+    const response = await CarnetApiApi.getAll();
     const tipos = response.data;
 
     select.innerHTML = '<option value="">Seleccione...</option>';
@@ -43,7 +43,7 @@ async function cargarTiposCarnet(tipoSeleccionado, id_select) {
 
       option.value = tipo.codigo_tipo;   // ID numérico
       option.textContent = tipo.nombre; // Nombre descriptivo
-
+      
       // comparación correcta (número vs número)
       if (tipoSeleccionado !== 0 && Number(tipo.codigo_tipo) === Number(tipoSeleccionado)) {
         option.selected = true;
@@ -53,7 +53,7 @@ async function cargarTiposCarnet(tipoSeleccionado, id_select) {
     });
 
   } catch (e) {
-    mostrarError(e.message || 'Error cargando tipos de emergencia');
+    mostrarError(e.message || 'Error cargando tipos de carnet');
   }
 }
 
@@ -72,7 +72,7 @@ function renderTablaCarnets(carnets) {
       <td class="d-none d-md-table-cell">${c.id_carnet}</td>
       <td>${c.nombre}</td>
       <td>${c.categoria}</td>
-      <td>${c.duracion}</td>
+      <td>${c.duracion_meses}</td>
       <td class="d-flex justify-content-around">                     
         <button type="button" class="btn p-0 btn-ver" 
                 data-bs-toggle="modal" 
@@ -89,9 +89,9 @@ function renderTablaCarnets(carnets) {
         </button>
         
         <button type="button" class="btn p-0 btn-eliminar" 
-                data-bs-toggle="modal"                                             /*  BOTON ELIMINAR (AÑADIR SI SE REQUIERE) meter dentro del td de botones */
+                data-bs-toggle="modal"                                           
                 data-bs-target="#modalEliminar" 
-                data-id="${c.id_carnet}">          {/* IMPORTANTE: el data-id debe ser el mismo que el del botón editar para identificar la emergencia a eliminar */}
+                data-id="${c.id_carnet}">         
             <i class="bi bi-trash3"></i>
         </button>
         
@@ -102,11 +102,12 @@ function renderTablaCarnets(carnets) {
     tbody.appendChild(tr);
   });
 }
+
 // ================================
-// CREAR / INSERTAR EMERGENCIA
+// CREAR / INSERTAR CARNET
 // ================================
-function bindCrearEmergencia() {
-  const form = document.getElementById('formIncidencia');
+function bindCrearCarnet() {
+  const form = document.getElementById('formInsertarCarnet');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -114,23 +115,97 @@ function bindCrearEmergencia() {
     const f = new FormData(form);
 
     const data = {
-      id_carnet: f.get('id_carnet'),
-      nombre: f.get('nombre'),
-      categoria: f.get('categoria'),
-      duracion_meses: Number(f.get('duracion_meses')),
+      nombre:         f.get('nombre'),
+      categoria:      f.get('categoria'),
+      duracion_meses: f.get('duracion_meses')
     };
 
     try {
-      await CarnetApi.create(data); // ← INSERT al backend
-      await cargarCarnets();        // ← refrescar tabla
+      await CarnetApiApi.create(data); // ← corregido
+      await cargarCarnets();
       form.reset();
-      alert('Carnet creado correctamente');
+      mostrarExito('Carnet creado correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error creando carnet');
     }
   });
 }
 
+// ================================
+// ERRORES / ÉXITO
+// ================================
+function mostrarError(msg) {
+  const container = document.getElementById('alert-container');
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = `
+    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+      <strong>Error:</strong> ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  `;
+  container.append(wrapper);
+}
+
+function mostrarExito(msg) {
+  const container = document.getElementById('alert-container');
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = `
+    <div class="alert alert-success alert-dismissible fade show shadow" role="alert">
+      <strong>OK:</strong> ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  `;
+  container.append(wrapper);
+}
+
+
+// ================================
+// MODAL ELIMINAR (AÑADIR SI SE REQUIERE)   
+// ================================
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.btn-eliminar');
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+
+  const btnConfirm = document.getElementById('btnConfirmarEliminar');
+  btnConfirm.dataset.id = id;
+});
+
+document.getElementById('btnConfirmarEliminar')
+  .addEventListener('click', async function () {
+
+    const id = this.dataset.id;
+    if (!id) return;
+
+      try {
+        await CarnetApiApi.remove(id);
+        await cargarCarnets();
+
+      // Cerrar modal
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById('modalEliminar')
+      );
+      modal.hide();
+
+    } catch (error) {
+      mostrarError('Error al eliminar carnet: ' + error.message);
+    }
+});
+
+// ================================
+// CAMPOS DE LA TABLA      estos arrays se usan para mostrar los campos en el modal ver (arriba como lo quieres ver, abajo como están en la base de datos, el orden debe coincidir)  
+// ================================
+  const nombresCampos = [
+    'nombre',
+    'categoria',
+    'duracion_meses'
+  ];
+  const camposBd = [      //tambien se usan para el modal editar, para recoger los datos de los inputs y enviarlos al backend, por eso deben coincidir con los name de los inputs del formulario editar
+    'nombre',
+    'categoria',
+    'duracion_meses'
+  ];
 
 // ================================
 // MODAL EDITAR
@@ -142,80 +217,30 @@ document.addEventListener('click', async function (e) {
   const id = btn.dataset.id;
 
   try {
-    // Obtener datos de la carnet a editar
-    const response = await CarnetApi.getById(id);
+    // Obtener datos de la carnet para rellenar el formulario de edición
+    const response = await CarnetApiApi.getById(id);
     const carnet = response.data;
     if (!carnet) return;
 
     const form = document.getElementById('formEditar');
     form.innerHTML = ''; // Limpiar contenido previo
 
-    // Insertar formulario
+    // Insertar formulario                                             TENER EN CUENTA EL FORMATO DE LA FECHA
     form.innerHTML = `
       <div class="row mb-3">
         <div class="col-lg-4">
-          <label class="form-label">Fecha</label>
-          <input 
-            type="text" 
-            class="form-control" 
-            value="${carnet.fecha || ''}" 
-            disabled
-          >
+          <label class="form-label">Nombre</label>
+          <input type="text" class="form-control" name="nombre" value="${carnet.nombre || ''}">
         </div>
 
         <div class="col-lg-4">
-          <label class="form-label">Estado</label>
-          <select class="form-select" name="estado">
-            <option value="ACTIVA" ${carnet.estado === 'ACTIVA' ? 'selected' : ''}>ACTIVA</option>
-            <option value="CERRADA" ${carnet.estado === 'CERRADA' ? 'selected' : ''}>CERRADA</option>
-          </select>
+          <label class="form-label">Categoría</label>
+          <input type="text" class="form-control" name="categoria" value="${carnet.categoria || ''}">
         </div>
 
         <div class="col-lg-4">
-          <label class="form-label">Dirección</label>
-          <input type="text" class="form-control" name="direccion" value="${carnet.direccion || ''}">
-        </div>
-      </div>
-
-      <div class="row mb-3">
-        <div class="col-lg-4">
-          <label class="form-label">Tipo</label>
-          <select class="form-select" name="codigo_tipo" id="selectTipoCarnet">   
-            <option value="">Seleccione...</option>
-          </select>
-        </div>
-
-        <div class="col-lg-4">
-          <label class="form-label">ID Bombero</label>
-          <input type="text" class="form-control" name="id_bombero" value="${carnet.id_bombero || ''}">
-        </div>
-
-        <div class="col-lg-4">
-          <label class="form-label">Nombre Solicitante</label>
-          <input type="text" class="form-control" name="solicitante" value="${carnet.solicitante || ''}">
-        </div>
-      </div>
-
-      <div class="row mb-3">
-        <div class="col-lg-4">
-          <label class="form-label">Teléfono Solicitante</label>
-          <input type="tel" class="form-control" name="tlfSolicitante" value="${carnet.tlfSolicitante || ''}">
-        </div>
-
-        <div class="col-lg-8">
-          <label class="form-label">Equipos</label>
-          <select class="form-select" name="equipos">
-            <option value="">Seleccione...</option>
-            <option value="equipo1" ${carnet.equipos === 'equipo1' ? 'selected' : ''}>Equipo 1</option>
-            <option value="equipo2" ${carnet.equipos === 'equipo2' ? 'selected' : ''}>Equipo 2</option>
-            <option value="equipo3" ${carnet.equipos === 'equipo3' ? 'selected' : ''}>Equipo 3</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Descripción</label>
-        <textarea class="form-control" name="descripcion" rows="4">${emergencia.descripcion || ''}</textarea>
+          <label class="form-label">Duracion (meses)</label>
+          <input type="text" class="form-control" name="duracion_meses" value="${carnet.duracion_meses || ''}">        </div>
       </div>
 
       <div class="text-center">
@@ -225,7 +250,7 @@ document.addEventListener('click', async function (e) {
       </div>
     `;
 
-    await cargarTiposEmergencia(emergencia.codigo_tipo, 'selectTipoEmergencia'); // DENTRO DEL HTML PREVIO hemos creado un select vacío con id= selectTipoEmergencia, donde se cargarán tipos y marcará el seleccionado
+    
 
 
     // Guardar cambios
@@ -237,8 +262,8 @@ document.addEventListener('click', async function (e) {
         if (input) data[campo] = input.value;
       });
 
-      await EmergenciaApi.update(id, data);             // Enviar datos al backend para actualizar la emergencia
-      await cargarEmergencias();                        // Recargar tabla para mostrar cambios
+      await CarnetApiApi.update(id, data);             // Enviar datos al backend para actualizar la carnet
+      await cargarCarnets();                        // Recargar tabla para mostrar cambios
 
       const modal = bootstrap.Modal.getInstance(        // Cerrar modal
         document.getElementById('modalEditar')
@@ -247,109 +272,7 @@ document.addEventListener('click', async function (e) {
     });
 
   } catch (error) {
-    console.error('Error al editar emergencia:', error);
+    console.error('Error al editar carnet:', error);
   }
 });
-
-    
-// ================================
-// CAMPOS DE LA TABLA      estos arrays se usan para mostrar los campos en el modal ver (arriba como lo quieres ver, abajo como están en la base de datos, el orden debe coincidir)  
-// ================================
-  const nombresCampos = [
-    'Fecha',
-    'Estado',
-    'Dirección',
-    'Tipo Emergencia',
-    'ID Bombero',
-    'Nombre Solicitante',
-    'Teléfono Solicitante',
-    'Descripción'
-  ];
-  const camposBd = [      //tambien se usan para el modal editar, para recoger los datos de los inputs y enviarlos al backend, por eso deben coincidir con los name de los inputs del formulario editar
-    'fecha',
-    'estado',
-    'direccion',
-    'codigo_tipo',
-    'id_bombero',
-    'nombre_solicitante',
-    'tlfn_solicitante',
-    'descripcion'
-  ];
-
-// ================================
-// MODAL VER
-// ================================
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.btn-ver');
-  if (!btn) return;
-
-  const id = btn.dataset.id;
-
-  // Buscar la emergencia correspondiente
-  const emergencia = emergencias.find(em => em.id_emergencia == id);
-  if (!emergencia) return;
-
-  const modalBody = document.getElementById('modalVerBody');
-
-  // Limpiar contenido previo
-  while (modalBody.firstChild) {
-    modalBody.removeChild(modalBody.firstChild);
-  }
-
-  nombresCampos.forEach((nombre, index) => {
-    const p = document.createElement('p');
-
-    const strong = document.createElement('strong');
-    strong.textContent = nombre + ': ';
-
-    const value = document.createTextNode(
-      emergencia[camposBd[index]] ?? ''
-    );
-
-    p.appendChild(strong);
-    p.appendChild(value);
-    modalBody.appendChild(p);
-  });
-});
-
-// ================================
-// MODAL ELIMINAR (AÑADIR SI SE REQUIERE)   
-// ================================
-// document.addEventListener('click', function (e) {
-//   const btn = e.target.closest('.btn-eliminar');
-//   if (!btn) return;
-
-//   const id = btn.dataset.id;
-
-//   const btnConfirm = document.getElementById('btnConfirmarEliminar');
-//   btnConfirm.dataset.id = id;
-// });
-
-// document.getElementById('btnConfirmarEliminar')
-//   .addEventListener('click', async function () {
-
-//     const id = this.dataset.id;
-//     if (!id) return;
-
-//     try {
-//       await EmergenciaApi.delete(id);
-//       await cargarEmergencias();
-
-//       // Cerrar modal
-//       const modal = bootstrap.Modal.getInstance(
-//         document.getElementById('modalEliminar')
-//       );
-//       modal.hide();
-
-//     } catch (error) {
-//       console.error('Error al eliminar emergencia:', error);
-//     }
-// });
-
-
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  alert(msg);
-}
+ 
