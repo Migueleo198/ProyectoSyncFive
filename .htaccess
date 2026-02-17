@@ -7,17 +7,15 @@ ErrorDocument 500 /frontend/errores/err500.html
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    
-
     # -------------------------------------------------
-    # 2️⃣ ROOT → /home
+    # ROOT → /home
     # -------------------------------------------------
     RewriteRule ^$ frontend/pages/home.html [L]
     RewriteRule ^home$ frontend/pages/home.html [L]
 
 
     # -------------------------------------------------
-    # 3️⃣ Rutas del sistema
+    # Rutas del sistema
     # -------------------------------------------------
     RewriteRule ^emergencias$ frontend/pages/Emergencia/vistaEmergencia.html [L]
     RewriteRule ^tipoEmergencia$ frontend/pages/Emergencia/vistaTipoEmergencia.html [L]
@@ -43,22 +41,22 @@ ErrorDocument 500 /frontend/errores/err500.html
     RewriteRule ^almacenes$ frontend/pages/Almacen/vistaAlmacen.html [L]
     RewriteRule ^instalaciones$ frontend/pages/Instalacion/vistaInstalacion.html [L]
     RewriteRule ^usuarios$ frontend/pages/Persona/vistaPersona.html [L]
-    RewriteRule ^perfil$ frontend/pages/AreaPersonal/vistaAreaPersonal.html
-    RewriteRule ^emergencias/activas$ frontend/pages/Emergencia/vistaEmergenciaActiva.html
+    RewriteRule ^perfil$ frontend/pages/AreaPersonal/vistaAreaPersonal.html [L]
+    RewriteRule ^emergencias/activas$ frontend/pages/Emergencia/vistaEmergenciaActiva.html [L]
 
     # -------------------------------------------------
-    # 4️⃣ No tocar frontend directamente
+    # No tocar frontend directamente
     # -------------------------------------------------
     RewriteCond %{REQUEST_URI} ^/frontend/
     RewriteRule ^ - [L]
 
     # -------------------------------------------------
-    # 5️⃣ API → api_rest/public
+    # API → api_rest/public
     # -------------------------------------------------
     RewriteRule ^api/(.*)$ api_rest/public/$1 [L,QSA]
 
     # -------------------------------------------------
-    # 1️⃣ NO tocar archivos o carpetas reales
+    # NO tocar archivos o carpetas reales
     # -------------------------------------------------
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
