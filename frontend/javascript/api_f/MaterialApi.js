@@ -22,10 +22,6 @@ const MaterialApi = {
     return ApiClient.delete(`/materiales/${id_material}`);
   },
 
-  getLocalidades() {
-    return ApiClient.get('/materiales/localidades');
-  },
-
   // MATERIAL ASIGNADO A PERSONAS
   getMaterialByPersona(id_bombero) {
     return ApiClient.get(`/personas/${id_bombero}/material`);
@@ -44,8 +40,8 @@ const MaterialApi = {
     return ApiClient.get(`/vehiculos/${matricula}/materiales`);
   },
 
-  assignToVehiculo(matricula, id_material) {
-    return ApiClient.post(`/vehiculos/${matricula}/materiales/${id_material}`);
+  assignToVehiculo(matricula, id_material, data) {
+    return ApiClient.post(`/vehiculos/${matricula}/materiales/${id_material}`, data);
   },
 
   updateMaterialInVehiculo(matricula, id_material, data) {
@@ -57,8 +53,8 @@ const MaterialApi = {
   },
 
   // MATERIAL EN ALMACÉN
-  getMaterialByAlmacen(id_almacen) {
-    return ApiClient.get(`/almacenes/${id_almacen}/material`);
+  getMaterialByAlmacen(id_almacen, id_instalacion) {
+    return ApiClient.get(`/almacenes/${id_almacen}/material?instalacion=${id_instalacion}`);
   },
 
   assignToAlmacen(id_almacen, data) {
