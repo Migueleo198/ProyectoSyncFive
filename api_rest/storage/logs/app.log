@@ -102,3 +102,7 @@
 2026-02-11T10:14:33+01:00 - Exception: Controller not found: Controllers\VehiculoController
 2026-02-11T10:14:35+01:00 - Exception: Controller not found: Controllers\VehiculoController
 2026-02-11T10:14:37+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T14:08:12+01:00 - Exception: file_put_contents(/var/www/html/api_rest/src/Middlewares/../../storage/rate_limit/f9bab41c2a5dd677708ae9d5d49eaf07.json): Failed to open stream: Permission denied
+2026-02-11T14:08:12+01:00 - Exception: file_put_contents(/var/www/html/api_rest/src/Middlewares/../../storage/rate_limit/f9bab41c2a5dd677708ae9d5d49eaf07.json): Failed to open stream: Permission denied
+2026-02-11T14:08:12+01:00 - Exception: file_put_contents(/var/www/html/api_rest/src/Middlewares/../../storage/rate_limit/f9bab41c2a5dd677708ae9d5d49eaf07.json): Failed to open stream: Permission denied
+2026-02-11T14:38:41+01:00 - Exception: No autorizado

@@ -1,5 +1,6 @@
 import EmergenciaApi from '../api_f/EmergenciaApi.js';
 import TipoEmergenciaApi from '../api_f/TipoEmergenciaApi.js';
+import Formateos from '../helpers/formateos.js';
 
 let emergencias = []; // variable global para almacenar emergencias
 
@@ -90,10 +91,10 @@ function renderTablaEmergencias(emergencias) {
 
   emergencias.forEach(e => {
     const tr = document.createElement('tr');
-
+                                                                                // FORMATO FECHA ESPAÑA
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${e.id_emergencia}</td>
-      <td>${e.fecha}</td>
+      <td>${Formateos.formatearFechaHora(e.fecha)}</td>
       <td class="d-none d-md-table-cell">${e.descripcion ?? ''}</td>
       <td>${e.estado}</td>
       <td class="d-none d-md-table-cell">${e.direccion ?? ''}</td>
@@ -178,7 +179,7 @@ document.addEventListener('click', async function (e) {
     const form = document.getElementById('formEditar');
     form.innerHTML = ''; // Limpiar contenido previo
 
-    // Insertar formulario
+    // Insertar formulario                                             TENER EN CUENTA EL FORMATO DE LA FECHA
     form.innerHTML = `
       <div class="row mb-3">
         <div class="col-lg-4">
@@ -186,7 +187,7 @@ document.addEventListener('click', async function (e) {
           <input 
             type="text" 
             class="form-control" 
-            value="${emergencia.fecha || ''}" 
+            value="${Formateos.formatearFechaHora(emergencia.fecha) || ''}"     
             disabled
           >
         </div>
@@ -320,25 +321,30 @@ document.addEventListener('click', function (e) {
   const modalBody = document.getElementById('modalVerBody');
 
   // Limpiar contenido previo
-  while (modalBody.firstChild) {
-    modalBody.removeChild(modalBody.firstChild);
-  }
+  modalBody.innerHTML = '';
 
   nombresCampos.forEach((nombre, index) => {
+
+    const campo = camposBd[index];
+    let valor = emergencia[campo] ?? '';
+
+    //FECHA FORMATO ESPAÑA
+    if (campo === 'fecha') {
+      valor = Formateos.formatearFechaHora(valor);
+    }
+
     const p = document.createElement('p');
 
     const strong = document.createElement('strong');
     strong.textContent = nombre + ': ';
 
-    const value = document.createTextNode(
-      emergencia[camposBd[index]] ?? ''
-    );
-
     p.appendChild(strong);
-    p.appendChild(value);
+    p.appendChild(document.createTextNode(valor));
+
     modalBody.appendChild(p);
   });
 });
+
 
 // ================================
 // MODAL ELIMINAR (AÑADIR SI SE REQUIERE)   
@@ -370,7 +376,7 @@ document.addEventListener('click', function (e) {
 //       modal.hide();
 
 //     } catch (error) {
-//       console.error('Error al eliminar emergencia:', error);
+//       mostrarError('Error al eliminar emergencia: ' + error.message);
 //     }
 // });
 
@@ -379,5 +385,15 @@ document.addEventListener('click', function (e) {
 // ERRORES
 // ================================
 function mostrarError(msg) {
-  alert(msg);
+  const container = document.getElementById("alert-container");
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = `
+    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+      <strong>Error:</strong> ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  `;
+
+  container.append(wrapper);
 }

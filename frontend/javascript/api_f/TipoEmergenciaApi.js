@@ -6,9 +6,9 @@ const TipoEmergenciaApi = {
     return ApiClient.get('/tipos-emergencia');
   },
 
-  // Obtener un tipo de emergencia por nombre
-  getByNombre(nombreEmergencia) {
-    return ApiClient.get(`/tipos-emergencia/${nombreEmergencia}`);
+  // Obtener un tipo de emergencia por ID
+  getById(idTipo) {
+    return ApiClient.get(`/tipos-emergencia/${idTipo}`);
   },
 
   // Crear un nuevo tipo de emergencia
@@ -22,7 +22,7 @@ const TipoEmergenciaApi = {
   },
 
   // Eliminar un tipo de emergencia por ID
-  remove(idTipo) {
+  delete(idTipo) {
     return ApiClient.delete(`/tipos-emergencia/${idTipo}`);
   }
 };
