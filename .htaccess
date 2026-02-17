@@ -7,18 +7,14 @@ ErrorDocument 500 /frontend/errores/err500.html
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # -------------------------------------------------
-    # 1️⃣ NO tocar archivos o carpetas reales
-    # -------------------------------------------------
-    RewriteCond %{REQUEST_FILENAME} -f [OR]
-    RewriteCond %{REQUEST_FILENAME} -d
-    RewriteRule ^ - [L]
+    
 
     # -------------------------------------------------
     # 2️⃣ ROOT → /home
     # -------------------------------------------------
-    RewriteRule ^$ home [R=302,L]
-    RewriteRule ^home(?:/.*)?$ frontend/pages/home.html [L]
+    RewriteRule ^$ frontend/pages/home.html [L]
+    RewriteRule ^home$ frontend/pages/home.html [L]
+
 
     # -------------------------------------------------
     # 3️⃣ Rutas del sistema
@@ -60,5 +56,12 @@ ErrorDocument 500 /frontend/errores/err500.html
     # 5️⃣ API → api_rest/public
     # -------------------------------------------------
     RewriteRule ^api/(.*)$ api_rest/public/$1 [L,QSA]
+
+    # -------------------------------------------------
+    # 1️⃣ NO tocar archivos o carpetas reales
+    # -------------------------------------------------
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
 
 </IfModule>
