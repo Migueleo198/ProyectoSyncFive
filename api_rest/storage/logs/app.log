@@ -102,3 +102,4 @@
 2026-02-11T10:14:33+01:00 - Exception: Controller not found: Controllers\VehiculoController
 2026-02-11T10:14:35+01:00 - Exception: Controller not found: Controllers\VehiculoController
 2026-02-11T10:14:37+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-17T09:03:20+01:00 - Exception: Route not found for GET /login
