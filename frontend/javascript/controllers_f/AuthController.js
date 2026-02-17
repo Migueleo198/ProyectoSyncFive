@@ -1,4 +1,5 @@
 import AuthApi from '../api_f/AuthApi.js';
+import * as Validaciones from '../validacion.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // ── Página login ──────────────────────────────────
@@ -30,6 +31,12 @@ function bindLogin() {
 
     const login = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
+
+    // Validaciones básicas
+    if (!login || !password) {
+        mostrarError('Usuario y contraseña son obligatorios');
+        return;
+    }
 
     try {
       const response = await AuthApi.login({
@@ -66,9 +73,9 @@ function bindRecoverPassword() {
         errorDiv.classList.add('d-none');
         errorDiv.textContent = '';
 
-        // Validación básica cliente
-        if (!emailInput.value.trim()) {
-            errorDiv.textContent = 'Por favor, introduce tu correo electrónico.';
+        // Validación email
+        if (!Validaciones.validarEmail(emailInput.value.trim())) {
+            errorDiv.textContent = 'Introduce un correo válido.';
             errorDiv.classList.remove('d-none');
             return;
         }
@@ -142,15 +149,15 @@ function bindChangePassword() {
         errorDiv.classList.add('d-none');
         errorDiv.textContent = '';
 
-        // Validación cliente
+        // Validaciones
         if (newPassword !== confirmPassword) {
             errorDiv.textContent = 'Las contraseñas no coinciden.';
             errorDiv.classList.remove('d-none');
             return;
         }
 
-        if (newPassword.length < 6) {
-            errorDiv.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+        if (!Validaciones.validarPassword(newPassword)) {
+            errorDiv.textContent = 'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número.';
             errorDiv.classList.remove('d-none');
             return;
         }
