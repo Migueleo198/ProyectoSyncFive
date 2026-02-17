@@ -7,48 +7,39 @@ ErrorDocument 500 /frontend/errores/err500.html
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # 1️⃣ No tocar archivos reales
+    # -------------------------------------------------
+    # 1️⃣ NO tocar archivos o carpetas reales
+    # -------------------------------------------------
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # ROOT → /home
-   RewriteRule ^$ home [R=302,L]
+    # -------------------------------------------------
+    # 2️⃣ ROOT → /home
+    # -------------------------------------------------
+    RewriteRule ^$ home [R=302,L]
+    RewriteRule ^home$ frontend/pages/home.html [L]
 
-   RewriteRule ^home(?:/.*)?$ frontend/pages/home.html [L]
+    # -------------------------------------------------
+    # 3️⃣ Rutas del sistema
+    # -------------------------------------------------
+    RewriteRule ^emergencias$ frontend/pages/Emergencia/vistaEmergencias.html [L]
+    RewriteRule ^avisos$ frontend/pages/Avisos/vistaAvisos.html [L]
+    RewriteRule ^salidas$ frontend/pages/Salidas/vistaSalidas.html [L]
+    RewriteRule ^mapa$ frontend/pages/Mapa/vistaMapa.html [L]
+    RewriteRule ^alineacion$ frontend/pages/Alineacion/vistaAlineacion.html [L]
+    RewriteRule ^cuadranteAnual$ frontend/pages/Cuadrante/vistaCuadranteAnual.html [L]
+    RewriteRule ^cuadranteMensual$ frontend/pages/Cuadrante/vistaCuadranteMensual.html [L]
 
-    # EMERGENCIAS
-
-     RewriteRule ^emergencias$ /frontend/pages/Emergencia/vistaEmergencias.html [L]
-
-
-     RewriteRule ^avisos$ /frontend/pages/Avisos/vistaAvisos.html [L] 
-
-     RewriteRule ^salidas$ /frontend/pages/Salidas/vistaSalidas.html [L]  
-
-     RewriteRule ^mapa$ /frontend/pages/Mapa/vistaMapa.html [L]  
-
-     RewriteRule ^alineacion$ /frontend/pages/Alineacion/vistaAlineacion.html [L] 
-
-     RewriteRule ^cuadranteAnual$ /frontend/pages/Cuadrante/vistaCuadranteAnual.html [L] 
-
-     RewriteRule ^cuadranteMensual$ /frontend/pages/Cuadrante/vistaCuadranteMensual.html [L] 
-
-
-     
-    
-
-    # Si el archivo o directorio existe, no tocar
-    RewriteCond %{REQUEST_FILENAME} -f [OR]
-    RewriteCond %{REQUEST_FILENAME} -d
-    RewriteRule ^ - [L]
-
-    # NO tocar frontend
+    # -------------------------------------------------
+    # 4️⃣ No tocar frontend directamente
+    # -------------------------------------------------
     RewriteCond %{REQUEST_URI} ^/frontend/
     RewriteRule ^ - [L]
 
-    # API → api_rest/public
-    RewriteCond %{REQUEST_URI} ^/api/
+    # -------------------------------------------------
+    # 5️⃣ API → api_rest/public
+    # -------------------------------------------------
     RewriteRule ^api/(.*)$ api_rest/public/$1 [L,QSA]
-    
+
 </IfModule>
