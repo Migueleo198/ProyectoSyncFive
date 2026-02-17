@@ -18,18 +18,37 @@ ErrorDocument 500 /frontend/errores/err500.html
     # 2️⃣ ROOT → /home
     # -------------------------------------------------
     RewriteRule ^$ home [R=302,L]
-    RewriteRule ^home$ frontend/pages/home.html [L]
+    RewriteRule ^home(?:/.*)?$ frontend/pages/home.html [L]
 
     # -------------------------------------------------
     # 3️⃣ Rutas del sistema
     # -------------------------------------------------
-    RewriteRule ^emergencias$ frontend/pages/Emergencia/vistaEmergencias.html [L]
-    RewriteRule ^avisos$ frontend/pages/Avisos/vistaAvisos.html [L]
+    RewriteRule ^emergencias$ frontend/pages/Emergencia/vistaEmergencia.html [L]
+    RewriteRule ^tipoEmergencia$ frontend/pages/Emergencia/vistaTipoEmergencia.html [L]
+    RewriteRule ^avisos$ frontend/pages/Aviso/vistaAviso.html [L]
     RewriteRule ^salidas$ frontend/pages/Salidas/vistaSalidas.html [L]
     RewriteRule ^mapa$ frontend/pages/Mapa/vistaMapa.html [L]
     RewriteRule ^alineacion$ frontend/pages/Alineacion/vistaAlineacion.html [L]
-    RewriteRule ^cuadranteAnual$ frontend/pages/Cuadrante/vistaCuadranteAnual.html [L]
-    RewriteRule ^cuadranteMensual$ frontend/pages/Cuadrante/vistaCuadranteMensual.html [L]
+    RewriteRule ^guardias$ frontend/pages/Guardia/vistaGuardia.html [L]
+    RewriteRule ^turnoRefuerzo$ frontend/pages/TurnoRefuerzo/vistaRefuerzo.html [L]
+    RewriteRule ^cuadrante/Anual$ frontend/pages/Cuadrante/vistaCuadranteAnual.html [L]
+    RewriteRule ^cuadrante/Mensual$ frontend/pages/Cuadrante/vistaCuadranteMensual.html [L]
+    RewriteRule ^formaciones$ frontend/pages/Formacion/vistaFormacion.html [L]
+    RewriteRule ^ediciones$ frontend/pages/Edicion/vistaEdicion.html [L]
+    RewriteRule ^carnets$ frontend/pages/Carnet/vistaCarnet.html [L]
+    RewriteRule ^permisos$ frontend/pages/Permiso/vistaPermiso.html [L]
+    RewriteRule ^permisos/motivos$ frontend/pages/Permiso/vistaMotivo.html [L]
+    RewriteRule ^vehiculos$ frontend/pages/Vehiculo/vistaVehiculo.html [L]
+    RewriteRule ^salida$ frontend/pages/Salida/vistaSalida.html [L]
+    RewriteRule ^materiales$ frontend/pages/Material/vistaMaterial.html [L]
+    RewriteRule ^mantenimiento$ frontend/pages/Mantenimiento/vistaMantenimiento.html [L]
+    RewriteRule ^incidencias$ frontend/pages/Incidencia/vistaIncidencia.html [L]
+    RewriteRule ^categorias/material$ frontend/pages/Material/vistaCategoria.html [L]
+    RewriteRule ^almacenes$ frontend/pages/Almacen/vistaAlmacen.html [L]
+    RewriteRule ^instalaciones$ frontend/pages/Instalacion/vistaInstalacion.html [L]
+    RewriteRule ^usuarios$ frontend/pages/Persona/vistaPersona.html [L]
+    RewriteRule ^perfil$ frontend/pages/AreaPersonal/vistaAreaPersonal.html
+    RewriteRule ^emergencias/activas$ frontend/pages/Emergencia/vistaEmergenciaActiva.html
 
     # -------------------------------------------------
     # 4️⃣ No tocar frontend directamente
