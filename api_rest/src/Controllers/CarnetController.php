@@ -49,30 +49,22 @@ class CarnetController
     public function store(Request $req, Response $res): void
     {
         try {
-            // Obtiene el cuerpo de la petición en formato JSON y llama a service
             $result = $this->service->createCarnet($req->json());
-            
-            // Devuelve 201, el id del carnet y un mensaje genérico
             $res->status(201)->json(
                 ['id' => $result['ID_Carnet']],
                 "Carnet creado correctamente"
             );
         } catch (ValidationException $e) {
-            // Gestiona errores de validación
             $res->status(422)->json(
                 ['errors' => $e->errors],
                 "Errores de validación"
             );
             return;
-
         } catch (Throwable $e) {
-            // Gestiona errores genéricos del servidor
-            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor",500);
+            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor", 500);
             return;
-
         }
     }
-
     /**
      * DELETE /carnets/{id}
      */
@@ -99,7 +91,19 @@ class CarnetController
         }
     }
 
-
+/**
+ * GET /carnets/{id_carnet}
+ */
+public function show(Request $req, Response $res, string $id_carnet): void
+{
+    try {
+        $carnet = $this->service->getCarnetById((int) $id_carnet);
+        $res->status(200)->json($carnet, "OK");
+    } catch (Throwable $e) {
+        $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+        $res->errorJson($e->getMessage(), $code);
+    }
+}
     /**
      * GET /carnets/{ID_Carnet}/personas
      */
@@ -139,7 +143,21 @@ class CarnetController
             $res->errorJson($e->getMessage(), $code);
         }
     }
-
+/**
+ * PUT /carnets/{id_carnet}
+ */
+public function update(Request $req, Response $res, string $id_carnet): void
+{
+    try {
+        $result = $this->service->updateCarnet($id_carnet, $req->json());
+        $res->status(200)->json([], $result['message']);
+    } catch (ValidationException $e) {
+        $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+    } catch (Throwable $e) {
+        $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+        $res->errorJson($e->getMessage(), $code);
+    }
+}
     /**
      * DELETE /carnets/{ID_Carnet}/personas/{n_funcionario}
      */
