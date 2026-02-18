@@ -284,7 +284,31 @@ function bindModalEliminar() {
             if (!id) return;
 
             try {
+                // Obtener destinatarios
+                const resDest = await AvisoApi.getDestinatarios(id);
+                const destinatarios = resDest.data ?? [];
+
+                // Eliminar cada destinatario
+                for (const d of destinatarios) {
+                    await AvisoApi.deleteDestinatario(id, d.id_bombero);
+                }
+
+                // Obtener remitente
+                try {
+                    const resRem = await AvisoApi.getRemitente(id);
+                    const remitente = resRem.data;
+
+                    if (remitente?.id_bombero) {
+                        await AvisoApi.deleteRemitente(id, remitente.id_bombero);
+                    }
+
+                } catch (e) {
+                    // Si no hay remitente no bloqueamos la eliminación
+                }
+
+                // Eliminar el aviso
                 await AvisoApi.remove(id);
+
                 await cargarAvisos();
 
                 bootstrap.Modal.getInstance(
