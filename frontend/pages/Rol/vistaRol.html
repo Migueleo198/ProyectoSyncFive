@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Roles</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+    <!-- Configuración y rutas absolutas -->
+    <script src="/frontend/config/config.js"></script>
+
+    <!-- CSS del proyecto -->
+    <script>
+        loadCSS("header_footer.css");
+        loadCSS("plantilla_css.css");
+        loadFavicon("favicon.png");
+    </script>
+
+    <!-- JS comunes -->
+    <script src="/frontend/javascript/header_footer.js" defer></script>
+    <script src="/frontend/javascript/script_filtro_tabla.js" defer></script>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Controlador específico -->
+    <script type="module" src="/frontend/javascript/controllers_f/RolController.js"></script>
+</head>
+
+<body class="bg-white text-dark">
+
+    <!-- HEADER -->
+    <div id="header-placeholder"></div>
+
+    <!-- LAYOUT CON SIDEBAR -->
+    <div class="d-flex flex-grow-1">
+
+        <!-- SIDEBAR -->
+        <div id="sidebar-placeholder" class="sidebar-bg"></div>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="p-3 w-100">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">Roles</h1>
+                <a href="https://www.notion.so/TU_PAGINA_ROLES" target="_blank" 
+                   class="text-dark" title="Abrir ayuda en Notion">
+                    <i class="bi bi-question-circle fs-3"></i>
+                </a>
+            </div>
+
+            <div>
+                <p>[Migas de pan]</p>
+            </div>
+
+            <!-- FILTRO -->
+            <div class="container mt-4 p-0"> 
+                <div id="filtroTabla" class="m-0 row d-flex justify-content-around">
+                    
+                    <div class="col-md-5 d-flex align-items-center m-1">
+                        <label class="m-2">Nombre:</label>
+                        <select class="form-select m-1 filtro" data-col="1">
+                            <option value="">Todos</option>
+                            <option>BOMBERO</option>
+                            <option>OFICIAL</option>
+                            <option>JEFE DE INTERVENCIÓN</option>
+                            <option>JEFE DE MANDO</option>
+                            <option>INSPECTOR</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <!-- TABLA -->
+                <table class="table table-bordered table-striped" id="tabla">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="d-none d-md-table-cell">ID Rol</th>
+                            <th>Nombre</th>
+                            <th class="d-none d-md-table-cell">Descripción</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- INSERTAR -->
+            <div class="contenedorInsertar container mt-5 p-4 border rounded">
+                <h5 class="text-center mb-4">Insertar Rol</h5>
+
+                <form id="formRol" class="mx-auto">
+
+                    <div class="row mb-3">
+                        <div class="col-lg-6">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <select class="form-select" id="nombre" name="nombre" required>
+                                <option value="">Seleccione...</option>
+                                <option value="BOMBERO">BOMBERO</option>
+                                <option value="OFICIAL">OFICIAL</option>
+                                <option value="JEFE DE INTERVENCIÓN">JEFE DE INTERVENCIÓN</option>
+                                <option value="JEFE DE MANDO">JEFE DE MANDO</option>
+                                <option value="INSPECTOR">INSPECTOR</option>
+                            </select>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" 
+                                      id="descripcion" 
+                                      name="descripcion" 
+                                      rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- BOTONES -->
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="reset" class="btn btn-secondary">
+                            Limpiar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Guardar
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL EDITAR -->
+    <div class="modal fade" id="modalEditar" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Rol</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="formEditar">
+                        <!-- Campos dinámicos -->
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VER -->
+    <div class="modal fade" id="modalVer" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalle del Rol</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body" id="modalVerBody">
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div id="footer-placeholder"></div>
+
+    <!-- ALERTAS -->
+    <div id="alert-container" 
+         class="position-fixed top-0 end-0 p-3" 
+         style="z-index: 1080;">
+    </div>
+
+</body>
+</html>
