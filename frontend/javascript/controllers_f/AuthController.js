@@ -1,5 +1,5 @@
 import AuthApi from '../api_f/AuthApi.js';
-import * as Validaciones from '../validacion.js';
+import * as Validaciones from '../helpers/validacion.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // ── Página login ──────────────────────────────────
