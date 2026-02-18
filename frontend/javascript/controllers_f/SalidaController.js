@@ -106,7 +106,6 @@ function bindCrearSalida() {
 document.addEventListener('click', async function (e) {
   const btn = e.target.closest('.btn-editar');
   if (!btn) return;
-
   const id = btn.dataset.id;
 
   try {
@@ -157,8 +156,8 @@ document.addEventListener('click', async function (e) {
       </div>
 
       <div class="d-flex justify-content-center gap-2">
-          <button type="submit" class="btn btn-primary" id="btnGuardarCambios">
-              Guardar Registro
+          <button type="button" class="btn btn-primary" id="btnGuardarCambios">
+            Guardar Registro
           </button>
       </div>
     `;
@@ -166,19 +165,14 @@ document.addEventListener('click', async function (e) {
     // Guardar cambios
     document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
       const data = {};
-
       camposBd.forEach(campo => {
         const input = form.querySelector(`[name="${campo}"]`);
         if (input) data[campo] = input.value;
       });
-
-      await SalidaApi.update(id, data);             // Enviar datos al backend para actualizar la salida
-      await cargarSalidas();                        // Recargar tabla para mostrar cambios
-
-      const modal = bootstrap.Modal.getInstance(        // Cerrar modal
-        document.getElementById('modalEditar')
-      );
-      modal.hide();
+      
+      await SalidaApi.update(id, data);
+      await cargarSalidas();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
     });
 
   } catch (error) {
@@ -190,25 +184,95 @@ document.addEventListener('click', async function (e) {
 // CAMPOS DE LA TABLA      estos arrays se usan para mostrar los campos en el modal ver (arriba como lo quieres ver, abajo como están en la base de datos, el orden debe coincidir)  
 // ================================
   const nombresCampos = [
-    'ID Registro',
-    'Matricula',
     'ID Bombero',
     'F_Entrega',
     'F_Recogida',
+    'Matricula',
     'KM_Inicio',
     'KM_Fin'
   ];
-  const camposBd = [      //tambien se usan para el modal editar, para recoger los datos de los inputs y enviarlos al backend, por eso deben coincidir con los name de los inputs del formulario editar
-    'id_registro',
-    'matricula',
-    'id_bombero',
-    'f_entrega',
-    'f_recogida',
-    'km_inicio',
-    'km_fin'
-  ];
+ const camposBd = [
+  'id_bombero',
+  'f_entrega',
+  'f_recogida',
+  'matricula',
+  'km_inicio',
+  'km_fin'
+];
 
+// ================================
+// MODAL VER
+// ================================
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.btn-ver');
+  if (!btn) return;
 
+  const id = btn.dataset.id;
+
+  // Buscar la salida correspondiente
+  const salida = salidas.find(em => em.id_registro == id);
+  if (!salida) return;
+
+  const modalBody = document.getElementById('modalVerBody');
+
+  // Limpiar contenido previo
+  modalBody.innerHTML = '';
+
+  nombresCampos.forEach((nombre, index) => {
+
+    const campo = camposBd[index];
+    let valor = salida[campo] ?? '';
+
+    //FECHA FORMATO ESPAÑA
+    if (campo === 'f_entrega' || campo === 'f_recogida') {
+      valor = Formateos.formatearFechaHora(valor);
+    }
+
+    const p = document.createElement('p');
+
+    const strong = document.createElement('strong');
+    strong.textContent = nombre + ': ';
+
+    p.appendChild(strong);
+    p.appendChild(document.createTextNode(valor));
+
+    modalBody.appendChild(p);
+  });
+});
+
+// ================================
+// MODAL ELIMINAR (AÑADIR SI SE REQUIERE)   
+// ================================
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.btn-eliminar');
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+
+  const btnConfirm = document.getElementById('btnConfirmarEliminar');
+  btnConfirm.dataset.id = id;
+});
+
+document.getElementById('btnConfirmarEliminar')
+  .addEventListener('click', async function () {
+
+    const id = this.dataset.id;
+    if (!id) return;
+
+    try {
+      await SalidaApi.delete(id);
+      await cargarSalidas();
+
+      // Cerrar modal
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById('modalEliminar')
+      );
+      modal.hide();
+
+    } catch (error) {
+      mostrarError('Error al eliminar emergencia: ' + error.message);
+    }
+});
 
 // ================================
 // ERRORES

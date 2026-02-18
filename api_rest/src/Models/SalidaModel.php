@@ -56,7 +56,7 @@ class SalidaModel
                 f_recogida = :f_recogida,
                 f_entrega = :f_entrega,
                 km_inicio = :km_inicio,
-                km_fin = :km_fin,
+                km_fin = :km_fin
             WHERE id_registro = :id
         ")
         ->bind(":id", $id)
@@ -68,7 +68,9 @@ class SalidaModel
         ->bind(":km_fin", $data['km_fin'])
         ->execute();
 
-        return (int) $this->db->lastId();
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
     }
 
     public function delete(int $id): int
