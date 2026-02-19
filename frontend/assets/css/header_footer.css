@@ -1,0 +1,72 @@
+@import "paleta_colores.css";
+
+    header {
+        background-color: var(--rojo-granate);
+    }
+
+    .header-text, .header-user span {
+        color: var(--blanco);
+    }
+
+
+    footer {
+        background-color: var(--negro);
+    }
+
+    .footer-text,
+    .footer-link {
+        color: var(--blanco);
+    }
+
+    header img {
+        width: 205px;
+        min-width: 100px;
+    }
+
+    .gris{
+        background-color: var(--gris);
+    }
+
+    .gris td{
+        background-color: var(--gris);
+    }
+
+    table td{
+        border: 1px solid var(--negro);
+        border-collapse: collapse;
+    }
+
+    /* Footer siempre abajo - VERSIÓN MÁS SEGURA */
+    body {
+        min-height: 100vh;
+    }
+    
+
+    #sidebar{
+        width:200px;
+        padding-left: 0%;
+        padding-right: 0%;
+    }
+    
+    @media (min-width: 992px) {
+        .sidebar-bg {
+            background-color: var(--gris)
+        }
+
+        #sidebar{
+            width: 205px;
+            padding-left: 0%;
+            padding-right: 0%;
+        }
+    }
+
+    aside{
+        background-color: var(--gris);
+        
+    }
+
+
+    header.container-fluid {
+        padding-left: 0;
+    }
+

@@ -1,0 +1,274 @@
+2026-01-28T11:21:50+01:00 - Exception: No autorizado
+2026-01-29T11:42:54+01:00 - Exception: Route not found for GET /
+2026-01-29T11:48:04+01:00 - Exception: Route not found for GET /
+2026-01-29T13:50:58+01:00 - Exception: No autorizado
+2026-01-29T13:56:02+01:00 - Exception: No autorizado
+2026-01-29T13:56:24+01:00 - Exception: No autorizado
+2026-01-29T13:56:25+01:00 - Exception: No autorizado
+2026-01-29T13:56:26+01:00 - Exception: No autorizado
+2026-01-29T14:01:48+01:00 - Exception: No autorizado
+2026-01-29T14:02:01+01:00 - Exception: No autorizado
+2026-01-29T14:05:22+01:00 - Exception: No autorizado
+2026-01-29T14:05:23+01:00 - Exception: No autorizado
+2026-01-29T14:05:24+01:00 - Exception: No autorizado
+2026-01-29T14:05:25+01:00 - Exception: No autorizado
+2026-01-29T14:05:26+01:00 - Exception: No autorizado
+2026-01-29T14:05:27+01:00 - Exception: No autorizado
+2026-01-29T14:13:42+01:00 - Exception: Controller not found: Controllers\AuthSessionController
+2026-01-29T14:13:44+01:00 - Exception: Controller not found: Controllers\AuthSessionController
+2026-01-29T14:13:49+01:00 - Exception: Controller not found: Controllers\AuthSessionController
+2026-01-29T14:14:16+01:00 - Exception: Undefined array key "email"
+2026-01-29T14:14:18+01:00 - Exception: Undefined array key "email"
+2026-01-29T14:22:05+01:00 - Exception: Class "PHPMailer\PHPMailer\PHPMailer" not found
+2026-01-29T14:22:12+01:00 - Exception: Class "PHPMailer\PHPMailer\PHPMailer" not found
+2026-01-29T14:22:13+01:00 - Exception: Class "PHPMailer\PHPMailer\PHPMailer" not found
+2026-01-30T09:21:03+01:00 - Exception: Route not found for POST /auth/me
+2026-01-30T09:21:28+01:00 - Exception: No autorizado
+2026-01-30T09:23:59+01:00 - Exception: No autorizado
+2026-01-30T09:24:08+01:00 - Exception: Route not found for POST /login
+2026-01-30T10:15:06+01:00 - Exception: Route not found for PATCH /auth/me
+2026-01-30T10:30:31+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T10:30:39+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T10:31:25+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T11:23:33+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T11:26:54+01:00 - Exception: Controller not found: Controllers\CategoriaController
+2026-01-30T11:27:18+01:00 - Exception: Too few arguments to function Controllers\EmergenciaController::getTipo(), 2 passed and exactly 3 expected
+2026-01-30T11:36:43+01:00 - Exception: Route not found for PATCH /emergencias
+2026-01-30T11:36:50+01:00 - Exception: Route not found for PUT /emergencias
+2026-01-30T11:39:50+01:00 - Exception: Route not found for GET /emergencias/2/tipo
+2026-01-30T11:46:45+01:00 - Exception: Route not found for GET /ediciones
+2026-01-30T11:47:18+01:00 - Exception: Class "Models\FormacionModel" not found
+2026-01-30T12:10:24+01:00 - Exception: Route not found for GET /persona
+2026-01-30T12:37:57+01:00 - Exception: Controller not found: Controllers\TiposEmergenciaController
+2026-01-30T12:44:36+01:00 - Exception: Route not found for DELETE /emergencias/1/vehiculos
+2026-01-30T12:47:51+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-01-30T13:15:15+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-01-30T13:31:43+01:00 - Exception: Route not found for PUT /formaciones
+2026-01-30T13:31:52+01:00 - Exception: Route not found for PUT /formaciones
+2026-01-30T13:37:12+01:00 - Exception: Method index not found in controller Controllers\EdicionController
+2026-01-30T14:04:55+01:00 - Exception: Route not found for POST /ediciones/2/1
+2026-02-02T11:13:01+01:00 - Exception: Route not found for DELETE /carnets/5/persona/B001
+2026-02-02T11:13:09+01:00 - Exception: Route not found for DELETE /carnets/5/personas/B001
+2026-02-02T11:13:18+01:00 - Exception: Route not found for DELETE /personas/5/carnets/B001
+2026-02-02T11:14:02+01:00 - Exception: Route not found for DELETE /personas/B001/carnets/5
+2026-02-02T11:16:23+01:00 - Exception: Too few arguments to function Controllers\CarnetController::unassign(), 3 passed and exactly 4 expected
+2026-02-09T09:02:06+01:00 - Exception: Error de conexión a la base de datos.
+2026-02-09T09:02:33+01:00 - Exception: Error de conexión a la base de datos.
+2026-02-09T09:04:48+01:00 - Exception: Error de conexión a la base de datos.
+2026-02-09T09:05:21+01:00 - Exception: Error de conexión a la base de datos.
+2026-02-09T09:59:54+01:00 - Exception: No autorizado
+2026-02-09T12:20:36+01:00 - Exception: No autorizado
+2026-02-09T12:20:36+01:00 - Exception: No autorizado
+2026-02-09T12:20:38+01:00 - Exception: No autorizado
+2026-02-09T12:21:17+01:00 - Exception: No autorizado
+2026-02-09T12:22:39+01:00 - Exception: No autorizado
+2026-02-09T12:25:35+01:00 - Exception: No autorizado
+2026-02-09T12:28:36+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T12:29:01+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T12:29:04+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T12:29:05+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T12:29:05+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T12:29:06+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T12:30:08+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T12:30:25+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T12:39:33+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T12:39:38+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T12:41:14+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T13:05:03+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T13:05:04+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T13:38:06+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T13:38:35+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T13:41:18+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T13:41:35+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-09T13:42:57+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T10:11:42+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T10:12:32+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T10:12:33+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T10:12:33+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T10:13:58+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T10:13:59+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T10:13:59+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T10:13:59+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T10:14:33+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T10:14:35+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T10:14:37+01:00 - Exception: Controller not found: Controllers\VehiculoController
+2026-02-11T14:08:12+01:00 - Exception: file_put_contents(/var/www/html/api_rest/src/Middlewares/../../storage/rate_limit/f9bab41c2a5dd677708ae9d5d49eaf07.json): Failed to open stream: Permission denied
+2026-02-11T14:08:12+01:00 - Exception: file_put_contents(/var/www/html/api_rest/src/Middlewares/../../storage/rate_limit/f9bab41c2a5dd677708ae9d5d49eaf07.json): Failed to open stream: Permission denied
+2026-02-11T14:08:12+01:00 - Exception: file_put_contents(/var/www/html/api_rest/src/Middlewares/../../storage/rate_limit/f9bab41c2a5dd677708ae9d5d49eaf07.json): Failed to open stream: Permission denied
+2026-02-11T14:38:41+01:00 - Exception: No autorizado
+2026-02-17T14:16:46+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:30:11+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:30:11+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:30:11+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:30:28+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:30:28+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:30:28+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:30:59+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:30:59+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:30:59+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:31:12+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:31:12+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:31:12+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:31:55+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:31:55+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:31:55+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:34:08+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:34:54+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:36:12+01:00 - Exception: Route not found for GET /almacenes
+2026-02-17T14:38:18+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T09:04:13+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T09:08:53+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T09:12:14+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T09:18:08+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T09:21:43+01:00 - Exception: No autorizado
+2026-02-18T09:21:54+01:00 - Exception: No autorizado
+2026-02-18T09:21:56+01:00 - Exception: No autorizado
+2026-02-18T09:55:39+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T09:56:47+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T10:01:40+01:00 - Exception: Controllers\PersonaController::setMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-18T10:10:02+01:00 - Exception: Controllers\PersonaController::setMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-18T10:14:38+01:00 - Exception: Controllers\PersonaController::setMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-18T10:28:47+01:00 - Exception: Controllers\PersonaController::setMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-18T10:28:59+01:00 - Exception: Controllers\PersonaController::setMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-18T10:30:34+01:00 - Exception: Controllers\PersonaController::setMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-18T13:51:06+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:51:06+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:51:06+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:53:13+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-18T13:54:15+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:54:15+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:54:16+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:56:42+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:56:42+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:56:42+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:56:43+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:56:43+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:56:43+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:56:45+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:56:45+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T13:56:45+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:06:08+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:06:08+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:06:08+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:06:46+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:06:46+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:06:46+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:32:08+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:32:08+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:32:08+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:34:17+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:34:17+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:34:17+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:34:18+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:34:18+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:34:18+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:34:20+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:34:20+01:00 - Exception: Route not found for GET /almacenes
+2026-02-18T14:34:20+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:02:07+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:02:07+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:02:07+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:07:56+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:07:56+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:07:56+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:10:41+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:10:41+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:10:42+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:10:42+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:10:44+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:10:44+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:10:44+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:15:18+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:15:18+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:15:18+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:15:28+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:20:36+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:20:36+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:20:36+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:20:52+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:20:52+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:20:52+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:20:52+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:20:52+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:20:52+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:20:52+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:20:52+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:20:53+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:21:01+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:21:01+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:21:01+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:21:15+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:21:15+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:21:16+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T10:22:45+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:22:45+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:23:56+01:00 - Exception: Controllers\PersonaController::setMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:26:24+01:00 - Exception: Controllers\PersonaController::setMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:38:21+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:38:21+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:51:14+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:51:17+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:55:37+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T10:58:36+01:00 - Exception: Controllers\PersonaController::deleteMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T11:02:47+01:00 - Exception: No autorizado
+2026-02-19T11:05:31+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:05:31+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:05:31+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:05:31+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:05:31+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:05:31+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:08:19+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:08:19+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:08:19+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:08:19+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:08:19+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:08:19+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:11:26+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:11:26+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:11:26+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:11:26+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:11:26+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:11:26+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:17:09+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:17:09+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:17:09+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:17:09+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:17:09+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:17:09+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:23:53+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:23:53+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:23:53+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:23:53+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:23:53+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:23:53+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:24:23+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:24:23+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:24:23+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:24:23+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:24:23+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:24:23+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:28:10+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:28:10+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:28:11+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:28:11+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:28:11+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:28:11+01:00 - Exception: Route not found for GET /almacenes
+2026-02-19T11:36:53+01:00 - Exception: Controllers\PersonaController::getMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T11:37:51+01:00 - Exception: Controllers\PersonaController::getMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T11:38:22+01:00 - Exception: Controllers\PersonaController::getMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T11:38:33+01:00 - Exception: Controllers\PersonaController::getMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T11:39:25+01:00 - Exception: Controllers\PersonaController::getMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T11:39:32+01:00 - Exception: Controllers\PersonaController::getMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T11:39:37+01:00 - Exception: Controllers\PersonaController::getMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T11:39:41+01:00 - Exception: Controllers\PersonaController::getMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T11:39:48+01:00 - Exception: Controllers\PersonaController::getMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-19T11:39:52+01:00 - Exception: Controllers\PersonaController::getMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-02-17T09:58:30+01:00 - Exception: Class "Models\SalidaModel" not found
+2026-02-17T09:58:32+01:00 - Exception: Class "Models\SalidaModel" not found
+2026-02-17T09:58:35+01:00 - Exception: Class "Models\SalidaModel" not found
+2026-02-17T09:58:36+01:00 - Exception: Class "Models\SalidaModel" not found
+2026-02-17T09:58:38+01:00 - Exception: Class "Models\SalidaModel" not found
+2026-02-17T10:05:40+01:00 - Exception: No autorizado
+2026-02-18T09:10:46+01:00 - Exception: No autorizado
+2026-02-18T09:11:27+01:00 - Exception: No autorizado
+2026-02-18T14:00:25+01:00 - Exception: file_put_contents(/var/www/html/api_rest/src/Middlewares/../../storage/rate_limit/f9bab41c2a5dd677708ae9d5d49eaf07.json): Failed to open stream: Permission denied

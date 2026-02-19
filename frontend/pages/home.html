@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SIGEBO</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+    <!-- Configuración y Header/Footer -->
+    <script src="/frontend/config/config.js"></script>
+    <script type="module" src="/frontend/javascript/header_footer.js" defer></script>
+
+    <script>
+        // Cargar CSS del proyecto
+        loadCSS("plantilla_css.css");
+        loadCSS("header_footer.css");
+        // Cargar favicon dinámicamente
+        loadFavicon("favicon.png");
+    </script>
+    
+    <style>
+        /* Prevenir scroll horizontal */
+        body {
+            overflow-x: hidden;
+        }
+        
+        .quick-access-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            height: 100%;
+        }
+        .quick-access-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .stat-card {
+            border-left: 4px solid;
+        }
+        .stat-card.emergency {
+            border-color: #dc3545;
+        }
+        .stat-card.personnel {
+            border-color: #0d6efd;
+        }
+        .stat-card.vehicles {
+            border-color: #198754;
+        }
+        .stat-card.materials {
+            border-color: #ffc107;
+        }
+        .section-title {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        /* Ajustes para el layout con sidebar */
+        .main-container {
+            min-height: calc(100vh - 120px); /* Ajustar según altura de header/footer */
+        }
+    </style>
+</head>
+<body class="bg-white text-dark d-flex flex-column">
+    <!-- HEADER -->
+    <div id="header-placeholder"></div>
+    
+    <!-- LAYOUT CON SIDEBAR -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- SIDEBAR -->
+            <div id="sidebar-placeholder" class="col-auto p-0"></div>
+            
+            <!-- CONTENIDO PRINCIPAL -->
+            <main class="col p-3 p-md-4 main-container">
+                <!-- BIENVENIDA Y FECHA -->
+                <div class="mb-4">
+                    <h1 class="mb-1">Bienvenido al Sistema de Gestión</h1>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-calendar3 me-2"></i>
+                        <span id="current-date"></span>
+                    </p>
+                </div>
+
+                <!-- ESTADÍSTICAS RÁPIDAS -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card stat-card emergency">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1 small">Emergencias Activas</p>
+                                        <h3 class="mb-0">2</h3>
+                                    </div>
+                                    <i class="bi bi-fire fs-1 text-danger opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card stat-card personnel">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1 small">Personal de Guardia</p>
+                                        <h3 class="mb-0">12</h3>
+                                    </div>
+                                    <i class="bi bi-people fs-1 text-primary opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card stat-card vehicles">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1 small">Vehículos Operativos</p>
+                                        <h3 class="mb-0">8/10</h3>
+                                    </div>
+                                    <i class="bi bi-truck fs-1 text-success opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card stat-card materials">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1 small">Avisos Pendientes</p>
+                                        <h3 class="mb-0">5</h3>
+                                    </div>
+                                    <i class="bi bi-bell fs-1 text-warning opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACCESOS RÁPIDOS -->
+                <div class="mb-4">
+                    <h5 class="section-title">Accesos Rápidos</h5>
+                    <div class="row g-3">
+                        <!-- Emergencias -->
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="../pages/Emergencia/vistaEmergencias.html" class="text-decoration-none">
+                                <div class="card quick-access-card text-center border-danger">
+                                    <div class="card-body py-4">
+                                        <i class="bi bi-fire fs-1 text-danger mb-2"></i>
+                                        <h6 class="card-title mb-0">Emergencias</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <!-- Avisos -->
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="../pages/Avisos/vistaAvisos.html" class="text-decoration-none">
+                                <div class="card quick-access-card text-center border-warning">
+                                    <div class="card-body py-4">
+                                        <i class="bi bi-bell fs-1 text-warning mb-2"></i>
+                                        <h6 class="card-title mb-0">Avisos</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <!-- Cuadrante -->
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="../pages/Alineacion/vistaAlineacion.html" class="text-decoration-none">
+                                <div class="card quick-access-card text-center border-info">
+                                    <div class="card-body py-4">
+                                        <i class="bi bi-calendar3 fs-1 text-info mb-2"></i>
+                                        <h6 class="card-title mb-0">Cuadrante</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <!-- Vehículos -->
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="../pages/Vehiculo/vistaVehiculo.html" class="text-decoration-none">
+                                <div class="card quick-access-card text-center border-success">
+                                    <div class="card-body py-4">
+                                        <i class="bi bi-truck fs-1 text-success mb-2"></i>
+                                        <h6 class="card-title mb-0">Vehículos</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <!-- Materiales -->
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="../pages/Materiales/vistaMateriales.html" class="text-decoration-none">
+                                <div class="card quick-access-card text-center border-primary">
+                                    <div class="card-body py-4">
+                                        <i class="bi bi-box-seam fs-1 text-primary mb-2"></i>
+                                        <h6 class="card-title mb-0">Materiales</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <!-- Salidas/Mapas -->
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="../pages/Salidas/vistaSalidas.html" class="text-decoration-none">
+                                <div class="card quick-access-card text-center border-secondary">
+                                    <div class="card-body py-4">
+                                        <i class="bi bi-map fs-1 text-secondary mb-2"></i>
+                                        <h6 class="card-title mb-0">Mapas</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN DE CONTENIDO DINÁMICO -->
+                <div class="row g-4">
+                    <!-- AVISOS RECIENTES -->
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-bell me-2 text-warning"></i>
+                                    Avisos Recientes
+                                </h5>
+                                <a href="../pages/Avisos/vistaAvisos.html" class="btn btn-sm btn-outline-primary">
+                                    Ver todos
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Asunto</th>
+                                                <th>Fecha</th>
+                                                <th>Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Incendio central</td>
+                                                <td><small class="text-muted">13/01/2026</small></td>
+                                                <td><span class="badge bg-success">Activo</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Revisión camión</td>
+                                                <td><small class="text-muted">12/01/2026</small></td>
+                                                <td><span class="badge bg-secondary">Completado</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Mantenimiento equipo</td>
+                                                <td><small class="text-muted">11/01/2026</small></td>
+                                                <td><span class="badge bg-warning">Pendiente</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ESTADO VEHÍCULOS -->
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-truck me-2 text-success"></i>
+                                    Estado de Vehículos
+                                </h5>
+                                <a href="../pages/Vehiculo/vistaVehiculo.html" class="btn btn-sm btn-outline-primary">
+                                    Ver todos
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Vehículo</th>
+                                                <th>Última revisión</th>
+                                                <th>Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>BUP-001</td>
+                                                <td><small class="text-muted">10/01/2026</small></td>
+                                                <td><span class="badge bg-success">Operativo</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>BUP-002</td>
+                                                <td><small class="text-muted">08/01/2026</small></td>
+                                                <td><span class="badge bg-success">Operativo</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>BUP-003</td>
+                                                <td><small class="text-muted">15/12/2025</small></td>
+                                                <td><span class="badge bg-danger">Mantenimiento</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PRÓXIMAS FORMACIONES -->
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-book me-2 text-primary"></i>
+                                    Próximas Formaciones
+                                </h5>
+                                <a href="../pages/Formacion/vistaFormaciones.html" class="btn btn-sm btn-outline-primary">
+                                    Ver todas
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item px-0">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Rescate en altura</h6>
+                                                <small class="text-muted">Instructor: J. García</small>
+                                            </div>
+                                            <span class="badge bg-primary">15/02/2026</span>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item px-0">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Primeros auxilios avanzados</h6>
+                                                <small class="text-muted">Instructor: M. López</small>
+                                            </div>
+                                            <span class="badge bg-primary">20/02/2026</span>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item px-0">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Manejo de materiales peligrosos</h6>
+                                                <small class="text-muted">Instructor: A. Ruiz</small>
+                                            </div>
+                                            <span class="badge bg-primary">25/02/2026</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MAPA DE SALIDAS RECIENTES -->
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-map me-2 text-secondary"></i>
+                                    Últimas Salidas
+                                </h5>
+                                <a href="../pages/Salidas/vistaSalidas.html" class="btn btn-sm btn-outline-primary">
+                                    Ver mapa completo
+                                </a>
+                            </div>
+                            <div class="card-body d-flex align-items-center justify-content-center bg-light">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-geo-alt fs-1 mb-2"></i>
+                                    <p class="mb-0">Mapa de salidas recientes</p>
+                                    <small>Click en "Ver mapa completo" para detalles</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- FOOTER -->
+    <div id="footer-placeholder" class="mt-auto"></div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Mostrar fecha actual
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const today = new Date().toLocaleDateString('es-ES', options);
+        document.getElementById('current-date').textContent = today;
+    </script>
+        <!-- ALERT-->
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+
+</body>
+</html>
