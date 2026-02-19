@@ -1,5 +1,5 @@
 // Recibimos el nombre de usuario y logouts
-import { mostrarNombreUsuario, bindLogoutButtons } from './controllers_f/AuthController.js';
+import { mostrarNombreUsuario, bindLogoutButtons } from '../controllers_f/AuthController.js';
 
 // Carga HTML en un contenedor usando getPath de config.js
 async function cargarHTML(id, fileName) {
