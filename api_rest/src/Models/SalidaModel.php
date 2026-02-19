@@ -5,7 +5,7 @@ namespace Models;
 
 use Core\DB;
 
-class ProfesorModel
+class SalidaModel
 {
     private DB $db;
 
@@ -17,7 +17,7 @@ class ProfesorModel
     public function all(): array
     {
         return $this->db
-            ->query("SELECT * FROM Salida ORDER BY id_salida ASC")
+            ->query("SELECT * FROM Salida ORDER BY id_registro ASC")
             ->fetchAll();
     }
 
@@ -40,7 +40,7 @@ class ProfesorModel
     public function find(int $id): ?array
     {
         $result = $this->db
-            ->query("SELECT * FROM Salida WHERE id_salida = :id")
+            ->query("SELECT * FROM Salida WHERE id_registro = :id")
             ->bind(":id", $id)
             ->fetch();
 
@@ -51,15 +51,16 @@ class ProfesorModel
     {
         $this->db->query("
             UPDATE Salida SET
+                id_bombero = :id_bombero,
                 matricula = :matricula,
                 f_recogida = :f_recogida,
                 f_entrega = :f_entrega,
                 km_inicio = :km_inicio,
-                km_fin = :km_fin,
-                updated_at = NOW()
-            WHERE id_salida = :id
+                km_fin = :km_fin
+            WHERE id_registro = :id
         ")
         ->bind(":id", $id)
+        ->bind(":id_bombero", $data['id_bombero'])
         ->bind(":matricula", $data['matricula'])
         ->bind(":f_recogida", $data['f_recogida'])
         ->bind(":f_entrega", $data['f_entrega'])
@@ -67,12 +68,14 @@ class ProfesorModel
         ->bind(":km_fin", $data['km_fin'])
         ->execute();
 
-        return (int) $this->db->lastId();
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
     }
 
     public function delete(int $id): int
     {
-        $this->db->query("DELETE FROM Salida WHERE id_salida = :id")
+        $this->db->query("DELETE FROM Salida WHERE id_registro = :id")
                  ->bind(":id", $id)
                  ->execute();
 
@@ -91,23 +94,23 @@ class ProfesorModel
     public function addPersona(array $data): int|false
     {
         $this->db->query("
-            INSERT INTO Salida_Persona (id_salida, n_funcionario)
-            VALUES (:id_salida, :n_funcionario)
+            INSERT INTO Salida_Persona (id_registro, n_funcionario)
+            VALUES (:id_registro, :n_funcionario)
         ")
-        ->bind(":id_salida", $data['id_salida'])
+        ->bind(":id_registro", $data['id_registro'])
         ->bind(":n_funcionario", $data['n_funcionario'])
         ->execute();
 
         return (int) $this->db->lastId();
     }   
 
-    public function deletePersona(int $id_salida, int $n_funcionario): int
+    public function deletePersona(int $id_registro, int $n_funcionario): int
     {
         $this->db->query("
             DELETE FROM Salida_Persona
-            WHERE id_salida = :id_salida AND n_funcionario = :n_funcionario
+            WHERE id_registro = :id_registro AND n_funcionario = :n_funcionario
         ")
-        ->bind(":id_salida", $id_salida)
+        ->bind(":id_registro", $id_registro)
         ->bind(":n_funcionario", $n_funcionario)
         ->execute();
 
