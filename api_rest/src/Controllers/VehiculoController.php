@@ -24,7 +24,18 @@ class VehiculoController
     public function index(Request $req, Response $res): void
     {
         try {
-            $vehiculos = $this->service->getAllVehiculos();
+            // Obtener todos los parámetros de la URL
+            $params = $req->params();
+            
+            // Si viene el parámetro 'material', filtrar por material
+            if (isset($params['material'])) {
+                $id_material = (int)$params['material'];
+                $vehiculos = $this->service->getVehiculosByMaterial($id_material);
+            } else {
+                // Si no viene filtro, devolver todos
+                $vehiculos = $this->service->getAllVehiculos();
+            }
+            
             $res->status(200)->json($vehiculos);
         } catch (Throwable $e) {
             $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
@@ -218,3 +229,4 @@ class VehiculoController
         }
     }
 }
+?>

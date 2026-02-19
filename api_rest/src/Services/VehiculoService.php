@@ -32,6 +32,16 @@ class VehiculoService
         return $this->model->all();
     }
     
+    // GET, /vehiculos?material=XX (NUEVO)
+    public function getVehiculosByMaterial(int $id_material): array
+    {
+        try {
+            return $this->model->getVehiculosByMaterial($id_material);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+    
     // POST, /vehiculos
     public function createVehiculo(array $input): int
     {
@@ -280,3 +290,4 @@ class VehiculoService
         }
     }
 }
+?>

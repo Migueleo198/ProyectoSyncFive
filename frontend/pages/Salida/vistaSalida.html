@@ -21,11 +21,16 @@
     </script>
 
     <!-- JS dependientes -->
-    <script type="module" src="/frontend/javascript/header_footer.js" defer></script>
-    <script src="/frontend/javascript/script_filtro_tabla.js" defer></script>
+    <script type="module" src="/frontend/javascript/helpers/header_footer.js" defer></script>
+    <script src="/frontend/javascript/helpers/script_filtro_tabla.js" defer></script>
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Controlador específico de la vista -->
+    <script type="module"
+        src="/frontend/javascript/controllers_f/SalidaController.js">
+    </script>
 </head>
 
 <body class="bg-white text-dark d-flex flex-column">
@@ -75,41 +80,18 @@
                     <table class="table table-bordered table-striped" id="tabla">
                         <thead class="table-dark">
                             <tr> <!-- Cabecera de la tabla -->
+                                <th class="d-none d-md-table-cell">ID Registro</th>
                                 <th>Matricula</th>
-                                <th>n_Funcionario</th>
-                                <th>f_Entrega</th>
-                                <th>f_Recogida</th>
+                                <th class="d-none d-md-table-cell">ID Bombero</th>
+                                <th>F_Entrega</th>
+                                <th>F_Recogida</th>
                                 <th class="d-none d-md-table-cell">KM_inicio</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
                                 <th class="d-none d-md-table-cell">KM_fin</th>
                                 <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>1234bcd</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->   
-                                <td>111111</td>
-                                <td>21/5/2025 16:00:00</td>
-                                <td>21/5/2025 17:00:00</td>
-                                <td class="d-none d-md-table-cell">200.000</td>
-                                <td class="d-none d-md-table-cell">200.020</td>
-                                <td class="d-flex justify-content-around">
-                                    
-                                    <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-                                    
-                                </td>
-                            </tr>
-
-                            <!-- Aquí puedes agregar más filas de datos -->
+                            
                         </tbody>
                     </table>
                 </div>
@@ -117,19 +99,19 @@
                 <!-- Contenedor insertar -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
                     <h5 class="text-center mb-4">Registro salidas</h5>
-                    <form id="formVehiculo" class="mx-auto">
+                    <form id="formSalida" class="mx-auto">
 
                         <div class="row mb-3">
                             <div class="col-md-6 col-lg-4">
-                                <label for="n_funcionario" class="form-label">nº Funcionario</label>
-                                <input type="text" class="form-control" id="n_funcionario" name="n_funcionario" required>
+                                <label for="ID Bombero" class="form-label">ID Bombero</label>
+                                <input type="text" class="form-control" id="id_bombero" name="id_bombero" required>
                             </div>
                             <div class="col-md-6 col-lg-4">
-                                <label for="f_entrega" class="form-label">F_entrega</label>
+                                <label for="f_entrega" class="form-label">Fecha entrega</label>
                                 <input type="datetime-local" class="form-control" id="f_entrega" name="f_entrega">
                             </div>
                             <div class="col-md-6 col-lg-4">
-                                <label for="f_recogida" class="form-label">F_recogida</label>
+                                <label for="f_recogida" class="form-label">Fecha recogida</label>
                                 <input type="datetime-local" class="form-control" id="f_recogida" name="f_recogida">
                             </div>
                         </div>
@@ -150,9 +132,7 @@
                         </div>
 
                         <div class="d-flex justify-content-center gap-2">
-                            <button type="reset" class="btn btn-secondary">
-                                Limpiar
-                            </button>
+                            
                             <button type="submit" class="btn btn-primary">
                                 Guardar Registro
                             </button>
@@ -190,7 +170,7 @@
 
     <!-- Modal de edición -->
     <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
@@ -198,28 +178,10 @@
                 </div>
                 <div class="modal-body">
                     <form id="formEditar">
-                        <div class="mb-3">
-                            <label for="editIdTipo" class="form-label">ID Tipo</label>
-                            <input type="text" class="form-control" id="editIdTipo" name="id_tipo" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editNombre" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="editNombre" name="nombre" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editGrupo" class="form-label">Grupo</label>
-                            <input type="text" class="form-control" id="editGrupo" name="grupo" required>
-                        </div>
+                        
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                    <button type="button" class="btn btn-primary" id="btnGuardarCambios">
-                        Guardar cambios
-                    </button>
-                </div>
+                
             </div>
         </div>
     </div>
