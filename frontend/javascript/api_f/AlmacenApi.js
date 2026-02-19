@@ -1,8 +1,9 @@
 import ApiClient from './ApiClient.js';
 
 const AlmacenApi = {
-  getAll() {
-    return ApiClient.get('/almacenes');
+  // En AlmacenApi.js, dentro del objeto exportado:
+  getByInstalacion(id_instalacion) {
+    return ApiClient.get(`/instalaciones/${id_instalacion}/almacenes`);
   }
 };
 export default AlmacenApi;
