@@ -154,7 +154,7 @@ document.addEventListener('click', async function (e) {
 `;
 
 
-    await cargarInstalacion(instalacion.codigo_tipo, 'selectInstalacion'); // DENTRO DEL HTML PREVIO hemos creado un select vacío con id= selectInstalacion, donde se cargarán tipos y marcará el seleccionado
+    await cargarInstalaciones(instalacion.codigo_tipo, 'selectInstalacion'); // DENTRO DEL HTML PREVIO hemos creado un select vacío con id= selectInstalacion, donde se cargarán tipos y marcará el seleccionado
 
 
     // Guardar cambios

@@ -38,13 +38,9 @@ class CarnetService
     public function createCarnet(array $input): array
     {
         $data = Validator::validate($input, [
-            'ID_Carnet'     => 'required|string',
-            'nombre'        => 'required|string',
-            'categoria'          => 'required|string',
-            'duracion_meses'      => 'required|int|min:1',
-
-            // Si el carnet pertenece a una persona:
-            'id_bombero' => 'string'
+            'nombre'         => 'required|string',
+            'categoria'      => 'required|string',
+            'duracion_meses' => 'required|int|min:1',
         ]);
 
         try {
@@ -60,7 +56,7 @@ class CarnetService
             throw new \Exception("No se pudo crear el carnet");
         }
 
-        return ['ID_Carnet' => $data['ID_Carnet']];
+        return ['ID_Carnet' => $id]; // ← devuelve el id generado por la BDD
     }
 
     /**
@@ -220,6 +216,20 @@ class CarnetService
             'message' => 'Carnet asignado correctamente'
         ];
     }
+
+    /**
+ * Obtener carnet por ID
+ */
+public function getCarnetById(int $id): array
+{
+    $carnet = $this->model->findById($id);
+
+    if (!$carnet) {
+        throw new \Exception("Carnet no encontrado", 404);
+    }
+
+    return $carnet;
+}
     /**
      * Eliminar asignación carnet-persona
      */
