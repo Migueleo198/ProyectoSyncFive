@@ -122,7 +122,12 @@ class AlmacenService
         ]);
 
         try {
+            // PRIMERO: Desasociar de la instalación
+            $this->model->desasociarDeInstalacion($id_instalacion, $id_almacen);
+            
+            // SEGUNDO: Eliminar el almacén
             $result = $this->model->delete($id_almacen, $id_instalacion);
+            
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
