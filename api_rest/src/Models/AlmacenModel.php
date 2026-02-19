@@ -90,11 +90,19 @@ class AlmacenModel
 
     public function delete(int $id_almacen, int $id_instalacion): int
     {
+        // Verificar si el almacén existe
+        $almacen = $this->find($id_almacen);
+        if (!$almacen) {
+            return 0;
+        }
+        
+        // Eliminar el almacén
         $this->db->query("DELETE FROM Almacen WHERE id_almacen = :id_almacen")
-                 ->bind(":id_almacen", $id_almacen)
-                 ->execute();
-
-        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+                ->bind(":id_almacen", $id_almacen)
+                ->execute();
+        
+        $result = $this->db->query("SELECT ROW_COUNT() AS affected")->fetch();
+        return $result['affected'] > 0 ? 1 : -1;
     }
 
     public function desasociarDeInstalacion(int $id_instalacion, int $id_almacen): int
