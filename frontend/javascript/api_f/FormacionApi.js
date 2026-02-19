@@ -22,7 +22,7 @@ const FormacionApi = {
   },
 
   // Eliminar una formación
-  remove(idFormacion) {
+  delete(idFormacion) {
     return ApiClient.delete(`/formaciones/${idFormacion}`);
   }
 };

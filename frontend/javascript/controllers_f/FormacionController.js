@@ -208,6 +208,40 @@ document.addEventListener('click', function (e) {
 });
 
 // ================================
+// MODAL ELIMINAR (AÑADIR SI SE REQUIERE)   
+// ================================
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.btn-eliminar');
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+
+  const btnConfirm = document.getElementById('btnConfirmarEliminar');
+  btnConfirm.dataset.id = id;
+});
+
+document.getElementById('btnConfirmarEliminar')
+  .addEventListener('click', async function () {
+
+    const id = this.dataset.id;
+    if (!id) return;
+
+    try {
+      await FormacionApi.delete(id);
+      await cargarFormaciones();
+
+      // Cerrar modal
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById('modalEliminar')
+      );
+      modal.hide();
+
+    } catch (error) {
+      mostrarError('Error al eliminar emergencia: ' + error.message);
+    }
+});
+
+// ================================
 // ERRORES
 // ================================
 function mostrarError(msg) {
