@@ -218,7 +218,9 @@ $router->protectedSession('DELETE', '/avisos/{id_aviso}/remitente/{id_bombero}',
 
 //++++++++++++++++++++++++++++++ CARNETS ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/carnets', 'Controllers\\CarnetController@index', [1,2,3,4,5]);
+$router->protectedSession('GET',    '/carnets/{id_carnet}',  'Controllers\\CarnetController@show',   [1,2,3,4,5]);
 $router->protectedSession('POST', '/carnets', 'Controllers\\CarnetController@store', [4,5]);
+$router->protectedSession('PUT', '/carnets/{id_carnet}', 'Controllers\\CarnetController@update', [4,5]);
 $router->protectedSession('DELETE', '/carnets/{id_carnet}', 'Controllers\\CarnetController@delete', [5]);
 
 
