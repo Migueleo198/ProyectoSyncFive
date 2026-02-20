@@ -1,6 +1,6 @@
 import EmergenciaApi from '../api_f/EmergenciaApi.js';
 import TipoEmergenciaApi from '../api_f/TipoEmergenciaApi.js';
-import Formateos from '../helpers/utils.js';
+import Utils from '../helpers/utils.js';
 
 let emergencias = []; // variable global para almacenar emergencias
 
@@ -94,7 +94,7 @@ function renderTablaEmergencias(emergencias) {
                                                                                 // FORMATO FECHA ESPAÑA
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${e.id_emergencia}</td>
-      <td>${Formateos.formatearFechaHora(e.fecha)}</td>
+      <td>${Utils.formatearFechaHora(e.fecha)}</td>
       <td class="d-none d-md-table-cell">${e.descripcion ?? ''}</td>
       <td>${e.estado}</td>
       <td class="d-none d-md-table-cell">${e.direccion ?? ''}</td>
@@ -187,7 +187,7 @@ document.addEventListener('click', async function (e) {
           <input 
             type="text" 
             class="form-control" 
-            value="${Formateos.formatearFechaHora(emergencia.fecha) || ''}"     
+            value="${Utils.formatearFechaHora(emergencia.fecha) || ''}"     
             disabled
           >
         </div>
@@ -330,7 +330,7 @@ document.addEventListener('click', function (e) {
 
     //FECHA FORMATO ESPAÑA
     if (campo === 'fecha') {
-      valor = Formateos.formatearFechaHora(valor);
+      valor = Utils.formatearFechaHora(valor);
     }
 
     const p = document.createElement('p');
