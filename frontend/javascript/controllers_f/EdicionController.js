@@ -1,6 +1,6 @@
 import EdicionApi from '../api_f/EdicionApi.js';
 import FormacionApi from '../api_f/FormacionApi.js';
-import Utils from '../helpers/utils.js';
+import {formatearFecha, mostrarExito, mostrarError} from '../helpers/utils.js';
 
 let ediciones = [];
 
@@ -37,8 +37,8 @@ function renderTablaEdiciones(ediciones) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${e.nombre_formacion}</td>
-      <td>${Utils.formatearFechaHora(e.f_inicio)}</td>
-      <td>${Utils.formatearFechaHora(e.f_fin)}</td>
+      <td>${formatearFecha(e.f_inicio)}</td>
+      <td>${formatearFecha(e.f_fin)}</td>
       <td>${e.horas}</td>
       <td class="d-flex justify-content-around">   
         <button type="button" class="btn p-0 btn-ver" 
@@ -115,7 +115,7 @@ function bindCrearEdicion() {
       await EdicionApi.create(data.id_formacion, data);
       await cargarEdiciones();
       form.reset();
-      alert('Edicion creada correctamente');
+      mostrarExito('Edicion creada correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error creando Edicion');
     }
@@ -151,7 +151,7 @@ document.addEventListener('click', async function (e) {
       let valor = edicion[campo] ?? '';
 
       if (campo === 'f_inicio' || campo === 'f_fin') {
-        valor = Utils.formatearFechaHora(valor);
+        valor = formatearFecha(valor);
       }
 
       const p = document.createElement('p');
@@ -293,7 +293,7 @@ async function cargarPersonas() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${edicion.nombre_formacion}</td>
-          <td>${Utils.formatearFechaHora(edicion.f_inicio)}</td>
+          <td>${formatearFecha(edicion.f_inicio)}</td>
           <td>${persona.id_bombero}</td>
           <td class="text-center">
             <button type="button" class="btn p-0 btn-eliminar-persona"
@@ -353,7 +353,7 @@ function bindInsertarPersona() {
 
       await cargarPersonas();
       form.reset();
-      alert('Bombero apuntado correctamente');
+      mostrarExito('Bombero apuntado correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error apuntando bombero');
     }
@@ -389,17 +389,3 @@ document.getElementById('btnConfirmarEliminarPersona')
     }
   });
 
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  const container = document.getElementById("alert-container");
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = `
-    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-      <strong>Error:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-  container.append(wrapper);
-}

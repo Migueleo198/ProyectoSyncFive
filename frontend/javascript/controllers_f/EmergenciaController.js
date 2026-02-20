@@ -1,6 +1,6 @@
 import EmergenciaApi from '../api_f/EmergenciaApi.js';
 import TipoEmergenciaApi from '../api_f/TipoEmergenciaApi.js';
-import Utils from '../helpers/utils.js';
+import {mostrarError,mostrarExito,formatearFechaHora} from '../helpers/utils.js';
 
 let emergencias = []; // variable global para almacenar emergencias
 
@@ -94,7 +94,7 @@ function renderTablaEmergencias(emergencias) {
                                                                                 // FORMATO FECHA ESPAÑA
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${e.id_emergencia}</td>
-      <td>${Utils.formatearFechaHora(e.fecha)}</td>
+      <td>${formatearFechaHora(e.fecha)}</td>
       <td class="d-none d-md-table-cell">${e.descripcion ?? ''}</td>
       <td>${e.estado}</td>
       <td class="d-none d-md-table-cell">${e.direccion ?? ''}</td>
@@ -153,7 +153,7 @@ function bindCrearEmergencia() {
       await EmergenciaApi.create(data); // ← INSERT al backend
       await cargarEmergencias();        // ← refrescar tabla
       form.reset();
-      alert('Emergencia creada correctamente');
+      mostrarExito('Emergencia creada correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error creando emergencia');
     }
@@ -187,7 +187,7 @@ document.addEventListener('click', async function (e) {
           <input 
             type="text" 
             class="form-control" 
-            value="${Utils.formatearFechaHora(emergencia.fecha) || ''}"     
+            value="${formatearFechaHora(emergencia.fecha) || ''}"     
             disabled
           >
         </div>
@@ -276,7 +276,7 @@ document.addEventListener('click', async function (e) {
     });
 
   } catch (error) {
-    console.error('Error al editar emergencia:', error);
+    mostrarError('Error al editar emergencia:'|| error.message);
   }
 });
 
@@ -330,7 +330,7 @@ document.addEventListener('click', function (e) {
 
     //FECHA FORMATO ESPAÑA
     if (campo === 'fecha') {
-      valor = Utils.formatearFechaHora(valor);
+      valor = formatearFechaHora(valor);
     }
 
     const p = document.createElement('p');
@@ -381,19 +381,4 @@ document.addEventListener('click', function (e) {
 // });
 
 
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  const container = document.getElementById("alert-container");
 
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = `
-    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-      <strong>Error:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-
-  container.append(wrapper);
-}

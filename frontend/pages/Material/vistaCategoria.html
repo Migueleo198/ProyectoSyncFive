@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tipos de emergencia</title>
+    <title>Categorias</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
@@ -26,6 +26,9 @@
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Controlador específico de la vista -->
+    <script type="module" src="/frontend/javascript/controllers_f/CategoriaController.js"></script>
 </head>
 
 <body class="bg-white text-dark d-flex flex-column">
@@ -81,27 +84,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Identificador Categoria</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
-                                <td>Nombre</td>
-                                <td>Inventariable</td>
-                                <td class="d-flex justify-content-around">
-                                    
-                                    <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-
-                                </td>
-                            </tr>
-
+                            
                             <!-- Aquí puedes agregar más filas de datos -->
                         </tbody>
                     </table>
@@ -114,18 +97,17 @@
                         <!-- Campos en la misma fila -->
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="insertIdentificador Categoria" class="form-label">Identificador Categoria</label>
-                                <input type="text" class="form-control" id="insertIdentificador Categoria" name="Identificador Categoria" required>
-                            </div>
-                            <div class="col-md-6">
                                 <label for="insertNombre" class="form-label">Nombre</label>
-                                <input type="text" class="form-control" id="insertNombre" name="Nombre" required>
+                                <input type="text" class="form-control" id="insertNombre" name="nombre" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertInventariable" class="form-label">Inventariable</label>
-                                <input type="text" class="form-control" id="insertInventariable" name="Inventariable" required>
+                                <select class="form-select" id="insertInventariable" name="inventariable">
+                                    <option value="">Seleccione...</option>
+                                    <option value="1">Sí</option>
+                                    <option value="0">No</option>
+                                </select>
                             </div>
-                            
                         </div>
                         <!-- Botones centrados debajo -->
                         <div class="d-flex justify-content-center gap-2">
