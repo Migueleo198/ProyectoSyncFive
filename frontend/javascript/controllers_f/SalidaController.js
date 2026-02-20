@@ -1,5 +1,5 @@
 import SalidaApi from '../api_f/SalidaApi.js';
-import Formateos from '../helpers/formateos.js';
+import Utils from '../helpers/utils.js';
 
 let salidas = [];
 
@@ -35,8 +35,8 @@ function renderTablaSalidas(salidas) {
       <td class="d-none d-md-table-cell">${s.id_registro}</td>
       <td>${s.matricula}</td>
       <td class="d-none d-md-table-cell">${s.id_bombero ?? ''}</td>
-      <td>${Formateos.formatearFechaHora(s.f_entrega) ?? ''}</td>
-      <td>${Formateos.formatearFechaHora(s.f_recogida) ?? ''}</td>
+      <td>${Utils.formatearFechaHora(s.f_entrega) ?? ''}</td>
+      <td>${Utils.formatearFechaHora(s.f_recogida) ?? ''}</td>
       <td class="d-none d-md-table-cell">${s.km_inicio ?? ''}</td>
       <td class="d-none d-md-table-cell">${s.km_fin ?? ''}</td>
       
@@ -225,7 +225,7 @@ document.addEventListener('click', function (e) {
 
     //FECHA FORMATO ESPAÑA
     if (campo === 'f_entrega' || campo === 'f_recogida') {
-      valor = Formateos.formatearFechaHora(valor);
+      valor = Utils.formatearFechaHora(valor);
     }
 
     const p = document.createElement('p');

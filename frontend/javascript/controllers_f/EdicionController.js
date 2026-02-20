@@ -1,6 +1,6 @@
 import EdicionApi from '../api_f/EdicionApi.js';
 import FormacionApi from '../api_f/FormacionApi.js';
-import Formateos from '../helpers/formateos.js';
+import Utils from '../helpers/utils.js';
 
 let ediciones = [];
 
@@ -37,8 +37,8 @@ function renderTablaEdiciones(ediciones) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${e.nombre_formacion}</td>
-      <td>${Formateos.formatearFechaHora(e.f_inicio)}</td>
-      <td>${Formateos.formatearFechaHora(e.f_fin)}</td>
+      <td>${Utils.formatearFechaHora(e.f_inicio)}</td>
+      <td>${Utils.formatearFechaHora(e.f_fin)}</td>
       <td>${e.horas}</td>
       <td class="d-flex justify-content-around">   
         <button type="button" class="btn p-0 btn-ver" 
@@ -151,7 +151,7 @@ document.addEventListener('click', async function (e) {
       let valor = edicion[campo] ?? '';
 
       if (campo === 'f_inicio' || campo === 'f_fin') {
-        valor = Formateos.formatearFechaHora(valor);
+        valor = Utils.formatearFechaHora(valor);
       }
 
       const p = document.createElement('p');
@@ -293,7 +293,7 @@ async function cargarPersonas() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${edicion.nombre_formacion}</td>
-          <td>${Formateos.formatearFechaHora(edicion.f_inicio)}</td>
+          <td>${Utils.formatearFechaHora(edicion.f_inicio)}</td>
           <td>${persona.id_bombero}</td>
           <td class="text-center">
             <button type="button" class="btn p-0 btn-eliminar-persona"
