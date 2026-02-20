@@ -40,8 +40,7 @@ class CarnetModel
                 :duracion_meses
             )
         ")
-        ->bind(':id_carnet', $data['ID_Carnet'])
-        ->bind(':nombre', $data['nombre'])
+        ->bind(':nombre', $data['nombre'])       // ← quitado el bind de :id_carnet
         ->bind(':categoria', $data['categoria'])
         ->bind(':duracion_meses', $data['duracion_meses'])
         ->execute();
@@ -108,7 +107,16 @@ class CarnetModel
             ->bind(':id_carnet', $id_carnet)
             ->fetchAll();
     }
-
+/**
+ * Obtener carnet por ID
+ */
+public function findById(int $id_carnet): array|false
+{
+    return $this->db
+        ->query("SELECT * FROM Carnet WHERE id_carnet = :id_carnet")
+        ->bind(':id_carnet', $id_carnet)
+        ->fetch();
+}
   /**
      * Asignar un carnet a una persona con fecha de obtención y vencimiento
      */
