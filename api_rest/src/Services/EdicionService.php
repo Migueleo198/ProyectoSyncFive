@@ -17,24 +17,36 @@ class EdicionService
         $this->model = new EdicionModel();
     }
 
-
-    public function getEdicionesByFormacion(int $id): array
+    public function getAllEdiciones(): array
     {
-        Validator::validate(['id_formacion' => $id], [
+        try {
+            return $this->model->all();
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+
+    public function getEdicionesById(int $id_formacion, int $id_edicion): array
+    {
+        Validator::validate(['id_edicion' => $id_edicion], [
+            'id_edicion' => 'required|int|min:1'
+        ]);
+
+        Validator::validate(['id_formacion' => $id_formacion], [
             'id_formacion' => 'required|int|min:1'
         ]);
 
         try {
-            $formacion = $this->model->find($id);
+            $edicion = $this->model->find($id_formacion, $id_edicion);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
-        if (!$formacion) {
+        if (!$edicion) {
             throw new \Exception("Formación no encontrada", 404);
         }
 
-        return $formacion;
+        return $edicion;
     }
 
 
