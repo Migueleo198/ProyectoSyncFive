@@ -13,12 +13,26 @@ class EdicionModel
     {
         $this->db = new DB();
     }
-
-    public function find(int $id): ?array
+    public function all(): array
+    {
+        return $this->db
+            ->query("
+                SELECT 
+                    e.*, 
+                    f.nombre AS nombre_formacion
+                FROM Edicion e
+                INNER JOIN Formacion f 
+                    ON e.id_formacion = f.id_formacion
+                ORDER BY e.id_edicion ASC
+            ")
+            ->fetchAll();
+    }
+    public function find(int $id_formacion,int $id_edicion): ?array
     {
         $result = $this->db
-            ->query("SELECT * FROM Edicion WHERE id_formacion = :id")
-            ->bind(":id", $id)
+            ->query("SELECT * FROM Edicion WHERE id_edicion = :id_edicion AND id_formacion= :id_formacion")
+            ->bind(":id_edicion", $id_edicion)
+            ->bind(":id_formacion", $id_formacion)
             ->fetchAll();
 
         return $result ?: null;

@@ -65,7 +65,8 @@ $router->protectedSession('DELETE', '/formaciones/{id_formacion}', 'Controllers\
 
 
 //++++++++++++++++++++++++++++++ EDICIONES ++++++++++++++++++++++++++++++
-$router->protectedSession('GET', '/ediciones/{id_formacion}', 'Controllers\\EdicionController@index', [1,2,3,4,5]);
+$router->protectedSession('GET', '/ediciones', 'Controllers\\EdicionController@index', [1,2,3,4,5]);
+$router->protectedSession('GET', '/ediciones/{id_formacion}/{id_edicion}', 'Controllers\\EdicionController@show', [1,2,3,4,5]);
 $router->protectedSession('POST', '/ediciones/{id_formacion}', 'Controllers\\EdicionController@store', [4,5]);
 $router->protectedSession('PUT', '/ediciones/{id_formacion}/{id_edicion}', 'Controllers\\EdicionController@update', [4,5]);
 $router->protectedSession('DELETE', '/ediciones/{id_formacion}/{id_edicion}', 'Controllers\\EdicionController@delete', [5]);

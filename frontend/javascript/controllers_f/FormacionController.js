@@ -151,7 +151,7 @@ document.addEventListener('click', async function (e) {
     });
 
   } catch (error) {
-    console.error('Error al editar formacion:', error);
+    mostrarError('Error al editar formacion:', error);
   }
 });
 
