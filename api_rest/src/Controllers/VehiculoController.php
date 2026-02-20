@@ -24,20 +24,10 @@ class VehiculoController
     public function index(Request $req, Response $res): void
     {
         try {
-            // En lugar de $req->params(), obtenemos los parámetros de $_GET
-            $params = $_GET;
-            
-            // Si viene el parámetro 'material', filtrar por material
-            if (isset($params['material'])) {
-                $id_material = (int)$params['material'];
-                $vehiculos = $this->service->getVehiculosByMaterial($id_material);
-            } else {
-                $vehiculos = $this->service->getAllVehiculos();
-            }
-            
-            $res->status(200)->json($vehiculos);
+            $vehiculos = $this->service->getAllVehiculos();
+            $res->status(200)->json($vehiculos, "Listado de vehículos obtenido correctamente");
         } catch (Throwable $e) {
-            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
+            $res->errorJson($e->getMessage(), 500);
         }
     }
     
