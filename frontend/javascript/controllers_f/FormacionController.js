@@ -190,11 +190,6 @@ document.addEventListener('click', function (e) {
     const campo = camposBd[index];
     let valor = formacion[campo] ?? '';
 
-    //FECHA FORMATO ESPAÑA
-    if (campo === 'fecha') {
-      valor = Formateos.formatearFechaHora(valor);
-    }
-
     const p = document.createElement('p');
 
     const strong = document.createElement('strong');
