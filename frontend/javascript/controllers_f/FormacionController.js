@@ -112,7 +112,7 @@ document.addEventListener('click', async function (e) {
     // Insertar formulario                                             TENER EN CUENTA EL FORMATO DE LA FECHA
     form.innerHTML = `
       <div class="row mb-3 d-flex">
-          <div class="col-md-4 justify-content-center">
+          <div class="col-12 justify-content-center">
               <label for="insertNombre" class="form-label">Nombre</label>
               <input type="text" class="form-control" id="insertNombre" name="nombre" 
               value="${formacion.nombre}" required>
