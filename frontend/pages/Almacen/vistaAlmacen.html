@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tipos de emergencia</title>
+    <title>Almacenes</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
@@ -16,16 +16,18 @@
     <script>
         loadCSS("header_footer.css");
         loadCSS("plantilla_css.css");
-        // Cargar favicon dinámicamente
         loadFavicon("favicon.png");
     </script>
 
     <!-- JS dependientes -->
-    <script src="/frontend/javascript/header_footer.js" defer></script>
-    <script src="/frontend/javascript/script_filtro_tabla.js" defer></script>
+    <script type="module" src="/frontend/javascript/helpers/header_footer.js" defer></script>
+    <script src="/frontend/javascript/helpers/script_filtro_tabla.js" defer></script>
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Controlador específico -->
+    <script type="module" src="/frontend/javascript/controllers_f/AlmacenController.js"></script>
 </head>
 
 <body class="bg-white text-dark d-flex flex-column">
@@ -43,7 +45,6 @@
             <main class="col p-3 p-md-4 main-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1 class="mb-0">Control de Almacenes</h1>
-                    <!-- Icono de ayuda que redirige a Notion -->
                     <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
                         class="text-dark" title="Abrir ayuda en Notion">
                         <i class="bi bi-question-circle fs-3"></i>
@@ -51,95 +52,68 @@
                 </div>
 
                 <div>
-                    <p>[Migas de pan]</p>
+                    <p><a href="/dashboard">Inicio</a> / Almacenes</p>
                 </div>
 
                 <!-- Contenedor tabla con filtro-->
                 <div class="container mt-4 p-0"> 
-                    <div id="filtroTabla" class="m-0 row d-flex justify-content-around"> <!-- Filtro -->
-                        <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
-                            <label class="m-2" for="nombre">Nombre:</label>
-                            <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="1">
-                        </div>
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-around">
                         <div class="col-md-5 d-flex align-items-center m-1">
-                            <label class="m-2" for="Planta">Planta:</label>
-                            <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="2">
-                                <option value="">Todos</option>
-                                <option>Incendio urbano</option>
-                                <option>Incendio forestal</option>
-                                <option>Accidente de tráfico</option>
+                            <label class="m-2" for="nombre">Nombre:</label>
+                            <input placeholder="Nombre" id="nombre" type="text" class="form-control m-1 filtro" data-col="1">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-center m-1">
+                            <label class="m-2" for="planta">Planta:</label>
+                            <select class="form-select m-1 filtro" id="planta" data-col="2">
+                                <option value="">Todas</option>
+                                <option>0</option>
+                                <option>1</option>
+                                <option>2</option>
+                                <option>3</option>
                             </select>
                         </div>
                     </div>
                     <table class="table table-bordered table-striped" id="tabla">
                         <thead class="table-dark">
-                            <tr> <!-- Cabecera de la tabla -->
-                                <th>ID Almacen</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
+                            <tr>
+                                <th>ID</th>
                                 <th>Nombre</th>
-                                <th>Instalacion</th>
+                                <th>Instalación</th>
                                 <th class="d-none d-md-table-cell">Planta</th>
                                 <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Identificador Almacen</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
-                                <td>Nombre</td>
-                                <td>Instalacion</td>
-                                <td class="d-none d-md-table-cell">Planta</td>
-                                <td class="d-flex justify-content-around">
-                                    
-                                    <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-
-                                </td>
-                            </tr>
-
-                            <!-- Aquí puedes agregar más filas de datos -->
+                            <!-- Los datos se cargarán dinámicamente -->
                         </tbody>
                     </table>
                 </div>
                 
                 <!-- Contenedor insertar -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Insertar Almacen</h5>
+                    <h5 class="text-center mb-4">Insertar Almacén</h5>
                     <form id="formInsertar" class="mx-auto">
-                        <!-- Campos en la misma fila -->
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="insertIdentificador Almacen" class="form-label">Identificador Almacen</label>
-                                <input type="text" class="form-control" id="insertIdentificador Almacen" name="Identificador Almacen" required>
-                            </div>
-                            <div class="col-md-6">
                                 <label for="insertNombre" class="form-label">Nombre</label>
-                                <input type="text" class="form-control" id="insertNombre" name="Nombre" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="insertInstalacion" class="form-label">Instalacion</label>
-                                <input type="text" class="form-control" id="insertInstalacion" name="Instalacion" required>
+                                <input type="text" class="form-control" id="insertNombre" name="nombre" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertPlanta" class="form-label">Planta</label>
-                                <input type="text" class="form-control" id="insertPlanta" name="Planta" required>
+                                <input type="number" class="form-control" id="insertPlanta" name="planta" required>
                             </div>
                         </div>
-                        <!-- Botones centrados debajo -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="selectInstalacion" class="form-label">Instalación</label>
+                                <select class="form-select" id="selectInstalacion" name="id_instalacion" required>
+                                    <option value="">Seleccione una instalación...</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="d-flex justify-content-center gap-2">
-                            <button type="reset" class="btn btn-secondary">
-                                Limpiar
-                            </button>
-                            <button type="submit" class="btn btn-primary" id="btnInsertar">
-                                Insertar
-                            </button>
+                            <button type="reset" class="btn btn-secondary">Limpiar</button>
+                            <button type="submit" class="btn btn-primary">Insertar</button>
                         </div>
                     </form>
                 </div>     
@@ -160,12 +134,8 @@
                     <p class="text-muted mb-0">Esta acción no se puede deshacer.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
-                        Eliminar
-                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
                 </div>
             </div> 
         </div>
@@ -176,32 +146,34 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
+                    <h5 class="modal-title" id="modalEditarLabel">Editar Almacén</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
                     <form id="formEditar">
                         <div class="mb-3">
-                            <label for="editIdTipo" class="form-label">ID Tipo</label>
-                            <input type="text" class="form-control" id="editIdTipo" name="id_tipo" readonly>
+                            <label class="form-label">ID</label>
+                            <input type="text" class="form-control" id="editId" name="id_almacen" readonly>
                         </div>
                         <div class="mb-3">
-                            <label for="editNombre" class="form-label">Nombre</label>
+                            <label class="form-label">Nombre</label>
                             <input type="text" class="form-control" id="editNombre" name="nombre" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editGrupo" class="form-label">Grupo</label>
-                            <input type="text" class="form-control" id="editGrupo" name="grupo" required>
+                            <label class="form-label">Planta</label>
+                            <input type="number" class="form-control" id="editPlanta" name="planta" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Instalación</label>
+                            <select class="form-select" id="editInstalacion" name="id_instalacion" required>
+                                <option value="">Seleccione una instalación...</option>
+                            </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                    <button type="button" class="btn btn-primary" id="btnGuardarCambios">
-                        Guardar cambios
-                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarCambios">Guardar cambios</button>
                 </div>
             </div>
         </div>
@@ -211,31 +183,22 @@
     <div class="modal fade" id="modalVer" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalle del tipo</h5>
+                    <h5 class="modal-title">Detalle del almacén</h5>
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
-                <div class="modal-body" id="modalVerBody">
-                   <!-- Body dinamico del modal-->
-                </div>
-
+                <div class="modal-body" id="modalVerBody"></div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cerrar
-                    </button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
-
             </div>
         </div>
     </div>
+    
     <!-- FOOTER -->
     <div id="footer-placeholder" class="mt-auto"></div>
-    <!-- ALERT-->
+    
+    <!-- ALERT -->
     <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
-
-
 </body>
-
 </html>

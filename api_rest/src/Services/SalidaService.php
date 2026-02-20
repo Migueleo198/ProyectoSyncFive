@@ -28,14 +28,28 @@ class SalidaService
         }
     }
 
+    public function getSalidaById(int $id): array
+    {
+        Validator::validate(['id' => $id], [
+            'id' => 'required|int|min:1'
+        ]);
+
+        try {
+            return $this->model->find($id);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+    
     public function createSalida(array $input): array
     {
         $data = Validator::validate($input, [
-            'login'             => 'required|string|min:3|max:30',
-            'password'          => 'required|string|min:6|max:100',
-            'nombre_completo'   => 'string',
-            'email'             => 'required|email|max:120',
-            'id_rol'            => 'required|int|min:1'
+            'matricula'         => 'required|string|min:1|max:10',
+            'f_recogida'        => 'required|datetime',
+            'f_entrega'         => 'required|datetime',
+            'km_inicio'         => 'required|int',
+            'km_fin'            => 'required|int',
+            'id_bombero'        => 'required|string|min:1|max:4'
         ]);
 
         try {
@@ -63,7 +77,8 @@ class SalidaService
             'f_recogida'        => 'required|datetime',
             'f_entrega'         => 'required|datetime',
             'km_inicio'         => 'required|int',
-            'km_fin'            => 'required|int'
+            'km_fin'            => 'required|int',
+            'id_bombero'        => 'required|string|min:1|max:4'
         ]);
 
         try {

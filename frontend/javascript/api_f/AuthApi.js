@@ -20,6 +20,10 @@ const AuthApi = {
 
   changePassword(data) {
     return ApiClient.patch('/auth/cambiar-contrasena', data);
+  },
+   
+  activateAccount(token) {
+    return ApiClient.patch(`/auth/activar-cuenta?token=${token}`);
   }
 
 };

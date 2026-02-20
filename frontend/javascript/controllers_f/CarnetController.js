@@ -1,5 +1,6 @@
 import CarnetApiApi from '../api_f/CarnetApi.js';
 import PersonaApiApi from '../api_f/PersonaApi.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
 
 let carnets = []; // variable global para almacenar carnets
 
@@ -135,34 +136,6 @@ function bindCrearCarnet() {
 }
 
 // ================================
-// ERRORES / ÉXITO
-// ================================
-function mostrarError(msg) {
-  const container = document.getElementById('alert-container');
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = `
-    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-      <strong>Error:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-  container.append(wrapper);
-}
-
-function mostrarExito(msg) {
-  const container = document.getElementById('alert-container');
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = `
-    <div class="alert alert-success alert-dismissible fade show shadow" role="alert">
-      <strong>OK:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-  container.append(wrapper);
-}
-
-
-// ================================
 // MODAL ELIMINAR (AÑADIR SI SE REQUIERE)   
 // ================================
 document.addEventListener('click', function (e) {
@@ -252,9 +225,6 @@ document.addEventListener('click', async function (e) {
         </button>
       </div>
     `;
-
-    
-
 
     // Guardar cambios
     document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
@@ -374,3 +344,4 @@ async function cargarBomberosDisponibles(bomberoSeleccionado, id_select) {
     mostrarError(e.message || 'Error cargando bomberos');
   }
 }
+ 

@@ -19,12 +19,12 @@ class AlmacenController
     }
 
     /**
-     * GET /Almacenes
+     * GET /instalaciones/{id_instalacion}/almacenes
      */
-    public function index(Request $req, Response $res): void
+    public function index(Request $req, Response $res, string $id_instalacion): void
     {
         try {
-            $almacenes = $this->service->getAllAlmacenes();
+            $almacenes = $this->service->getAlmacenesByInstalacion((int) $id_instalacion);
             $res->status(200)->json($almacenes);
         } catch (Throwable $e) {
             $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
@@ -32,7 +32,7 @@ class AlmacenController
     }
 
     /**
-     * GET /Almacenes/{id}
+     * GET /almacenes/{id}
      */
     public function show(Request $req, Response $res, string $id): void
     {

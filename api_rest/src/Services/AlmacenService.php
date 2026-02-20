@@ -31,6 +31,15 @@ class AlmacenService
         }
     }
 
+    public function getAlmacenesByInstalacion(int $id_instalacion): array
+    {
+        try {
+            return $this->model->findByInstalacion($id_instalacion);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+
     public function getAlmacenById(int $id): array
     {
         Validator::validate(['id' => $id], [
@@ -122,7 +131,12 @@ class AlmacenService
         ]);
 
         try {
+            // PRIMERO: Desasociar de la instalación
+            $this->model->desasociarDeInstalacion($id_instalacion, $id_almacen);
+            
+            // SEGUNDO: Eliminar el almacén
             $result = $this->model->delete($id_almacen, $id_instalacion);
+            
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -196,7 +210,7 @@ class AlmacenService
         }
 
         try {
-            $affected = $this->model->setMaterialToAlmacen(
+            $affected = $this->model->addMaterialToAlmacen(
                 $id_almacen,
                 $data['id_instalacion'],
                 $data['id_material'],
@@ -311,3 +325,4 @@ class AlmacenService
         }
     }
 }
+?>

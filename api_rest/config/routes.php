@@ -117,8 +117,7 @@ $router->protectedSession('DELETE', '/emergencias/{id_emergencia}/vehiculos/{mat
 
 
 //++++++++++++++++++++++++++++++ VEHÍCULOS ++++++++++++++++++++++++++++++
-// $router->protectedSession('GET', '/vehiculos', 'Controllers\\VehiculoController@index', [1,2,3,4,5]);
-$router->get('/vehiculos', 'Controllers\\VehiculoController@index');
+$router->protectedSession('GET', '/vehiculos', 'Controllers\\VehiculoController@index', [1,2,3,4,5]);
 
 $router->protectedSession('POST', '/vehiculos', 'Controllers\\VehiculoController@store', [4,5]);
 $router->protectedSession('GET', '/vehiculos/{matricula}', 'Controllers\\VehiculoController@show', [1,2,3,4,5]);
@@ -190,6 +189,7 @@ $router->protectedSession('DELETE', '/incidencias/{cod_incidencia}', 'Controller
 
 //++++++++++++++++++++++++++++++ SALIDAS DE VEHÍCULOS ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/salidas', 'Controllers\\SalidaController@index', [1,2,3,4,5]);
+$router->protectedSession('GET', '/salidas/{id_registro}', 'Controllers\\SalidaController@show', [1,2,3,4,5]);
 $router->protectedSession('POST', '/salidas', 'Controllers\\SalidaController@store', [4,5]);
 $router->protectedSession('PUT', '/salidas/{id_registro}', 'Controllers\\SalidaController@update', [4,5]);
 $router->protectedSession('DELETE', '/salidas/{id_registro}', 'Controllers\\SalidaController@delete', [5]);
