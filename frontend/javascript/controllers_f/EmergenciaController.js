@@ -1,6 +1,6 @@
 import EmergenciaApi from '../api_f/EmergenciaApi.js';
 import TipoEmergenciaApi from '../api_f/TipoEmergenciaApi.js';
-import Formateos from '../helpers/formateos.js';
+import Formateos from '../helpers/utils.js';
 
 let emergencias = []; // variable global para almacenar emergencias
 

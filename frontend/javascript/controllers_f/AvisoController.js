@@ -1,5 +1,12 @@
 import AvisoApi from '../api_f/AvisoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
+import { 
+    formatearFecha,
+    truncar,
+    mostrarExito,
+    mostrarError
+} from '../helpers/utils.js';
+
 
 let avisos = [];
 let personas = [];
@@ -64,7 +71,7 @@ async function cargarAvisos() {
         avisos = misAvisos;
         renderTablaAvisos(avisos);
     } catch (e) {
-        mostrarAlerta(e.message || 'Error cargando avisos', 'danger');
+        mostrarError(e.message || 'Error cargando avisos');
     }
 }
 
@@ -181,15 +188,15 @@ function bindCrearAviso() {
 
             await cargarAvisos();
             form.reset();
-            mostrarAlerta('Aviso creado correctamente', 'success');
+            mostrarExito('Aviso creado correctamente');
 
         } catch (err) {
             // Mostrar errores de validación si los hay
             if (err.errors) {
                 const msgs = Object.values(err.errors).flat().join(', ');
-                mostrarAlerta(msgs, 'danger');
+                mostrarError(msgs);
             } else {
-                mostrarAlerta(err.message || 'Error creando aviso', 'danger');
+                mostrarError(err.message || 'Error creando aviso');
             }
         }
     });
@@ -315,56 +322,10 @@ function bindModalEliminar() {
                     document.getElementById('modalEliminar')
                 ).hide();
 
-                mostrarAlerta('Aviso eliminado correctamente', 'success');
+                mostrarExito('Aviso eliminado correctamente');
 
             } catch (error) {
-                mostrarAlerta(error.message || 'Error al eliminar el aviso', 'danger');
+                mostrarError(error.message || 'Error al eliminar el aviso');
             }
         });
-}
-
-// ================================
-// UTILIDADES
-// ================================
-function truncar(texto, max) {
-    if (!texto) return '';
-    return texto.length > max ? texto.substring(0, max) + '…' : texto;
-}
-
-function formatearFecha(fecha) {
-    if (!fecha) return '—';
-    try {
-        return new Date(fecha).toLocaleDateString('es-ES', {
-            day:   '2-digit',
-            month: '2-digit',
-            year:  'numeric',
-            hour:  '2-digit',
-            minute:'2-digit'
-        });
-    } catch {
-        return fecha;
-    }
-}
-
-function mostrarAlerta(msg, tipo = 'info') {
-    const container = document.getElementById('alert-container');
-    if (!container) { alert(msg); return; }
-
-    const id    = `alert-${Date.now()}`;
-    const div   = document.createElement('div');
-    div.id        = id;
-    div.className = `alert alert-${tipo} alert-dismissible fade show shadow-sm`;
-    div.role      = 'alert';
-    div.innerHTML = `
-        ${msg}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-    container.appendChild(div);
-
-    // Auto-cerrar a los 4 segundos
-    setTimeout(() => {
-        const el = document.getElementById(id);
-        if (el) el.remove();
-    }, 4000);
 }
