@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarEdiciones();
   bindCrearEdicion();
   cargarFormaciones(0, "nombreFormacion");
+  cargarPersonas();
+  bindInsertarPersona();
+  cargarFormaciones(0, "nombreFormacionPersona"); // select del form personas
 });
 
 // ================================
@@ -24,7 +27,7 @@ async function cargarEdiciones() {
 }
 
 // ================================
-// RENDER TABLA
+// RENDER TABLA EDICIONES
 // ================================
 function renderTablaEdiciones(ediciones) {
   const tbody = document.querySelector('#tabla tbody');
@@ -49,12 +52,12 @@ function renderTablaEdiciones(ediciones) {
             <i class="bi bi-pencil"></i>
         </button>
         <button type="button" class="btn p-0 btn-eliminar" 
-              data-bs-toggle="modal"
-              data-bs-target="#modalEliminar"
-              data-id_edicion="${e.id_edicion}"
-              data-id_formacion="${e.id_formacion}">          
-          <i class="bi bi-trash3"></i>
-      </button>
+                data-bs-toggle="modal"
+                data-bs-target="#modalEliminar"
+                data-id_edicion="${e.id_edicion}"
+                data-id_formacion="${e.id_formacion}">          
+            <i class="bi bi-trash3"></i>
+        </button>
       </td>  
     `;
     tbody.appendChild(tr);
@@ -71,7 +74,7 @@ async function cargarFormaciones(formacionSeleccionada, id_select) {
   try {
     const response = await FormacionApi.getAll();
     const formaciones = response.data;
-    
+
     select.innerHTML = '<option value="">Seleccione...</option>';
 
     formaciones.forEach(formacion => {
@@ -92,7 +95,7 @@ async function cargarFormaciones(formacionSeleccionada, id_select) {
 }
 
 // ================================
-// CREAR / INSERTAR EDICION
+// CREAR EDICION
 // ================================
 function bindCrearEdicion() {
   const form = document.getElementById('formInsertar');
@@ -101,7 +104,7 @@ function bindCrearEdicion() {
     e.preventDefault();
 
     const f = new FormData(form);
-    const data = { 
+    const data = {
       id_formacion: f.get('id_formacion'),
       f_inicio: f.get('f_inicio'),
       f_fin: f.get('f_fin'),
@@ -122,18 +125,8 @@ function bindCrearEdicion() {
 // ================================
 // CAMPOS BD
 // ================================
-const nombresCampos = [
-  'ID-Formacion',
-  'Fecha inicio',
-  'Fecha fin',
-  'Horas'
-];
-const camposBd = [
-  'id_formacion',
-  'f_inicio',
-  'f_fin',
-  'horas'
-];
+const nombresCampos = ['ID-Formacion', 'Fecha inicio', 'Fecha fin', 'Horas'];
+const camposBd = ['id_formacion', 'f_inicio', 'f_fin', 'horas'];
 
 // ================================
 // MODAL VER
@@ -169,7 +162,6 @@ document.addEventListener('click', async function (e) {
       modalBody.appendChild(p);
     });
 
-    // Abrir modal manualmente
     const modal = new bootstrap.Modal(document.getElementById('modalVer'));
     modal.show();
 
@@ -191,12 +183,9 @@ document.addEventListener('click', async function (e) {
   try {
     const response = await EdicionApi.getById(id_formacion, id_edicion);
     const edicion = response.data[0];
-    console.log(edicion);
     if (!edicion) return;
 
     const form = document.getElementById('formEditar');
-    form.innerHTML = '';
-
     form.innerHTML = `
       <div class="row mb-3">
           <div class="col-mg-6 col-lg-4">
@@ -204,37 +193,30 @@ document.addEventListener('click', async function (e) {
               <select class="form-select" id="nombreFormacionEdit" name="id_formacion"></select>
           </div>
           <div class="col-mg-6 col-lg-4">
-              <label for="f_inicio" class="form-label">Fecha Inicio</label>
-              <input type="date" class="form-control" id="f_inicio" name="f_inicio" 
-                     value="${edicion.f_inicio ?? ''}" required>
+              <label class="form-label">Fecha Inicio</label>
+              <input type="date" class="form-control" name="f_inicio" value="${edicion.f_inicio ?? ''}" required>
           </div>
           <div class="col-mg-6 col-lg-4">
-              <label for="f_fin" class="form-label">Fecha Fin</label>
-              <input type="date" class="form-control" id="f_fin" name="f_fin" 
-                     value="${edicion.f_fin ?? ''}" required>
+              <label class="form-label">Fecha Fin</label>
+              <input type="date" class="form-control" name="f_fin" value="${edicion.f_fin ?? ''}" required>
           </div>
           <div class="col-mg-6 col-lg-4">
-              <label for="horas" class="form-label">Horas</label>
-              <input type="number" class="form-control" id="horas" name="horas" 
-                     value="${edicion.horas ?? ''}">
+              <label class="form-label">Horas</label>
+              <input type="number" class="form-control" name="horas" value="${edicion.horas ?? ''}">
           </div>
       </div>
       <div class="row text-center">
-        <button type="button" id="btnGuardarCambios" class="btn btn-primary">
-          Guardar cambios
-        </button>
+        <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
       </div>
     `;
 
     await cargarFormaciones(edicion.id_formacion, 'nombreFormacionEdit');
 
-    // Abrir modal manualmente
     const modal = new bootstrap.Modal(document.getElementById('modalEditar'));
     modal.show();
 
     document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
       const data = {};
-
       camposBd.forEach(campo => {
         const input = form.querySelector(`[name="${campo}"]`);
         if (input) data[campo] = input.value;
@@ -255,7 +237,7 @@ document.addEventListener('click', async function (e) {
 });
 
 // ================================
-// MODAL ELIMINAR
+// MODAL ELIMINAR EDICION
 // ================================
 document.addEventListener('click', function (e) {
   const btn = e.target.closest('.btn-eliminar');
@@ -276,12 +258,134 @@ document.getElementById('btnConfirmarEliminar')
       await EdicionApi.delete(id_formacion, id_edicion);
       await cargarEdiciones();
 
-      const modal = bootstrap.Modal.getInstance(
-        document.getElementById('modalEliminar')
-      );
+      const modal = bootstrap.Modal.getInstance(document.getElementById('modalEliminar'));
       modal.hide();
     } catch (error) {
       mostrarError('Error al eliminar edición: ' + error.message);
+    }
+  });
+
+// ================================
+// CARGAR PERSONAS EN EDICIONES
+// ================================
+async function cargarPersonas() {
+  // Cargamos todas las ediciones y para cada una pedimos sus personas
+  try {
+    const resEdiciones = await EdicionApi.getAll();
+    const todasEdiciones = resEdiciones.data;
+
+    const tbody = document.querySelector('#tablaPersonas tbody');
+    tbody.innerHTML = '';
+
+    // Pedimos personas de cada edición en paralelo
+    const promesas = todasEdiciones.map(e =>
+      EdicionApi.getPersonas(e.id_formacion, e.id_edicion)
+        .then(res => ({ edicion: e, personas: res.data }))
+        .catch(() => ({ edicion: e, personas: [] }))
+    );
+
+    const resultados = await Promise.all(promesas);
+
+    resultados.forEach(({ edicion, personas }) => {
+      if (!personas || personas.length === 0) return;
+
+      personas.forEach(persona => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${edicion.nombre_formacion}</td>
+          <td>${Formateos.formatearFechaHora(edicion.f_inicio)}</td>
+          <td>${persona.id_bombero}</td>
+          <td class="text-center">
+            <button type="button" class="btn p-0 btn-eliminar-persona"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEliminarPersona"
+                    data-id_edicion="${edicion.id_edicion}"
+                    data-id_formacion="${edicion.id_formacion}"
+                    data-id_bombero="${persona.id_bombero}">
+              <i class="bi bi-trash3"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    });
+
+  } catch (e) {
+    mostrarError(e.message || 'Error cargando personas');
+  }
+}
+
+// ================================
+// INSERTAR PERSONA EN EDICIÓN
+// ================================
+function bindInsertarPersona() {
+  const form = document.getElementById('formInsertarPersona');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const f = new FormData(form);
+    const id_formacion = f.get('id_formacion');
+    const id_bombero = f.get('id_bombero');
+
+    if (!id_formacion || !id_bombero) {
+      mostrarError('Selecciona una formación e introduce el ID del bombero');
+      return;
+    }
+
+    try {
+      // Buscamos la última edición de esa formación
+      const resEdiciones = await EdicionApi.getAll();
+      const edicionesFormacion = resEdiciones.data
+        .filter(e => Number(e.id_formacion) === Number(id_formacion))
+        .sort((a, b) => new Date(b.f_inicio) - new Date(a.f_inicio)); // la más reciente primero
+
+      if (edicionesFormacion.length === 0) {
+        mostrarError('No hay ediciones para la formación seleccionada');
+        return;
+      }
+
+      const ultimaEdicion = edicionesFormacion[0];
+
+      await EdicionApi.setPersonas(ultimaEdicion.id_formacion, ultimaEdicion.id_edicion, {
+        id_bombero: id_bombero
+      });
+
+      await cargarPersonas();
+      form.reset();
+      alert('Bombero apuntado correctamente');
+    } catch (err) {
+      mostrarError(err.message || 'Error apuntando bombero');
+    }
+  });
+}
+
+// ================================
+// MODAL ELIMINAR PERSONA
+// ================================
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.btn-eliminar-persona');
+  if (!btn) return;
+
+  const btnConfirm = document.getElementById('btnConfirmarEliminarPersona');
+  btnConfirm.dataset.id_edicion  = btn.dataset.id_edicion;
+  btnConfirm.dataset.id_formacion = btn.dataset.id_formacion;
+  btnConfirm.dataset.id_bombero  = btn.dataset.id_bombero;
+});
+
+document.getElementById('btnConfirmarEliminarPersona')
+  .addEventListener('click', async function () {
+    const { id_edicion, id_formacion, id_bombero } = this.dataset;
+    if (!id_edicion || !id_formacion || !id_bombero) return;
+
+    try {
+      await EdicionApi.deletePersona(id_formacion, id_edicion, id_bombero);
+      await cargarPersonas();
+
+      const modal = bootstrap.Modal.getInstance(document.getElementById('modalEliminarPersona'));
+      modal.hide();
+    } catch (error) {
+      mostrarError('Error al eliminar persona: ' + error.message);
     }
   });
 
