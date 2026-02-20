@@ -1,5 +1,5 @@
 import SalidaApi from '../api_f/SalidaApi.js';
-import Utils from '../helpers/utils.js';
+import {mostrarError, mostrarExito, formatearFechaHora} from '../helpers/utils.js';
 
 let salidas = [];
 
@@ -35,8 +35,8 @@ function renderTablaSalidas(salidas) {
       <td class="d-none d-md-table-cell">${s.id_registro}</td>
       <td>${s.matricula}</td>
       <td class="d-none d-md-table-cell">${s.id_bombero ?? ''}</td>
-      <td>${Utils.formatearFechaHora(s.f_entrega) ?? ''}</td>
-      <td>${Utils.formatearFechaHora(s.f_recogida) ?? ''}</td>
+      <td>${formatearFechaHora(s.f_entrega) ?? ''}</td>
+      <td>${formatearFechaHora(s.f_recogida) ?? ''}</td>
       <td class="d-none d-md-table-cell">${s.km_inicio ?? ''}</td>
       <td class="d-none d-md-table-cell">${s.km_fin ?? ''}</td>
       
@@ -56,7 +56,7 @@ function renderTablaSalidas(salidas) {
         </button>
         
         <button type="button" class="btn p-0 btn-eliminar" 
-                data-bs-toggle="modal"                                              BOTON ELIMINAR (AÑADIR SI SE REQUIERE) meter dentro del td de botones
+                data-bs-toggle="modal"                                             
                 data-bs-target="#modalEliminar" 
                 data-id="${s.id_registro}">          
             <i class="bi bi-trash3"></i>
@@ -93,7 +93,7 @@ function bindCrearSalida() {
       await SalidaApi.create(data); // ← INSERT al backend
       await cargarSalidas();        // ← refrescar tabla
       form.reset();
-      alert('Salida creada correctamente');
+      mostrarExito('Salida creada correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error creando salida');
     }
@@ -176,7 +176,7 @@ document.addEventListener('click', async function (e) {
     });
 
   } catch (error) {
-    console.error('Error al editar salida:', error);
+    mostrarError('Error al editar salida:' || error.message);
   }
 });
 
@@ -225,7 +225,7 @@ document.addEventListener('click', function (e) {
 
     //FECHA FORMATO ESPAÑA
     if (campo === 'f_entrega' || campo === 'f_recogida') {
-      valor = Utils.formatearFechaHora(valor);
+      valor = formatearFechaHora(valor);
     }
 
     const p = document.createElement('p');
@@ -274,19 +274,3 @@ document.getElementById('btnConfirmarEliminar')
     }
 });
 
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  const container = document.getElementById("alert-container");
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = `
-    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-      <strong>Error:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-
-  container.append(wrapper);
-}
