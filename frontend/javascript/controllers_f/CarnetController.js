@@ -1,4 +1,5 @@
 import CarnetApiApi from '../api_f/CarnetApi.js';
+import PersonaApiApi from '../api_f/PersonaApi.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 
 let carnets = []; // variable global para almacenar carnets
@@ -7,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarCarnets();
   cargarTiposCarnet(0,'filtroTipoCarnet');
   cargarTiposCarnet(0,'tipoCarnetInsert');
+  cargarCarnetsDisponibles(null, 'seleccionarCarnet');
+  cargarBomberosDisponibles(null, 'id_bombero');
   bindCrearCarnet();
   // cargarSelectVehiculos();
 });
@@ -245,4 +248,100 @@ document.addEventListener('click', async function (e) {
     console.error('Error al editar carnet:', error);
   }
 });
+
+// ================================
+// MODAL VER
+// ================================
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.btn-ver');
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+
+  // Buscar la carnet correspondiente (usar carnets plural, y id_carnet)
+  const carnet = carnets.find(p => p.id_carnet == id);
+  if (!carnet) return;
+
+  const modalBody = document.getElementById('modalVerBody');
+
+  // Limpiar contenido previo
+  modalBody.innerHTML = '';
+
+  nombresCampos.forEach((nombre, index) => {
+    const campo = camposBd[index];
+    let valor = carnet[campo] ?? '';
+
+    const p = document.createElement('p');
+    const strong = document.createElement('strong');
+    strong.textContent = nombre + ': ';
+
+    p.appendChild(strong);
+    p.appendChild(document.createTextNode(valor));
+
+    modalBody.appendChild(p);
+  });
+});
+
+// ================================
+// CARGAR CARNETS DISPONIBLES
+// ================================
+async function cargarCarnetsDisponibles(carnetSeleccionado, id_select) {
+  const select = document.getElementById(id_select);
+  if (!select) return;
+
+  try {
+    const response = await CarnetApiApi.getAll();
+    const carnets = response.data;
+
+    select.innerHTML = '<option value="">Seleccione carnet...</option>';
+
+    carnets.forEach(carnet => {
+      const option = document.createElement('option');
+      
+      option.value = carnet.id_carnet;  // ID del carnet
+      option.textContent = `${carnet.nombre} - ${carnet.categoria} (${carnet.duracion_meses} meses)`; // Nombre descriptivo
+      
+      // Marcar como seleccionado si coincide
+      if (carnetSeleccionado && carnet.id_carnet === carnetSeleccionado) {
+        option.selected = true;
+      }
+
+      select.appendChild(option);
+    });
+
+  } catch (e) {
+    mostrarError(e.message || 'Error cargando carnets');
+  }
+}
+// ================================
+// CARGAR BOMBEROS DISPONIBLES
+// ================================
+async function cargarBomberosDisponibles(bomberoSeleccionado, id_select) {
+  const select = document.getElementById(id_select);
+  if (!select) return;
+
+  try {
+    const response = await PersonaApiApi.getAll();
+    const bomberos = response.data;
+
+    select.innerHTML = '<option value="">Seleccione bombero...</option>';
+
+    bomberos.forEach(bombero => {
+      const option = document.createElement('option');
+      
+      option.value = bombero.id_bombero;  // ID del bombero
+      option.textContent = `${bombero.id_bombero} - ${bombero.nombre} ${bombero.apellidos}`; // Nombre descriptivo
+      
+      // Marcar como seleccionado si coincide
+      if (bomberoSeleccionado && bombero.id_bombero === bomberoSeleccionado) {
+        option.selected = true;
+      }
+
+      select.appendChild(option);
+    });
+
+  } catch (e) {
+    mostrarError(e.message || 'Error cargando bomberos');
+  }
+}
  

@@ -84,101 +84,10 @@
                         </thead>
                         <tbody></tbody>
                     </table>
-                    <h2>Lista de Trabajadores</h2>
-                    <!--Tabla de funcionarios  -->
-                    <div id="filtroTabla" class="m-0 row d-flex justify-content-end"> <!-- Filtro -->
-                        <div class="col-md-5 d-flex align-items-center m-1">
-                            <label class="m-2" for="buscar">Buscar:</label>
-                            <select class="form-select form-select-sm mt-1 filtro" id="buscar" data-col="2">
-                                <option value="">DNI</option>
-                                <option>Incendio urbano</option>
-                                <option>Incendio forestal</option>
-                                <option>Accidente de tráfico</option>
-                            </select>
-                        </div>
-                    </div>
-                    <table class="table table-bordered table-striped" id="tabla">
-                        <thead class="table-dark">
-                            <tr> <!-- Cabecera de la tabla -->
-                                <th class="d-none d-md-table-cell">ID_Tipo</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
-                                <th>ID_Carnet</th>
-                                <th>Tipo</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="d-none d-md-table-cell">INUR1</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->   
-                                <td>Incendio edificio</td>
-                                <td>Incendio urbano</td>
-                                <td class="d-flex justify-content-around">
-                                    
-                                    <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-                                    
-                                    <!-- Modal de edición -->
-                                    <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form id="formEditar">
-                                                        
-                                                    </form>
-                                                </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                                                    
-                                    
-                                    <!-- Modal de eliminación -->
-                                    <div class="modal fade" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="modalEliminarLabel">Confirmar eliminación</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    ¿Estás seguro de que deseas eliminar este registro?
-                                                    <p class="text-muted mb-0">Esta acción no se puede deshacer.</p>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                        Cancelar
-                                                    </button>
-                                                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
-                                                        Eliminar
-                                                    </button>
-                                                </div>
-                                            </div> 
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Aquí puedes agregar más filas de datos -->
-                        </tbody>
-                    </table>
                 </div>
-                
                 <!-- Contenedor insertar -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Insertar Carnet a funcionario</h5>
+                    <h5 class="text-center mb-4">Insertar Carnet a Funcionario</h5>
                     <form id="formInsertar" class="mx-auto">
                         <!-- Campos en la misma fila -->
                         <div class="row mb-3">
@@ -186,18 +95,13 @@
                                 <label class="m-2" for="seleccionarCarnet">ID_Carnet:</label>
                                 <select class="form-select form-select-sm mt-1 filtro" id="seleccionarCarnet" data-col="2">
                                     <option value="">ID_Carnet</option>
-                                    <option>Incendio urbano</option>
-                                    <option>Incendio forestal</option>
-                                    <option>Accidente de tráfico</option>
-                                </select>    
+
+                                </select>  
+                                  
                             </div>
                             <div class="col-md-6">
-                                <label class="m-2" for="seleccionarCarnet">DNI Funcionario:</label>
-                                <select class="form-select form-select-sm mt-1 filtro" id="seleccionarCarnet" data-col="2">
-                                    <option value="">DNI</option>
-                                    <option>Incendio urbano</option>
-                                    <option>Incendio forestal</option>
-                                    <option>Accidente de tráfico</option>
+                                <label class="m-2" for="id_bombero">ID Bombero:</label>
+                                <select class="form-select form-select-sm mt-1 filtro" id="id_bombero" data-col="2">
                                 </select>   
                             </div>
                         </div>
@@ -258,7 +162,7 @@
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalle del tipo</h5>
+                    <h5 class="modal-title">Detalle del Carnet</h5>
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
@@ -273,6 +177,45 @@
                 </div>
 
             </div>
+        </div>
+    </div>
+     <!-- Modal de edición -->
+    <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditar">
+                        <!-- Los campos del formulario se generarán dinámicamente -->
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal de eliminación -->
+    <div class="modal fade" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEliminarLabel">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar este carnet?
+                    <p class="text-muted mb-0">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
+                        Eliminar
+                    </button>
+                </div>
+            </div> 
         </div>
     </div>
     <!-- FOOTER -->
