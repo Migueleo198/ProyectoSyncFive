@@ -24,15 +24,12 @@ class VehiculoController
     public function index(Request $req, Response $res): void
     {
         try {
-            // Obtener todos los parámetros de la URL
-            $params = $req->params();
+            // Obtener parámetros de $_GET directamente
+            $material = isset($_GET['material']) ? (int)$_GET['material'] : null;
             
-            // Si viene el parámetro 'material', filtrar por material
-            if (isset($params['material'])) {
-                $id_material = (int)$params['material'];
-                $vehiculos = $this->service->getVehiculosByMaterial($id_material);
+            if ($material) {
+                $vehiculos = $this->service->getVehiculosByMaterial($material);
             } else {
-                // Si no viene filtro, devolver todos
                 $vehiculos = $this->service->getAllVehiculos();
             }
             
