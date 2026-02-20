@@ -53,7 +53,7 @@ class EmergenciaService
             'estado'            => 'required|string|max:30',
             'direccion'         => 'required|string|min:1',
             'nombre_solicitante'=> 'string|min:1',
-            'tlfn_solicitante'  => 'phone|min:1',
+            'tlf_solicitante'  => 'phone|min:1',
             'codigo_tipo'       => 'int|min:1'
         ]);
         try {
@@ -79,7 +79,7 @@ class EmergenciaService
             'estado'            => 'required|string|max:30',
             'direccion'         => 'required|string|min:1',
             'nombre_solicitante'=> 'string|min:1',
-            'tlfn_solicitante'  => 'phone|min:1',
+            'tlf_solicitante'  => 'phone|min:1',
             'codigo_tipo'       => 'int|min:1'
         ]);
 

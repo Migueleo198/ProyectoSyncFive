@@ -1,6 +1,11 @@
 import EmergenciaApi from '../api_f/EmergenciaApi.js';
 import TipoEmergenciaApi from '../api_f/TipoEmergenciaApi.js';
-import Formateos from '../helpers/utils.js';
+import { 
+  formatearFechaHora,
+  mostrarError,
+  mostrarExito
+} from '../helpers/utils.js';
+
 
 let emergencias = []; // variable global para almacenar emergencias
 
@@ -94,7 +99,7 @@ function renderTablaEmergencias(emergencias) {
                                                                                 // FORMATO FECHA ESPAÑA
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${e.id_emergencia}</td>
-      <td>${Formateos.formatearFechaHora(e.fecha)}</td>
+      <td>${formatearFechaHora(e.fecha)}</td>
       <td class="d-none d-md-table-cell">${e.descripcion ?? ''}</td>
       <td>${e.estado}</td>
       <td class="d-none d-md-table-cell">${e.direccion ?? ''}</td>
@@ -144,8 +149,8 @@ function bindCrearEmergencia() {
       direccion: f.get('direccion'),
       codigo_tipo: Number(f.get('codigo_tipo')),
       id_bombero: f.get('id_bombero'),
-      nombre_solicitante: f.get('solicitante'),
-      tlf_solicitante: f.get('tlfSolicitante'),
+      nombre_solicitante: f.get('nombre_solicitante'),
+      tlf_solicitante: f.get('tlf_solicitante'),
       descripcion: f.get('descripcion'),
     };
 
@@ -153,7 +158,7 @@ function bindCrearEmergencia() {
       await EmergenciaApi.create(data); // ← INSERT al backend
       await cargarEmergencias();        // ← refrescar tabla
       form.reset();
-      alert('Emergencia creada correctamente');
+      mostrarExito('Emergencia creada correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error creando emergencia');
     }
@@ -187,7 +192,7 @@ document.addEventListener('click', async function (e) {
           <input 
             type="text" 
             class="form-control" 
-            value="${Formateos.formatearFechaHora(emergencia.fecha) || ''}"     
+            value="${formatearFechaHora(emergencia.fecha) || ''}"     
             disabled
           >
         </div>
@@ -221,14 +226,14 @@ document.addEventListener('click', async function (e) {
 
         <div class="col-lg-4">
           <label class="form-label">Nombre Solicitante</label>
-          <input type="text" class="form-control" name="solicitante" value="${emergencia.solicitante || ''}">
+          <input type="text" class="form-control" name="nombre_solicitante" value="${emergencia.nombre_solicitante || ''}">
         </div>
       </div>
 
       <div class="row mb-3">
         <div class="col-lg-4">
           <label class="form-label">Teléfono Solicitante</label>
-          <input type="tel" class="form-control" name="tlfSolicitante" value="${emergencia.tlfSolicitante || ''}">
+          <input type="tel" class="form-control" name="tlf_solicitante" value="${emergencia.tlf_solicitante || ''}">
         </div>
 
         <div class="col-lg-8">
@@ -266,8 +271,20 @@ document.addEventListener('click', async function (e) {
         if (input) data[campo] = input.value;
       });
 
-      await EmergenciaApi.update(id, data);             // Enviar datos al backend para actualizar la emergencia
-      await cargarEmergencias();                        // Recargar tabla para mostrar cambios
+      try {
+        await EmergenciaApi.update(id, data);
+        await cargarEmergencias();
+
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById('modalEditar')
+        );
+        modal.hide();
+
+        mostrarExito('Emergencia actualizada correctamente');
+
+      } catch (err) {
+        mostrarError(err.message || 'Error actualizando emergencia');
+      }
 
       const modal = bootstrap.Modal.getInstance(        // Cerrar modal
         document.getElementById('modalEditar')
@@ -301,7 +318,7 @@ document.addEventListener('click', async function (e) {
     'codigo_tipo',
     'id_bombero',
     'nombre_solicitante',
-    'tlfn_solicitante',
+    'tlf_solicitante',
     'descripcion'
   ];
 
@@ -330,7 +347,7 @@ document.addEventListener('click', function (e) {
 
     //FECHA FORMATO ESPAÑA
     if (campo === 'fecha') {
-      valor = Formateos.formatearFechaHora(valor);
+      valor = formatearFechaHora(valor);
     }
 
     const p = document.createElement('p');
@@ -379,21 +396,3 @@ document.addEventListener('click', function (e) {
 //       mostrarError('Error al eliminar emergencia: ' + error.message);
 //     }
 // });
-
-
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  const container = document.getElementById("alert-container");
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = `
-    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-      <strong>Error:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-
-  container.append(wrapper);
-}

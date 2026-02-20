@@ -1,4 +1,5 @@
 import FormacionApi from '../api_f/FormacionApi.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
 
 let formaciones = []; // variable global para almacenar formaciones
 
@@ -84,7 +85,7 @@ function bindCrearFormacion() {
       await FormacionApi.create(data); // ← INSERT al backend
       await cargarFormaciones();        // ← refrescar tabla
       form.reset();
-      alert('Formacion creada correctamente');
+      mostrarExito('Formacion creada correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error creando formacion');
     }
@@ -240,20 +241,3 @@ document.getElementById('btnConfirmarEliminar')
       mostrarError('Error al eliminar emergencia: ' + error.message);
     }
 });
-
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  const container = document.getElementById("alert-container");
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = `
-    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-      <strong>Error:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-
-  container.append(wrapper);
-}

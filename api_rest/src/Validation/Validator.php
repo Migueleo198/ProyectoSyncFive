@@ -205,13 +205,14 @@ class Validator
 
     private static function validatePhone(string $phone): bool
     {
-        // Elimina espacios, guiones y paréntesis
         $cleanPhone = preg_replace('/[\s\-\(\)]/', '', $phone);
 
-        // Debe empezar opcionalmente con + seguido de 1 a 3 dígitos (código país)
-        // y luego de 8 a 12 dígitos para el número local
-        return preg_match('/^\+?[1-9]\d{1,3}\d{8,12}$/', $cleanPhone);
+        // Permite:
+        // - 9 dígitos nacionales
+        // - o +34 seguido de 9 dígitos
+        return preg_match('/^(\+34)?[6-9]\d{8}$/', $cleanPhone);
     }
+
 
 
 

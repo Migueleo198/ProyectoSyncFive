@@ -1,5 +1,6 @@
 import AuthApi from '../api_f/AuthApi.js';
 import * as Validaciones from '../helpers/validacion.js';
+import { mostrarError} from '../helpers/utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // ── Página login ──────────────────────────────────
@@ -294,11 +295,4 @@ export async function cerrarSesion() {
         sessionStorage.removeItem('user');
         window.location.href = '/frontend/pages/Login/login.html';
     }
-}
-
-// ================================
-// ERROR
-// ================================
-function mostrarError(msg) {
-  alert(msg);
 }

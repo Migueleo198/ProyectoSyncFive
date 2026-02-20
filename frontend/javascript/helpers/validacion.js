@@ -38,12 +38,17 @@ export function validarRangoFechas(fechaInicio, fechaFin) {
     return fin > inicio;
 }
 
+// Teléfono español: 9 dígitos, empieza por 6, 7, 8 o 9
+export function validarTelefono(telefono) {
+    if (!telefono) return false;
+    const telRegex = /^[6789]\d{8}$/;
+    return telRegex.test(telefono.trim());
+}
 
 // CONTRASEÑA
-const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-
 export function validarPassword(password) {
     if (!password) return false;
+    const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
     return PASSWORD_REGEX.test(password);
 }
 

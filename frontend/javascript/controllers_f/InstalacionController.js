@@ -1,4 +1,6 @@
 import InstalacionApi from '../api_f/InstalacionApi.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarEmail, validarTelefono } from '../helpers/validacion.js';
 
 let instalaciones = []; // variable global para almacenar instalaciones
 
@@ -85,11 +87,25 @@ function bindCrearInstalacion() {
       localidad: f.get('localidad')
     };
 
+    // VALIDACIONES
+    if (!data.nombre || !data.direccion || !data.localidad) {
+      mostrarError('Nombre, dirección y localidad son obligatorios');
+      return;
+    }
+    if (!validarEmail(data.correo)) {
+      mostrarError('Correo no válido');
+      return;
+    }
+    if (!validarTelefono(data.telefono)) {
+      mostrarError('Teléfono no válido');
+      return;
+    }
+
     try {
       await InstalacionApi.create(data); // ← INSERT al backend
       await cargarInstalaciones();        // ← refrescar tabla
       form.reset();
-      alert('Instalacion creada correctamente');
+      mostrarExito('Instalacion creada correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error creando instalacion');
     }
@@ -117,55 +133,69 @@ document.addEventListener('click', async function (e) {
 
     // Insertar formulario
     form.innerHTML = `
-  <div class="row mb-3">
-    <div class="col-lg-6">
-      <label class="form-label">Nombre</label>
-      <input type="text" class="form-control" name="nombre" value="${instalacion.nombre || ''}">
+    <div class="row mb-3">
+      <div class="col-lg-6">
+        <label class="form-label">Nombre</label>
+        <input type="text" class="form-control" name="nombre" value="${instalacion.nombre || ''}">
+      </div>
+
+      <div class="col-lg-6">
+        <label class="form-label">Teléfono</label>
+        <input type="text" class="form-control" name="telefono" value="${instalacion.telefono || ''}">
+      </div>
     </div>
 
-    <div class="col-lg-6">
-      <label class="form-label">Teléfono</label>
-      <input type="text" class="form-control" name="telefono" value="${instalacion.telefono || ''}">
+    <div class="row mb-3">
+      <div class="col-lg-6">
+        <label class="form-label">Correo</label>
+        <input type="email" class="form-control" name="correo" value="${instalacion.correo || ''}">
+      </div>
+
+      <div class="col-lg-6">
+        <label class="form-label">Localidad</label>
+        <input type="text" class="form-control" name="localidad" value="${instalacion.localidad || ''}">
+      </div>
     </div>
-  </div>
 
-  <div class="row mb-3">
-    <div class="col-lg-6">
-      <label class="form-label">Correo</label>
-      <input type="email" class="form-control" name="correo" value="${instalacion.correo || ''}">
+    <div class="mb-3">
+      <label class="form-label">Dirección</label>
+      <input type="text" class="form-control" name="direccion" value="${instalacion.direccion || ''}">
     </div>
 
-    <div class="col-lg-6">
-      <label class="form-label">Localidad</label>
-      <input type="text" class="form-control" name="localidad" value="${instalacion.localidad || ''}">
+    <div class="text-center">
+      <button type="button" id="btnGuardarCambios" class="btn btn-primary">
+        Guardar cambios
+      </button>
     </div>
-  </div>
-
-  <div class="mb-3">
-    <label class="form-label">Dirección</label>
-    <input type="text" class="form-control" name="direccion" value="${instalacion.direccion || ''}">
-  </div>
-
-  <div class="text-center">
-    <button type="button" id="btnGuardarCambios" class="btn btn-primary">
-      Guardar cambios
-    </button>
-  </div>
-`;
+  `;
 
 
-    await cargarInstalaciones(instalacion.codigo_tipo, 'selectInstalacion'); // DENTRO DEL HTML PREVIO hemos creado un select vacío con id= selectInstalacion, donde se cargarán tipos y marcará el seleccionado
+  await cargarInstalaciones(instalacion.codigo_tipo, 'selectInstalacion'); // DENTRO DEL HTML PREVIO hemos creado un select vacío con id= selectInstalacion, donde se cargarán tipos y marcará el seleccionado
 
+  // Guardar cambios
+  document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
+    const data = {};
 
-    // Guardar cambios
-    document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-      const data = {};
+    camposBd.forEach(campo => {
+      const input = form.querySelector(`[name="${campo}"]`);
+      if (input) data[campo] = input.value;
+    });
 
-      camposBd.forEach(campo => {
-        const input = form.querySelector(`[name="${campo}"]`);
-        if (input) data[campo] = input.value;
-      });
+    // VALIDACIONES
+    if (!data.nombre || !data.direccion || !data.localidad) {
+      mostrarError('Nombre, dirección y localidad son obligatorios');
+      return;
+    }
+    if (!validarEmail(data.correo)) {
+      mostrarError('Correo no válido');
+      return;
+    }
+    if (!validarTelefono(data.telefono)) {
+      mostrarError('Teléfono no válido');
+      return;
+    }
 
+    try{
       await InstalacionApi.update(id, data);             // Enviar datos al backend para actualizar la instalacion
       await cargarInstalaciones();                        // Recargar tabla para mostrar cambios
 
@@ -173,7 +203,13 @@ document.addEventListener('click', async function (e) {
         document.getElementById('modalEditar')
       );
       modal.hide();
-    });
+
+      mostrarExito('Instalación actualizada correctamente');
+
+    } catch (err) {
+      mostrarError(err.message || 'Error actualizando instalación');
+    }
+  });
 
   } catch (error) {
     console.error('Error al editar instalacion:', error);
@@ -270,11 +306,3 @@ document.getElementById('btnConfirmarEliminar')
       console.error('Error al eliminar instalacion:', error);
     }
 });
-
-
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  alert(msg);
-}

@@ -1,4 +1,6 @@
 import MeritoApi from '../api_f/MeritoApi.js';
+import { truncar, mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarNumero } from '../helpers/validacion.js';
 
 let meritos = [];
 
@@ -17,7 +19,7 @@ async function cargarMeritos() {
         meritos = response.data;
         renderTablaMeritos(meritos);
     } catch (e) {
-        mostrarAlerta(e.message || 'Error cargando méritos', 'danger');
+        mostrarError(e.message || 'Error cargando méritos', 'danger');
     }
 }
 
@@ -79,6 +81,16 @@ function bindCrearMerito() {
         const nombre      = document.getElementById('nombreMerito').value.trim();
         const descripcion = document.getElementById('descripcionMerito').value.trim();
 
+        // Validaciones básicas
+        if (!nombre) {
+            mostrarError('El nombre es obligatorio');
+            return;
+        }
+        if (!descripcion) {
+            mostrarError('La descripción es obligatoria');
+            return;
+        }
+
         try {
             await MeritoApi.create({
                 nombre,
@@ -87,14 +99,14 @@ function bindCrearMerito() {
 
             await cargarMeritos();
             form.reset();
-            mostrarAlerta('Mérito creado correctamente', 'success');
+            mostrarExito('Mérito creado correctamente', 'success');
 
         } catch (err) {
             if (err.errors) {
                 const msgs = Object.values(err.errors).flat().join(', ');
-                mostrarAlerta(msgs, 'danger');
+                mostrarError(msgs, 'danger');
             } else {
-                mostrarAlerta(err.message || 'Error creando mérito', 'danger');
+                mostrarError(err.message || 'Error creando mérito', 'danger');
             }
         }
     });
@@ -144,49 +156,19 @@ function bindEliminarMerito() {
             try {
                 await MeritoApi.remove(id);
                 await cargarMeritos();
-                mostrarAlerta('Mérito eliminado correctamente', 'success');
+                mostrarExito('Mérito eliminado correctamente', 'success');
 
             } catch (error) {
                 // Error 409 = registro en uso
                 if (error.status === 409) {
-                    mostrarAlerta(
+                    mostrarError(
                         'No se puede eliminar: el mérito está asignado a usuarios',
                         'warning'
                     );
                 } else {
-                    mostrarAlerta(error.message || 'Error al eliminar el mérito', 'danger');
+                    mostrarError(error.message || 'Error al eliminar el mérito', 'danger');
                 }
             }
         });
     });
-}
-
-// ================================
-// UTILIDADES
-// ================================
-function truncar(texto, max) {
-    if (!texto) return '—';
-    return texto.length > max ? texto.substring(0, max) + '…' : texto;
-}
-
-function mostrarAlerta(msg, tipo = 'info') {
-    const container = document.getElementById('alert-container');
-    if (!container) { alert(msg); return; }
-
-    const id  = `alert-${Date.now()}`;
-    const div = document.createElement('div');
-    div.id        = id;
-    div.className = `alert alert-${tipo} alert-dismissible fade show shadow-sm`;
-    div.role      = 'alert';
-    div.innerHTML = `
-        ${msg}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-    container.appendChild(div);
-
-    setTimeout(() => {
-        const el = document.getElementById(id);
-        if (el) el.remove();
-    }, 4000);
 }
