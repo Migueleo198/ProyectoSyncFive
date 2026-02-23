@@ -52,6 +52,34 @@ export function validarPassword(password) {
     return PASSWORD_REGEX.test(password);
 }
 
+// ID BOMBERO -> 1 letra + 3 números (ej: A123)
+export function validarIdBombero(id) {
+    if (!id) return false;
+
+    const regex = /^[A-Za-z]{1}[0-9]{3}$/;
+    return regex.test(id.trim());
+}
+
+// NUMERO FUNCIONARIO -> 17 caracteres alfanuméricos
+export function validarNumeroFuncionario(numero) {
+    if (!numero) return false;
+
+    const regex = /^[A-Za-z0-9]{17}$/;
+    return regex.test(numero.trim());
+}
+
+// MATRICULA ESPAÑOLA (NUEVA + ANTIGUA)
+export function validarMatriculaEspanola(matricula) {
+    if (!matricula) return false;
+
+    const m = matricula.replace(/\s+/g, '').toUpperCase();
+
+    const formatoNuevo = /^[0-9]{4}[BCDFGHJKLMNPRSTVWXYZ]{3}$/;
+    const formatoAntiguo = /^[A-Z]{1,2}[0-9]{4}[A-Z]{0,2}$/;
+
+    return formatoNuevo.test(m) || formatoAntiguo.test(m);
+}
+
 
 // CAMPOS CHECK
 // PROVINCIAS

@@ -1,11 +1,22 @@
 import SalidaApi from '../api_f/SalidaApi.js';
-import Formateos from '../helpers/formateos.js';
+import {
+  validarNumero,
+  validarRangoFechas,
+  validarIdBombero,
+  validarMatriculaEspanola
+} from '../helpers/validacion.js';
+import {
+  mostrarError,
+  mostrarExito,
+  formatearFechaHora
+} from '../helpers/utils.js';
 
 let salidas = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarSalidas();
     bindCrearSalida();
+    bindModalEliminar();
 });
 
 // ================================
@@ -30,13 +41,12 @@ function renderTablaSalidas(salidas) {
 
   salidas.forEach(s => {
     const tr = document.createElement('tr');
-                                                                                // FORMATO FECHA ESPAÑA
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${s.id_registro}</td>
       <td>${s.matricula}</td>
       <td class="d-none d-md-table-cell">${s.id_bombero ?? ''}</td>
-      <td>${Formateos.formatearFechaHora(s.f_entrega) ?? ''}</td>
-      <td>${Formateos.formatearFechaHora(s.f_recogida) ?? ''}</td>
+      <td>${formatearFechaHora(s.f_entrega) ?? ''}</td>
+      <td>${formatearFechaHora(s.f_recogida) ?? ''}</td>
       <td class="d-none d-md-table-cell">${s.km_inicio ?? ''}</td>
       <td class="d-none d-md-table-cell">${s.km_fin ?? ''}</td>
       
@@ -56,7 +66,7 @@ function renderTablaSalidas(salidas) {
         </button>
         
         <button type="button" class="btn p-0 btn-eliminar" 
-                data-bs-toggle="modal"                                              BOTON ELIMINAR (AÑADIR SI SE REQUIERE) meter dentro del td de botones
+                data-bs-toggle="modal"
                 data-bs-target="#modalEliminar" 
                 data-id="${s.id_registro}">          
             <i class="bi bi-trash3"></i>
@@ -64,16 +74,16 @@ function renderTablaSalidas(salidas) {
       </td>  
     `;
         
-
     tbody.appendChild(tr);
   });
-
 }
+
 // ================================
 // CREAR / INSERTAR SALIDA
 // ================================
 function bindCrearSalida() {
   const form = document.getElementById('formSalida');
+  if (!form) return;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -89,11 +99,76 @@ function bindCrearSalida() {
       id_bombero: f.get('id_bombero')
     };
 
+    // ================= VALIDACIONES =================
+
+    // ---------- CAMPOS OBLIGATORIOS ----------
+    if (!data.matricula?.trim()) {
+      mostrarError('La matrícula es obligatoria');
+      return;
+    }
+
+    if (!data.id_bombero?.trim()) {
+      mostrarError('El ID del bombero es obligatorio');
+      return;
+    }
+
+    if (!data.f_entrega) {
+      mostrarError('La fecha de entrega es obligatoria');
+      return;
+    }
+
+    if (!data.f_recogida) {
+      mostrarError('La fecha de recogida es obligatoria');
+      return;
+    }
+
+    if (!data.km_inicio) {
+      mostrarError('El KM de inicio es obligatorio');
+      return;
+    }
+
+    if (!data.km_fin) {
+      mostrarError('El KM final es obligatorio');
+      return;
+    }
+
+    // ---------- FORMATO ----------
+
+    if (!validarMatriculaEspanola(data.matricula)) {
+      mostrarError('La matrícula no tiene un formato válido (ej: 1234BCD o M1234AB)');
+      return;
+    }
+
+    if (!validarIdBombero(data.id_bombero)) {
+      mostrarError('El ID del bombero debe tener 1 letra seguida de 3 números (ej: A123)');
+      return;
+    }
+
+    if (!validarNumero(data.km_inicio)) {
+      mostrarError('El KM de inicio debe ser un número positivo');
+      return;
+    }
+
+    if (!validarNumero(data.km_fin)) {
+      mostrarError('El KM final debe ser un número positivo');
+      return;
+    }
+
+    if (Number(data.km_fin) < Number(data.km_inicio)) {
+      mostrarError('El KM final no puede ser menor que el KM inicial');
+      return;
+    }
+
+    if (!validarRangoFechas(data.f_recogida, data.f_entrega)) {
+      mostrarError('La fecha de recogida debe ser posterior a la fecha de entrega');
+      return;
+    }
+
     try {
       await SalidaApi.create(data); // ← INSERT al backend
       await cargarSalidas();        // ← refrescar tabla
       form.reset();
-      alert('Salida creada correctamente');
+      mostrarExito('Salida creada correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error creando salida');
     }
@@ -106,6 +181,7 @@ function bindCrearSalida() {
 document.addEventListener('click', async function (e) {
   const btn = e.target.closest('.btn-editar');
   if (!btn) return;
+
   const id = btn.dataset.id;
 
   try {
@@ -163,17 +239,92 @@ document.addEventListener('click', async function (e) {
     `;
 
     // Guardar cambios
-    document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-      const data = {};
-      camposBd.forEach(campo => {
-        const input = form.querySelector(`[name="${campo}"]`);
-        if (input) data[campo] = input.value;
+    document.getElementById('btnGuardarCambios')
+      .addEventListener('click', async () => {
+
+        const data = {
+          id_bombero: document.getElementById('edit_id_bombero').value,
+          f_entrega: document.getElementById('edit_f_entrega').value,
+          f_recogida: document.getElementById('edit_f_recogida').value,
+          matricula: document.getElementById('edit_matricula').value.trim(),
+          km_inicio: document.getElementById('edit_km_inicio').value,
+          km_fin: document.getElementById('edit_km_fin').value
+        };
+
+        // ================= VALIDACIONES =================
+
+        // ---------- CAMPOS OBLIGATORIOS ----------
+        if (!data.matricula?.trim()) {
+          mostrarError('La matrícula es obligatoria');
+          return;
+        }
+
+        if (!data.id_bombero?.trim()) {
+          mostrarError('El ID del bombero es obligatorio');
+          return;
+        }
+
+        if (!data.f_entrega) {
+          mostrarError('La fecha de entrega es obligatoria');
+          return;
+        }
+
+        if (!data.f_recogida) {
+          mostrarError('La fecha de recogida es obligatoria');
+          return;
+        }
+
+        if (!data.km_inicio) {
+          mostrarError('El KM de inicio es obligatorio');
+          return;
+        }
+
+        if (!data.km_fin) {
+          mostrarError('El KM final es obligatorio');
+          return;
+        }
+
+        // ---------- FORMATO ----------
+
+        if (!validarMatriculaEspanola(data.matricula)) {
+          mostrarError('La matrícula no tiene un formato válido (ej: 1234BCD o M1234AB)');
+          return;
+        }
+
+        if (!validarIdBombero(data.id_bombero)) {
+          mostrarError('El ID del bombero debe tener 1 letra seguida de 3 números (ej: A123)');
+          return;
+        }
+
+        if (!validarNumero(data.km_inicio)) {
+          mostrarError('El KM de inicio debe ser un número positivo');
+          return;
+        }
+
+        if (!validarNumero(data.km_fin)) {
+          mostrarError('El KM final debe ser un número positivo');
+          return;
+        }
+
+        if (Number(data.km_fin) < Number(data.km_inicio)) {
+          mostrarError('El KM final no puede ser menor que el KM inicial');
+          return;
+        }
+
+        if (!validarRangoFechas(data.f_recogida, data.f_entrega)) {
+          mostrarError('La fecha de recogida debe ser posterior a la fecha de entrega');
+          return;
+        }
+
+        await SalidaApi.update(id, data);
+        await cargarSalidas();
+
+        bootstrap.Modal.getInstance(
+          document.getElementById('modalEditar')
+        ).hide();
+
+        mostrarExito('Salida actualizada correctamente');
       });
-      
-      await SalidaApi.update(id, data);
-      await cargarSalidas();
-      bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
-    });
 
   } catch (error) {
     console.error('Error al editar salida:', error);
@@ -225,7 +376,7 @@ document.addEventListener('click', function (e) {
 
     //FECHA FORMATO ESPAÑA
     if (campo === 'f_entrega' || campo === 'f_recogida') {
-      valor = Formateos.formatearFechaHora(valor);
+      valor = formatearFechaHora(valor);
     }
 
     const p = document.createElement('p');
@@ -243,50 +394,34 @@ document.addEventListener('click', function (e) {
 // ================================
 // MODAL ELIMINAR (AÑADIR SI SE REQUIERE)   
 // ================================
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.btn-eliminar');
-  if (!btn) return;
+function bindModalEliminar() {
 
-  const id = btn.dataset.id;
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-eliminar');
+    if (!btn) return;
 
-  const btnConfirm = document.getElementById('btnConfirmarEliminar');
-  btnConfirm.dataset.id = id;
-});
+    const id = btn.dataset.id;
+    document.getElementById('btnConfirmarEliminar').dataset.id = id;
+  });
 
-document.getElementById('btnConfirmarEliminar')
-  .addEventListener('click', async function () {
+  document.getElementById('btnConfirmarEliminar')
+    .addEventListener('click', async function () {
 
-    const id = this.dataset.id;
-    if (!id) return;
+      const id = this.dataset.id;
+      if (!id) return;
 
-    try {
-      await SalidaApi.delete(id);
-      await cargarSalidas();
+      try {
+        await SalidaApi.delete(id);
+        await cargarSalidas();
 
-      // Cerrar modal
-      const modal = bootstrap.Modal.getInstance(
-        document.getElementById('modalEliminar')
-      );
-      modal.hide();
+        bootstrap.Modal.getInstance(
+          document.getElementById('modalEliminar')
+        ).hide();
 
-    } catch (error) {
-      mostrarError('Error al eliminar emergencia: ' + error.message);
-    }
-});
+        mostrarExito('Salida eliminada correctamente');
 
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  const container = document.getElementById("alert-container");
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = `
-    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-      <strong>Error:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-
-  container.append(wrapper);
+      } catch (error) {
+        mostrarError(error.message || 'Error al eliminar salida');
+      }
+    });
 }
