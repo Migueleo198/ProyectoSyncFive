@@ -17,7 +17,6 @@
     <script>
         loadCSS("header_footer.css");
         loadCSS("plantilla_css.css");
-        loadCSS("vistaMantenimiento.css");
         // Cargar favicon dinámicamente
         loadFavicon("favicon.png");
     </script>
@@ -54,7 +53,7 @@
                 <p>[Migas de pan]</p>
 
                 <!-- FILTROS -->
-                <div class="container-fluid mt-4 p-0">
+                <div class="container mt-4 p-0">
                     <div id="filtroTabla" class="row d-flex justify-content-around m-0">
 
                         <div class="col-md-2 d-flex align-items-center m-1">
@@ -65,7 +64,7 @@
 
                         <div class="col-md-2 d-flex align-items-center m-1">
                             <label class="me-2">Tipo Recurso:</label>
-                            <select class="form-select form-select-sm filtro" data-col="2">
+                            <select class="form-select form-select-sm mt-1 filtro" data-col="2">
                                 <option value="">Todos</option>
                                 <option>Incendio urbano</option>
                                 <option>Incendio forestal</option>
@@ -96,7 +95,7 @@
                     </div>
 
                     <!-- TABLA -->
-                    <table class="table table-bordered table-striped mt-3" id="tabla">
+                    <table class="table table-bordered table-striped mt-3 " id="tabla">
                         <thead class="table-dark">
                             <tr>
                                 <th class="d-none d-md-table-cell">ID_Mant</th>
@@ -126,10 +125,10 @@
                 </div>
 
                 <!-- INSERTAR MANTENIMIENTO VEHÍCULO -->
-                <div class="container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Insertar Mantenimiento Vehículo</h5>
+                <div class="container mt-5 p-4 border rounded contenedorInsertar">
+                    <h5 class="text-center mb-4 ">Insertar Mantenimiento Vehículo</h5>
 
-                    <form id="formInsertarVehiculo">
+                    <form id="formInsertarVehiculo" >
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Matrícula</label>
@@ -166,7 +165,7 @@
                 </div>
 
                 <!-- INSERTAR MANTENIMIENTO MATERIAL -->
-                <div class="container mt-5 p-4 border rounded">
+                <div class="container mt-5 p-4 border rounded contenedorInsertar">
                     <h5 class="text-center mb-4">Insertar Mantenimiento Material</h5>
 
                     <form id="formInsertarMaterial">
