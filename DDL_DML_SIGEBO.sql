@@ -1114,41 +1114,22 @@ INSERT INTO Persona_Turno (id_turno, id_bombero) VALUES
 (8, 'B004'), (8, 'B007'), (8, 'B009');
 
 -- =======================================================
--- 20. SALIDA
+-- 20. SALIDA (actualizada con id_bombero)
 -- =======================================================
-INSERT INTO Salida (matricula, f_recogida, f_entrega, km_inicio, km_fin) VALUES
-('3421BCP', '2025-01-10 08:00:00', '2025-01-10 18:00:00',  45200,  45380),
-('5678DFG', '2025-01-20 08:00:00', '2025-01-20 20:00:00',  33100,  33295),
-('1122KLM', '2025-02-05 09:00:00', '2025-02-05 17:00:00',  22000,  22115),
-('4455GHK', '2025-02-12 07:30:00', '2025-02-12 19:30:00',  61800,  62050),
-('6677LMN', '2025-03-01 08:00:00', '2025-03-01 16:00:00',  15300,  15420),
-('3421BCP', '2025-03-15 08:00:00', '2025-03-15 20:00:00',  45380,  45600),
-('7788VWX', '2025-04-02 08:00:00', '2025-04-02 18:00:00',  28700,  28880),
-('9900YZB', '2025-04-22 08:00:00', '2025-04-22 16:00:00',  19500,  19620),
-('1023STW', '2025-05-10 08:00:00', '2025-05-10 20:00:00',  41200,  41390),
-('3045XYA', '2025-05-18 07:00:00', '2025-05-18 15:00:00',  12100,  12230);
+INSERT INTO Salida (matricula, id_bombero, f_recogida, f_entrega, km_inicio, km_fin) VALUES
+('3421BCP', 'B001', '2025-01-10 08:00:00', '2025-01-10 18:00:00', 45200, 45380),
+('5678DFG', 'B003', '2025-01-20 08:00:00', '2025-01-20 20:00:00', 33100, 33295),
+('1122KLM', 'O001', '2025-02-05 09:00:00', '2025-02-05 17:00:00', 22000, 22115),
+('4455GHK', 'B006', '2025-02-12 07:30:00', '2025-02-12 19:30:00', 61800, 62050),
+('6677LMN', 'J002', '2025-03-01 08:00:00', '2025-03-01 16:00:00', 15300, 15420),
+('3421BCP', 'B001', '2025-03-15 08:00:00', '2025-03-15 20:00:00', 45380, 45600),
+('7788VWX', 'B005', '2025-04-02 08:00:00', '2025-04-02 18:00:00', 28700, 28880),
+('9900YZB', 'O001', '2025-04-22 08:00:00', '2025-04-22 16:00:00', 19500, 19620),
+('1023STW', 'B008', '2025-05-10 08:00:00', '2025-05-10 20:00:00', 41200, 41390),
+('3045XYA', 'O003', '2025-05-18 07:00:00', '2025-05-18 15:00:00', 12100, 12230);
 
 -- =======================================================
--- 21. SALIDA_PERSONA
--- =======================================================
-INSERT INTO Salida_Persona (id_registro, matricula, id_bombero, fecha) VALUES
-(1, '3421BCP', 'B001', '2025-01-10 08:00:00'),
-(1, '3421BCP', 'B002', '2025-01-10 08:00:00'),
-(2, '5678DFG', 'B003', '2025-01-20 08:00:00'),
-(2, '5678DFG', 'B004', '2025-01-20 08:00:00'),
-(3, '1122KLM', 'O001', '2025-02-05 09:00:00'),
-(4, '4455GHK', 'B006', '2025-02-12 07:30:00'),
-(4, '4455GHK', 'B007', '2025-02-12 07:30:00'),
-(5, '6677LMN', 'J002', '2025-03-01 08:00:00'),
-(6, '3421BCP', 'B001', '2025-03-15 08:00:00'),
-(7, '7788VWX', 'B005', '2025-04-02 08:00:00'),
-(8, '9900YZB', 'O001', '2025-04-22 08:00:00'),
-(9, '1023STW', 'B008', '2025-05-10 08:00:00'),
-(9, '1023STW', 'B009', '2025-05-10 08:00:00'),
-(10,'3045XYA', 'O003', '2025-05-18 07:00:00');
-
--- =======================================================
--- 22. CARNET
+-- 21. CARNET
 -- =======================================================
 INSERT INTO Carnet (nombre, categoria, duracion_meses) VALUES
 ('Permiso de Conducción B',   'B',   120),  -- Turismo/furgoneta <3.500 kg
@@ -1164,7 +1145,7 @@ INSERT INTO Carnet (nombre, categoria, duracion_meses) VALUES
 ('Elevadora Telescópica',     'Operador', 36);   -- Plataforma elevadora telescópica
 
 -- =======================================================
--- 23. CARNET_PERSONA
+-- 22. CARNET_PERSONA
 -- =======================================================
 INSERT INTO Carnet_Persona (id_bombero, id_carnet, f_obtencion, f_vencimiento) VALUES
 ('I001', 1, '2000-06-15', '2030-06-15'),
@@ -1204,7 +1185,7 @@ INSERT INTO Carnet_Persona (id_bombero, id_carnet, f_obtencion, f_vencimiento) V
 ('B012', 1, '2021-06-15', '2041-06-15');
 
 -- =======================================================
--- 24. AVISO
+-- 23. AVISO
 -- =======================================================
 INSERT INTO Aviso (asunto, mensaje, fecha, remitente) VALUES
 ('Revisión anual de EPI',
@@ -1240,7 +1221,7 @@ INSERT INTO Aviso (asunto, mensaje, fecha, remitente) VALUES
  '2025-02-10 08:00:00', 'O004');
 
 -- =======================================================
--- 25. PERSONA_RECIBE_AVISO
+-- 24. PERSONA_RECIBE_AVISO
 -- =======================================================
 INSERT INTO Persona_Recibe_Aviso (id_aviso, id_bombero) VALUES
 -- Aviso 1 - Revisión EPI - todo el personal activo
@@ -1271,7 +1252,7 @@ INSERT INTO Persona_Recibe_Aviso (id_aviso, id_bombero) VALUES
 (8,'B006'),(8,'B007'),(8,'B008'),(8,'B009'),(8,'B010'),(8,'B011'),(8,'B012');
 
 -- =======================================================
--- 26. GUARDIA
+-- 25. GUARDIA
 -- =======================================================
 INSERT INTO Guardia (fecha, h_inicio, h_fin, notas) VALUES
 ('2025-01-06', '08:00:00', '20:00:00', 'Guardia festivo Reyes. Turno reforzado. Protocolo alerta invierno activo.'),
@@ -1289,7 +1270,7 @@ INSERT INTO Guardia (fecha, h_inicio, h_fin, notas) VALUES
 ('2025-12-31', '20:00:00', '08:00:00', 'Guardia Nochevieja. Protocolo especial pirotecnia.');
 
 -- =======================================================
--- 27. PERSONA_HACE_GUARDIA
+-- 26. PERSONA_HACE_GUARDIA
 -- =======================================================
 INSERT INTO Persona_Hace_Guardia (id_bombero, id_guardia, cargo) VALUES
 -- Guardia 1 - 6 enero mañana
@@ -1321,7 +1302,7 @@ INSERT INTO Persona_Hace_Guardia (id_bombero, id_guardia, cargo) VALUES
 ('B004', 13, 'Bombero'),           ('B012', 13, 'Bombero');
 
 -- =======================================================
--- 28. MERITO
+-- 27. MERITO
 -- =======================================================
 INSERT INTO Merito (nombre, descripcion) VALUES
 ('Cruz al Mérito de Protección Civil',        'Distinción otorgada por la Dirección General de Protección Civil y Emergencias por servicios destacados'),
@@ -1332,7 +1313,7 @@ INSERT INTO Merito (nombre, descripcion) VALUES
 ('Rescate con riesgo para la propia vida',    'Reconocimiento específico por rescate de víctimas asumiendo riesgo extraordinario');
 
 -- =======================================================
--- 29. PERSONA_TIENE_MERITO
+-- 28. PERSONA_TIENE_MERITO
 -- =======================================================
 INSERT INTO Persona_Tiene_Merito (id_bombero, id_merito) VALUES
 ('I001', 4), ('I001', 5), ('I001', 2),
@@ -1346,7 +1327,7 @@ INSERT INTO Persona_Tiene_Merito (id_bombero, id_merito) VALUES
 ('B099', 4), ('B099', 5);
 
 -- =======================================================
--- 30. VEHICULO_CARGA_MATERIAL
+-- 29. VEHICULO_CARGA_MATERIAL
 -- =======================================================
 INSERT INTO Vehiculo_Carga_Material (id_material, matricula, nserie, unidades) VALUES
 -- Autobomba ZC-01
@@ -1387,7 +1368,7 @@ INSERT INTO Vehiculo_Carga_Material (id_material, matricula, nserie, unidades) V
 (22, '1023STW', NULL, 3);
 
 -- =======================================================
--- 31. INCIDENCIA
+-- 30. INCIDENCIA
 -- =======================================================
 INSERT INTO Incidencia (id_material, id_bombero, matricula, fecha, asunto, estado, tipo) VALUES
 (2,  'B003', '3421BCP', '2025-01-20', 'Traje de intervención con quemaduras en el torso tras incendio de nave industrial. Requiere sustitución.',           'CERRADA', 'Deterioro por uso en intervención'),
@@ -1399,7 +1380,7 @@ INSERT INTO Incidencia (id_material, id_bombero, matricula, fecha, asunto, estad
 (27, 'J002', '4455GHK', '2025-07-10', 'Cámara termográfica con imagen degradada en incendio forestal. Se solicita revisión del sensor.',                     'ABIERTA', 'Avería equipo');
 
 -- =======================================================
--- 32. MOTIVO
+-- 31. MOTIVO
 -- =======================================================
 INSERT INTO Motivo (nombre, dias) VALUES
 ('Asuntos propios',                     6),   -- 6 días al año según convenio DGA
@@ -1416,7 +1397,7 @@ INSERT INTO Motivo (nombre, dias) VALUES
 ('Conciliación familiar',               0);   -- A criterio de jefatura
 
 -- =======================================================
--- 33. PERMISO
+-- 32. PERMISO
 -- =======================================================
 INSERT INTO Permiso (cod_motivo, id_bombero, fecha, h_inicio, h_fin, estado, descripcion) VALUES
 (1,  'B001', '2025-02-14', '08:00:00', '20:00:00', 'ACEPTADO',  'Día de asuntos propios para gestión personal'),
@@ -1431,7 +1412,7 @@ INSERT INTO Permiso (cod_motivo, id_bombero, fecha, h_inicio, h_fin, estado, des
 (1,  'B012', '2025-12-26', '08:00:00', '20:00:00', 'REVISION',  'Solicitud día libre después de Navidad. Pendiente revisión cuadrante');
 
 -- =======================================================
--- 34. MANTENIMIENTO
+-- 33. MANTENIMIENTO
 -- =======================================================
 INSERT INTO Mantenimiento (id_bombero, estado, f_inicio, f_fin, descripcion) VALUES
 ('O001', 'REALIZADO', '2025-01-13', '2025-01-14', 'Revisión trimestral de ERA. Recarga de botellas y comprobación de máscaras y reguladores de todos los equipos del Parque Centro.'),
