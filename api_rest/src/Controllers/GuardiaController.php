@@ -124,22 +124,43 @@ class GuardiaController
             $res->errorJson($e->getMessage(), $code);
         }
     }
+
     /**
- * POST /Guardia/assign
- */
-public function assign(Request $req, Response $res): void
-{
-    try {
-        $data = $req->json();
-        $result = $this->service->assignGuardiaToPerson($data);
-        $res->status(200)->json($result, $result['message']);
-    } catch (ValidationException $e) {
-        $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-    } catch (Throwable $e) {
-        $code = $e->getCode() >= 400 ? $e->getCode() : 500;
-        $res->errorJson($e->getMessage(), $code);
+     * GET /carnets/{id_guardia}/personas NO SE USA PERO POR SI HACE FALTA PRA DESPUES
+     */
+ /*    public function persons(Request $req, Response $res, string $id_guardia): void
+    {
+        try {
+            $persons = $this->service->getPersonsByGuardia($id_guardia);
+
+            $res->status(200)->json(
+                $persons,
+                "Personas asociadas al guardia obtenidas correctamente"
+            );
+
+        } catch (Throwable $e) {
+            $code = ($e->getCode() >= 400) ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    } */
+
+    /**
+     * POST /Guardia/assign
+     */
+    public function assign(Request $req, Response $res): void
+    {
+        try {
+            $data = $req->json();
+            $result = $this->service->assignGuardiaToPerson($data);
+            $res->status(200)->json($result, $result['message']);
+            
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
     }
-}
 
 /**
  * DELETE /Guardia/unassign

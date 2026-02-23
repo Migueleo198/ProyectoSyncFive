@@ -106,15 +106,31 @@ class GuardiaModel
             ->query("SELECT ROW_COUNT() AS affected")
             ->fetch()['affected'];
     }
-
-    /**
-     * Asignar un guardia a una persona con fecha de obtención y vencimiento
+        /**
+     * Alias de findById para compatibilidad con el service
      */
-    public function assignToPerson(
+    public function findAlias(string|int $id_guardia): array|false
+    {
+        return $this->findById((int)$id_guardia);
+    }
+
+    
+    public function findById(int $id_guardia): array|false
+    {
+        return $this->db
+            ->query("SELECT * FROM Guardia WHERE id_guardia = :id_guardia")
+            ->bind(':id_guardia', $id_guardia)
+            ->fetch();
+    }
+    /**
+     * Asignar un guardia a una persona con un cargo específico 
+     */
+    public function assign(
         string $n_funcionario,
         string $id_guardia,
-        string $cargo,
-    ): bool {
+        string $cargo
+    ): bool 
+    {
         $this->db->query("
             INSERT INTO Persona_Guardia (
                 n_funcionario,
@@ -131,11 +147,16 @@ class GuardiaModel
         ->bind(':cargo', $cargo)
         ->execute();
 
-        return $this->db->rowCount() > 0;
+        $affected = $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+
+        return $affected > 0;
     }
 
+
     /**
-     * Obtener todas las personas que tienen un guardia (con fechas)
+     * Obtener todas las personas que tienen una guardia
      */
     public function getPersonsByGuardia(string $id_guardia): array
     {
@@ -143,12 +164,11 @@ class GuardiaModel
             ->query("
                 SELECT 
                     p.*,
-                    pc.f_obtencion,
-                    pc.f_vencimiento
-                FROM Persona_Guardia pc
+                    pg.cargo
+                FROM Persona_Guardia pg
                 INNER JOIN Persona p 
-                    ON p.n_funcionario = pc.n_funcionario
-                WHERE pc.id_guardia = :id_guardia
+                    ON p.n_funcionario = pg.n_funcionario
+                WHERE pg.id_guardia = :id_guardia
                 ORDER BY p.n_funcionario ASC
             ")
             ->bind(':id_guardia', $id_guardia)
