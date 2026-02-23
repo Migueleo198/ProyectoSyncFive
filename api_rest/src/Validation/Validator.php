@@ -210,7 +210,7 @@ class Validator
 
         // Debe empezar opcionalmente con + seguido de 1 a 3 dígitos (código país)
         // y luego de 8 a 12 dígitos para el número local
-        return preg_match('/^\+?[1-9]\d{1,3}\d{8,12}$/', $cleanPhone);
+        return preg_match('/^\+?[1-9]\d{7,12}$/', $cleanPhone);
     }
 
 
