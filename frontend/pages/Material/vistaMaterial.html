@@ -22,271 +22,523 @@
     <!-- JS dependientes -->
     <script type="module" src="/frontend/javascript/helpers/header_footer.js" defer></script>
     <script src="/frontend/javascript/helpers/script_filtro_tabla.js" defer></script>
+
+    <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Controlador específico -->
     <script type="module" src="/frontend/javascript/controllers_f/MaterialController.js"></script>
 </head>
 
-<body class="bg-white text-dark">
-
+<body class="bg-white text-dark d-flex flex-column">
     <!-- HEADER -->
     <div id="header-placeholder"></div>
 
     <!-- LAYOUT CON SIDEBAR -->
-    <div class="d-flex flex-grow-1">
+    <div class="container-fluid">
+        <div class="row">
 
-        <!-- SIDEBAR -->
-        <div id="sidebar-placeholder" class="sidebar-bg"></div>
+            <!-- SIDEBAR -->
+            <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
 
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="p-3 w-100">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">Gestión de Materiales</h1>
-                <a href="https://www.notion.so/TU_PAGINA" target="_blank" class="text-dark" title="Abrir ayuda en Notion">
-                    <i class="bi bi-question-circle fs-3"></i>
-                </a>
-            </div>
+            <!-- CONTENIDO PRINCIPAL -->
+            <main class="col p-3 p-md-4 main-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0">Gestión de Materiales</h1>
+                    <a href="https://www.notion.so/TU_PAGINA" target="_blank" class="text-dark" title="Abrir ayuda en Notion">
+                        <i class="bi bi-question-circle fs-3"></i>
+                    </a>
+                </div>
 
-            <div>
-                <p><a href="/dashboard">Inicio</a> / Materiales</p>
-            </div>
+                <div>
+                    <p><a href="/dashboard">Inicio</a> / Materiales</p>
+                </div>
 
-            <!-- Contenedor tabla con filtro-->
-            <div class="container mt-4 p-0"> 
-                <div id="filtroTabla" class="m-0 row d-flex justify-content-around">
-                    <div class="col-md-5 d-flex align-items-center m-1">
-                        <label class="m-2" for="nombre">Nombre:</label>
-                        <input placeholder="Nombre" id="nombre" type="text" class="form-control m-1 filtro" data-col="1">
+                <!-- Contenedor tabla con filtro-->
+                <div class="container mt-4 p-0"> 
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-around">
+                        <div class="col-md-5 d-flex align-items-center m-1">
+                            <label class="m-2" for="nombre">Nombre:</label>
+                            <input placeholder="Nombre" id="nombre" type="text" class="form-control m-1 filtro" data-col="1">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-center m-1">
+                            <label class="m-2" for="estado">Estado:</label>
+                            <select class="form-select m-1 filtro" id="estado" data-col="3">
+                                <option value="">Todos</option>
+                                <option>ALTA</option>
+                                <option>BAJA</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="col-md-3 d-flex align-items-center m-1">
-                        <label class="m-2" for="estado">Estado:</label>
-                        <select class="form-select m-1 filtro" id="estado" data-col="3">
-                            <option value="">Todos</option>
-                            <option>ALTA</option>
-                            <option>BAJA</option>
-                        </select>
-                    </div>
+                    
+                    <table class="table table-bordered table-striped" id="tabla">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="d-none d-md-table-cell">ID</th>
+                                <th>Nombre</th>
+                                <th class="d-none d-md-table-cell">Descripción</th>
+                                <th>Estado</th>
+                                <th class="d-none d-md-table-cell">Categoría</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Los datos se cargarán dinámicamente -->
+                        </tbody>
+                    </table>
                 </div>
                 
-                <table class="table table-bordered table-striped" id="tabla">
-                    <thead class="table-dark">
-                        <tr>
-                            <th class="d-none d-md-table-cell">ID</th>
-                            <th>Nombre</th>
-                            <th class="d-none d-md-table-cell">Descripción</th>
-                            <th>Estado</th>
-                            <th class="d-none d-md-table-cell">Categoría</th>
-                            <th>Tipo</th>
-                            <th>Elemento</th>
-                            <th>Identificador</th>
-                            <th>Unidades</th>
-                            <th>Nº Serie</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
-            <!-- Contenedor insertar -->
-            <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Insertar Material</h5>
-                <form id="formInsertar" class="mx-auto">
-                    <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="insertCategoria" class="form-label">Categoría</label>
-                            <select class="form-select" id="insertCategoria" name="id_categoria" required>
-                                <option value="">Seleccione una categoría...</option>
-                            </select>
+                <!-- Contenedor insertar -->
+                <div class="contenedorInsertar container mt-5 p-4 border rounded">
+                    <h5 class="text-center mb-4">Insertar Nuevo Material</h5>
+                    <form id="formInsertar" class="mx-auto">
+                        <div class="row mb-3">
+                            <div class="col-md-6 col-lg-4">
+                                <label for="insertCategoria" class="form-label">Categoría <span class="text-danger">*</span></label>
+                                <select class="form-select" id="insertCategoria" name="id_categoria" required>
+                                    <option value="">Seleccione una categoría...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <label for="insertNombre" class="form-label">Nombre <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="insertNombre" name="nombre" required>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <label for="insertEstado" class="form-label">Estado <span class="text-danger">*</span></label>
+                                <select class="form-select" id="insertEstado" name="estado" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="ALTA">ALTA</option>
+                                    <option value="BAJA">BAJA</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="insertNombre" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="insertNombre" name="nombre" required>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="insertDescripcion" class="form-label">Descripción <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="insertDescripcion" name="descripcion" rows="4" required></textarea>
+                            </div>
                         </div>
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="insertEstado" class="form-label">Estado</label>
-                            <select class="form-select" id="insertEstado" name="estado" required>
-                                <option value="">Seleccione...</option>
-                                <option value="ALTA">ALTA</option>
-                                <option value="BAJA">BAJA</option>
-                            </select>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="reset" class="btn btn-secondary">Limpiar</button>
+                            <button type="submit" class="btn btn-primary">Insertar Material</button>
                         </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-12">
-                            <label for="insertDescripcion" class="form-label">Descripción</label>
-                            <textarea class="form-control" id="insertDescripcion" name="descripcion" rows="4"></textarea>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">Limpiar</button>
-                        <button type="submit" class="btn btn-primary">Insertar</button>
-                    </div>
-                </form>
-            </div>
-            
-            <!-- Contenedor Asignar a Vehiculo -->
-            <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Asignar Material a Vehículo</h5>
-                <form id="formAsignarVehiculo" class="mx-auto">
-                    <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="selectMaterialVehiculo" class="form-label">Material</label>
-                            <select class="form-select" id="selectMaterialVehiculo" name="id_material" required>
-                                <option value="">Seleccione un material...</option>
-                            </select>
-                        </div>
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="selectVehiculo" class="form-label">Vehículo (Matrícula)</label>
-                            <select class="form-select" id="selectVehiculo" name="matricula" required>
-                                <option value="">Seleccione un vehículo...</option>
-                            </select>
-                        </div>
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="nserieVehiculo" class="form-label">Nº Serie</label>
-                            <input type="text" class="form-control" id="nserieVehiculo" name="nserie" placeholder="Opcional">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="unidadesVehiculo" class="form-label">Unidades</label>
-                            <input type="number" class="form-control" id="unidadesVehiculo" name="unidades" placeholder="Ej: 5" min="1" required>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">Limpiar</button>
-                        <button type="submit" class="btn btn-primary">Asignar</button>
-                    </div>
-                </form>
-            </div>
-            
-            <!-- Contenedor Asignar a Funcionario -->
-            <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Asignar Material a Funcionario</h5>
-                <form id="formAsignarFuncionario" class="mx-auto">
-                    <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="selectMaterialFuncionario" class="form-label">Material</label>
-                            <select class="form-select" id="selectMaterialFuncionario" name="id_material" required>
-                                <option value="">Seleccione un material...</option>
-                            </select>
-                        </div>
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="selectFuncionario" class="form-label">Funcionario</label>
-                            <select class="form-select" id="selectFuncionario" name="id_bombero" required>
-                                <option value="">Seleccione un funcionario...</option>
-                            </select>
-                        </div>
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="nserieFuncionario" class="form-label">Nº Serie</label>
-                            <input type="text" class="form-control" id="nserieFuncionario" name="nserie" placeholder="Ej: FS-001" required>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">Limpiar</button>
-                        <button type="submit" class="btn btn-primary">Asignar</button>
-                    </div>
-                </form>
-            </div>
-            
-            <!-- Contenedor Asignar a Almacen -->
-            <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                <h5 class="text-center mb-4">Asignar Material a Almacén</h5>
-                <form id="formAsignarAlmacen" class="mx-auto">
-                    <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-3">
-                            <label for="selectMaterialAlmacen" class="form-label">Material</label>
-                            <select class="form-select" id="selectMaterialAlmacen" name="id_material" required>
-                                <option value="">Seleccione un material...</option>
-                            </select>
-                        </div>
-                        <div class="col-mg-6 col-lg-3">
-                            <label for="selectInstalacion" class="form-label">Instalación</label>
-                            <select class="form-select" id="selectInstalacion" name="id_instalacion" required>
-                                <option value="">Seleccione una instalación...</option>
-                            </select>
-                        </div>
-                        <div class="col-mg-6 col-lg-3">
-                            <label for="selectAlmacen" class="form-label">Almacén</label>
-                            <select class="form-select" id="selectAlmacen" name="id_almacen" required>
-                                <option value="">Seleccione un almacén...</option>
-                            </select>
-                        </div>
-                        <div class="col-mg-6 col-lg-3">
-                            <label for="nserieAlmacen" class="form-label">Nº Serie</label>
-                            <input type="text" class="form-control" id="nserieAlmacen" name="n_serie" placeholder="Opcional">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-3">
-                            <label for="unidadesAlmacen" class="form-label">Unidades</label>
-                            <input type="number" class="form-control" id="unidadesAlmacen" name="unidades" placeholder="Ej: 10" min="1" required>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="reset" class="btn btn-secondary">Limpiar</button>
-                        <button type="submit" class="btn btn-primary">Asignar</button>
-                    </div>
-                </form>
-            </div>
-        </main>
+                    </form>
+                </div>     
+            </main>
+        </div>
     </div>
 
-    <!-- Modal de eliminación -->
-    <div class="modal fade" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
+    <!-- MODAL VER COMPLETO (DATOS + ASIGNACIONES SIN ACCIONES) -->
+    <div class="modal fade" id="modalVerCompleto" tabindex="-1" aria-labelledby="modalVerCompletoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalVerCompletoLabel">
+                        <i class="bi bi-eye"></i> Detalle Completo del Material
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- DATOS DEL MATERIAL (uno debajo de otro) -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Información del Material</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2"><strong>ID:</strong> <span id="verMaterialId">-</span></div>
+                            <div class="mb-2"><strong>Nombre:</strong> <span id="verMaterialNombre">-</span></div>
+                            <div class="mb-2"><strong>Descripción:</strong> <span id="verMaterialDescripcion">-</span></div>
+                            <div class="mb-2"><strong>Estado:</strong> <span id="verMaterialEstado">-</span></div>
+                            <div class="mb-2"><strong>Categoría:</strong> <span id="verMaterialCategoria">-</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- ASIGNACIONES (pestañas con tablas SIN acciones) -->
+                    <ul class="nav nav-tabs" id="verAsignacionesTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="ver-vehiculos-tab" data-bs-toggle="tab" data-bs-target="#ver-vehiculos" type="button" role="tab">
+                                <i class="bi bi-truck"></i> Vehículos
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="ver-personas-tab" data-bs-toggle="tab" data-bs-target="#ver-personas" type="button" role="tab">
+                                <i class="bi bi-person"></i> Personas
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="ver-almacenes-tab" data-bs-toggle="tab" data-bs-target="#ver-almacenes" type="button" role="tab">
+                                <i class="bi bi-building"></i> Almacenes
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mt-3" id="verAsignacionesTabContent">
+                        <!-- Pestaña Vehículos -->
+                        <div class="tab-pane fade show active" id="ver-vehiculos" role="tabpanel">
+                            <h6 class="mb-3">Asignaciones a Vehículos</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped" id="verTablaVehiculos">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Matrícula</th>
+                                            <th>Vehículo</th>
+                                            <th>Unidades</th>
+                                            <th>Nº Serie</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Se llena dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Pestaña Personas -->
+                        <div class="tab-pane fade" id="ver-personas" role="tabpanel">
+                            <h6 class="mb-3">Asignaciones a Personas</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped" id="verTablaPersonas">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID Bombero</th>
+                                            <th>Nombre</th>
+                                            <th>Nº Funcionario</th>
+                                            <th>Nº Serie</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Se llena dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Pestaña Almacenes -->
+                        <div class="tab-pane fade" id="ver-almacenes" role="tabpanel">
+                            <h6 class="mb-3">Asignaciones a Almacenes</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped" id="verTablaAlmacenes">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Instalación</th>
+                                            <th>Almacén</th>
+                                            <th>Planta</th>
+                                            <th>Unidades</th>
+                                            <th>Nº Serie</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Se llena dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR COMPLETO (DATOS EDITABLES + ASIGNACIONES CON ACCIONES) -->
+    <div class="modal fade" id="modalEditarCompleto" tabindex="-1" aria-labelledby="modalEditarCompletoLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarCompletoLabel">
+                        <i class="bi bi-pencil"></i> Editar Material Completo
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- DATOS DEL MATERIAL EDITABLES -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Información del Material</h6>
+                        </div>
+                        <div class="card-body">
+                            <form id="formEditarCompleto">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>ID:</strong></label>
+                                    <input type="text" class="form-control" id="editCompletoId" readonly disabled>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Nombre:</strong></label>
+                                    <input type="text" class="form-control" id="editCompletoNombre" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Descripción:</strong></label>
+                                    <textarea class="form-control" id="editCompletoDescripcion" rows="3" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Estado:</strong></label>
+                                    <select class="form-select" id="editCompletoEstado" required>
+                                        <option value="ALTA">ALTA</option>
+                                        <option value="BAJA">BAJA</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Categoría:</strong></label>
+                                    <select class="form-select" id="editCompletoCategoria" required>
+                                        <option value="">Seleccione una categoría...</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- ASIGNACIONES (pestañas con tablas CON acciones) -->
+                    <ul class="nav nav-tabs" id="editarAsignacionesTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="editar-vehiculos-tab" data-bs-toggle="tab" data-bs-target="#editar-vehiculos" type="button" role="tab">
+                                <i class="bi bi-truck"></i> Vehículos
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="editar-personas-tab" data-bs-toggle="tab" data-bs-target="#editar-personas" type="button" role="tab">
+                                <i class="bi bi-person"></i> Personas
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="editar-almacenes-tab" data-bs-toggle="tab" data-bs-target="#editar-almacenes" type="button" role="tab">
+                                <i class="bi bi-building"></i> Almacenes
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mt-3" id="editarAsignacionesTabContent">
+                        <!-- Pestaña Vehículos -->
+                        <div class="tab-pane fade show active" id="editar-vehiculos" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Asignaciones a Vehículos</h6>
+                                <button class="btn btn-sm btn-success" id="btnModalAsignarVehiculo">
+                                    <i class="bi bi-plus-circle"></i> Asignar a Vehículo
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped" id="modalTablaVehiculos">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Matrícula</th>
+                                            <th>Vehículo</th>
+                                            <th>Unidades</th>
+                                            <th>Nº Serie</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Se llena dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Pestaña Personas -->
+                        <div class="tab-pane fade" id="editar-personas" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Asignaciones a Personas</h6>
+                                <button class="btn btn-sm btn-success" id="btnModalAsignarPersona">
+                                    <i class="bi bi-plus-circle"></i> Asignar a Persona
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped" id="modalTablaPersonas">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID Bombero</th>
+                                            <th>Nombre</th>
+                                            <th>Nº Funcionario</th>
+                                            <th>Nº Serie</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Se llena dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Pestaña Almacenes -->
+                        <div class="tab-pane fade" id="editar-almacenes" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Asignaciones a Almacenes</h6>
+                                <button class="btn btn-sm btn-success" id="btnModalAsignarAlmacen">
+                                    <i class="bi bi-plus-circle"></i> Asignar a Almacén
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped" id="modalTablaAlmacenes">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Instalación</th>
+                                            <th>Almacén</th>
+                                            <th>Planta</th>
+                                            <th>Unidades</th>
+                                            <th>Nº Serie</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Se llena dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarCambiosCompletos">Guardar todos los cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ELIMINAR MATERIAL -->
+    <div class="modal fade" id="modalEliminarMaterial" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalEliminarLabel">Confirmar eliminación</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar este registro?
-                    <p class="text-muted mb-0">Esta acción no se puede deshacer.</p>
-                </div>
+                <div class="modal-body"></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
-                </div>
-            </div> 
-        </div>
-    </div>
-
-    <!-- Modal de edición -->
-    <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalEditarLabel">Editar Material</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="formEditar"></form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btnGuardarCambios">Guardar cambios</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminarMaterial">Eliminar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal de ver -->
-    <div class="modal fade" id="modalVer" tabindex="-1">
+    <!-- MODAL ASIGNAR A VEHÍCULO -->
+    <div class="modal fade" id="modalAsignarVehiculo" tabindex="-1" aria-labelledby="modalAsignarVehiculoLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalle del material</h5>
-                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="modalAsignarVehiculoLabel">Asignar Material a Vehículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body" id="modalVerBody"></div>
+                <div class="modal-body">
+                    <form id="formAsignarVehiculo">
+                        <div class="mb-3">
+                            <label class="form-label">Vehículo <span class="text-danger">*</span></label>
+                            <select class="form-select" id="selectVehiculo" name="matricula" required>
+                                <option value="">Cargando vehículos...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Unidades <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="unidades" min="1" value="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nº Serie (opcional)</label>
+                            <input type="text" class="form-control" name="nserie">
+                        </div>
+                    </form>
+                </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarAsignacionVehiculo">Asignar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ASIGNAR A PERSONA -->
+    <div class="modal fade" id="modalAsignarPersona" tabindex="-1" aria-labelledby="modalAsignarPersonaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAsignarPersonaLabel">Asignar Material a Persona</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAsignarPersona">
+                        <div class="mb-3">
+                            <label class="form-label">Funcionario <span class="text-danger">*</span></label>
+                            <select class="form-select" id="selectPersona" name="id_bombero" required>
+                                <option value="">Cargando personas...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nº Serie <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="nserie" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarAsignacionPersona">Asignar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ASIGNAR A ALMACÉN -->
+    <div class="modal fade" id="modalAsignarAlmacen" tabindex="-1" aria-labelledby="modalAsignarAlmacenLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAsignarAlmacenLabel">Asignar Material a Almacén</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAsignarAlmacen">
+                        <div class="mb-3">
+                            <label class="form-label">Instalación <span class="text-danger">*</span></label>
+                            <select class="form-select" id="selectInstalacion" name="id_instalacion" required>
+                                <option value="">Cargando instalaciones...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Almacén <span class="text-danger">*</span></label>
+                            <select class="form-select" id="selectAlmacen" name="id_almacen" required disabled>
+                                <option value="">Primero seleccione instalación</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Unidades <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="unidades" min="1" value="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nº Serie (opcional)</label>
+                            <input type="text" class="form-control" name="n_serie">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarAsignacionAlmacen">Asignar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR ELIMINACIÓN DE ASIGNACIÓN -->
+    <div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-labelledby="modalConfirmarEliminarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalConfirmarEliminarLabel">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body" id="modalConfirmarBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- FOOTER -->
-    <div id="footer-placeholder"></div>
+    <div id="footer-placeholder" class="mt-auto"></div>
+    
+    <!-- ALERT -->
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
 </body>
 </html>

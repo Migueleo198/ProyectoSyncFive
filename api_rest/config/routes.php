@@ -124,6 +124,7 @@ $router->protectedSession('POST', '/vehiculos', 'Controllers\\VehiculoController
 $router->protectedSession('GET', '/vehiculos/{matricula}', 'Controllers\\VehiculoController@show', [1,2,3,4,5]);
 $router->protectedSession('PUT', '/vehiculos/{matricula}', 'Controllers\\VehiculoController@update', [4,5]);
 $router->protectedSession('DELETE', '/vehiculos/{matricula}', 'Controllers\\VehiculoController@delete', [5]);
+$router->protectedSession('GET', '/materiales/completo', 'Controllers\\MaterialController@completo', [1,2,3,4,5]);
 
 // MATERIAL CARGADO EN VEHÍCULOS
 $router->protectedSession('GET', '/vehiculos/{matricula}/materiales', 'Controllers\\VehiculoController@getMaterial', [1,2,3,4,5]);
