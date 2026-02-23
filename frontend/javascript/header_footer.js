@@ -25,4 +25,24 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarHTML("header-placeholder", "header.html");
     cargarHTML("sidebar-placeholder", "sidebar.html");
     cargarHTML("footer-placeholder", "footer.html");
+
+    //HIGH CONTRAST
+
+
+
+    document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("highContrastButton")) {
+            toggleContrast();
+            if (document.getElementById("geoIcon") != null) {
+                document.getElementById("geoIcon").classList.remove("text-secondary");
+                document.getElementById("geoIcon").classList.add("text-dark");
+            }
+        }
+    });
+
+    function toggleContrast() {
+        console.log('click');
+        document.body.classList.toggle("high-contrast");
+    }
 });
+
