@@ -92,10 +92,11 @@ class EmergenciaModel
   
     //================= EMERGENCIA_VEHICULO =====================
 
-    public function allVehiculos(): array
+    public function allVehiculos(int $id_emergencia): array
     {
         return $this->db
-            ->query("SELECT * FROM Emergencia_Vehiculo")
+            ->query("SELECT * FROM Emergencia_Vehiculo WHERE id_emergencia = :id_emergencia")
+            ->bind(":id_emergencia", $id_emergencia)
             ->fetchAll();
     }
 

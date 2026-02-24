@@ -107,10 +107,10 @@ class EmergenciaService
 
     //================= Vehículos en emergencias =====================
 
-    public function getAllVehiculos(): array
+    public function getAllVehiculos(int $id_emergencia): array
     {
         try {
-            return $this->model->allVehiculos();
+            return $this->model->allVehiculos($id_emergencia);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }

@@ -113,10 +113,10 @@ class EmergenciaController
 /**
     * GET /emergencias/vehiculos
      */
-    public function getVehiculo(Request $req, Response $res): void
+    public function getVehiculo(Request $req, Response $res, string $id_emergencia): void
     {
         try {
-            $emergencias = $this->service->getAllVehiculos();
+            $emergencias = $this->service->getAllVehiculos((int) $id_emergencia);
             $res->status(200)->json($emergencias);
         } catch (Throwable $e) {
             $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
