@@ -45,8 +45,8 @@ function renderTablaSalidas(salidas) {
       <td class="d-none d-md-table-cell">${s.id_registro}</td>
       <td>${s.matricula}</td>
       <td class="d-none d-md-table-cell">${s.id_bombero ?? ''}</td>
-      <td>${formatearFechaHora(s.f_entrega) ?? ''}</td>
-      <td>${formatearFechaHora(s.f_recogida) ?? ''}</td>
+      <td>${formatearFechaHora(s.f_salida) ?? ''}</td>
+      <td>${formatearFechaHora(s.f_regreso) ?? ''}</td>
       <td class="d-none d-md-table-cell">${s.km_inicio ?? ''}</td>
       <td class="d-none d-md-table-cell">${s.km_fin ?? ''}</td>
       
@@ -92,8 +92,8 @@ function bindCrearSalida() {
 
     const data = {
       matricula: f.get('matricula'),
-      f_recogida: f.get('f_recogida'),
-      f_entrega: f.get('f_entrega'),
+      f_regreso: f.get('f_regreso'),
+      f_salida: f.get('f_salida'),
       km_inicio: f.get('km_inicio'),
       km_fin: f.get('km_fin'),
       id_bombero: f.get('id_bombero')
@@ -112,13 +112,13 @@ function bindCrearSalida() {
       return;
     }
 
-    if (!data.f_entrega) {
-      mostrarError('La fecha de entrega es obligatoria');
+    if (!data.f_salida) {
+      mostrarError('La fecha de salida es obligatoria');
       return;
     }
 
-    if (!data.f_recogida) {
-      mostrarError('La fecha de recogida es obligatoria');
+    if (!data.f_regreso) {
+      mostrarError('La fecha de regreso es obligatoria');
       return;
     }
 
@@ -159,8 +159,8 @@ function bindCrearSalida() {
       return;
     }
 
-    if (!validarRangoFechas(data.f_recogida, data.f_entrega)) {
-      mostrarError('La fecha de recogida debe ser posterior a la fecha de entrega');
+    if (!validarRangoFechas(data.f_salida, data.f_regreso)) {
+      mostrarError('La fecha de regreso debe ser posterior a la fecha de salida');
       return;
     }
 
@@ -198,35 +198,35 @@ document.addEventListener('click', async function (e) {
       <div class="row mb-3">
           <div class="col-md-6 col-lg-4">
               <label for="n_funcionario" class="form-label">ID Bombero</label>
-              <input type="text" class="form-control" id="id_bombero" name="id_bombero" 
+              <input type="text" class="form-control" id="edit_id_bombero" name="id_bombero" 
               value= "${salida.id_bombero ?? ''}" required>
           </div>
           <div class="col-md-6 col-lg-4">
-              <label for="f_entrega" class="form-label">Fecha entrega</label>
-              <input type="datetime-local" class="form-control" id="f_entrega" name="f_entrega"
-              value= "${salida.f_entrega ?? ''}">
+              <label for="f_salida" class="form-label">Fecha salida</label>
+              <input type="datetime-local" class="form-control" id="edit_f_salida" name="f_salida"
+              value= "${salida.f_salida ?? ''}">
           </div>
           <div class="col-md-6 col-lg-4">
-              <label for="f_recogida" class="form-label">Fecha recogida</label>
-              <input type="datetime-local" class="form-control" id="f_recogida" name="f_recogida"
-              value= "${salida.f_recogida ?? ''}">
+              <label for="f_regreso" class="form-label">Fecha regreso</label>
+              <input type="datetime-local" class="form-control" id="edit_f_regreso" name="f_regreso"
+              value= "${salida.f_regreso ?? ''}">
           </div>
       </div>
 
       <div class="row mb-4">
           <div class="col-md-6 col-lg-4">
               <label for="matricula" class="form-label">Matricula</label>
-              <input type="text" class="form-control" id="matricula" name="matricula"
+              <input type="text" class="form-control" id="edit_matricula" name="matricula"
               value= "${salida.matricula ?? ''}">
           </div>
           <div class="col-md-6 col-lg-4">
               <label for="km_inicio" class="form-label">KM_inicio</label>
-              <input type="number" class="form-control" id="km_inicio" name="km_inicio"
+              <input type="number" class="form-control" id="edit_km_inicio" name="km_inicio"
               value= "${salida.km_inicio ?? ''}">
           </div>
           <div class="col-md-6 col-lg-4">
               <label for="km_fin" class="form-label">KM_fin</label>
-              <input type="number" class="form-control" id="km_fin" name="km_fin"
+              <input type="number" class="form-control" id="edit_km_fin" name="km_fin"
               value= "${salida.km_fin ?? ''}">
           </div>
       </div>
@@ -244,8 +244,8 @@ document.addEventListener('click', async function (e) {
 
         const data = {
           id_bombero: document.getElementById('edit_id_bombero').value,
-          f_entrega: document.getElementById('edit_f_entrega').value,
-          f_recogida: document.getElementById('edit_f_recogida').value,
+          f_salida: document.getElementById('edit_f_salida').value,
+          f_regreso: document.getElementById('edit_f_regreso').value,
           matricula: document.getElementById('edit_matricula').value.trim(),
           km_inicio: document.getElementById('edit_km_inicio').value,
           km_fin: document.getElementById('edit_km_fin').value
@@ -264,13 +264,13 @@ document.addEventListener('click', async function (e) {
           return;
         }
 
-        if (!data.f_entrega) {
-          mostrarError('La fecha de entrega es obligatoria');
+        if (!data.f_salida) {
+          mostrarError('La fecha de salida es obligatoria');
           return;
         }
 
-        if (!data.f_recogida) {
-          mostrarError('La fecha de recogida es obligatoria');
+        if (!data.f_regreso) {
+          mostrarError('La fecha de regreso es obligatoria');
           return;
         }
 
@@ -311,8 +311,8 @@ document.addEventListener('click', async function (e) {
           return;
         }
 
-        if (!validarRangoFechas(data.f_recogida, data.f_entrega)) {
-          mostrarError('La fecha de recogida debe ser posterior a la fecha de entrega');
+        if (!validarRangoFechas(data.f_salida, data.f_regreso)) {
+          mostrarError('La fecha de regreso debe ser posterior a la fecha de salida');
           return;
         }
 
@@ -336,16 +336,16 @@ document.addEventListener('click', async function (e) {
 // ================================
   const nombresCampos = [
     'ID Bombero',
-    'F_Entrega',
-    'F_Recogida',
+    'f_salida',
+    'f_regreso',
     'Matricula',
     'KM_Inicio',
     'KM_Fin'
   ];
  const camposBd = [
   'id_bombero',
-  'f_entrega',
-  'f_recogida',
+  'f_salida',
+  'f_regreso',
   'matricula',
   'km_inicio',
   'km_fin'
@@ -375,7 +375,7 @@ document.addEventListener('click', function (e) {
     let valor = salida[campo] ?? '';
 
     //FECHA FORMATO ESPAÑA
-    if (campo === 'f_entrega' || campo === 'f_recogida') {
+    if (campo === 'f_salida' || campo === 'f_regreso') {
       valor = formatearFechaHora(valor);
     }
 

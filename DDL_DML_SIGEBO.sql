@@ -278,12 +278,12 @@ CREATE TABLE Salida (
     id_registro INT AUTO_INCREMENT PRIMARY KEY,
     matricula VARCHAR(15) NOT NULL,
     id_bombero VARCHAR(4) NOT NULL,
-    f_recogida TIMESTAMP NOT NULL,
-    f_entrega TIMESTAMP NOT NULL,
+    f_salida TIMESTAMP NOT NULL,
+    f_regreso TIMESTAMP NOT NULL,
     km_inicio INT NOT NULL,
     km_fin INT NOT NULL,
     CHECK (km_fin > km_inicio),
-    CHECK (f_entrega >= f_recogida),
+    CHECK (f_regreso >= f_salida),
     FOREIGN KEY (matricula) REFERENCES Vehiculo(matricula)
         ON UPDATE CASCADE ON DELETE RESTRICT,
     FOREIGN KEY (id_bombero) REFERENCES Persona(id_bombero)
@@ -1114,9 +1114,9 @@ INSERT INTO Persona_Turno (id_turno, id_bombero) VALUES
 (8, 'B004'), (8, 'B007'), (8, 'B009');
 
 -- =======================================================
--- 20. SALIDA (actualizada con id_bombero)
+-- 20. SALIDA
 -- =======================================================
-INSERT INTO Salida (matricula, id_bombero, f_recogida, f_entrega, km_inicio, km_fin) VALUES
+INSERT INTO Salida (matricula, id_bombero, f_salida, f_regreso, km_inicio, km_fin) VALUES
 ('3421BCP', 'B001', '2025-01-10 08:00:00', '2025-01-10 18:00:00', 45200, 45380),
 ('5678DFG', 'B003', '2025-01-20 08:00:00', '2025-01-20 20:00:00', 33100, 33295),
 ('1122KLM', 'O001', '2025-02-05 09:00:00', '2025-02-05 17:00:00', 22000, 22115),

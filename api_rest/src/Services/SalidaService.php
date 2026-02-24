@@ -45,8 +45,8 @@ class SalidaService
     {
         $data = Validator::validate($input, [
             'matricula'         => 'required|string|min:1|max:10',
-            'f_recogida'        => 'required|datetime',
-            'f_entrega'         => 'required|datetime',
+            'f_salida'        => 'required|datetime',
+            'f_regreso'         => 'required|datetime',
             'km_inicio'         => 'required|int',
             'km_fin'            => 'required|int',
             'id_bombero'        => 'required|string|min:1|max:4'
@@ -74,8 +74,8 @@ class SalidaService
 
         $data = Validator::validate($input, [
             'matricula'         => 'required|string|min:1|max:10',
-            'f_recogida'        => 'required|datetime',
-            'f_entrega'         => 'required|datetime',
+            'f_salida'        => 'required|datetime',
+            'f_regreso'         => 'required|datetime',
             'km_inicio'         => 'required|int',
             'km_fin'            => 'required|int',
             'id_bombero'        => 'required|string|min:1|max:4'

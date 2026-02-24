@@ -24,12 +24,13 @@ class SalidaModel
     public function create(array $data): int|false
     {
         $this->db->query("
-            INSERT INTO Salida (matricula, f_recogida, f_entrega, km_inicio, km_fin)
-            VALUES (:matricula, :f_recogida, :f_entrega, :km_inicio, :km_fin)
+            INSERT INTO Salida (matricula, id_bombero, f_salida, f_regreso, km_inicio, km_fin)
+            VALUES (:matricula, :id_bombero, :f_salida, :f_regreso, :km_inicio, :km_fin)
         ")
         ->bind(":matricula", $data['matricula'])
-        ->bind(":f_recogida", $data['f_recogida'])
-        ->bind(":f_entrega", $data['f_entrega'])
+        ->bind(":id_bombero", $data['id_bombero'])
+        ->bind(":f_salida", $data['f_salida'])
+        ->bind(":f_regreso", $data['f_regreso'])
         ->bind(":km_inicio", $data['km_inicio'])
         ->bind(":km_fin", $data['km_fin'])
         ->execute();
@@ -53,8 +54,8 @@ class SalidaModel
             UPDATE Salida SET
                 id_bombero = :id_bombero,
                 matricula = :matricula,
-                f_recogida = :f_recogida,
-                f_entrega = :f_entrega,
+                f_salida = :f_salida,
+                f_regreso = :f_regreso,
                 km_inicio = :km_inicio,
                 km_fin = :km_fin
             WHERE id_registro = :id
@@ -62,8 +63,8 @@ class SalidaModel
         ->bind(":id", $id)
         ->bind(":id_bombero", $data['id_bombero'])
         ->bind(":matricula", $data['matricula'])
-        ->bind(":f_recogida", $data['f_recogida'])
-        ->bind(":f_entrega", $data['f_entrega'])
+        ->bind(":f_salida", $data['f_salida'])
+        ->bind(":f_regreso", $data['f_regreso'])
         ->bind(":km_inicio", $data['km_inicio'])
         ->bind(":km_fin", $data['km_fin'])
         ->execute();
