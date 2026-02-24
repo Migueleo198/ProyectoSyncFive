@@ -4,7 +4,6 @@ import VehiculoApi from '../api_f/VehiculoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
 
-
 let modalEquipoDesdeInsertar = false;
 let emergencias = [];
 let vehiculosEnModal = [];
@@ -26,13 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // =======================================================
 // ABRIR MODAL VEHÍCULOS DESDE MODAL EDITAR (SIN ANIDAR)
 // =======================================================
-
 document.addEventListener('click', function (e) {
-
   const btnEditarVehiculos = e.target.closest('.btn-editar-vehiculos');
   if (!btnEditarVehiculos) return;
 
-  // Cerrar modalEditar primero
   const modalEditarEl = document.getElementById('modalEditar');
   const modalEditar = bootstrap.Modal.getInstance(modalEditarEl);
 
@@ -40,19 +36,12 @@ document.addEventListener('click', function (e) {
     modalEditar.hide();
   }
 
-  // Esperar a que cierre completamente
   modalEditarEl.addEventListener('hidden.bs.modal', function handler() {
-
-    const modalVehiculos = new bootstrap.Modal(
-      document.getElementById('modalInsertarEquipo')
-    );
-
-    modalVehiculos.show();
-
     modalEditarEl.removeEventListener('hidden.bs.modal', handler);
 
+    const modalVehiculos = new bootstrap.Modal(document.getElementById('modalInsertarEquipo'));
+    modalVehiculos.show();
   });
-
 });
 
 // ================================
@@ -133,21 +122,20 @@ async function cargarPersonas() {
 function bindModalEquipo() {
 
   document.getElementById('modalInsertarEquipo')
-  .addEventListener('show.bs.modal', (event) => {
-    const trigger = event.relatedTarget;
-    
-    // Guarda el contexto
-    modalEquipoDesdeInsertar = trigger && trigger.closest('#formIncidencia') !== null;
+    .addEventListener('show.bs.modal', (event) => {
+      const trigger = event.relatedTarget;
 
-    if (modalEquipoDesdeInsertar) {
-      vehiculosEnModal = [];
-      document.getElementById('fechSalida').value = '';
-      document.getElementById('fechLlegada').value = '';
-      document.getElementById('fechRegreso').value = '';
-    }
+      modalEquipoDesdeInsertar = !!(trigger && trigger.closest && trigger.closest('#formIncidencia'));
 
-    renderVehiculosModal();
-  });
+      if (modalEquipoDesdeInsertar) {
+        vehiculosEnModal = [];
+        document.getElementById('fechSalida').value = '';
+        document.getElementById('fechLlegada').value = '';
+        document.getElementById('fechRegreso').value = '';
+      }
+
+      renderVehiculosModal();
+    });
 
   document.getElementById('modalInsertarEquipo')
     .addEventListener('shown.bs.modal', () => {
@@ -175,41 +163,44 @@ function bindModalEquipo() {
 
   document.getElementById('btnGuardarEquipo').addEventListener('click', () => {
 
-  if (vehiculosEnModal.length === 0) {
-    mostrarError('Añade al menos un vehículo');
-    return;
-  }
+    if (vehiculosEnModal.length === 0) {
+      mostrarError('Añade al menos un vehículo');
+      return;
+    }
 
-  const fechSalida  = document.getElementById('fechSalida').value;
-  const fechLlegada = document.getElementById('fechLlegada').value;
-  const fechRegreso = document.getElementById('fechRegreso').value;
+    const fechSalida  = document.getElementById('fechSalida').value;
+    const fechLlegada = document.getElementById('fechLlegada').value;
+    const fechRegreso = document.getElementById('fechRegreso').value;
 
-  vehiculosEnModal = vehiculosEnModal.map(v => ({
-    ...v,
-    f_salida:  v.esNuevo ? (fechSalida  || null) : v.f_salida,
-    f_llegada: v.esNuevo ? (fechLlegada || null) : v.f_llegada,
-    f_regreso: v.esNuevo ? (fechRegreso || null) : v.f_regreso,
-  }));
+    vehiculosEnModal = vehiculosEnModal.map(v => ({
+      ...v,
+      f_salida:  v.esNuevo ? (fechSalida  || null) : v.f_salida,
+      f_llegada: v.esNuevo ? (fechLlegada || null) : v.f_llegada,
+      f_regreso: v.esNuevo ? (fechRegreso || null) : v.f_regreso,
+    }));
 
-  mostrarExito(`${vehiculosEnModal.length} vehículo(s) listos para guardar`);
+    const resumenTexto = vehiculosEnModal.map(v => v.matricula).join(', ') || '—';
 
-  const modalVehiculosEl = document.getElementById('modalInsertarEquipo');
-  const modalVehiculos = bootstrap.Modal.getInstance(modalVehiculosEl);
+    const resumenEditar = document.getElementById('resumenVehiculosEditar');
+    if (resumenEditar) resumenEditar.value = resumenTexto;
 
-  modalVehiculos.hide();
+    const resumenInsertar = document.getElementById('resumenVehiculosInsertar');
+    if (resumenInsertar) resumenInsertar.textContent = resumenTexto;
 
-  // Solo reabre modalEditar si se abrió desde ahí
-  if (!modalEquipoDesdeInsertar) {
-    modalVehiculosEl.addEventListener('hidden.bs.modal', function handler() {
-      const modalEditar = new bootstrap.Modal(
-        document.getElementById('modalEditar')
-      );
-      modalEditar.show();
-      modalVehiculosEl.removeEventListener('hidden.bs.modal', handler);
+    mostrarExito(`${vehiculosEnModal.length} vehículo(s) listos para guardar`);
+
+    const modalVehiculosEl = document.getElementById('modalInsertarEquipo');
+    const modalVehiculos = bootstrap.Modal.getInstance(modalVehiculosEl);
+    modalVehiculos.hide();
+
+    if (!modalEquipoDesdeInsertar) {
+      modalVehiculosEl.addEventListener('hidden.bs.modal', function handler() {
+        modalVehiculosEl.removeEventListener('hidden.bs.modal', handler);
+        const modalEditar = new bootstrap.Modal(document.getElementById('modalEditar'));
+        modalEditar.show();
+      });
+    }
   });
-}
-
-});
 }
 
 // ================================
@@ -218,6 +209,11 @@ function bindModalEquipo() {
 function renderVehiculosModal() {
   const contenedor = document.getElementById('listaVehiculosAsignados');
   contenedor.innerHTML = '';
+
+  if (vehiculosEnModal.length === 0) {
+    contenedor.innerHTML = '<p class="text-muted text-center">Sin vehículos añadidos</p>';
+    return;
+  }
 
   vehiculosEnModal.forEach((vehiculo, idx) => {
 
@@ -326,11 +322,11 @@ function renderVehiculosModal() {
 // ================================
 // RENDER TABLA
 // ================================
-async function renderTablaEmergencias(emergencias) {
+async function renderTablaEmergencias(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
 
-  for (const e of emergencias) {
+  for (const e of lista) {
     const tr = document.createElement('tr');
 
     let textoVehiculos = '—';
@@ -340,8 +336,8 @@ async function renderTablaEmergencias(emergencias) {
       if (vehiculos.length > 0) {
         textoVehiculos = vehiculos.map(v => v.matricula).join(', ');
       }
-    } catch { /* si falla dejamos — */ }
-    
+    } catch { /* dejamos — */ }
+
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${e.id_emergencia}</td>
       <td>${formatearFechaHora(e.fecha)}</td>
@@ -394,9 +390,8 @@ function bindCrearEmergencia() {
     };
 
     try {
-      console.log(data);
       const nuevaEmergencia = await EmergenciaApi.create(data);
-      const idEmergencia = nuevaEmergencia.data.id;
+      const idEmergencia = nuevaEmergencia.data.id_emergencia;
 
       if (vehiculosEnModal.length > 0) {
         for (const vehiculo of vehiculosEnModal) {
@@ -408,7 +403,7 @@ function bindCrearEmergencia() {
             f_regreso: vehiculo.f_regreso || null,
           });
 
-          if (vehiculo.personas && vehiculo.personas.length > 0) {
+          if (vehiculo.personas?.length > 0) {
             for (const persona of vehiculo.personas) {
               await EmergenciaApi.setPersonal(idEmergencia, vehiculo.matricula, {
                 id_bombero: persona.id_bombero,
@@ -421,7 +416,10 @@ function bindCrearEmergencia() {
 
       await cargarEmergencias();
       form.reset();
-      document.getElementById('listaVehiculosAsignados').innerHTML = '';
+
+      const resumenInsertar = document.getElementById('resumenVehiculosInsertar');
+      if (resumenInsertar) resumenInsertar.textContent = 'Sin vehículos asignados';
+
       mostrarExito('Emergencia creada correctamente');
 
     } catch (err) {
@@ -445,26 +443,43 @@ document.addEventListener('click', async function (e) {
     if (!emergencia) return;
 
     vehiculosEnModal = [];
-    document.getElementById('listaVehiculosAsignados').innerHTML = '';
 
     try {
       const respVehiculos = await EmergenciaApi.getVehiculosEmergencia(id);
-      vehiculosEnModal = (respVehiculos.data || []).map(v => ({
-        matricula: v.matricula,
-        label:     v.matricula,
-        personas:  [],
-        f_salida:  v.f_salida  || null,
-        f_llegada: v.f_llegada || null,
-        f_regreso: v.f_regreso || null,
-        esNuevo:   false,
-      }));
-    } catch {
+      const vehiculosBase = respVehiculos.data || [];
+
+      vehiculosEnModal = await Promise.all(
+        vehiculosBase.map(async (v) => {
+          let personas = [];
+          try {
+            const respPersonal = await EmergenciaApi.getPersonal(id, v.matricula);
+            personas = (respPersonal.data || []).map(p => {
+              const personaLocal = todasLasPersonas.find(tp => tp.id_bombero == p.id_bombero);
+              return {
+                id_bombero: p.id_bombero,
+                nombre: personaLocal ? personaLocal.nombre : (p.nombre ?? p.id_bombero),
+              };
+            });
+          } catch {}
+
+          return {
+            matricula:          v.matricula,
+            label:              v.matricula,
+            personas,
+            personasOriginales: personas.map(p => p.id_bombero), // ← AÑADIDO
+            f_salida:           v.f_salida  || null,
+            f_llegada:          v.f_llegada || null,
+            f_regreso:          v.f_regreso || null,
+            esNuevo:            false,
+          };
+        })
+      );
+    } catch (err) {
+      console.error('Error al cargar vehículos:', err);
       vehiculosEnModal = [];
     }
 
     const vehiculosOriginales = vehiculosEnModal.map(v => v.matricula);
-
-    document.getElementById('btnGuardarEquipo').dataset.idEmergencia = id;
 
     const form = document.getElementById('formEditar');
     form.innerHTML = '';
@@ -533,8 +548,7 @@ document.addEventListener('click', async function (e) {
                    value="${vehiculosEnModal.map(v => v.matricula).join(', ') || '—'}"
                    disabled
                    id="resumenVehiculosEditar">
-            <button type="button"
-              class="btn btn-primary btn-editar-vehiculos">
+            <button type="button" class="btn btn-primary btn-editar-vehiculos">
               ✏️
             </button>
           </div>
@@ -558,93 +572,94 @@ document.addEventListener('click', async function (e) {
     await cargarTiposEmergencia(emergencia.codigo_tipo, 'selectTipoEmergencia');
 
     document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-      const data = {};
-      camposBd.forEach(campo => {
-        const input = form.querySelector(`[name="${campo}"]`);
-        if (input) data[campo] = input.value;
+  const data = {};
+  camposBd.forEach(campo => {
+    const input = form.querySelector(`[name="${campo}"]`);
+    if (input) data[campo] = input.value;
+  });
+
+  await EmergenciaApi.update(id, data);
+
+  const vehiculosActuales   = vehiculosEnModal.map(v => v.matricula);
+  const vehiculosNuevos     = vehiculosEnModal.filter(v => !vehiculosOriginales.includes(v.matricula));
+  const vehiculosEliminados = vehiculosOriginales.filter(v => !vehiculosActuales.includes(v));
+  const vehiculosExistentes = vehiculosEnModal.filter(v => vehiculosOriginales.includes(v.matricula));
+
+  // 1. Eliminar vehículos quitados
+  for (const matricula of vehiculosEliminados) {
+    try {
+      await EmergenciaApi.deleteVehiculo(id, matricula);
+    } catch (err) {
+      console.error('Error eliminando vehículo', matricula, err);
+    }
+  }
+
+  // 2. Añadir vehículos nuevos con su personal
+  for (const vehiculo of vehiculosNuevos) {
+    try {
+      await EmergenciaApi.addVehiculo(id, {
+        matricula: vehiculo.matricula,
+        f_salida:  vehiculo.f_salida  || null,
+        f_llegada: vehiculo.f_llegada || null,
+        f_regreso: vehiculo.f_regreso || null,
       });
+    } catch {}
 
-      await EmergenciaApi.update(id, data);
-
-      // ===============================
-    // CALCULAR DIFERENCIAS
-    // ===============================
-
-    // Vehículos actuales en edición
-    const vehiculosActuales = vehiculosEnModal.map(v => v.matricula);
-
-    // Vehículos añadidos
-    const vehiculosNuevos = vehiculosEnModal.filter(
-      v => !vehiculosOriginales.includes(v.matricula)
-    );
-
-    // Vehículos eliminados
-    const vehiculosEliminados = vehiculosOriginales.filter(
-      v => !vehiculosActuales.includes(v)
-    );
-
-    // ===============================
-    // ELIMINAR VEHÍCULOS QUITADOS
-    // ===============================
-
-    for (const matricula of vehiculosEliminados) {
-      try {
-        await EmergenciaApi.deleteVehiculo(id, matricula);
-      } catch (err) {
-        console.error("Error eliminando vehículo", matricula);
+    if (vehiculo.personas?.length > 0) {
+      for (const persona of vehiculo.personas) {
+        try {
+          await EmergenciaApi.setPersonal(id, vehiculo.matricula, {
+            id_bombero: persona.id_bombero,
+          });
+        } catch {}
       }
     }
+  }
 
-    // ===============================
-    // AÑADIR VEHÍCULOS NUEVOS
-    // ===============================
+  // 3. Guardar personal NUEVO de vehículos ya existentes
+  for (const vehiculo of vehiculosExistentes) {
+    const originales = vehiculo.personasOriginales || [];
+    const personasNuevas = vehiculo.personas.filter(
+      p => !originales.includes(p.id_bombero)
+    );
 
-    for (const vehiculo of vehiculosNuevos) {
+    for (const persona of personasNuevas) {
       try {
-        await EmergenciaApi.addVehiculo(id, {
-          matricula: vehiculo.matricula,
-          f_salida:  vehiculo.f_salida  || null,
-          f_llegada: vehiculo.f_llegada || null,
-          f_regreso: vehiculo.f_regreso || null,
+        await EmergenciaApi.setPersonal(id, vehiculo.matricula, {
+          id_bombero: persona.id_bombero,
         });
       } catch {}
+    }
+  }
 
-      if (vehiculo.personas?.length > 0) {
-        for (const persona of vehiculo.personas) {
-          try {
-            await EmergenciaApi.setPersonal(id, vehiculo.matricula, {
-              id_bombero: persona.id_bombero,
-            });
-          } catch {}
-        }
+  // 4. Eliminar personal quitado de vehículos existentes
+  for (const vehiculo of vehiculosExistentes) {
+    const originales = vehiculo.personasOriginales || [];
+    const actuales = vehiculo.personas.map(p => p.id_bombero);
+    const personasEliminadas = originales.filter(
+      idB => !actuales.includes(idB)
+    );
+
+    for (const idBombero of personasEliminadas) {
+      try {
+        await EmergenciaApi.deletePersonal(id, vehiculo.matricula, idBombero);
+      } catch (err) {
+        console.error('Error eliminando persona', idBombero, err);
       }
     }
-
-      await cargarEmergencias();
-      const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
-      modal.hide();
-    });
-
-  } catch (error) {
-    mostrarError('Error al editar emergencia: ' + error.message);
   }
+
+  await cargarEmergencias();
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
+  modal.hide();
 });
-
+} catch (error) {
+  mostrarError('Error al editar emergencia: ' + error.message);
+}
+});
 // ================================
-// CAMPOS
+// CAMPOS BD
 // ================================
-const nombresCampos = [
-  'Fecha',
-  'Estado',
-  'Dirección',
-  'Tipo Emergencia',
-  'ID Bombero',
-  'Nombre Solicitante',
-  'Teléfono Solicitante',
-  'Descripción',
-  'Vehículos',
-];
-
 const camposBd = [
   'fecha',
   'estado',
@@ -732,15 +747,13 @@ document.addEventListener('click', async function (e) {
             html += `
               <table class="table table-sm table-bordered mb-0 text-center">
                 <thead class="table-secondary">
-                  <tr>
-                    <th>ID Bombero</th>
-                  </tr>
+                  <tr><th>ID Bombero</th>
+                  <th>Nombre</th></tr>
+
                 </thead>
                 <tbody>
                   ${personal.map(p => `
-                    <tr>
-                      <td>${p.id_bombero ?? '—'}</td>
-                    </tr>
+                    <tr><td>${p.id_bombero ?? '—'}</td><td>${p.nombre ?? '—'}</td></tr>
                   `).join('')}
                 </tbody>
               </table>`;
