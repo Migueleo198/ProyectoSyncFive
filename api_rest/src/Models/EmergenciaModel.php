@@ -54,7 +54,7 @@ class EmergenciaModel
         ->bind(":estado", $data['estado'])
         ->bind(":direccion", $data['direccion'])
         ->bind(":nombre_solicitante", $data['nombre_solicitante'] ?? null)
-        ->bind(":tlf_solicitante", $data['tlfn_solicitante'] ?? null)
+        ->bind(":tlf_solicitante", $data['tlf_solicitante'] ?? null)
         ->bind(":codigo_tipo", $data['codigo_tipo'] ?? null)
         ->execute();
 
@@ -80,7 +80,7 @@ class EmergenciaModel
         ->bind(":estado", $data['estado'])
         ->bind(":direccion", $data['direccion'])
         ->bind(":nombre_solicitante", $data['nombre_solicitante'] ?? null)
-        ->bind(":tlf_solicitante", $data['tlfn_solicitante'] ?? null)
+        ->bind(":tlf_solicitante", $data['tlf_solicitante'] ?? null)
         ->bind(":codigo_tipo", $data['codigo_tipo'] ?? null)
         ->execute();
 
@@ -92,10 +92,11 @@ class EmergenciaModel
   
     //================= EMERGENCIA_VEHICULO =====================
 
-    public function allVehiculos(): array
+    public function allVehiculos(int $id): array
     {
         return $this->db
-            ->query("SELECT * FROM Emergencia_Vehiculo")
+            ->query("SELECT * FROM Emergencia_Vehiculo WHERE id_emergencia= :id")
+            ->bind("id", $id)
             ->fetchAll();
     }
 
