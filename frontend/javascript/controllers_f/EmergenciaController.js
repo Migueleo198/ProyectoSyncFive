@@ -4,6 +4,8 @@ import VehiculoApi from '../api_f/VehiculoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
 
+
+let modalEquipoDesdeInsertar = false;
 let emergencias = [];
 let vehiculosEnModal = [];
 let todasLasPersonas = [];
@@ -131,19 +133,21 @@ async function cargarPersonas() {
 function bindModalEquipo() {
 
   document.getElementById('modalInsertarEquipo')
-    .addEventListener('show.bs.modal', (event) => {
-      const trigger = event.relatedTarget;
-      const esDesdeInsertar = trigger && trigger.closest('#formIncidencia') !== null;
+  .addEventListener('show.bs.modal', (event) => {
+    const trigger = event.relatedTarget;
+    
+    // Guarda el contexto
+    modalEquipoDesdeInsertar = trigger && trigger.closest('#formIncidencia') !== null;
 
-      if (esDesdeInsertar) {
-        vehiculosEnModal = [];
-        document.getElementById('fechSalida').value = '';
-        document.getElementById('fechLlegada').value = '';
-        document.getElementById('fechRegreso').value = '';
-      }
+    if (modalEquipoDesdeInsertar) {
+      vehiculosEnModal = [];
+      document.getElementById('fechSalida').value = '';
+      document.getElementById('fechLlegada').value = '';
+      document.getElementById('fechRegreso').value = '';
+    }
 
-      renderVehiculosModal();
-    });
+    renderVehiculosModal();
+  });
 
   document.getElementById('modalInsertarEquipo')
     .addEventListener('shown.bs.modal', () => {
@@ -194,18 +198,16 @@ function bindModalEquipo() {
 
   modalVehiculos.hide();
 
-  // Cuando cierre, reabrimos editar
-  modalVehiculosEl.addEventListener('hidden.bs.modal', function handler() {
-
-    const modalEditar = new bootstrap.Modal(
-      document.getElementById('modalEditar')
-    );
-
-    modalEditar.show();
-
-    modalVehiculosEl.removeEventListener('hidden.bs.modal', handler);
-
+  // Solo reabre modalEditar si se abrió desde ahí
+  if (!modalEquipoDesdeInsertar) {
+    modalVehiculosEl.addEventListener('hidden.bs.modal', function handler() {
+      const modalEditar = new bootstrap.Modal(
+        document.getElementById('modalEditar')
+      );
+      modalEditar.show();
+      modalVehiculosEl.removeEventListener('hidden.bs.modal', handler);
   });
+}
 
 });
 }
