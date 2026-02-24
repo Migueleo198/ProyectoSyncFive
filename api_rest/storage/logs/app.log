@@ -315,3 +315,13 @@
 2026-02-23T11:51:10+01:00 - Exception: No tienes permisos para acceder a este recurso
 2026-02-23T11:51:10+01:00 - Exception: No tienes permisos para acceder a este recurso
 2026-02-23T11:51:10+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-02-24T09:43:50+01:00 - Exception: Route not found for GET /guardias/21
+2026-02-24T09:58:23+01:00 - Exception: Route not found for GET /guardias/22
+2026-02-24T10:02:52+01:00 - Exception: Route not found for GET /guardias/22
+2026-02-24T10:05:54+01:00 - Exception: Route not found for GET /guardias/18
+2026-02-24T10:07:40+01:00 - Exception: Route not found for GET /guardias/20
+2026-02-24T10:09:18+01:00 - Exception: Route not found for GET /guardias/16
+2026-02-24T13:48:01+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-02-24T13:49:22+01:00 - Exception: Method setGuardias not found in controller Controllers\PersonaController
+2026-02-24T13:50:25+01:00 - Exception: Method setGuardias not found in controller Controllers\PersonaController
+2026-02-24T13:53:16+01:00 - Exception: Route not found for POST /personas/FUNC-2002/guardias

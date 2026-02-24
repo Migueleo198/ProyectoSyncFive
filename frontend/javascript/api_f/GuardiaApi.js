@@ -5,20 +5,16 @@ const GuardiaApi = {
     return ApiClient.get('/guardias');
   },
 
-  getById(idPersona) {
-    return ApiClient.get(`/guardias/${idPersona}`);
+  getById(idGuardia) {
+    return ApiClient.get(`/guardias/${idGuardia}`);
   },
 
   create(data) {
     return ApiClient.post('/guardias', data);
   },
 
-  update(idPersona, data) {
-    return ApiClient.put(`/guardias/${idPersona}`, data);
-  },
-
-  remove(idPersona) {
-    return ApiClient.delete(`/guardias/${idPersona}`);
+  update(idGuardia, data) {
+    return ApiClient.put(`/guardias/${idGuardia}`, data);
   },
   assignToPerson(data) {
     return ApiClient.post(`/personas/${data.n_funcionario}/guardias`, {

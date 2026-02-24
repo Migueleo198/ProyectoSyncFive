@@ -54,14 +54,13 @@ class GuardiaController
         try {
             $data = $req->json();
 
-            // Ahora puede incluir id_guardia (string)
             $result = $this->service->createGuardia($data);
 
             $res->status(201)->json(
                 [
-                    'id_guardia'    => $result['id_guardia'],    
-                    'f_inicio' => $result['f_inicio'],
-                    'f_fin' => $result['f_fin'],
+                    'fecha' => $result['fecha'],
+                    'h_inicio' => $result['h_inicio'],
+                    'h_fin' => $result['h_fin'],
                     'notas' => $result['notas']
                 ],
                 "Guardia creado correctamente"
@@ -84,34 +83,23 @@ class GuardiaController
      */
     public function update(Request $req, Response $res, string $id_guardia): void
     {
-        try {
-            $data = $req->json();
-
-            // Ya no se convierte a entero
-            $result = $this->service->updateGuardia($id_guardia, $data);
-
-            if ($result['status'] === 'no_changes') {
-                $res->status(200)->json([], $result['message']);
-                return;
-            }
-
-            $res->status(200)->json([], $result['message']);
-
-        } catch (ValidationException $e) {
-            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-        } catch (Throwable $e) {
-            $code = $e->getCode() > 0 ? $e->getCode() : 500;
-            $res->errorJson($e->getMessage(), $code);
-        }
+    try {
+        $result = $this->service->updateGuardia($id_guardia, $req->json());
+        $res->status(200)->json([], $result['message']);
+    } catch (ValidationException $e) {
+        $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+    } catch (Throwable $e) {
+        $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+        $res->errorJson($e->getMessage(), $code);
+    }
     }
 
     /**
      * DELETE /Guardia/{id_guardia}
      */
-    public function delete(Request $req, Response $res, string $id_guardia): void
+    public function delete(Request $req, Response $res, int $id_guardia): void
     {
         try {
-            // Ya no se convierte a entero
             $service = new \Services\GuardiaService();
             $service->deleteGuardia($id_guardia);
 
