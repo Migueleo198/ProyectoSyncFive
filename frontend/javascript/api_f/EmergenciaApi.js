@@ -42,7 +42,7 @@ const EmergenciaApi = {
   },
   deletePersonal(idEmergencia, matricula, idBombero) {
     return ApiClient.delete(`/emergencias/${idEmergencia}/vehiculos/${matricula}/personas/${idBombero}`);
-  }
+  },
 
 };
 
