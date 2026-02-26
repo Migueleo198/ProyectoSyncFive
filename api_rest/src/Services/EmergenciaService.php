@@ -107,10 +107,10 @@ class EmergenciaService
 
     //================= Vehículos en emergencias =====================
 
-    public function getAllVehiculos(): array
+    public function getAllVehiculos(int $id): array
     {
         try {
-            return $this->model->allVehiculos();
+            return $this->model->allVehiculos($id);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -178,7 +178,7 @@ class EmergenciaService
 
         $data = Validator::validate($input, [
             'id_bombero' => 'required|string|min:1',
-            'cargo'     => 'required|string|max:50'
+            'cargo'     => 'string|max:50'
         ]);
 
         try {

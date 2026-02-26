@@ -113,7 +113,7 @@ document.addEventListener('click', async function (e) {
     // Insertar formulario                                             TENER EN CUENTA EL FORMATO DE LA FECHA
     form.innerHTML = `
       <div class="row mb-3 d-flex">
-          <div class="col-md-4 justify-content-center">
+          <div class="col-12 justify-content-center">
               <label for="insertNombre" class="form-label">Nombre</label>
               <input type="text" class="form-control" id="insertNombre" name="nombre" 
               value="${formacion.nombre}" required>
@@ -152,7 +152,7 @@ document.addEventListener('click', async function (e) {
     });
 
   } catch (error) {
-    console.error('Error al editar formacion:', error);
+    mostrarError('Error al editar formacion:', error);
   }
 });
 
@@ -190,11 +190,6 @@ document.addEventListener('click', function (e) {
 
     const campo = camposBd[index];
     let valor = formacion[campo] ?? '';
-
-    //FECHA FORMATO ESPAÑA
-    if (campo === 'fecha') {
-      valor = Formateos.formatearFechaHora(valor);
-    }
 
     const p = document.createElement('p');
 

@@ -31,9 +31,9 @@ class CategoriaService
     {
         $data = Validator::validate($input, [
             'nombre'            => 'required|string|min:1|max:50',
-            'inventariable'     => 'required|int|min:0|max:1'
+            'inventariable'     => 'required|boolean'
         ]);
-
+        $data['inventariable'] = (int) $data['inventariable'];
         try {
             $id = $this->model->create($data);
         } catch (Throwable $e) {

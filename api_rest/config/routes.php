@@ -15,12 +15,13 @@ $router->protectedSession('GET', '/auth/me', 'Controllers\\AuthSessionController
 
 
 //++++++++++++++++++++++++++++++ PERSONA ++++++++++++++++++++++++++++++
-$router->protectedSession('GET', '/personas', 'Controllers\\PersonaController@index', [1,2,3,4,5]);
-$router->protectedSession('GET', '/personas/{id_bombero}', 'Controllers\\PersonaController@show', [1,2,3,4,5]);
-$router->protectedSession('POST', '/personas', 'Controllers\\PersonaController@store', [4,5]);
-$router->protectedSession('PATCH', '/personas/{id_bombero}', 'Controllers\\PersonaController@update', [4,5]);
+//++++++++++++++++++++++++++++++ PERSONA ++++++++++++++++++++++++++++++
+$router->protectedSession('GET',    '/personas',              'Controllers\\PersonaController@index',  [1,2,3,4,5]);
+$router->protectedSession('GET',    '/personas/{id_bombero}', 'Controllers\\PersonaController@show',   [1,2,3,4,5]);
+$router->protectedSession('POST',   '/personas',              'Controllers\\PersonaController@store',  [4,5]);       // ← AÑADE ESTA
+$router->protectedSession('PUT',    '/personas/{id_bombero}', 'Controllers\\PersonaController@update', [4,5]);
+$router->protectedSession('PATCH',  '/personas/{id_bombero}', 'Controllers\\PersonaController@update', [4,5]);
 $router->protectedSession('DELETE', '/personas/{id_bombero}', 'Controllers\\PersonaController@delete', [5]);
-
 // ROL PERSONA
 $router->protectedSession('GET', '/personas/{id_bombero}/roles', 'Controllers\\RolController@persons', [4,5]);
 $router->protectedSession('POST', '/personas/{id_bombero}/roles/{id_rol}', 'Controllers\\RolController@assign', [5]);
@@ -65,7 +66,8 @@ $router->protectedSession('DELETE', '/formaciones/{id_formacion}', 'Controllers\
 
 
 //++++++++++++++++++++++++++++++ EDICIONES ++++++++++++++++++++++++++++++
-$router->protectedSession('GET', '/ediciones/{id_formacion}', 'Controllers\\EdicionController@index', [1,2,3,4,5]);
+$router->protectedSession('GET', '/ediciones', 'Controllers\\EdicionController@index', [1,2,3,4,5]);
+$router->protectedSession('GET', '/ediciones/{id_formacion}/{id_edicion}', 'Controllers\\EdicionController@show', [1,2,3,4,5]);
 $router->protectedSession('POST', '/ediciones/{id_formacion}', 'Controllers\\EdicionController@store', [4,5]);
 $router->protectedSession('PUT', '/ediciones/{id_formacion}/{id_edicion}', 'Controllers\\EdicionController@update', [4,5]);
 $router->protectedSession('DELETE', '/ediciones/{id_formacion}/{id_edicion}', 'Controllers\\EdicionController@delete', [5]);
@@ -248,5 +250,6 @@ $router->protectedSession('DELETE', '/permisos/{id_permiso}', 'Controllers\\Perm
 $router->protectedSession('GET', '/motivos', 'Controllers\\MotivoController@index', [1,2,3,4,5]);
 $router->protectedSession('POST', '/motivos', 'Controllers\\MotivoController@store', [4,5]);
 $router->protectedSession('DELETE', '/motivos/{cod_motivo}', 'Controllers\\MotivoController@delete', [5]);
+
 
 ?>

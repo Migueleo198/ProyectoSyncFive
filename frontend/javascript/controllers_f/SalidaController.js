@@ -327,7 +327,7 @@ document.addEventListener('click', async function (e) {
       });
 
   } catch (error) {
-    console.error('Error al editar salida:', error);
+    mostrarError('Error al editar salida:' || error.message);
   }
 });
 
