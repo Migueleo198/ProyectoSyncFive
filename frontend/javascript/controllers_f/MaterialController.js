@@ -1,7 +1,3 @@
-// ================================
-// MATERIAL CONTROLLER - VERSIÓN FINAL (CON IDS NUMÉRICOS)
-// ================================
-
 import MaterialApi from '../api_f/MaterialApi.js';
 import CategoriaApi from '../api_f/CategoriaApi.js';
 import InstalacionApi from '../api_f/InstalacionApi.js';
@@ -28,9 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     limpiarBackdropsAlCerrarModal();
 });
 
-// ================================
+
 // LIMPIAR BACKDROPS DE BOOTSTRAP
-// ================================
+
 function limpiarBackdropsAlCerrarModal() {
     const modales = ['modalVer', 'modalEditar', 'modalEliminar'];
     modales.forEach(id => {
@@ -46,9 +42,9 @@ function limpiarBackdropsAlCerrarModal() {
     });
 }
 
-// ================================
+
 // FUNCIÓN AUXILIAR PARA EXTRAER NÚMERO DE ID (CRÍTICA)
-// ================================
+
 function extraerNumeroId(id) {
     if (!id && id !== 0) return null;
     if (typeof id === 'number') return id;
@@ -58,9 +54,9 @@ function extraerNumeroId(id) {
     return match ? parseInt(match[0]) : null;
 }
 
-// ================================
+
 // CARGAR DATOS INICIALES
-// ================================
+
 async function cargarDatosIniciales() {
     if (datosCargados) return;
     
@@ -104,9 +100,9 @@ async function cargarMateriales() {
     }
 }
 
-// ================================
+
 // POBLAR SELECT DE CATEGORÍAS
-// ================================
+
 function poblarSelectCategorias() {
     const sel = document.getElementById('insertCategoria');
     if (!sel) return;
@@ -119,9 +115,9 @@ function poblarSelectCategorias() {
     });
 }
 
-// ================================
+
 // RENDER TABLA PRINCIPAL
-// ================================
+
 function renderTablaMateriales(lista) {
     const tbody = document.querySelector('#tabla tbody');
     if (!tbody) return;
@@ -146,6 +142,7 @@ function renderTablaMateriales(lista) {
                     ${m.estado ?? ''}
                 </span>
             </td>
+            <td>${m.estado ?? ''}</td>
             <td class="d-none d-md-table-cell">${m.categoria_nombre ?? ''}</td>
             <td class="d-flex justify-content-around">
                 <button type="button" class="btn p-0 btn-ver"
@@ -173,9 +170,9 @@ function renderTablaMateriales(lista) {
     });
 }
 
-// ================================
+
 // FILTROS
-// ================================
+
 function bindFiltros() {
     document.getElementById('estado')?.addEventListener('change', aplicarFiltros);
     document.getElementById('nombre')?.addEventListener('input', aplicarFiltros);
@@ -198,9 +195,9 @@ function aplicarFiltros() {
     renderTablaMateriales(filtrados);
 }
 
-// ================================
+
 // CREAR MATERIAL
-// ================================
+
 function bindCrearMaterial() {
     const form = document.getElementById('formInsertar');
     if (!form) return;
@@ -231,9 +228,9 @@ function bindCrearMaterial() {
     });
 }
 
-// ================================
+
 // OBTENER ASIGNACIONES CON CACHE
-// ================================
+
 async function obtenerAsignacionesMaterial(idMaterial) {
     if (asignacionesCache.has(idMaterial)) {
         return asignacionesCache.get(idMaterial);
@@ -259,15 +256,15 @@ async function obtenerAsignacionesMaterial(idMaterial) {
     }
 }
 
-// ================================
+
 // CAMPOS PARA MODAL VER
-// ================================
+
 const nombresCampos = ['ID', 'Nombre', 'Descripción', 'Estado', 'Categoría'];
 const camposBd      = ['id_material', 'nombre', 'descripcion', 'estado', 'id_categoria'];
 
-// ================================
+
 // FUNCIONES PARA RENDERIZAR TABLAS EN MODAL VER
-// ================================
+
 function crearTablaVehiculosVer(asignaciones) {
     let html = '<div class="mt-4"><h6 class="fw-bold">Asignaciones a vehículos</h6>';
     html += '<table class="table table-bordered table-striped table-sm">';
@@ -332,9 +329,9 @@ function crearTablaAlmacenesVer(asignaciones) {
     return html;
 }
 
-// ================================
+
 // BIND MODALES
-// ================================
+
 function bindModales() {
 
     // ---- MODAL VER ----
@@ -596,35 +593,58 @@ function bindModales() {
                 }
             });
 
-            // Asignar persona (CORREGIDO: usa ID numérico)
-            form.querySelector('#btnAsignarPersona').addEventListener('click', async () => {
+            // Asignar persona 
+            form.querySelector('#btnAsignarPersona').addEventListener('click', async function() {
                 const id_bombero_original = form.querySelector('#asigPersonaSelect').value;
                 const nserie = form.querySelector('#asigPersonaNserie').value.trim();
 
                 if (!id_bombero_original) return mostrarError('Seleccione una persona');
                 if (!nserie) return mostrarError('El número de serie es obligatorio');
 
-                // Extraer SOLO el número del ID (ej: "B100" → 100)
-                const id_bombero_num = extraerNumeroId(id_bombero_original);
-                if (!id_bombero_num) return mostrarError('ID de persona inválido');
+                // ¡IMPORTANTE! Usamos el ID exacto, sin convertir a número
+                const id_bombero = String(id_bombero_original);
+
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
                 try {
-                    await MaterialApi.assignToPersona(id_bombero_num, currentMaterialId, nserie);
-                    asignacionesCache.delete(currentMaterialId);
-                    const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
-                    renderTablaPersonas(nuevasAsignaciones.personas);
+                    const response = await fetch(`/api/personas/${id_bombero}/material/${currentMaterialId}/${nserie}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
                     
-                    form.querySelector('#asigPersonaSelect').value = '';
-                    form.querySelector('#asigPersonaNserie').value = '';
-                    mostrarExito('Asignado correctamente');
+                    const text = await response.text();
+                    
+                    if (response.ok) {
+                        asignacionesCache.delete(currentMaterialId);
+                        const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
+                        renderTablaPersonas(nuevasAsignaciones.personas);
+                        
+                        form.querySelector('#asigPersonaSelect').value = '';
+                        form.querySelector('#asigPersonaNserie').value = '';
+                        mostrarExito('Asignado correctamente');
+                    } else {
+                        console.error('Error del servidor:', text);
+                        
+                        try {
+                            const errorData = JSON.parse(text);
+                            mostrarError(errorData.message || `Error ${response.status}`);
+                        } catch {
+                            mostrarError(`Error ${response.status}: ${text.substring(0, 100)}`);
+                        }
+                    }
+                    
                 } catch (e) {
-                    mostrarError('Error al asignar: ' + (e.message || 'revise el número de serie'));
+                    console.error('Error de red:', e);
+                    mostrarError('Error de conexión al asignar');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
                 }
-            });
-
-            // Cambio instalación
-            form.querySelector('#asigInstalacionSelect').addEventListener('change', async function () {
-                await cargarAlmacenesEnSelect(this.value);
             });
 
             // Asignar almacén
@@ -724,9 +744,9 @@ function bindModales() {
     }
 }
 
-// ================================
+
 // FUNCIONES PARA RENDERIZAR TABLAS
-// ================================
+
 function renderTablaVehiculos(asignaciones) {
     const tbody = document.getElementById('tbodyVehiculos');
     if (!tbody) return;
@@ -778,7 +798,6 @@ function renderTablaPersonas(asignaciones) {
     tbody.innerHTML = '';
     asignaciones.forEach(a => {
         const idOriginal = a.identificador || a.id_bombero || '-';
-        const idNum = extraerNumeroId(idOriginal);
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -786,29 +805,68 @@ function renderTablaPersonas(asignaciones) {
             <td>${a.elemento || a.nombre || '-'}</td>
             <td>${a.n_funcionario || '-'}</td>
             <td>${a.numero_serie || a.nserie || '-'}</td>
-            <td><button type="button" class="btn btn-sm btn-danger" data-id="${idNum}"><i class="bi bi-trash"></i></button></td>
+            <td><button type="button" class="btn btn-sm btn-danger" data-id="${idOriginal}"><i class="bi bi-trash"></i></button></td>
         `;
+        
         tr.querySelector('button').addEventListener('click', async function (e) {
             e.preventDefault();
             e.stopPropagation();
             
             if (!confirm('¿Eliminar asignación de esta persona?')) return;
             
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            
             try {
-                await MaterialApi.removeFromPersona(this.dataset.id, currentMaterialId);
-                asignacionesCache.delete(currentMaterialId);
-                const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
-                renderTablaPersonas(nuevasAsignaciones.personas);
-                mostrarExito('Asignación eliminada');
+                const id_persona = this.dataset.id;
+                
+                const response = await fetch(`/api/personas/${id_persona}/material/${currentMaterialId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const text = await response.text();
+                
+                if (response.ok) {
+                    asignacionesCache.delete(currentMaterialId);
+                    const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
+                    renderTablaPersonas(nuevasAsignaciones.personas);
+                    mostrarExito('Asignación eliminada');
+                } else {
+                    console.error('Error del servidor:', text);
+                    
+                    try {
+                        const errorData = JSON.parse(text);
+                        
+                        if (response.status === 422 || response.status === 404) {
+                            mostrarError('La asignación ya no existe');
+                            asignacionesCache.delete(currentMaterialId);
+                            const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
+                            renderTablaPersonas(nuevasAsignaciones.personas);
+                        } else {
+                            mostrarError(errorData.message || `Error ${response.status}`);
+                        }
+                    } catch {
+                        mostrarError(`Error ${response.status}: ${text.substring(0, 100)}`);
+                    }
+                }
+                
             } catch (e) {
-                mostrarError('Error al eliminar: ' + (e.message || ''));
+                console.error('Error de red:', e);
+                mostrarError('Error de conexión al eliminar');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         });
+        
         tbody.appendChild(tr);
     });
 }
-
-// Reemplaza SOLO la función renderTablaAlmacenes en tu MaterialController.js
 
 function renderTablaAlmacenes(asignaciones) {
     const tbody = document.getElementById('tbodyAlmacenes');
@@ -821,17 +879,27 @@ function renderTablaAlmacenes(asignaciones) {
 
     tbody.innerHTML = '';
     asignaciones.forEach(a => {
-        // Asegurarnos de que tenemos el ID correcto del almacén
         const idAlmacen = a.identificador || a.id_almacen;
+        
+        // Extraer el nombre de la instalación del campo 'elemento'
+        const nombreInstalacion = a.elemento ? a.elemento.replace(/^[^(]*\(([^)]+)\).*$/, '$1') : '';
+        
+        // Buscar la instalación por nombre
+        const instalacion = instalaciones.find(i => i.nombre === nombreInstalacion);
+        const idInstalacion = instalacion ? instalacion.id_instalacion : null;
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${a.nombre_instalacion || a.instalacion || a.id_instalacion || '-'}</td>
+            <td>${nombreInstalacion || a.instalacion || a.id_instalacion || '-'}</td>
             <td>${a.elemento || a.nombre_almacen || a.id_almacen || '-'}</td>
             <td>${a.planta || '-'}</td>
             <td>${a.unidades || '-'}</td>
             <td>${a.numero_serie || a.n_serie || '-'}</td>
-            <td><button type="button" class="btn btn-sm btn-danger" data-id="${idAlmacen}"><i class="bi bi-trash"></i></button></td>
+            <td><button type="button" class="btn btn-sm btn-danger" 
+                        data-id="${idAlmacen}" 
+                        data-instalacion="${idInstalacion || ''}">
+                <i class="bi bi-trash"></i>
+            </button></td>
         `;
         
         tr.querySelector('button').addEventListener('click', async function (e) {
@@ -840,7 +908,6 @@ function renderTablaAlmacenes(asignaciones) {
             
             if (!confirm('¿Eliminar asignación de este almacén?')) return;
             
-            // Deshabilitar botón mientras se procesa
             const btn = this;
             const originalText = btn.innerHTML;
             btn.disabled = true;
@@ -848,27 +915,58 @@ function renderTablaAlmacenes(asignaciones) {
             
             try {
                 const id_almacen = this.dataset.id;
+                const id_instalacion = this.dataset.instalacion;
                 
-                // Usar el método correcto del API
-                await MaterialApi.removeFromAlmacen(id_almacen, currentMaterialId);
+                // Usar la URL original de MaterialApi
+                const url = `/api/almacenes/${id_almacen}/material/${currentMaterialId}`;
                 
-                // Limpiar cache y recargar
-                asignacionesCache.delete(currentMaterialId);
-                const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
-                renderTablaAlmacenes(nuevasAsignaciones.almacenes);
+                // Incluir id_instalacion en el cuerpo de la petición si es necesario
+                const options = {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
                 
-                mostrarExito('Asignación eliminada');
-            } catch (e) {
-                console.error('Error eliminando asignación:', e);
-                
-                // Mostrar mensaje de error más descriptivo
-                if (e.message && e.message.includes('500')) {
-                    mostrarError('Error en el servidor. Es posible que el almacén no exista o tenga dependencias.');
-                } else {
-                    mostrarError('Error al eliminar: ' + (e.message || 'Error desconocido'));
+                // Si tenemos id_instalacion, lo enviamos en el cuerpo
+                if (id_instalacion && id_instalacion !== '') {
+                    options.body = JSON.stringify({ id_instalacion: parseInt(id_instalacion) });
                 }
+                
+                const response = await fetch(url, options);
+                const text = await response.text();
+                
+                if (response.ok) {
+                    // Éxito
+                    asignacionesCache.delete(currentMaterialId);
+                    const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
+                    renderTablaAlmacenes(nuevasAsignaciones.almacenes);
+                    mostrarExito('Asignación eliminada');
+                } else {
+                    console.error('Error del servidor:', text);
+                    
+                    // Intentar parsear el error
+                    try {
+                        const errorData = JSON.parse(text);
+                        
+                        // Si el error es por validación, forzamos recarga
+                        if (response.status === 422) {
+                            mostrarError('La asignación ya no existe');
+                            asignacionesCache.delete(currentMaterialId);
+                            const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
+                            renderTablaAlmacenes(nuevasAsignaciones.almacenes);
+                        } else {
+                            mostrarError(errorData.message || `Error ${response.status}`);
+                        }
+                    } catch {
+                        mostrarError(`Error ${response.status}: ${text.substring(0, 100)}`);
+                    }
+                }
+                
+            } catch (e) {
+                console.error('Error de red:', e);
+                mostrarError('Error de conexión al eliminar');
             } finally {
-                // Restaurar botón
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
@@ -877,9 +975,10 @@ function renderTablaAlmacenes(asignaciones) {
         tbody.appendChild(tr);
     });
 }
-// ================================
+
+
 // CARGAR ALMACENES EN SELECT
-// ================================
+
 async function cargarAlmacenesEnSelect(id_instalacion) {
     const sel = document.getElementById('asigAlmacenSelect');
     if (!sel) return;
@@ -916,9 +1015,9 @@ async function cargarAlmacenesEnSelect(id_instalacion) {
     }
 }
 
-// ================================
+
 // FUNCIONES AUXILIARES
-// ================================
+
 function mostrarError(msg) {
     const container = document.getElementById('alert-container');
     if (!container) return;

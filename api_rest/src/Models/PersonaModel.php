@@ -336,7 +336,7 @@ public function update(string $id_bombero, array $data): int  // ← string id_b
             ->fetchAll();
     }
 
-    public function addMaterialToBombero(int $id_bombero, int $id_material, string $nserie): void
+    public function addMaterialToBombero(string $id_bombero, int $id_material, string $nserie): void
     {
         $this->db
             ->query("
@@ -349,7 +349,7 @@ public function update(string $id_bombero, array $data): int  // ← string id_b
             ->execute();
     }
 
-    public function removeMaterialBombero(int $id_bombero, int $id_material): int
+    public function removeMaterialBombero(string $id_bombero, int $id_material): int
     {
         $this->db
             ->query("

@@ -173,10 +173,10 @@ class PersonaController
      * SET /personas/{id_bombero}/material/{id_material}/{nserie}
      */
 
-    public function setMaterial(Request $req, Response $res, int $id_bombero, int $id_material, string $nserie): void
+    public function setMaterial(Request $req, Response $res, string $id_bombero, string $id_material, string $nserie): void
     {
         try {
-            $result = $this->service->setMaterial($id_bombero, $id_material, $nserie);
+            $result = $this->service->setMaterial($id_bombero, (int) $id_material, $nserie);
 
             $res->status(201)->json(
                 ['ids' => $result['ids']],
@@ -198,10 +198,10 @@ class PersonaController
     /**
      * DELETE /personas/{id_bombero}/material/{id_material}/
      */
-    public function deleteMaterial(Request $req, Response $res, int $id_bombero, string $id_material): void
+    public function deleteMaterial(Request $req, Response $res, string $id_bombero, string $id_material): void
     {
         try {
-            $this->service->deleteMaterial($id_bombero, $id_material);
+            $this->service->deleteMaterial($id_bombero, (int) $id_material);
             $res->status(200)->json([], "Material eliminado correctamente");
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
