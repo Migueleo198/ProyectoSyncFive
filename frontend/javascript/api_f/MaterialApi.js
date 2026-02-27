@@ -67,6 +67,9 @@ const MaterialApi = {
 
   removeFromAlmacen(id_almacen, id_material) {
     return ApiClient.delete(`/almacenes/${id_almacen}/material/${id_material}`);
+  },
+  getCompleto() {
+    return ApiClient.get('/materiales/completo');
   }
 };
 

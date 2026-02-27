@@ -173,7 +173,7 @@ class PersonaController
      * SET /personas/{id_bombero}/material/{id_material}/{nserie}
      */
 
-    public function setMaterial(Request $req, Response $res, string $id_bombero, string $id_material, string $nserie): void
+    public function setMaterial(Request $req, Response $res, string $id_bombero, int $id_material, string $nserie): void
     {
         try {
             $result = $this->service->setMaterial($id_bombero, (int) $id_material, $nserie);

@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     bindCrearMaterial();
     bindFiltros();
     bindModales();
-    
     limpiarBackdropsAlCerrarModal();
 });
 
@@ -43,23 +42,11 @@ function limpiarBackdropsAlCerrarModal() {
 }
 
 
-// FUNCIÓN AUXILIAR PARA EXTRAER NÚMERO DE ID (CRÍTICA)
-
-function extraerNumeroId(id) {
-    if (!id && id !== 0) return null;
-    if (typeof id === 'number') return id;
-    
-    // Si es string como "B100", extrae "100" y lo convierte a número
-    const match = String(id).match(/\d+/);
-    return match ? parseInt(match[0]) : null;
-}
-
-
 // CARGAR DATOS INICIALES
 
 async function cargarDatosIniciales() {
     if (datosCargados) return;
-    
+
     try {
         const [catRes, instRes, vehRes, perRes] = await Promise.allSettled([
             CategoriaApi.getAll().catch(e => []),
@@ -68,14 +55,14 @@ async function cargarDatosIniciales() {
             PersonaApi.getAll().catch(e => [])
         ]);
 
-        categorias = catRes.status === 'fulfilled' ? (Array.isArray(catRes.value) ? catRes.value : (catRes.value?.data || [])) : [];
+        categorias    = catRes.status  === 'fulfilled' ? (Array.isArray(catRes.value)  ? catRes.value  : (catRes.value?.data  || [])) : [];
         instalaciones = instRes.status === 'fulfilled' ? (Array.isArray(instRes.value) ? instRes.value : (instRes.value?.data || [])) : [];
-        vehiculos = vehRes.status === 'fulfilled' ? (Array.isArray(vehRes.value) ? vehRes.value : (vehRes.value?.data || [])) : [];
-        personas = perRes.status === 'fulfilled' ? (Array.isArray(perRes.value) ? perRes.value : (perRes.value?.data || [])) : [];
+        vehiculos     = vehRes.status  === 'fulfilled' ? (Array.isArray(vehRes.value)  ? vehRes.value  : (vehRes.value?.data  || [])) : [];
+        personas      = perRes.status  === 'fulfilled' ? (Array.isArray(perRes.value)  ? perRes.value  : (perRes.value?.data  || [])) : [];
 
         poblarSelectCategorias();
         await cargarMateriales();
-        
+
         datosCargados = true;
     } catch (e) {
         console.error('Error cargando datos:', e);
@@ -137,11 +124,6 @@ function renderTablaMateriales(lista) {
             <td class="d-none d-md-table-cell">${m.id_material ?? ''}</td>
             <td>${m.nombre ?? ''}</td>
             <td class="d-none d-md-table-cell">${m.descripcion ?? ''}</td>
-            <td>
-                <span class="badge ${m.estado === 'ALTA' ? 'bg-success' : 'bg-danger'}">
-                    ${m.estado ?? ''}
-                </span>
-            </td>
             <td>${m.estado ?? ''}</td>
             <td class="d-none d-md-table-cell">${m.categoria_nombre ?? ''}</td>
             <td class="d-flex justify-content-around">
@@ -230,30 +212,48 @@ function bindCrearMaterial() {
 
 
 // OBTENER ASIGNACIONES CON CACHE
+// IMPORTANTE: añadir al MaterialApi.js el método:
+//   getCompleto() { return ApiClient.get('/materiales/completo'); }
 
 async function obtenerAsignacionesMaterial(idMaterial) {
     if (asignacionesCache.has(idMaterial)) {
         return asignacionesCache.get(idMaterial);
     }
-    
+
     try {
-        const response = await fetch('/api/materiales/completo');
-        const data = await response.json();
-        const todos = Array.isArray(data) ? data : (data.data || []);
+        const response = await MaterialApi.getCompleto();
+        const todos = Array.isArray(response) ? response : (response.data || []);
         const filtrados = todos.filter(m => m.id_material == idMaterial);
-        
+
         const resultado = {
             vehiculos: filtrados.filter(a => a.tipo === 'Vehículo'),
             personas:  filtrados.filter(a => a.tipo === 'Persona'),
             almacenes: filtrados.filter(a => a.tipo === 'Almacén')
         };
-        
+
         asignacionesCache.set(idMaterial, resultado);
         return resultado;
     } catch (e) {
         console.error('Error obteniendo asignaciones:', e);
         return { vehiculos: [], personas: [], almacenes: [] };
     }
+}
+
+
+// EXTRAER NOMBRE DE INSTALACIÓN DESDE EL CAMPO 'elemento'
+// El campo viene como "Nombre almacén (Nombre instalación)"
+// Ej: "Almacén Princf (Parque Central)" → "Parque Central"
+
+function extraerNombreInstalacion(elemento) {
+    if (!elemento) return null;
+    const match = elemento.match(/\(([^)]+)\)\s*$/);
+    return match ? match[1].trim() : null;
+}
+
+// Extrae el nombre del almacén sin el sufijo "(instalación)"
+function extraerNombreAlmacen(elemento) {
+    if (!elemento) return elemento;
+    return elemento.replace(/\s*\([^)]+\)\s*$/, '').trim();
 }
 
 
@@ -316,9 +316,11 @@ function crearTablaAlmacenesVer(asignaciones) {
         html += '<tr><td colspan="5" class="text-center text-muted">Sin asignaciones</td></tr>';
     } else {
         asignaciones.forEach(a => {
+            const nombreInstalacion = a.nombre_instalacion || extraerNombreInstalacion(a.elemento) || '-';
+            const nombreAlmacen     = a.nombre_almacen     || extraerNombreAlmacen(a.elemento)     || '-';
             html += `<tr>
-                <td>${a.nombre_instalacion || a.instalacion || a.id_instalacion || '-'}</td>
-                <td>${a.elemento || a.nombre_almacen || a.id_almacen || '-'}</td>
+                <td>${nombreInstalacion}</td>
+                <td>${nombreAlmacen}</td>
                 <td>${a.planta || '-'}</td>
                 <td>${a.unidades || '-'}</td>
                 <td>${a.numero_serie || a.n_serie || '-'}</td>
@@ -370,6 +372,7 @@ function bindModales() {
             console.error('Error cargando asignaciones:', error);
         }
     });
+
 
     // ---- MODAL EDITAR ----
     document.addEventListener('click', async function (e) {
@@ -453,28 +456,40 @@ function bindModales() {
                 </ul>
 
                 <div class="tab-content mt-3">
+
                     <!-- VEHÍCULOS -->
                     <div class="tab-pane fade show active" id="tab-vehiculos" role="tabpanel">
                         <div class="card card-body bg-light mb-3">
-                            <div class="row">
-                                <div class="col-md-5">
-                                    <select class="form-select" id="asigVehiculoSelect">
-                                        <option value="">Vehículo...</option>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="form-label form-label-sm">Vehículo</label>
+                                    <select class="form-select form-select-sm" id="asigVehiculoSelect">
+                                        <option value="">Seleccione...</option>
                                         ${vehiculos.map(v => `<option value="${v.matricula}">${v.nombre} (${v.matricula})</option>`).join('')}
                                     </select>
                                 </div>
-                                <div class="col-md-2">
-                                    <input type="number" class="form-control" id="asigVehiculoUnidades" min="1" value="1">
-                                </div>
                                 <div class="col-md-3">
-                                    <input type="text" class="form-control" id="asigVehiculoNserie" placeholder="Nº Serie (ej: NS-1234)">
+                                    <!-- Selector unidades o nserie -->
+                                    <label class="form-label form-label-sm">Asignar por</label>
+                                    <select class="form-select form-select-sm" id="modoAsigVehiculo">
+                                        <option value="unidades">Unidades</option>
+                                        <option value="nserie">Nº Serie</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3" id="wrapVehiculoUnidades">
+                                    <label class="form-label form-label-sm">Unidades</label>
+                                    <input type="number" class="form-control form-control-sm" id="asigVehiculoUnidades" min="1" value="1">
+                                </div>
+                                <div class="col-md-3 d-none" id="wrapVehiculoNserie">
+                                    <label class="form-label form-label-sm">Nº Serie</label>
+                                    <input type="text" class="form-control form-control-sm" id="asigVehiculoNserie" placeholder="ej: NS-1234">
                                 </div>
                                 <div class="col-md-2">
-                                    <button type="button" class="btn btn-success w-100" id="btnAsignarVehiculo">Asignar</button>
+                                    <button type="button" class="btn btn-success btn-sm w-100" id="btnAsignarVehiculo">Asignar</button>
                                 </div>
                             </div>
                         </div>
-                        <table class="table table-bordered table-sm" id="tablaAsigVehiculos">
+                        <table class="table table-bordered table-sm">
                             <thead class="table-dark"><tr><th>Matrícula</th><th>Vehículo</th><th>Unidades</th><th>Nº Serie</th><th>Acción</th></tr></thead>
                             <tbody id="tbodyVehiculos"><tr><td colspan="5" class="text-center">Cargando...</td></tr></tbody>
                         </table>
@@ -483,22 +498,24 @@ function bindModales() {
                     <!-- PERSONAS -->
                     <div class="tab-pane fade" id="tab-personas" role="tabpanel">
                         <div class="card card-body bg-light mb-3">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <select class="form-select" id="asigPersonaSelect">
-                                        <option value="">Persona...</option>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label form-label-sm">Persona</label>
+                                    <select class="form-select form-select-sm" id="asigPersonaSelect">
+                                        <option value="">Seleccione...</option>
                                         ${personas.map(p => `<option value="${p.id_bombero}">${p.nombre} ${p.apellidos || ''} (${p.n_funcionario || p.id_bombero})</option>`).join('')}
                                     </select>
                                 </div>
-                                <div class="col-md-4">
-                                    <input type="text" class="form-control" id="asigPersonaNserie" placeholder="Nº Serie * (ej: SN001)">
+                                <div class="col-md-5">
+                                    <label class="form-label form-label-sm">Nº Serie <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-sm" id="asigPersonaNserie" placeholder="ej: SN001">
                                 </div>
                                 <div class="col-md-2">
-                                    <button type="button" class="btn btn-success w-100" id="btnAsignarPersona">Asignar</button>
+                                    <button type="button" class="btn btn-success btn-sm w-100" id="btnAsignarPersona">Asignar</button>
                                 </div>
                             </div>
                         </div>
-                        <table class="table table-bordered table-sm" id="tablaAsigPersonas">
+                        <table class="table table-bordered table-sm">
                             <thead class="table-dark"><tr><th>ID</th><th>Nombre</th><th>Nº Funcionario</th><th>Nº Serie</th><th>Acción</th></tr></thead>
                             <tbody id="tbodyPersonas"><tr><td colspan="5" class="text-center">Cargando...</td></tr></tbody>
                         </table>
@@ -507,34 +524,47 @@ function bindModales() {
                     <!-- ALMACENES -->
                     <div class="tab-pane fade" id="tab-almacenes" role="tabpanel">
                         <div class="card card-body bg-light mb-3">
-                            <div class="row">
+                            <div class="row g-2 align-items-end">
                                 <div class="col-md-3">
-                                    <select class="form-select" id="asigInstalacionSelect">
-                                        <option value="">Instalación...</option>
+                                    <label class="form-label form-label-sm">Instalación</label>
+                                    <select class="form-select form-select-sm" id="asigInstalacionSelect">
+                                        <option value="">Seleccione...</option>
                                         ${instalaciones.map(i => `<option value="${i.id_instalacion}">${i.nombre}</option>`).join('')}
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <select class="form-select" id="asigAlmacenSelect" disabled>
+                                    <label class="form-label form-label-sm">Almacén</label>
+                                    <select class="form-select form-select-sm" id="asigAlmacenSelect" disabled>
                                         <option value="">Primero seleccione instalación</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <input type="number" class="form-control" id="asigAlmacenUnidades" min="1" value="1">
+                                    <!-- Selector unidades o nserie -->
+                                    <label class="form-label form-label-sm">Asignar por</label>
+                                    <select class="form-select form-select-sm" id="modoAsigAlmacen">
+                                        <option value="unidades">Unidades</option>
+                                        <option value="nserie">Nº Serie</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2" id="wrapAlmacenUnidades">
+                                    <label class="form-label form-label-sm">Unidades</label>
+                                    <input type="number" class="form-control form-control-sm" id="asigAlmacenUnidades" min="1" value="1">
+                                </div>
+                                <div class="col-md-2 d-none" id="wrapAlmacenNserie">
+                                    <label class="form-label form-label-sm">Nº Serie</label>
+                                    <input type="text" class="form-control form-control-sm" id="asigAlmacenNserie" placeholder="ej: ALM-001">
                                 </div>
                                 <div class="col-md-2">
-                                    <input type="text" class="form-control" id="asigAlmacenNserie" placeholder="Nº Serie (ej: ALM-001)">
-                                </div>
-                                <div class="col-md-2">
-                                    <button type="button" class="btn btn-success w-100" id="btnAsignarAlmacen">Asignar</button>
+                                    <button type="button" class="btn btn-success btn-sm w-100" id="btnAsignarAlmacen">Asignar</button>
                                 </div>
                             </div>
                         </div>
-                        <table class="table table-bordered table-sm" id="tablaAsigAlmacenes">
+                        <table class="table table-bordered table-sm">
                             <thead class="table-dark"><tr><th>Instalación</th><th>Almacén</th><th>Planta</th><th>Unidades</th><th>Nº Serie</th><th>Acción</th></tr></thead>
                             <tbody id="tbodyAlmacenes"><tr><td colspan="6" class="text-center">Cargando...</td></tr></tbody>
                         </table>
                     </div>
+
                 </div>
             `;
 
@@ -544,147 +574,14 @@ function bindModales() {
             renderTablaPersonas(asignaciones.personas);
             renderTablaAlmacenes(asignaciones.almacenes);
 
-            // Guardar cambios
-            form.querySelector('.btn-guardar-material').addEventListener('click', async function () {
-                const data = {
-                    nombre: form.querySelector('input[name="nombre"]').value.trim(),
-                    descripcion: form.querySelector('textarea[name="descripcion"]').value.trim(),
-                    id_categoria: parseInt(form.querySelector('select[name="id_categoria"]').value),
-                    estado: form.querySelector('select[name="estado"]').value
-                };
-
-                if (!data.nombre || !data.descripcion || !data.id_categoria) {
-                    mostrarError('Complete todos los campos');
-                    return;
-                }
-
-                try {
-                    await MaterialApi.update(currentMaterialId, data);
-                    asignacionesCache.delete(currentMaterialId);
-                    await cargarMateriales();
-                    bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
-                    mostrarExito('Material actualizado');
-                } catch (error) {
-                    mostrarError(error.message);
-                }
-            });
-
-            // Asignar vehículo
-            form.querySelector('#btnAsignarVehiculo').addEventListener('click', async () => {
-                const matricula = form.querySelector('#asigVehiculoSelect').value;
-                const unidades = parseInt(form.querySelector('#asigVehiculoUnidades').value);
-                const nserie = form.querySelector('#asigVehiculoNserie').value.trim() || null;
-
-                if (!matricula) return mostrarError('Seleccione un vehículo');
-                if (unidades < 1) return mostrarError('Unidades inválidas');
-
-                try {
-                    await MaterialApi.assignToVehiculo(matricula, currentMaterialId, { nserie, unidades });
-                    asignacionesCache.delete(currentMaterialId);
-                    const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
-                    renderTablaVehiculos(nuevasAsignaciones.vehiculos);
-                    
-                    form.querySelector('#asigVehiculoSelect').value = '';
-                    form.querySelector('#asigVehiculoUnidades').value = '1';
-                    form.querySelector('#asigVehiculoNserie').value = '';
-                    mostrarExito('Asignado correctamente');
-                } catch (e) {
-                    mostrarError('Error al asignar: ' + (e.message || ''));
-                }
-            });
-
-            // Asignar persona 
-            form.querySelector('#btnAsignarPersona').addEventListener('click', async function() {
-                const id_bombero_original = form.querySelector('#asigPersonaSelect').value;
-                const nserie = form.querySelector('#asigPersonaNserie').value.trim();
-
-                if (!id_bombero_original) return mostrarError('Seleccione una persona');
-                if (!nserie) return mostrarError('El número de serie es obligatorio');
-
-                // ¡IMPORTANTE! Usamos el ID exacto, sin convertir a número
-                const id_bombero = String(id_bombero_original);
-
-                const btn = this;
-                const originalText = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-                try {
-                    const response = await fetch(`/api/personas/${id_bombero}/material/${currentMaterialId}/${nserie}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    const text = await response.text();
-                    
-                    if (response.ok) {
-                        asignacionesCache.delete(currentMaterialId);
-                        const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
-                        renderTablaPersonas(nuevasAsignaciones.personas);
-                        
-                        form.querySelector('#asigPersonaSelect').value = '';
-                        form.querySelector('#asigPersonaNserie').value = '';
-                        mostrarExito('Asignado correctamente');
-                    } else {
-                        console.error('Error del servidor:', text);
-                        
-                        try {
-                            const errorData = JSON.parse(text);
-                            mostrarError(errorData.message || `Error ${response.status}`);
-                        } catch {
-                            mostrarError(`Error ${response.status}: ${text.substring(0, 100)}`);
-                        }
-                    }
-                    
-                } catch (e) {
-                    console.error('Error de red:', e);
-                    mostrarError('Error de conexión al asignar');
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                }
-            });
-
-            // Asignar almacén
-            form.querySelector('#btnAsignarAlmacen').addEventListener('click', async () => {
-                const id_instalacion = parseInt(form.querySelector('#asigInstalacionSelect').value);
-                const id_almacen = parseInt(form.querySelector('#asigAlmacenSelect').value);
-                const unidades = parseInt(form.querySelector('#asigAlmacenUnidades').value);
-                const n_serie = form.querySelector('#asigAlmacenNserie').value.trim() || null;
-
-                if (!id_instalacion) return mostrarError('Seleccione instalación');
-                if (!id_almacen) return mostrarError('Seleccione almacén');
-                if (unidades < 1) return mostrarError('Unidades inválidas');
-
-                try {
-                    await MaterialApi.assignToAlmacen(id_almacen, {
-                        id_material: parseInt(currentMaterialId),
-                        id_instalacion,
-                        n_serie,
-                        unidades
-                    });
-                    asignacionesCache.delete(currentMaterialId);
-                    const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
-                    renderTablaAlmacenes(nuevasAsignaciones.almacenes);
-                    
-                    form.querySelector('#asigInstalacionSelect').value = '';
-                    form.querySelector('#asigAlmacenSelect').innerHTML = '<option value="">Primero seleccione instalación</option>';
-                    form.querySelector('#asigAlmacenSelect').disabled = true;
-                    form.querySelector('#asigAlmacenUnidades').value = '1';
-                    form.querySelector('#asigAlmacenNserie').value = '';
-                    mostrarExito('Asignado correctamente');
-                } catch (e) {
-                    mostrarError('Error al asignar: ' + (e.message || ''));
-                }
-            });
+            bindEventosModalEditar(form);
 
         } catch (error) {
             console.error('Error:', error);
             mostrarError('Error al cargar datos');
         }
     });
+
 
     // ---- MODAL ELIMINAR - Preparar ----
     document.addEventListener('click', function (e) {
@@ -745,6 +642,186 @@ function bindModales() {
 }
 
 
+// BIND EVENTOS MODAL EDITAR
+
+function bindEventosModalEditar(form) {
+
+    // Guardar cambios del material
+    form.querySelector('.btn-guardar-material').addEventListener('click', async function () {
+        const data = {
+            nombre:       form.querySelector('input[name="nombre"]').value.trim(),
+            descripcion:  form.querySelector('textarea[name="descripcion"]').value.trim(),
+            id_categoria: parseInt(form.querySelector('select[name="id_categoria"]').value),
+            estado:       form.querySelector('select[name="estado"]').value
+        };
+
+        if (!data.nombre || !data.descripcion || !data.id_categoria) {
+            mostrarError('Complete todos los campos');
+            return;
+        }
+
+        try {
+            await MaterialApi.update(currentMaterialId, data);
+            asignacionesCache.delete(currentMaterialId);
+            await cargarMateriales();
+            bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+            mostrarExito('Material actualizado');
+        } catch (error) {
+            mostrarError(error.message);
+        }
+    });
+
+    // Toggle unidades / nserie en VEHÍCULO
+    form.querySelector('#modoAsigVehiculo').addEventListener('change', function () {
+        const esNserie = this.value === 'nserie';
+        form.querySelector('#wrapVehiculoUnidades').classList.toggle('d-none', esNserie);
+        form.querySelector('#wrapVehiculoNserie').classList.toggle('d-none', !esNserie);
+    });
+
+    // Toggle unidades / nserie en ALMACÉN
+    form.querySelector('#modoAsigAlmacen').addEventListener('change', function () {
+        const esNserie = this.value === 'nserie';
+        form.querySelector('#wrapAlmacenUnidades').classList.toggle('d-none', esNserie);
+        form.querySelector('#wrapAlmacenNserie').classList.toggle('d-none', !esNserie);
+    });
+
+    // Asignar vehículo
+    form.querySelector('#btnAsignarVehiculo').addEventListener('click', async () => {
+        const matricula = form.querySelector('#asigVehiculoSelect').value;
+        const modo      = form.querySelector('#modoAsigVehiculo').value;
+
+        if (!matricula) return mostrarError('Seleccione un vehículo');
+
+        // Construir payload con SOLO el campo que corresponde (nunca los dos)
+        let payload = {};
+        if (modo === 'unidades') {
+            const unidades = parseInt(form.querySelector('#asigVehiculoUnidades').value);
+            if (!unidades || unidades < 1) return mostrarError('Unidades inválidas');
+            payload = { unidades };
+        } else {
+            const nserie = form.querySelector('#asigVehiculoNserie').value.trim();
+            if (!nserie) return mostrarError('Introduzca el número de serie');
+            payload = { nserie };
+        }
+
+        try {
+            await MaterialApi.assignToVehiculo(matricula, currentMaterialId, payload);
+            mostrarExito('Asignado correctamente');
+        } catch (e) {
+            console.error('Error asignando vehículo:', e);
+            mostrarError(e.message || 'Error al asignar vehículo');
+        } finally {
+            asignacionesCache.delete(currentMaterialId);
+            const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+            renderTablaVehiculos(nuevas.vehiculos);
+
+            form.querySelector('#asigVehiculoSelect').value = '';
+            form.querySelector('#asigVehiculoUnidades').value = '1';
+            form.querySelector('#asigVehiculoNserie').value = '';
+            form.querySelector('#modoAsigVehiculo').value = 'unidades';
+            form.querySelector('#wrapVehiculoUnidades').classList.remove('d-none');
+            form.querySelector('#wrapVehiculoNserie').classList.add('d-none');
+        }
+    });
+
+    // Asignar persona (nserie va en la URL, hay que encodearla)
+    form.querySelector('#btnAsignarPersona').addEventListener('click', async function () {
+        const id_bombero = String(form.querySelector('#asigPersonaSelect').value);
+        const nserie     = form.querySelector('#asigPersonaNserie').value.trim();
+
+        if (!id_bombero) return mostrarError('Seleccione una persona');
+        if (!nserie)     return mostrarError('El número de serie es obligatorio');
+
+        // El nserie va en la URL: hay que encodear caracteres especiales
+        const nserieEncoded = encodeURIComponent(nserie);
+
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        try {
+            // assignToPersona usa: /personas/{id_bombero}/material/{id_material}/{nserie}
+            await MaterialApi.assignToPersona(id_bombero, currentMaterialId, nserieEncoded);
+            mostrarExito('Asignado correctamente');
+        } catch (e) {
+            console.error('Error asignando persona:', e);
+            mostrarError(e.message || 'Error al asignar persona');
+        } finally {
+            asignacionesCache.delete(currentMaterialId);
+            const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+            renderTablaPersonas(nuevas.personas);
+
+            form.querySelector('#asigPersonaSelect').value = '';
+            form.querySelector('#asigPersonaNserie').value = '';
+
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    });
+
+    // Cambio instalación → cargar almacenes
+    form.querySelector('#asigInstalacionSelect').addEventListener('change', function () {
+        cargarAlmacenesEnSelect(this.value);
+    });
+
+    // Asignar almacén
+    form.querySelector('#btnAsignarAlmacen').addEventListener('click', async () => {
+        const id_instalacion = parseInt(form.querySelector('#asigInstalacionSelect').value);
+        const id_almacen     = parseInt(form.querySelector('#asigAlmacenSelect').value);
+        const modo           = form.querySelector('#modoAsigAlmacen').value;
+
+        if (!id_instalacion) return mostrarError('Seleccione instalación');
+        if (!id_almacen)     return mostrarError('Seleccione almacén');
+
+        // Construir payload con SOLO el campo que corresponde
+        // IMPORTANTE: el backend espera n_serie como int, no string
+        let payload = {
+            id_material: parseInt(currentMaterialId),
+            id_instalacion
+        };
+
+        if (modo === 'unidades') {
+            const unidades = parseInt(form.querySelector('#asigAlmacenUnidades').value);
+            if (!unidades || unidades < 1) return mostrarError('Unidades inválidas');
+            payload.unidades = unidades;
+        } else {
+            const n_serie = form.querySelector('#asigAlmacenNserie').value.trim();
+            if (!n_serie) return mostrarError('Introduzca el número de serie');
+            const n_serie_int = parseInt(n_serie);
+            if (isNaN(n_serie_int)) return mostrarError('El número de serie del almacén debe ser numérico');
+            payload.n_serie  = n_serie_int;
+            payload.unidades = 1; // el backend requiere unidades aunque sea 1
+        }
+
+        try {
+            await MaterialApi.assignToAlmacen(id_almacen, payload);
+            mostrarExito('Asignado correctamente');
+        } catch (e) {
+            console.error('Error asignando almacén:', e);
+            if (e.message?.includes('409') || e.message?.includes('ya existe')) {
+                mostrarError('El material ya existe en este almacén');
+            } else {
+                mostrarError(e.message || 'Error al asignar almacén');
+            }
+        } finally {
+            asignacionesCache.delete(currentMaterialId);
+            const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+            renderTablaAlmacenes(nuevas.almacenes);
+
+            form.querySelector('#asigInstalacionSelect').value = '';
+            form.querySelector('#asigAlmacenSelect').innerHTML = '<option value="">Primero seleccione instalación</option>';
+            form.querySelector('#asigAlmacenSelect').disabled = true;
+            form.querySelector('#asigAlmacenUnidades').value = '1';
+            form.querySelector('#asigAlmacenNserie').value = '';
+            form.querySelector('#modoAsigAlmacen').value = 'unidades';
+            form.querySelector('#wrapAlmacenUnidades').classList.remove('d-none');
+            form.querySelector('#wrapAlmacenNserie').classList.add('d-none');
+        }
+    });
+}
+
+
 // FUNCIONES PARA RENDERIZAR TABLAS
 
 function renderTablaVehiculos(asignaciones) {
@@ -764,25 +841,16 @@ function renderTablaVehiculos(asignaciones) {
             <td>${a.elemento || a.matricula || '-'}</td>
             <td>${a.unidades || '-'}</td>
             <td>${a.numero_serie || a.nserie || '-'}</td>
-            <td><button type="button" class="btn btn-sm btn-danger" data-matricula="${a.identificador || a.matricula}"><i class="bi bi-trash"></i></button></td>
+            <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-vehiculo"
+                        data-matricula="${a.identificador || a.matricula}">
+                <i class="bi bi-trash"></i>
+            </button></td>
         `;
-        tr.querySelector('button').addEventListener('click', async function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (!confirm('¿Eliminar asignación de este vehículo?')) return;
-            
-            try {
-                await MaterialApi.removeFromVehiculo(this.dataset.matricula, currentMaterialId);
-                asignacionesCache.delete(currentMaterialId);
-                const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
-                renderTablaVehiculos(nuevasAsignaciones.vehiculos);
-                mostrarExito('Asignación eliminada');
-            } catch (e) {
-                mostrarError('Error al eliminar: ' + (e.message || ''));
-            }
-        });
         tbody.appendChild(tr);
+    });
+
+    document.querySelectorAll('.btn-eliminar-vehiculo').forEach(btn => {
+        btn.addEventListener('click', eliminarAsignacionVehiculo);
     });
 }
 
@@ -798,73 +866,23 @@ function renderTablaPersonas(asignaciones) {
     tbody.innerHTML = '';
     asignaciones.forEach(a => {
         const idOriginal = a.identificador || a.id_bombero || '-';
-        
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${idOriginal}</td>
             <td>${a.elemento || a.nombre || '-'}</td>
             <td>${a.n_funcionario || '-'}</td>
             <td>${a.numero_serie || a.nserie || '-'}</td>
-            <td><button type="button" class="btn btn-sm btn-danger" data-id="${idOriginal}"><i class="bi bi-trash"></i></button></td>
+            <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-persona"
+                        data-id="${idOriginal}">
+                <i class="bi bi-trash"></i>
+            </button></td>
         `;
-        
-        tr.querySelector('button').addEventListener('click', async function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (!confirm('¿Eliminar asignación de esta persona?')) return;
-            
-            const btn = this;
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-            
-            try {
-                const id_persona = this.dataset.id;
-                
-                const response = await fetch(`/api/personas/${id_persona}/material/${currentMaterialId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                const text = await response.text();
-                
-                if (response.ok) {
-                    asignacionesCache.delete(currentMaterialId);
-                    const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
-                    renderTablaPersonas(nuevasAsignaciones.personas);
-                    mostrarExito('Asignación eliminada');
-                } else {
-                    console.error('Error del servidor:', text);
-                    
-                    try {
-                        const errorData = JSON.parse(text);
-                        
-                        if (response.status === 422 || response.status === 404) {
-                            mostrarError('La asignación ya no existe');
-                            asignacionesCache.delete(currentMaterialId);
-                            const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
-                            renderTablaPersonas(nuevasAsignaciones.personas);
-                        } else {
-                            mostrarError(errorData.message || `Error ${response.status}`);
-                        }
-                    } catch {
-                        mostrarError(`Error ${response.status}: ${text.substring(0, 100)}`);
-                    }
-                }
-                
-            } catch (e) {
-                console.error('Error de red:', e);
-                mostrarError('Error de conexión al eliminar');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        });
-        
         tbody.appendChild(tr);
+    });
+
+    document.querySelectorAll('.btn-eliminar-persona').forEach(btn => {
+        btn.addEventListener('click', eliminarAsignacionPersona);
     });
 }
 
@@ -880,100 +898,127 @@ function renderTablaAlmacenes(asignaciones) {
     tbody.innerHTML = '';
     asignaciones.forEach(a => {
         const idAlmacen = a.identificador || a.id_almacen;
-        
-        // Extraer el nombre de la instalación del campo 'elemento'
-        const nombreInstalacion = a.elemento ? a.elemento.replace(/^[^(]*\(([^)]+)\).*$/, '$1') : '';
-        
-        // Buscar la instalación por nombre
-        const instalacion = instalaciones.find(i => i.nombre === nombreInstalacion);
-        const idInstalacion = instalacion ? instalacion.id_instalacion : null;
-        
+
+        // Obtener nombre instalación: campo directo > extraer del elemento
+        const nombreInstalacion = a.nombre_instalacion || extraerNombreInstalacion(a.elemento) || '-';
+        // Obtener nombre almacén limpio (sin el sufijo de instalación)
+        const nombreAlmacen     = a.nombre_almacen     || extraerNombreAlmacen(a.elemento)     || '-';
+
+        // Obtener id_instalacion: campo directo > buscar por nombre en array local
+        let idInstalacion = a.id_instalacion || null;
+        if (!idInstalacion && nombreInstalacion !== '-') {
+            const inst = instalaciones.find(i => i.nombre === nombreInstalacion);
+            idInstalacion = inst ? inst.id_instalacion : null;
+        }
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${nombreInstalacion || a.instalacion || a.id_instalacion || '-'}</td>
-            <td>${a.elemento || a.nombre_almacen || a.id_almacen || '-'}</td>
+            <td>${nombreInstalacion}</td>
+            <td>${nombreAlmacen}</td>
             <td>${a.planta || '-'}</td>
             <td>${a.unidades || '-'}</td>
             <td>${a.numero_serie || a.n_serie || '-'}</td>
-            <td><button type="button" class="btn btn-sm btn-danger" 
-                        data-id="${idAlmacen}" 
+            <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-almacen"
+                        data-id="${idAlmacen}"
                         data-instalacion="${idInstalacion || ''}">
                 <i class="bi bi-trash"></i>
             </button></td>
         `;
-        
-        tr.querySelector('button').addEventListener('click', async function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (!confirm('¿Eliminar asignación de este almacén?')) return;
-            
-            const btn = this;
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-            
-            try {
-                const id_almacen = this.dataset.id;
-                const id_instalacion = this.dataset.instalacion;
-                
-                // Usar la URL original de MaterialApi
-                const url = `/api/almacenes/${id_almacen}/material/${currentMaterialId}`;
-                
-                // Incluir id_instalacion en el cuerpo de la petición si es necesario
-                const options = {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                };
-                
-                // Si tenemos id_instalacion, lo enviamos en el cuerpo
-                if (id_instalacion && id_instalacion !== '') {
-                    options.body = JSON.stringify({ id_instalacion: parseInt(id_instalacion) });
-                }
-                
-                const response = await fetch(url, options);
-                const text = await response.text();
-                
-                if (response.ok) {
-                    // Éxito
-                    asignacionesCache.delete(currentMaterialId);
-                    const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
-                    renderTablaAlmacenes(nuevasAsignaciones.almacenes);
-                    mostrarExito('Asignación eliminada');
-                } else {
-                    console.error('Error del servidor:', text);
-                    
-                    // Intentar parsear el error
-                    try {
-                        const errorData = JSON.parse(text);
-                        
-                        // Si el error es por validación, forzamos recarga
-                        if (response.status === 422) {
-                            mostrarError('La asignación ya no existe');
-                            asignacionesCache.delete(currentMaterialId);
-                            const nuevasAsignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
-                            renderTablaAlmacenes(nuevasAsignaciones.almacenes);
-                        } else {
-                            mostrarError(errorData.message || `Error ${response.status}`);
-                        }
-                    } catch {
-                        mostrarError(`Error ${response.status}: ${text.substring(0, 100)}`);
-                    }
-                }
-                
-            } catch (e) {
-                console.error('Error de red:', e);
-                mostrarError('Error de conexión al eliminar');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        });
-        
         tbody.appendChild(tr);
     });
+
+    document.querySelectorAll('.btn-eliminar-almacen').forEach(btn => {
+        btn.addEventListener('click', eliminarAsignacionAlmacen);
+    });
+}
+
+
+// ELIMINAR ASIGNACIONES
+
+async function eliminarAsignacionVehiculo(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!confirm('¿Eliminar asignación de este vehículo?')) return;
+
+    const btn = e.currentTarget;
+    const matricula = btn.dataset.matricula;
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    try {
+        await MaterialApi.removeFromVehiculo(matricula, currentMaterialId);
+        mostrarExito('Asignación eliminada');
+    } catch (e) {
+        console.error('Error eliminando asignación:', e);
+        mostrarError('Error en servidor, pero recargando...');
+    } finally {
+        asignacionesCache.delete(currentMaterialId);
+        const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+        renderTablaVehiculos(nuevas.vehiculos);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+async function eliminarAsignacionPersona(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!confirm('¿Eliminar asignación de esta persona?')) return;
+
+    const btn = e.currentTarget;
+    const id_persona = btn.dataset.id;
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    try {
+        await MaterialApi.removeFromPersona(id_persona, currentMaterialId);
+        mostrarExito('Asignación eliminada');
+    } catch (e) {
+        console.error('Error eliminando asignación:', e);
+        mostrarError('Error en servidor, pero recargando...');
+    } finally {
+        asignacionesCache.delete(currentMaterialId);
+        const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+        renderTablaPersonas(nuevas.personas);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+async function eliminarAsignacionAlmacen(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!confirm('¿Eliminar asignación de este almacén?')) return;
+
+    const btn = e.currentTarget;
+    const id_almacen     = btn.dataset.id;
+    const id_instalacion = btn.dataset.instalacion;
+    const originalHTML   = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    try {
+        await MaterialApi.removeFromAlmacen(
+            id_almacen,
+            currentMaterialId,
+            id_instalacion ? { id_instalacion: parseInt(id_instalacion) } : undefined
+        );
+        mostrarExito('Asignación eliminada correctamente');
+    } catch (e) {
+        console.error('Error eliminando asignación:', e);
+        mostrarError('Error al eliminar: ' + (e.message || 'Error desconocido'));
+    } finally {
+        asignacionesCache.delete(currentMaterialId);
+        const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+        renderTablaAlmacenes(nuevas.almacenes);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
 }
 
 
@@ -993,12 +1038,15 @@ async function cargarAlmacenesEnSelect(id_instalacion) {
     sel.disabled = true;
 
     try {
-        const res = await fetch(`/api/instalaciones/${id_instalacion}/almacenes`);
-        const data = await res.json();
+        const res  = await fetch(`/api/instalaciones/${id_instalacion}/almacenes`);
+        if (!res.ok) throw new Error(`Error ${res.status}`);
+
+        const data     = await res.json();
         const almacenes = Array.isArray(data) ? data : (data.data || []);
 
         if (almacenes.length === 0) {
             sel.innerHTML = '<option value="">No hay almacenes</option>';
+            sel.disabled = true;
             return;
         }
 
@@ -1011,7 +1059,9 @@ async function cargarAlmacenesEnSelect(id_instalacion) {
         });
         sel.disabled = false;
     } catch (e) {
+        console.error('Error cargando almacenes:', e);
         sel.innerHTML = '<option value="">Error cargando almacenes</option>';
+        sel.disabled = true;
     }
 }
 
