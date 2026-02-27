@@ -158,7 +158,7 @@ function bindCrearAviso() {
         const asunto  = document.getElementById('insertAsunto').value.trim();
         const mensaje = document.getElementById('insertMensaje').value.trim();
 
-        // ✅ ID corregido — coincide con el HTML
+        // ID coincide con el HTML
         const selectDest = document.getElementById('insertDestinatarios');
         const destinatarios = selectDest
             ? Array.from(selectDest.selectedOptions)

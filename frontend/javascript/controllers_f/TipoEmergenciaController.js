@@ -1,4 +1,8 @@
 import TipoEmergenciaApi from '../api_f/TipoEmergenciaApi.js';
+import { 
+  mostrarError, 
+  mostrarExito 
+} from '../helpers/utils.js';
 
 let tiposEmergencia = []; // variable global para almacenar los tipos de emergencia
 
@@ -76,14 +80,26 @@ function bindCrearTipoEmergencia() {
     const f = new FormData(form);
 
     const data = {
-      nombre: f.get('nombre'),
-      grupo: f.get('grupo'),
+      nombre: f.get('nombre')?.trim(),
+      grupo: f.get('grupo')?.trim(),
     }; 
+
+    // ================= VALIDACIONES =================
+    if (!data.nombre) {
+      mostrarError('El nombre es obligatorio');
+      return;
+    }
+
+    if (!data.grupo) {
+      mostrarError('El grupo es obligatorio');
+      return;
+    }
+
     try {
-      await TipoEmergenciaApi.create(data); // ← INSERT al backend
-      await cargarTiposEmergencia();        // ← refrescar tabla
+      await TipoEmergenciaApi.create(data);
+      await cargarTiposEmergencia();
       form.reset();
-      alert('Tipo de emergencia creado correctamente');
+      mostrarExito('Tipo de emergencia creado correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error creando tipo de emergencia');
     }
@@ -143,6 +159,7 @@ document.addEventListener('click', async function (e) {
 
     // Guardar cambios
     document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
+      
       const data = {};
 
       camposBd.forEach(campo => {
@@ -150,13 +167,33 @@ document.addEventListener('click', async function (e) {
         if (input) data[campo] = input.value;
       });
 
-      await TipoEmergenciaApi.update(id, data);             // Enviar datos al backend para actualizar la emergencia
-      await cargarTiposEmergencia();                        // Recargar tabla para mostrar cambios
+      // ================= VALIDACIONES =================
 
-      const modal = bootstrap.Modal.getInstance(        // Cerrar modal
-        document.getElementById('modalEditar')
-      );
-      modal.hide();
+      if (!data.nombre) {
+        mostrarError('El nombre es obligatorio');
+        return;
+      }
+
+      if (!data.grupo) {
+        mostrarError('El grupo es obligatorio');
+        return;
+      }
+
+      try {
+
+        await TipoEmergenciaApi.update(id, data);
+        await cargarTiposEmergencia();
+
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById('modalEditar')
+        );
+        modal.hide();
+        
+        mostrarExito('Tipo de emergencia actualizado correctamente');
+
+      } catch (error) {
+        mostrarError(error.message || 'Error actualizando tipo de emergencia');
+      }
     });
 
   } catch (error) {
@@ -245,21 +282,3 @@ document.getElementById('btnConfirmarEliminar')
       mostrarError('Este tipo de emergencia no se puede eliminar porque tiene emergencias asociadas');
     }
 });
-
-
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  const container = document.getElementById("alert-container");
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = `
-    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-      <strong>Error:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-
-  container.append(wrapper);
-}

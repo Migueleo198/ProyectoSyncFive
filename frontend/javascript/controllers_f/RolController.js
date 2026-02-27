@@ -1,4 +1,5 @@
 import RolesApi from '../api_f/RolApi.js';
+import { truncar, mostrarExito, mostrarError } from '../helpers/utils.js';
 
 let roles = [];
 
@@ -87,6 +88,12 @@ function bindCrearRol() {
         const nombre      = document.getElementById('nombre').value.trim();
         const descripcion = document.getElementById('descripcion').value.trim();
 
+        // Validación básica
+        if (!nombre) {
+            mostrarError('El nombre es obligatorio');
+            return;
+        }
+
         try {
             await RolesApi.create({
                 nombre,
@@ -95,14 +102,14 @@ function bindCrearRol() {
 
             await cargarRoles();
             form.reset();
-            mostrarAlerta('Rol creado correctamente', 'success');
+            mostrarExito('Rol creado correctamente', 'success');
 
         } catch (err) {
             if (err.errors) {
                 const msgs = Object.values(err.errors).flat().join(', ');
-                mostrarAlerta(msgs, 'danger');
+                mostrarError(msgs, 'danger');
             } else {
-                mostrarAlerta(err.message || 'Error creando rol', 'danger');
+                mostrarError(err.message || 'Error creando rol', 'danger');
             }
         }
     });
@@ -157,8 +164,9 @@ function bindModalEditar() {
                 <label class="form-label">Nombre</label>
                 <input type="text"
                     class="form-control"
+                    id="editNombre"
                     value="${rol.nombre}"
-                    readonly>
+                    disabled>
             </div>
 
             <div class="mb-3">
@@ -202,14 +210,14 @@ function bindModalEditar() {
                         document.getElementById('modalEditar')
                     ).hide();
 
-                    mostrarAlerta('Rol actualizado correctamente', 'success');
+                    mostrarExito('Rol actualizado correctamente', 'success');
 
                 } catch (err) {
                     if (err.errors) {
                         const msgs = Object.values(err.errors).flat().join(', ');
-                        mostrarAlerta(msgs, 'danger');
+                        mostrarError(msgs, 'danger');
                     } else {
-                        mostrarAlerta(err.message || 'Error actualizando rol', 'danger');
+                        mostrarError(err.message || 'Error actualizando rol', 'danger');
                     }
                 }
             });
@@ -217,63 +225,46 @@ function bindModalEditar() {
 }
 
 // ================================
-// ELIMINAR ROL
+// ELIMINAR ROL CON MODAL
 // ================================
 function bindEliminarRol() {
     document.querySelectorAll('.btn-eliminar').forEach(btn => {
-        btn.addEventListener('click', async function () {
+        btn.addEventListener('click', function () {
             const id = this.dataset.id;
             if (!id) return;
 
-            const confirmar = confirm('¿Estás seguro de eliminar este rol? Esta acción no se puede deshacer.');
-            if (!confirmar) return;
+            // Asignar id al botón de confirmación del modal
+            const btnConfirm = document.getElementById('btnConfirmarEliminar');
+            btnConfirm.dataset.id = id;
 
-            try {
-                await RolesApi.delete(id);
-                await cargarRoles();
-                mostrarAlerta('Rol eliminado correctamente', 'success');
-
-            } catch (error) {
-                // Error 409 = registro en uso
-                if (error.status === 409) {
-                    mostrarAlerta(
-                        'No se puede eliminar: el rol está asignado a usuarios',
-                        'warning'
-                    );
-                } else {
-                    mostrarAlerta(error.message || 'Error al eliminar el rol', 'danger');
-                }
-            }
+            // Mostrar el modal
+            const modal = new bootstrap.Modal(document.getElementById('modalEliminar'));
+            modal.show();
         });
     });
-}
 
-// ================================
-// UTILIDADES
-// ================================
-function truncar(texto, max) {
-    if (!texto) return '—';
-    return texto.length > max ? texto.substring(0, max) + '…' : texto;
-}
+    // Evento del botón confirmar eliminar
+    const btnConfirm = document.getElementById('btnConfirmarEliminar');
+    btnConfirm.addEventListener('click', async function () {
+        const id = this.dataset.id;
+        if (!id) return;
 
-function mostrarAlerta(msg, tipo = 'info') {
-    const container = document.getElementById('alert-container');
-    if (!container) { alert(msg); return; }
+        try {
+            await RolesApi.delete(id);
+            await cargarRoles();
 
-    const id  = `alert-${Date.now()}`;
-    const div = document.createElement('div');
-    div.id        = id;
-    div.className = `alert alert-${tipo} alert-dismissible fade show shadow-sm`;
-    div.role      = 'alert';
-    div.innerHTML = `
-        ${msg}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalEliminar'));
+            modal.hide();
 
-    container.appendChild(div);
+            mostrarExito('Rol eliminado correctamente', 'success');
 
-    setTimeout(() => {
-        const el = document.getElementById(id);
-        if (el) el.remove();
-    }, 4000);
+        } catch (error) {
+            if (error.status === 409) {
+                mostrarError('No se puede eliminar: el rol está asignado a usuarios', 'warning');
+            } else {
+                mostrarError(error.message || 'Error al eliminar el rol', 'danger');
+            }
+        }
+    });
 }

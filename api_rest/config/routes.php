@@ -195,10 +195,10 @@ $router->protectedSession('POST', '/salidas', 'Controllers\\SalidaController@sto
 $router->protectedSession('PUT', '/salidas/{id_registro}', 'Controllers\\SalidaController@update', [4,5]);
 $router->protectedSession('DELETE', '/salidas/{id_registro}', 'Controllers\\SalidaController@delete', [5]);
 
-// PERSONA EN SALIDA
-$router->protectedSession('GET', '/salidas/{id_registro}/personas', 'Controllers\\SalidaController@getPersona', [2,3,4,5]);
-$router->protectedSession('POST', '/salidas/{id_registro}/personas', 'Controllers\\SalidaController@setPersona', [2,3,4,5]);
-$router->protectedSession('DELETE', '/salidas/{id_registro}/personas/{id_bombero}', 'Controllers\\SalidaController@deletePersona', [2,3,4,5]);
+// // PERSONA EN SALIDA
+// $router->protectedSession('GET', '/salidas/{id_registro}/personas', 'Controllers\\SalidaController@getPersona', [2,3,4,5]);
+// $router->protectedSession('POST', '/salidas/{id_registro}/personas', 'Controllers\\SalidaController@setPersona', [2,3,4,5]);
+// $router->protectedSession('DELETE', '/salidas/{id_registro}/personas/{id_bombero}', 'Controllers\\SalidaController@deletePersona', [2,3,4,5]);
 
 
 //++++++++++++++++++++++++++++++ AVISOS ++++++++++++++++++++++++++++++

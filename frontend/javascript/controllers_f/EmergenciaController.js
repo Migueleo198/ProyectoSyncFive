@@ -1,8 +1,10 @@
 import EmergenciaApi from '../api_f/EmergenciaApi.js';
 import TipoEmergenciaApi from '../api_f/TipoEmergenciaApi.js';
+
 import VehiculoApi from '../api_f/VehiculoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
+
 
 let modalEquipoDesdeInsertar = false;
 let emergencias = [];
@@ -488,10 +490,19 @@ document.addEventListener('click', async function (e) {
       <div class="row mb-3">
         <div class="col-lg-4">
           <label class="form-label">Fecha</label>
+<<<<<<< HEAD
+          <input 
+            type="text" 
+            class="form-control" 
+            value="${formatearFechaHora(emergencia.fecha) || ''}"     
+            disabled
+          >
+=======
           <input type="text"
                  class="form-control"
                  value="${formatearFechaHora(emergencia.fecha) || ''}"
                  disabled>
+>>>>>>> main
         </div>
         <div class="col-lg-4">
           <label class="form-label">Estado</label>
@@ -525,20 +536,28 @@ document.addEventListener('click', async function (e) {
         </div>
         <div class="col-lg-4">
           <label class="form-label">Nombre Solicitante</label>
+<<<<<<< HEAD
+          <input type="text" class="form-control" name="nombre_solicitante" value="${emergencia.nombre_solicitante || ''}">
+=======
           <input type="text"
                  class="form-control"
                  name="nombre_solicitante"
                  value="${emergencia.nombre_solicitante || ''}">
+>>>>>>> main
         </div>
       </div>
 
       <div class="row mb-3">
         <div class="col-lg-4">
           <label class="form-label">Teléfono Solicitante</label>
+<<<<<<< HEAD
+          <input type="tel" class="form-control" name="tlf_solicitante" value="${emergencia.tlf_solicitante || ''}">
+=======
           <input type="tel"
                  class="form-control"
                  name="tlf_solicitante"
                  value="${emergencia.tlf_solicitante || ''}">
+>>>>>>> main
         </div>
         <div class="col-lg-8">
           <label class="form-label">Vehículos asignados</label>
@@ -584,6 +603,7 @@ document.addEventListener('click', async function (e) {
   const vehiculosNuevos     = vehiculosEnModal.filter(v => !vehiculosOriginales.includes(v.matricula));
   const vehiculosEliminados = vehiculosOriginales.filter(v => !vehiculosActuales.includes(v));
   const vehiculosExistentes = vehiculosEnModal.filter(v => vehiculosOriginales.includes(v.matricula));
+
 
   // 1. Eliminar vehículos quitados
   for (const matricula of vehiculosEliminados) {
@@ -660,6 +680,7 @@ document.addEventListener('click', async function (e) {
 // ================================
 // CAMPOS BD
 // ================================
+
 const camposBd = [
   'fecha',
   'estado',
@@ -698,6 +719,7 @@ document.addEventListener('click', async function (e) {
     { label: 'Teléfono',           valor: emergencia.tlf_solicitante    ?? '—' },
     { label: 'Descripción',        valor: emergencia.descripcion        ?? '—' },
   ];
+
 
   html += '<table class="table table-sm table-bordered mb-4">';
   filas.forEach(f => {
@@ -772,29 +794,3 @@ document.addEventListener('click', async function (e) {
   modalBody.innerHTML = html;
 });
 
-// ================================
-// MODAL ELIMINAR (AÑADIR SI SE REQUIERE)
-// ================================
-// document.addEventListener('click', function (e) {
-//   const btn = e.target.closest('.btn-eliminar');
-//   if (!btn) return;
-//   const id = btn.dataset.id;
-//   const btnConfirm = document.getElementById('btnConfirmarEliminar');
-//   btnConfirm.dataset.id = id;
-// });
-
-// document.getElementById('btnConfirmarEliminar')
-//   .addEventListener('click', async function () {
-//     const id = this.dataset.id;
-//     if (!id) return;
-//     try {
-//       await EmergenciaApi.delete(id);
-//       await cargarEmergencias();
-//       const modal = bootstrap.Modal.getInstance(
-//         document.getElementById('modalEliminar')
-//       );
-//       modal.hide();
-//     } catch (error) {
-//       mostrarError('Error al eliminar emergencia: ' + error.message);
-//     }
-// });
