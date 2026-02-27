@@ -151,18 +151,12 @@ public function create(array $data): int|false
     /**
      * Obtener todas las personas que tienen una guardia
      */
-    public function getPersonsByGuardia(string $id_guardia): array
+    public function getPersonsByGuardia(int $id_guardia): array
     {
         return $this->db
             ->query("
-                SELECT 
-                    p.*,
-                    phg.cargo
-                FROM Persona_Hace_Guardia phg
-                INNER JOIN Persona p 
-                    ON p.id_bombero = phg.id_bombero
-                WHERE phg.id_guardia = :id_guardia
-                ORDER BY p.id_bombero ASC
+                SELECT * from Persona_Hace_Guardia
+                WHERE id_guardia = :id_guardia 
             ")
             ->bind(':id_guardia', $id_guardia)
             ->fetchAll();
