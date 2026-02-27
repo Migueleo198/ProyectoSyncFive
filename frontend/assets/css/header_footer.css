@@ -70,3 +70,13 @@
         padding-left: 0;
     }
 
+    .alerta-activa {
+        animation: parpadeo 1s infinite;
+        color: #ff4444 !important;
+        filter: drop-shadow(0 0 6px #ff4444);
+    }
+
+    @keyframes parpadeo {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }

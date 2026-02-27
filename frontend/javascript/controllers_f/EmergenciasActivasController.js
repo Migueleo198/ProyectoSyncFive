@@ -1,19 +1,21 @@
 import EmergenciaApi from '../api_f/EmergenciaApi.js';
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
 
-let emergencias = []; // almacenamiento global
+let emergencias = [];
 
 document.addEventListener('DOMContentLoaded', () => {
-  cargarEmergenciasActivas();
-  bindEventos();
+  if (document.getElementById('contenedor-emergencias')) {
+    cargarEmergenciasActivas();
+    bindEventos();
+  }
 });
 
 // =================================
 // CARGAR EMERGENCIAS ACTIVAS
 // =================================
 async function cargarEmergenciasActivas() {
-
   const contenedor = document.getElementById('contenedor-emergencias');
+  if (!contenedor) return;
   contenedor.innerHTML = '';
 
   try {
@@ -44,7 +46,6 @@ async function cargarEmergenciasActivas() {
 // CREAR CARD
 // =================================
 function crearCard(e) {
-
   const card = document.createElement('div');
   card.className = 'card mb-4 shadow border-danger';
 
@@ -141,26 +142,22 @@ function bindEventos() {
       const id = btnCerrar.dataset.id;
       document.getElementById('cerrarEmergenciaId').value = id;
     }
-
   });
 
   // =============================
   // CONFIRMAR CIERRE
   // =============================
-  document
-  .getElementById('btnConfirmarCerrarEmergencia')
-  .addEventListener('click', async function () {
+  const btnConfirmar = document.getElementById('btnConfirmarCerrarEmergencia');
+  if (!btnConfirmar) return;
 
+  btnConfirmar.addEventListener('click', async function () {
     const id = document.getElementById('cerrarEmergenciaId').value;
     if (!id) return;
 
     try {
-
-      // 1️⃣ Obtener datos actuales
       const response = await EmergenciaApi.getById(id);
       const emergencia = response.data;
 
-      // 2️⃣ Construir objeto completo
       const data = {
         fecha: emergencia.fecha,
         descripcion: emergencia.descripcion,
@@ -172,9 +169,7 @@ function bindEventos() {
         tlf_solicitante: emergencia.tlf_solicitante
       };
 
-      // 3️⃣ Enviar update completo
       await EmergenciaApi.update(id, data);
-
       mostrarExito('Emergencia cerrada correctamente');
 
       const modal = bootstrap.Modal.getInstance(
@@ -183,9 +178,35 @@ function bindEventos() {
       modal.hide();
 
       await cargarEmergenciasActivas();
+      mostrarEmergenciasHeader();
 
     } catch (error) {
       mostrarError(error.message || 'Error cerrando emergencia');
     }
   });
+}
+
+// =================================
+// MOSTRAR CONTADOR EN HEADER
+// =================================
+export async function mostrarEmergenciasHeader() {
+  try {
+    const response = await EmergenciaApi.getAll();
+    emergencias = response.data;
+    const count = emergencias.filter(e => e.estado === 'ACTIVA').length;
+    const el = document.getElementById('header-emergencias-count');
+    const icono = document.querySelector('.bi-exclamation-triangle-fill');  // ✅ Selecciona el icono
+    if (!el) return;
+
+    if (count > 0) {
+      el.textContent = count;
+      el.style.display = 'inline-block';
+      icono?.classList.add('alerta-activa');       // ✅ Activa animación
+    } else {
+      el.style.display = 'none';
+      icono?.classList.remove('alerta-activa');    // ✅ Desactiva animación
+    }
+  } catch (error) {
+    console.error('Error cargando emergencias para el header:', error);
+  }
 }
