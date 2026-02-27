@@ -17,8 +17,8 @@ const GuardiaApi = {
     return ApiClient.put(`/guardias/${idGuardia}`, data);
   },
   assignToPerson(data) {
-    return ApiClient.post(`/personas/${data.n_funcionario}/guardias`, {
-      n_funcionario: data.n_funcionario,
+    return ApiClient.post(`/personas/${data.id_bombero}/guardias`, {
+      id_bombero: data.id_bombero,
       id_guardia: data.id_guardia,
       cargo: data.cargo
     });

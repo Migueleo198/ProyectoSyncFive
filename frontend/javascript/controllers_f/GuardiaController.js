@@ -72,7 +72,7 @@ async function cargarSelectPersonas(seleccionado, id_select) {
 
         res.data.forEach(p => {
             const option = document.createElement('option');
-            option.value = p.n_funcionario;
+            option.value = p.id_bombero;
             option.textContent = `${p.n_funcionario} - ${p.nombre} ${p.apellidos}`;
             if (seleccionado && p.n_funcionario === seleccionado) option.selected = true;
             select.appendChild(option);
@@ -160,12 +160,12 @@ function bindAsignarGuardia() {
         const f = new FormData(form);
 
         const data = {
-            n_funcionario: f.get('n_funcionario'),
+            id_bombero: f.get('n_funcionario'),
             id_guardia: f.get('id_guardia'),
             cargo: f.get('cargo')
         };
 
-        if (!data.n_funcionario || !data.id_guardia || !data.cargo) {
+        if (!data.id_bombero || !data.id_guardia || !data.cargo) {
             mostrarError('Seleccione guardia, persona y cargo');
             return;
         }

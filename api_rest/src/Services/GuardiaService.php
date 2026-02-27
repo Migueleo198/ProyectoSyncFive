@@ -211,7 +211,7 @@ public function createGuardia(array $input): array
         public function assignGuardiaToPerson(array $input): array
         {
             $data = Validator::validate($input, [
-                'n_funcionario' => 'required|string',
+                'id_bombero' => 'required|string',
                 'id_guardia'    => 'required|string',
                 'cargo'      => 'required|string|in:BOMBERO,OFICIAL,JEFE DE INTERVENCION,JEFE DE MANDO,INSPECTOR'
             ]);
@@ -225,7 +225,7 @@ public function createGuardia(array $input): array
                 }
 
                 $result = $this->model->assign(
-                    $data['n_funcionario'],
+                    $data['id_bombero'],
                     $data['id_guardia'],
                     $data['cargo']
                 );
