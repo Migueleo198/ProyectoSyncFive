@@ -212,9 +212,19 @@ class PersonaController
         }
     }
 
-
+    /**
+     * GET /personas/{id_bombero}/stats
+     * Devuelve todas las estadísticas del área personal en una sola llamada
+     */
+    public function getStats(Request $req, Response $res, string $id_bombero): void
+    {
+        try {
+            $stats = $this->service->getStats($id_bombero);
+            $res->status(200)->json($stats, "Estadísticas obtenidas correctamente");
+        } catch (Throwable $e) {
+            $code = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
 }
-
-    
-
 ?>

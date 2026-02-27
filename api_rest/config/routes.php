@@ -13,8 +13,6 @@ $router->patch('/auth/cambiar-contrasena', 'Controllers\\AuthSessionController@c
 $router->protectedSession('POST', '/auth/logout', 'Controllers\\AuthSessionController@logout', [1,2,3,4,5]);
 $router->protectedSession('GET', '/auth/me', 'Controllers\\AuthSessionController@me', [1,2,3,4,5]);
 
-
-//++++++++++++++++++++++++++++++ PERSONA ++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++ PERSONA ++++++++++++++++++++++++++++++
 $router->protectedSession('GET',    '/personas',              'Controllers\\PersonaController@index',  [1,2,3,4,5]);
 $router->protectedSession('GET',    '/personas/{id_bombero}', 'Controllers\\PersonaController@show',   [1,2,3,4,5]);
@@ -53,6 +51,8 @@ $router->protectedSession('DELETE', '/personas/{id_bombero}/turnos', 'Controller
 // GUARDIAS PERSONA
 $router->protectedSession('POST', '/personas/{id_bombero}/guardias', 'Controllers\\GuardiaController@assign', [4,5]);
 
+// ESTADÍSTICAS DE LA PERSONA
+$router->protectedSession('GET', '/personas/{id_bombero}/stats', 'Controllers\\PersonaController@getStats', [1,2,3,4,5]);
 
 //++++++++++++++++++++++++++++++ FORMACIONES ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/formaciones', 'Controllers\\FormacionController@index', [1,2,3,4,5]);

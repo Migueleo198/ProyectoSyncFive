@@ -278,5 +278,23 @@ public function updatePersona(string $id_bombero, array $input): array  // ← s
         if ($result === 0) {
             throw new \Exception("Material no encontrado para la persona", 404);
         }
-    }   
+    }
+    
+    /**
+     * Obtener todas las estadísticas del área personal en una sola llamada
+     */
+    public function getStats(string $id_bombero): array
+    {
+        // Verificar que la persona existe
+        $persona = $this->model->find($id_bombero);
+        if (!$persona) {
+            throw new \Exception("Persona no encontrada", 404);
+        }
+
+        try {
+            return $this->model->getStatsByBombero($id_bombero);
+        } catch (\Throwable $e) {
+            throw new \Exception("Error interno: " . $e->getMessage(), 500);
+        }
+    }
 }
