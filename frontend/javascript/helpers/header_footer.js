@@ -36,8 +36,16 @@ async function cargarHTML(id, fileName) {
 }
 
 // Ejecutar al cargar el DOM
-document.addEventListener("DOMContentLoaded", async () => {
-    cargarHTML("header-placeholder", "header.html");
-    cargarHTML("sidebar-placeholder", "sidebar.html");
-    cargarHTML("footer-placeholder", "footer.html");
-});
+async function initLayout() {
+    await cargarHTML("header-placeholder", "header.html");
+    await cargarHTML("sidebar-placeholder", "sidebar.html");
+    await cargarHTML("footer-placeholder", "footer.html");
+}
+
+// Funciona tanto si el DOM ya está listo como si todavía no
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initLayout);
+} else {
+    // DOMContentLoaded ya se disparó (script cargado dinámicamente)
+    initLayout();
+}
