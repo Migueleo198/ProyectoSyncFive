@@ -86,34 +86,42 @@
                         <tbody></tbody>
                     </table>
                 </div>
-                <!-- Contenedor insertar -->
+
+                
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Insertar Carnet a Funcionario</h5>
+                    <h5 class="text-center mb-4">Asignar Carnet a Funcionario</h5>
                     <form id="formInsertar" class="mx-auto">
-                        <!-- Campos en la misma fila -->
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label class="m-2" for="seleccionarCarnet">ID_Carnet:</label>
-                                <select class="form-select form-select-sm mt-1 filtro" id="seleccionarCarnet" data-col="2">
-                                    <option value="">ID_Carnet</option>
-
-                                </select>  
-                                  
+                                <label class="form-label" for="seleccionarCarnet">Carnet:</label>
+                                <select class="form-select" id="seleccionarCarnet" name="seleccionarCarnet" required>
+                                    <option value="">Seleccione carnet...</option>
+                                </select>
                             </div>
+
                             <div class="col-md-6">
-                                <label class="m-2" for="id_bombero">ID Bombero:</label>
-                                <select class="form-select form-select-sm mt-1 filtro" id="id_bombero" data-col="2">
-                                </select>   
+                                <label class="form-label" for="id_bombero">Bombero:</label>
+                                <select class="form-select" id="id_bombero" name="id_bombero" required>
+                                    <option value="">Seleccione bombero...</option>
+                                </select>
                             </div>
                         </div>
-                        <!-- Botones centrados debajo -->
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="f_obtencion">Fecha Obtención:</label>
+                                <input type="date" class="form-control" id="f_obtencion" name="f_obtencion" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label" for="f_vencimiento">Fecha Vencimiento:</label>
+                                <input type="date" class="form-control" id="f_vencimiento" name="f_vencimiento" required>
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-center gap-2">
-                            <button type="reset" class="btn btn-secondary">
-                                Limpiar
-                            </button>
-                            <button type="submit" class="btn btn-primary" id="btnInsertar">
-                                Insertar
-                            </button>
+                            <button type="reset" class="btn btn-secondary">Limpiar</button>
+                            <button type="submit" class="btn btn-primary">Asignar</button>
                         </div>
                     </form>
                 </div>

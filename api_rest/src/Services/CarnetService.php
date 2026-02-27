@@ -74,7 +74,7 @@ class CarnetService
             'duracion_meses'      => 'int|min:1',
 
             // Asociación a persona (actualizada a string)
-            'n_funcionario' => 'string'
+            'id_bombero' => 'string'
         ]);
 
         if (empty($data)) {
@@ -149,9 +149,9 @@ class CarnetService
     }
 
     /**
-     * Obtener todas las personas asociadas a un carnet
+     * Obtener todas las personas asociadas a un carnet NO SE USA TODAVIA PARA UNA FURUTA EXPANSION
      */
-    public function getPersonsByCarnet(string $ID_Carnet): array
+/*     public function getPersonsByCarnet(string $ID_Carnet): array
     {
         Validator::validate(['ID_Carnet' => $ID_Carnet], [
             'ID_Carnet' => 'required|string'
@@ -173,14 +173,17 @@ class CarnetService
                 500
             );
         }
-    }
+    } */
+
+
+        
     /**
      * Asignar carnet a una persona
      */
-    public function assignCarnetToPerson(array $input): array
+    public function assign(array $input): array
     {
         $data = Validator::validate($input, [
-            'n_funcionario' => 'required|string',
+            'id_bombero' => 'required|string',
             'ID_Carnet'     => 'required|string',
             'f_obtencion'   => 'required|string',
             'f_vencimiento' => 'required|string'
@@ -193,8 +196,8 @@ class CarnetService
                 throw new \Exception("Carnet no encontrado", 404);
             }
 
-            $result = $this->model->assignToPerson(
-                $data['n_funcionario'],
+            $result = $this->model->assign(
+                $data['id_bombero'],
                 $data['ID_Carnet'],
                 $data['f_obtencion'],
                 $data['f_vencimiento']
@@ -233,18 +236,18 @@ public function getCarnetById(int $id): array
     /**
      * Eliminar asignación carnet-persona
      */
-    public function unassignCarnetFromPerson(string $n_funcionario, string $ID_Carnet): array
+    public function unassignCarnetFromPerson(string $id_bombero, string $ID_Carnet): array
     {
         Validator::validate([
-            'n_funcionario' => $n_funcionario,
+            'id_bombero' => $id_bombero,
             'ID_Carnet'     => $ID_Carnet
         ], [
-            'n_funcionario' => 'required|string',
+            'id_bombero' => 'required|string',
             'ID_Carnet'     => 'required|string'
         ]);
 
         try {
-            $result = $this->model->unassignFromPerson($n_funcionario, $ID_Carnet);
+            $result = $this->model->unassignFromPerson($id_bombero, $ID_Carnet);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),

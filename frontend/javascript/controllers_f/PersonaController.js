@@ -1,11 +1,15 @@
 import PersonaApiApi from '../api_f/PersonaApi.js';
 import LocalidadApi from '../api_f/LocalidadApi.js';
+import RolApi from '../api_f/RolApi.js';
+
 let personas = []; // variable global para almacenar personas
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
   cargarPersonas();
   bindCrearPersona();
-
+  cargarSelectRoles();
 });
 
 // ================================
@@ -20,6 +24,26 @@ async function cargarPersonas() {
   } catch (e) {
     mostrarError(e.message || 'Error cargando personas');
   }
+}
+
+
+async function cargarSelectRoles() {
+    const select = document.getElementById('rol');
+    if (!select) return;
+
+    try {
+        const res = await RolApi.getAll();
+        select.innerHTML = '<option value="">Seleccione rol...</option>';
+
+        res.data.forEach(r => {
+            const option = document.createElement('option');
+            option.value = r.id_rol;         // ajusta según el campo de tu BD
+            option.textContent = r.nombre; // ajusta según el campo de tu BD
+            select.appendChild(option);
+        });
+    } catch (e) {
+        mostrarError(e.message || 'Error cargando roles');
+    }
 }
 // ================================
 // ERRORES / ÉXITO
@@ -389,6 +413,7 @@ function mostrarExito(msg) {
   `;
   container.append(wrapper);
 }
+
 // ================================
 // MODAL VER
 // ================================
