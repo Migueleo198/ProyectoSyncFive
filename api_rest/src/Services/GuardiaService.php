@@ -35,14 +35,14 @@ class GuardiaService
     /**
      * Obtener un guardia por su ID (string)
      */
-    public function getGuardiaById(string $ID_Guardia): array
+    public function getGuardiaById(string $id_guardia): array
     {
-        Validator::validate(['ID_Guardia' => $ID_Guardia], [
-            'ID_Guardia' => 'required|string'
+        Validator::validate(['id_guardia' => $id_guardia], [
+            'id_guardia' => 'required|string'
         ]);
 
         try {
-            $guardia = $this->model->find($ID_Guardia);
+            $guardia = $this->model->find($id_guardia);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -60,47 +60,53 @@ class GuardiaService
     /**
      * Crear un guardia
      */
-    public function createGuardia(array $input): array
-    {
-        $data = Validator::validate($input, [
-            'id_guardia'     => 'required|string',
-            'fecha'        => 'required|date',
-            'h_inicio'          => 'required|int',
-            'h_fin'          => 'required|int',
-            'horas'      => 'int'
-        ]);
+public function createGuardia(array $input): array
+{
+    $data = Validator::validate($input, [
+        'fecha'    => 'required|date',
+        'h_inicio' => 'required|string',
+        'h_fin'    => 'required|string',
+        'notas'    => 'string'
+    ]);
 
-        try {
-            $id = $this->model->create($data);
-        } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
-        }
-
-        if (!$id) {
-            throw new \Exception("No se pudo crear la guardia");
-        }
-
-        return ['ID_Guardia' => $data['ID_Guardia']];
+    try {
+        $id = $this->model->create($data);
+    } catch (Throwable $e) {
+        throw new \Exception(
+            "Error interno en la base de datos: " . $e->getMessage(),
+            500
+        );
     }
+
+    if (!$id) {
+        throw new \Exception("No se pudo crear la guardia");
+    }
+
+    return [
+        'id_guardia' => $id,
+        'fecha' => $data['fecha'],
+        'h_inicio' => $data['h_inicio'],
+        'h_fin' => $data['h_fin'],
+        'notas' => $data['notas'] ?? null
+    ];
+}
 
     /**
      * Actualizar guardia
      */
-    public function updateGuardia(string $ID_Guardia, array $input): array
+    public function updateGuardia(string $id_guardia, array $input): array
     {
-        Validator::validate(['ID_Guardia' => $ID_Guardia], [
-            'ID_Guardia' => 'required|string'
+        // Validar solo que el ID exista como parámetro
+        Validator::validate(['id_guardia' => $id_guardia], [
+            'id_guardia' => 'required|string'
         ]);
 
+        // Validar solo los campos que vienen en $input
         $data = Validator::validate($input, [
-            'ID_Guardia'     => 'required|string',
-            'Fecha'        => 'required|date',
-            'H_inicio'          => 'required|int',
-            'H_fin'          => 'required|int',
-            'horas'      => 'int'
+            'fecha'    => 'sometimes|date',
+            'h_inicio' => 'sometimes|string',
+            'h_fin'    => 'sometimes|string',
+            'notas'    => 'sometimes|string'
         ]);
 
         if (empty($data)) {
@@ -110,7 +116,7 @@ class GuardiaService
         }
 
         try {
-            $result = $this->model->update($ID_Guardia, $data);
+            $result = $this->model->update($id_guardia, $data);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -119,42 +125,42 @@ class GuardiaService
         }
 
         if ($result === 0) {
-            $exists = $this->model->find($ID_Guardia);
+            $exists = $this->model->find($id_guardia);
 
             if (!$exists) {
-                throw new \Exception("Guardia no encontrado", 404);
+                throw new \Exception("Guardia no encontrada", 404);
             }
 
             return [
                 'status'  => 'no_changes',
-                'message' => 'No hubo cambios en el guardia'
+                'message' => 'No hubo cambios en la guardia'
             ];
         }
 
         if ($result === -1) {
             throw new \Exception(
-                "No se pudo actualizar el guardia: conflicto con restricciones",
+                "No se pudo actualizar la guardia: conflicto con restricciones",
                 409
             );
         }
 
         return [
             'status'  => 'updated',
-            'message' => 'Guardia actualizado correctamente'
+            'message' => 'Guardia actualizada correctamente'
         ];
     }
 
     /**
      * Eliminar un guardia
      */
-    public function deleteGuardia(string $ID_Guardia): void
+    public function deleteGuardia(int $id_guardia): void
     {
-        Validator::validate(['ID_Guardia' => $ID_Guardia], [
-            'ID_Guardia' => 'required|string'
+        Validator::validate(['id_guardia' => $id_guardia], [
+            'id_guardia' => 'required|int'
         ]);
 
         try {
-            $result = $this->model->delete($ID_Guardia);
+            $result = $this->model->delete($id_guardia);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -173,54 +179,78 @@ class GuardiaService
             );
         }
     }
+    /**
+ * Obtener todas las personas asociadas a una guardia NO SE USA TODAVIA PARA UNA FURUTA EXPANSION
+ */
+/*     public function getPersonsByGuardia(string $id_guardia): array
+    {
+        Validator::validate(['id_guardia' => $id_guardia], [
+            'id_guardia' => 'required|string'
+        ]);
+
+        try {
+            // Verificar que la guardia exista
+            $exists = $this->model->find($id_guardia);
+
+            if (!$exists) {
+                throw new \Exception("Guardia no encontrada", 404);
+            }
+
+            return $this->model->getPersonsByGuardia($id_guardia);
+
+        } catch (Throwable $e) {
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
+        }
+    } */
         /**
          * POST /Guardia/assign
          */
-        public function assignGuardiaToPerson(array $data): array
+        public function assignGuardiaToPerson(array $input): array
         {
-            Validator::validate($data, [
-                'n_funcionario' => 'required|int',
-                'ID_Guardia' => 'required|string'
+            $data = Validator::validate($input, [
+                'id_bombero' => 'required|string',
+                'id_guardia'    => 'required|string',
+                'cargo'      => 'required|string|in:BOMBERO,OFICIAL,JEFE DE INTERVENCION,JEFE DE MANDO,INSPECTOR'
             ]);
 
             try {
-                return $this->model->assignGuardiaToPerson($data['n_funcionario'], $data['ID_Guardia']);
+                // Verificar que la guardia exista
+                $exists = $this->model->find($data['id_guardia']);
+
+                if (!$exists) {
+                    throw new \Exception("Guardia no encontrada", 404);
+                }
+
+                $result = $this->model->assign(
+                    $data['id_bombero'],
+                    $data['id_guardia'],
+                    $data['cargo']
+                );
+
             } catch (Throwable $e) {
                 throw new \Exception(
                     "Error interno en la base de datos: " . $e->getMessage(),
                     500
                 );
             }
-        }
 
-        /**
-         * DELETE /Guardia/unassign
-         */
-        public function unassignGuardiaFromPerson(int $n_funcionario, string $ID_Guardia): array
-        {
-            Validator::validate([
-                'n_funcionario' => $n_funcionario,
-                'ID_Guardia' => $ID_Guardia
-            ], [
-                'n_funcionario' => 'required|int',
-                'ID_Guardia' => 'required|string'
-            ]);
-
-            try {
-                return $this->model->unassignGuardiaFromPerson($n_funcionario, $ID_Guardia);
-            } catch (Throwable $e) {
-                throw new \Exception(
-                    "Error interno en la base de datos: " . $e->getMessage(),
-                    500
-                );
+            if (!$result) {
+                throw new \Exception("No se pudo asignar la guardia", 409);
             }
+
+            return [
+                'status'  => 'assigned',
+                'message' => 'Guardia asignada correctamente'
+            ];
         }
-          
 
         /**
          * DELETE /Guardia/unassign
          */
-        public function unassign(Request $req, Response $res): void
+/*         public function unassign(Request $req, Response $res): void
         {
             try {
                 $data = $req->json();
@@ -232,7 +262,7 @@ class GuardiaService
                 $code = $e->getCode() >= 400 ? $e->getCode() : 500;
                 $res->errorJson($e->getMessage(), $code);
             }
-        }
+        } */
 
         }
 

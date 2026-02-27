@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarCarnetsDisponibles(null, 'seleccionarCarnet');
   cargarBomberosDisponibles(null, 'id_bombero');
   bindCrearCarnet();
-  // cargarSelectVehiculos();
+  bindAsignarCarnet();
 });
 
 // ================================
@@ -345,3 +345,33 @@ async function cargarBomberosDisponibles(bomberoSeleccionado, id_select) {
   }
 }
  
+// ================================
+// Asignar CARNET a Persona
+// ================================
+function bindAsignarCarnet() {
+  const form = document.getElementById('formInsertar');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const f = new FormData(form);
+
+    const data = {
+      id_bombero:    f.get('id_bombero'),  // ← AÑADIR ID del bombero
+      ID_Carnet:     f.get('seleccionarCarnet'),  // ← Mayúscula si así está en BD
+      f_obtencion:   f.get('f_obtencion'),        // ← AÑADIR fechas
+      f_vencimiento: f.get('f_vencimiento')       // ← AÑADIR fechas
+    };
+
+    try {
+      // Usar el endpoint correcto para asignar (NO create)
+      await CarnetApiApi.assignToPerson(data);
+      await cargarCarnets();
+      form.reset();
+      mostrarExito('Carnet asignado correctamente');
+    } catch (err) {
+      mostrarError(err.message || 'Error asignando carnet');
+    }
+  });
+}

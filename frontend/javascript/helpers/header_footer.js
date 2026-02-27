@@ -1,5 +1,6 @@
 // Recibimos el nombre de usuario y logouts
 import { mostrarNombreUsuario, bindLogoutButtons } from '../controllers_f/AuthController.js';
+import { mostrarEmergenciasHeader } from '../controllers_f/EmergenciasActivasController.js';
 
 // Carga HTML en un contenedor usando getPath de config.js
 async function cargarHTML(id, fileName) {
@@ -23,6 +24,7 @@ async function cargarHTML(id, fileName) {
         // EJECUTAR LÓGICA POST-CARGA
         if (fileName === 'header.html') {
             mostrarNombreUsuario();
+            mostrarEmergenciasHeader();
         }
         
         if (fileName === 'sidebar.html') {
