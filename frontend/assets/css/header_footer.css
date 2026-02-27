@@ -72,7 +72,7 @@
 
     .alerta-activa {
         animation: parpadeo 1s infinite;
-        color: #ff4444 !important;
+        color: #ffc107 !important;
         filter: drop-shadow(0 0 6px #ff4444);
     }
 
