@@ -184,13 +184,12 @@ class AlmacenController
 
     /**
      * DELETE /almacenes/{id_almacen}/material/{id_material}
-     * Body: {id_instalacion}
      */
     public function deleteMaterial(Request $req, Response $res, string $id_almacen, string $id_material): void
     {
         try {
-            $input = $req->json();
-            $this->service->deleteMaterialFromAlmacen((int) $id_almacen, (int) $id_material, $input);
+            // NO INTENTAR LEER EL BODY - elimina cualquier línea con $req->json()
+            $this->service->deleteMaterialFromAlmacen((int) $id_almacen, (int) $id_material);
             
             $res->status(200)->json([], "Material eliminado correctamente del almacén");
         } catch (ValidationException $e) {

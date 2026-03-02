@@ -170,14 +170,30 @@ class AlmacenService
         }
     }
 
+    /**
+     * Asignar material a un almacén
+     * SOLO UNO de los dos campos: unidades O n_serie
+     */
     public function setMaterialToAlmacen(int $id_almacen, array $input): array
     {
         $data = Validator::validate($input, [
             'id_instalacion' => 'required|int|min:1',
             'id_material' => 'required|int|min:1',
             'n_serie' => 'optional|int|min:1',
-            'unidades' => 'required|int|min:1'
+            'unidades' => 'optional|int|min:1'
         ]);
+
+        // Validar que venga SOLO uno de los dos campos
+        $tieneUnidades = isset($data['unidades']);
+        $tieneNserie = isset($data['n_serie']);
+        
+        if (!$tieneUnidades && !$tieneNserie) {
+            throw new \Exception("Debe especificar unidades o número de serie", 400);
+        }
+        
+        if ($tieneUnidades && $tieneNserie) {
+            throw new \Exception("No puede especificar unidades y número de serie a la vez", 400);
+        }
 
         $almacen = $this->model->find($id_almacen);
         if (!$almacen) {
@@ -193,6 +209,7 @@ class AlmacenService
             throw new \Exception("Material no encontrado", 404);
         }
 
+        // Verificar si el material ya existe en este almacén/instalación
         $materialExistente = $this->model->getMaterialEnAlmacen(
             $id_almacen, 
             $data['id_instalacion'], 
@@ -203,11 +220,8 @@ class AlmacenService
             throw new \Exception("El material ya existe en este almacén para esta instalación", 409);
         }
 
-        if (isset($data['n_serie']) && $data['n_serie'] > 0) {
-            if ($this->model->existeNserieEnAlmacen($id_almacen, $data['n_serie'])) {
-                throw new \Exception("El número de serie ya existe en este almacén", 409);
-            }
-        }
+        // NOTA: Se ha eliminado la validación de número de serie duplicado
+        // Ahora se permiten números de serie duplicados en el mismo almacén
 
         try {
             $affected = $this->model->addMaterialToAlmacen(
@@ -215,7 +229,7 @@ class AlmacenService
                 $data['id_instalacion'],
                 $data['id_material'],
                 $data['n_serie'] ?? null,
-                $data['unidades']
+                $data['unidades'] ?? 1 // Si viene por n_serie, ponemos 1 por defecto
             );
 
             if ($affected === 0) {
@@ -255,14 +269,8 @@ class AlmacenService
             throw new \Exception("Material no encontrado en este almacén para esta instalación", 404);
         }
 
-        if (isset($data['n_serie']) && $data['n_serie'] > 0) {
-            $nSerieActual = $materialEnAlmacen['n_serie'] ?? 0;
-            if ($data['n_serie'] != $nSerieActual) {
-                if ($this->model->existeNserieEnAlmacen($id_almacen, $data['n_serie'])) {
-                    throw new \Exception("El número de serie ya existe en este almacén", 409);
-                }
-            }
-        }
+        // NOTA: Se ha eliminado la validación de número de serie duplicado
+        // Ahora se permiten números de serie duplicados en el mismo almacén
 
         try {
             $affected = $this->model->updateMaterialInAlmacen(
@@ -289,40 +297,47 @@ class AlmacenService
         }
     }
 
-    public function deleteMaterialFromAlmacen(int $id_almacen, int $id_material, array $input): void
+    /**
+     * Eliminar material de un almacén
+     * Ya no requiere id_instalacion en el input, se obtiene de la BD
+     */
+    public function deleteMaterialFromAlmacen(int $id_almacen, int $id_material): void
     {
-        $data = Validator::validate($input, [
-            'id_instalacion' => 'required|int|min:1'
-        ]);
-
-        $almacen = $this->model->find($id_almacen);
-        if (!$almacen) {
-            throw new \Exception("Almacén no encontrado", 404);
-        }
-
-        $materialEnAlmacen = $this->model->getMaterialEnAlmacen(
-            $id_almacen, 
-            $data['id_instalacion'], 
-            $id_material
-        );
-        
-        if (!$materialEnAlmacen) {
-            throw new \Exception("Material no encontrado en este almacén para esta instalación", 404);
-        }
-
         try {
-            $affected = $this->model->deleteMaterialFromAlmacen(
-                $id_almacen,
-                $data['id_instalacion'],
-                $id_material
-            );
-            
-            if ($affected === 0) {
-                throw new \Exception("No se pudo eliminar el material del almacén", 500);
+            // Validar que el almacén existe
+            $almacen = $this->model->find($id_almacen);
+            if (!$almacen) {
+                throw new \Exception("Almacén no encontrado", 404);
             }
-        } catch (Throwable $e) {
-            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+
+            // Obtener las instalaciones de este almacén
+            $instalaciones = $this->model->getInstalacionesDeAlmacen($id_almacen);
+            
+            $eliminado = false;
+            
+            // Buscar en qué instalación está el material y eliminarlo
+            foreach ($instalaciones as $inst) {
+                $id_instalacion = $inst['id_instalacion'];
+                
+                // Verificar si existe el material en esta instalación
+                $material = $this->model->getMaterialEnAlmacen($id_almacen, $id_instalacion, $id_material);
+                
+                if ($material) {
+                    // Eliminar usando el modelo
+                    $affected = $this->model->deleteMaterialFromAlmacen($id_almacen, $id_instalacion, $id_material);
+                    if ($affected > 0) {
+                        $eliminado = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!$eliminado) {
+                throw new \Exception("No existe la asignación del material en este almacén", 404);
+            }
+            
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 }
-?>

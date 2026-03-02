@@ -205,8 +205,7 @@ class AlmacenModel
         return $result !== null;
     }
 
-    public function addMaterialToAlmacen(int $id_almacen, int $id_instalacion, int $id_material, ?int $n_serie, int $unidades): int
-    {
+    public function addMaterialToAlmacen(int $id_almacen, int $id_instalacion, int $id_material, ?int $n_serie, int $unidades): int    {
         $this->db->query("
             INSERT INTO Almacen_material (
                 id_almacen, 

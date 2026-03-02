@@ -212,8 +212,6 @@ function bindCrearMaterial() {
 
 
 // OBTENER ASIGNACIONES CON CACHE
-// IMPORTANTE: añadir al MaterialApi.js el método:
-//   getCompleto() { return ApiClient.get('/materiales/completo'); }
 
 async function obtenerAsignacionesMaterial(idMaterial) {
     if (asignacionesCache.has(idMaterial)) {
@@ -241,8 +239,6 @@ async function obtenerAsignacionesMaterial(idMaterial) {
 
 
 // EXTRAER NOMBRE DE INSTALACIÓN DESDE EL CAMPO 'elemento'
-// El campo viene como "Nombre almacén (Nombre instalación)"
-// Ej: "Almacén Princf (Parque Central)" → "Parque Central"
 
 function extraerNombreInstalacion(elemento) {
     if (!elemento) return null;
@@ -250,7 +246,6 @@ function extraerNombreInstalacion(elemento) {
     return match ? match[1].trim() : null;
 }
 
-// Extrae el nombre del almacén sin el sufijo "(instalación)"
 function extraerNombreAlmacen(elemento) {
     if (!elemento) return elemento;
     return elemento.replace(/\s*\([^)]+\)\s*$/, '').trim();
@@ -469,7 +464,6 @@ function bindModales() {
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <!-- Selector unidades o nserie -->
                                     <label class="form-label form-label-sm">Asignar por</label>
                                     <select class="form-select form-select-sm" id="modoAsigVehiculo">
                                         <option value="unidades">Unidades</option>
@@ -539,7 +533,6 @@ function bindModales() {
                                     </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <!-- Selector unidades o nserie -->
                                     <label class="form-label form-label-sm">Asignar por</label>
                                     <select class="form-select form-select-sm" id="modoAsigAlmacen">
                                         <option value="unidades">Unidades</option>
@@ -552,7 +545,7 @@ function bindModales() {
                                 </div>
                                 <div class="col-md-2 d-none" id="wrapAlmacenNserie">
                                     <label class="form-label form-label-sm">Nº Serie</label>
-                                    <input type="text" class="form-control form-control-sm" id="asigAlmacenNserie" placeholder="ej: ALM-001">
+                                    <input type="text" class="form-control form-control-sm" id="asigAlmacenNserie" placeholder="ej: 12345">
                                 </div>
                                 <div class="col-md-2">
                                     <button type="button" class="btn btn-success btn-sm w-100" id="btnAsignarAlmacen">Asignar</button>
@@ -672,153 +665,206 @@ function bindEventosModalEditar(form) {
     });
 
     // Toggle unidades / nserie en VEHÍCULO
-    form.querySelector('#modoAsigVehiculo').addEventListener('change', function () {
-        const esNserie = this.value === 'nserie';
-        form.querySelector('#wrapVehiculoUnidades').classList.toggle('d-none', esNserie);
-        form.querySelector('#wrapVehiculoNserie').classList.toggle('d-none', !esNserie);
-    });
+    const modoVehiculo = form.querySelector('#modoAsigVehiculo');
+    if (modoVehiculo) {
+        modoVehiculo.addEventListener('change', function () {
+            const esNserie = this.value === 'nserie';
+            form.querySelector('#wrapVehiculoUnidades').classList.toggle('d-none', esNserie);
+            form.querySelector('#wrapVehiculoNserie').classList.toggle('d-none', !esNserie);
+        });
+    }
 
     // Toggle unidades / nserie en ALMACÉN
-    form.querySelector('#modoAsigAlmacen').addEventListener('change', function () {
-        const esNserie = this.value === 'nserie';
-        form.querySelector('#wrapAlmacenUnidades').classList.toggle('d-none', esNserie);
-        form.querySelector('#wrapAlmacenNserie').classList.toggle('d-none', !esNserie);
-    });
+    const modoAlmacen = form.querySelector('#modoAsigAlmacen');
+    if (modoAlmacen) {
+        modoAlmacen.addEventListener('change', function () {
+            const esNserie = this.value === 'nserie';
+            form.querySelector('#wrapAlmacenUnidades').classList.toggle('d-none', esNserie);
+            form.querySelector('#wrapAlmacenNserie').classList.toggle('d-none', !esNserie);
+        });
+    }
 
     // Asignar vehículo
-    form.querySelector('#btnAsignarVehiculo').addEventListener('click', async () => {
-        const matricula = form.querySelector('#asigVehiculoSelect').value;
-        const modo      = form.querySelector('#modoAsigVehiculo').value;
+    const btnAsignarVehiculo = form.querySelector('#btnAsignarVehiculo');
+    if (btnAsignarVehiculo) {
+        btnAsignarVehiculo.addEventListener('click', async () => {
+            const matricula = form.querySelector('#asigVehiculoSelect').value;
+            const modo      = form.querySelector('#modoAsigVehiculo').value;
 
-        if (!matricula) return mostrarError('Seleccione un vehículo');
+            if (!matricula) return mostrarError('Seleccione un vehículo');
 
-        // Construir payload con SOLO el campo que corresponde (nunca los dos)
-        let payload = {};
-        if (modo === 'unidades') {
-            const unidades = parseInt(form.querySelector('#asigVehiculoUnidades').value);
-            if (!unidades || unidades < 1) return mostrarError('Unidades inválidas');
-            payload = { unidades };
-        } else {
-            const nserie = form.querySelector('#asigVehiculoNserie').value.trim();
-            if (!nserie) return mostrarError('Introduzca el número de serie');
-            payload = { nserie };
-        }
+            let payload = {};
+            if (modo === 'unidades') {
+                const unidades = parseInt(form.querySelector('#asigVehiculoUnidades').value);
+                if (!unidades || unidades < 1) return mostrarError('Unidades inválidas');
+                payload = { unidades };
+            } else {
+                const nserie = form.querySelector('#asigVehiculoNserie').value.trim();
+                if (!nserie) return mostrarError('Introduzca el número de serie');
+                payload = { nserie };
+            }
 
-        try {
-            await MaterialApi.assignToVehiculo(matricula, currentMaterialId, payload);
-            mostrarExito('Asignado correctamente');
-        } catch (e) {
-            console.error('Error asignando vehículo:', e);
-            mostrarError(e.message || 'Error al asignar vehículo');
-        } finally {
-            asignacionesCache.delete(currentMaterialId);
-            const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
-            renderTablaVehiculos(nuevas.vehiculos);
+            try {
+                await MaterialApi.assignToVehiculo(matricula, currentMaterialId, payload);
+                mostrarExito('Asignado correctamente');
+            } catch (e) {
+                console.error('Error asignando vehículo:', e);
+                mostrarError(e.message || 'Error al asignar vehículo');
+            } finally {
+                asignacionesCache.delete(currentMaterialId);
+                const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+                renderTablaVehiculos(nuevas.vehiculos);
 
-            form.querySelector('#asigVehiculoSelect').value = '';
-            form.querySelector('#asigVehiculoUnidades').value = '1';
-            form.querySelector('#asigVehiculoNserie').value = '';
-            form.querySelector('#modoAsigVehiculo').value = 'unidades';
-            form.querySelector('#wrapVehiculoUnidades').classList.remove('d-none');
-            form.querySelector('#wrapVehiculoNserie').classList.add('d-none');
-        }
-    });
+                form.querySelector('#asigVehiculoSelect').value = '';
+                form.querySelector('#asigVehiculoUnidades').value = '1';
+                form.querySelector('#asigVehiculoNserie').value = '';
+                form.querySelector('#modoAsigVehiculo').value = 'unidades';
+                form.querySelector('#wrapVehiculoUnidades').classList.remove('d-none');
+                form.querySelector('#wrapVehiculoNserie').classList.add('d-none');
+            }
+        });
+    }
 
-    // Asignar persona (nserie va en la URL, hay que encodearla)
-    form.querySelector('#btnAsignarPersona').addEventListener('click', async function () {
-        const id_bombero = String(form.querySelector('#asigPersonaSelect').value);
-        const nserie     = form.querySelector('#asigPersonaNserie').value.trim();
+    // Asignar persona
+    const btnAsignarPersona = form.querySelector('#btnAsignarPersona');
+    if (btnAsignarPersona) {
+        btnAsignarPersona.addEventListener('click', async function () {
+            const id_bombero = String(form.querySelector('#asigPersonaSelect').value);
+            const nserie     = form.querySelector('#asigPersonaNserie').value.trim();
 
-        if (!id_bombero) return mostrarError('Seleccione una persona');
-        if (!nserie)     return mostrarError('El número de serie es obligatorio');
+            if (!id_bombero) return mostrarError('Seleccione una persona');
+            if (!nserie)     return mostrarError('El número de serie es obligatorio');
 
-        // El nserie va en la URL: hay que encodear caracteres especiales
-        const nserieEncoded = encodeURIComponent(nserie);
+            const nserieEncoded = encodeURIComponent(nserie);
 
-        const btn = this;
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
-        try {
-            // assignToPersona usa: /personas/{id_bombero}/material/{id_material}/{nserie}
-            await MaterialApi.assignToPersona(id_bombero, currentMaterialId, nserieEncoded);
-            mostrarExito('Asignado correctamente');
-        } catch (e) {
-            console.error('Error asignando persona:', e);
-            mostrarError(e.message || 'Error al asignar persona');
-        } finally {
-            asignacionesCache.delete(currentMaterialId);
-            const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
-            renderTablaPersonas(nuevas.personas);
+            try {
+                await MaterialApi.assignToPersona(id_bombero, currentMaterialId, nserieEncoded);
+                mostrarExito('Asignado correctamente');
+            } catch (e) {
+                console.error('Error asignando persona:', e);
+                mostrarError(e.message || 'Error al asignar persona');
+            } finally {
+                asignacionesCache.delete(currentMaterialId);
+                const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+                renderTablaPersonas(nuevas.personas);
 
-            form.querySelector('#asigPersonaSelect').value = '';
-            form.querySelector('#asigPersonaNserie').value = '';
+                form.querySelector('#asigPersonaSelect').value = '';
+                form.querySelector('#asigPersonaNserie').value = '';
 
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
-    });
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+    }
 
     // Cambio instalación → cargar almacenes
-    form.querySelector('#asigInstalacionSelect').addEventListener('change', function () {
-        cargarAlmacenesEnSelect(this.value);
-    });
+    const instalacionSelect = form.querySelector('#asigInstalacionSelect');
+    if (instalacionSelect) {
+        instalacionSelect.addEventListener('change', function () {
+            cargarAlmacenesEnSelect(this.value);
+        });
+    }
 
-    // Asignar almacén
-    form.querySelector('#btnAsignarAlmacen').addEventListener('click', async () => {
-        const id_instalacion = parseInt(form.querySelector('#asigInstalacionSelect').value);
-        const id_almacen     = parseInt(form.querySelector('#asigAlmacenSelect').value);
-        const modo           = form.querySelector('#modoAsigAlmacen').value;
+    // ============================================
+    // ASIGNAR ALMACÉN - VERSIÓN FINAL FUNCIONAL
+    // ============================================
+    const btnAsignarAlmacen = form.querySelector('#btnAsignarAlmacen');
+    if (btnAsignarAlmacen) {
+        // Eliminar event listeners anteriores
+        btnAsignarAlmacen.replaceWith(btnAsignarAlmacen.cloneNode(true));
+        const nuevoBtn = form.querySelector('#btnAsignarAlmacen');
+        
+        nuevoBtn.addEventListener('click', async () => {
+            const id_instalacion = parseInt(form.querySelector('#asigInstalacionSelect').value);
+            const id_almacen     = parseInt(form.querySelector('#asigAlmacenSelect').value);
+            const modo           = form.querySelector('#modoAsigAlmacen').value;
 
-        if (!id_instalacion) return mostrarError('Seleccione instalación');
-        if (!id_almacen)     return mostrarError('Seleccione almacén');
+            if (!id_instalacion) return mostrarError('Seleccione instalación');
+            if (!id_almacen)     return mostrarError('Seleccione almacén');
 
-        // Construir payload con SOLO el campo que corresponde
-        // IMPORTANTE: el backend espera n_serie como int, no string
-        let payload = {
-            id_material: parseInt(currentMaterialId),
-            id_instalacion
-        };
-
-        if (modo === 'unidades') {
-            const unidades = parseInt(form.querySelector('#asigAlmacenUnidades').value);
-            if (!unidades || unidades < 1) return mostrarError('Unidades inválidas');
-            payload.unidades = unidades;
-        } else {
-            const n_serie = form.querySelector('#asigAlmacenNserie').value.trim();
-            if (!n_serie) return mostrarError('Introduzca el número de serie');
-            const n_serie_int = parseInt(n_serie);
-            if (isNaN(n_serie_int)) return mostrarError('El número de serie del almacén debe ser numérico');
-            payload.n_serie  = n_serie_int;
-            payload.unidades = 1; // el backend requiere unidades aunque sea 1
-        }
-
-        try {
-            await MaterialApi.assignToAlmacen(id_almacen, payload);
-            mostrarExito('Asignado correctamente');
-        } catch (e) {
-            console.error('Error asignando almacén:', e);
-            if (e.message?.includes('409') || e.message?.includes('ya existe')) {
-                mostrarError('El material ya existe en este almacén');
-            } else {
-                mostrarError(e.message || 'Error al asignar almacén');
+            // Verificar si ya existe la asignación
+            try {
+                const asignacionesActuales = await obtenerAsignacionesMaterial(currentMaterialId);
+                const instalacionNombre = instalaciones.find(i => i.id_instalacion == id_instalacion)?.nombre;
+                
+                const yaExiste = asignacionesActuales.almacenes.some(a => {
+                    const idAlmacenCoincide = a.id_almacen == id_almacen;
+                    const instalacionCoincide = a.nombre_instalacion === instalacionNombre || 
+                                                extraerNombreInstalacion(a.elemento) === instalacionNombre;
+                    return idAlmacenCoincide && instalacionCoincide;
+                });
+                
+                if (yaExiste) {
+                    return mostrarError('Este material ya está asignado a este almacén en esta instalación');
+                }
+            } catch (e) {
+                console.error('Error verificando asignación existente:', e);
             }
-        } finally {
-            asignacionesCache.delete(currentMaterialId);
-            const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
-            renderTablaAlmacenes(nuevas.almacenes);
 
-            form.querySelector('#asigInstalacionSelect').value = '';
-            form.querySelector('#asigAlmacenSelect').innerHTML = '<option value="">Primero seleccione instalación</option>';
-            form.querySelector('#asigAlmacenSelect').disabled = true;
-            form.querySelector('#asigAlmacenUnidades').value = '1';
-            form.querySelector('#asigAlmacenNserie').value = '';
-            form.querySelector('#modoAsigAlmacen').value = 'unidades';
-            form.querySelector('#wrapAlmacenUnidades').classList.remove('d-none');
-            form.querySelector('#wrapAlmacenNserie').classList.add('d-none');
-        }
-    });
+            // Construir payload BASE
+            let payload = {
+                id_material: parseInt(currentMaterialId),
+                id_instalacion: id_instalacion
+            };
+
+            // MODO EXCLUYENTE: SOLO UN CAMPO
+            if (modo === 'unidades') {
+                const unidades = parseInt(form.querySelector('#asigAlmacenUnidades').value);
+                if (!unidades || unidades < 1) return mostrarError('Unidades inválidas');
+                payload.unidades = unidades;
+                
+            } else { 
+                const n_serie = form.querySelector('#asigAlmacenNserie').value.trim();
+                if (!n_serie) return mostrarError('Introduzca el número de serie');
+                
+                if (!/^\d+$/.test(n_serie)) {
+                    return mostrarError('El número de serie del almacén debe ser numérico (solo dígitos)');
+                }
+                
+                payload.n_serie = parseInt(n_serie, 10);
+            }
+
+            try {
+                await MaterialApi.assignToAlmacen(id_almacen, payload);
+                mostrarExito('Asignado correctamente');
+                
+                // Limpiar formulario
+                form.querySelector('#asigInstalacionSelect').value = '';
+                form.querySelector('#asigAlmacenSelect').innerHTML = '<option value="">Primero seleccione instalación</option>';
+                form.querySelector('#asigAlmacenSelect').disabled = true;
+                form.querySelector('#asigAlmacenUnidades').value = '1';
+                form.querySelector('#asigAlmacenNserie').value = '';
+                form.querySelector('#modoAsigAlmacen').value = 'unidades';
+                form.querySelector('#wrapAlmacenUnidades').classList.remove('d-none');
+                form.querySelector('#wrapAlmacenNserie').classList.add('d-none');
+                
+            } catch (e) {
+                console.error('Error:', e);
+                if (e.response) {
+                    if (e.response.status === 409) {
+                        if (e.response.data?.message?.includes('número de serie')) {
+                            mostrarError('El número de serie ya existe en este almacén');
+                        } else {
+                            mostrarError('El material ya existe en este almacén');
+                        }
+                    } else {
+                        mostrarError(e.response.data?.message || 'Error al asignar');
+                    }
+                } else {
+                    mostrarError(e.message || 'Error al asignar');
+                }
+            } finally {
+                asignacionesCache.delete(currentMaterialId);
+                const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+                renderTablaAlmacenes(nuevas.almacenes);
+            }
+        });
+    }
 }
 
 
@@ -898,18 +944,8 @@ function renderTablaAlmacenes(asignaciones) {
     tbody.innerHTML = '';
     asignaciones.forEach(a => {
         const idAlmacen = a.identificador || a.id_almacen;
-
-        // Obtener nombre instalación: campo directo > extraer del elemento
         const nombreInstalacion = a.nombre_instalacion || extraerNombreInstalacion(a.elemento) || '-';
-        // Obtener nombre almacén limpio (sin el sufijo de instalación)
         const nombreAlmacen     = a.nombre_almacen     || extraerNombreAlmacen(a.elemento)     || '-';
-
-        // Obtener id_instalacion: campo directo > buscar por nombre en array local
-        let idInstalacion = a.id_instalacion || null;
-        if (!idInstalacion && nombreInstalacion !== '-') {
-            const inst = instalaciones.find(i => i.nombre === nombreInstalacion);
-            idInstalacion = inst ? inst.id_instalacion : null;
-        }
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -919,8 +955,7 @@ function renderTablaAlmacenes(asignaciones) {
             <td>${a.unidades || '-'}</td>
             <td>${a.numero_serie || a.n_serie || '-'}</td>
             <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-almacen"
-                        data-id="${idAlmacen}"
-                        data-instalacion="${idInstalacion || ''}">
+                        data-id="${idAlmacen}">
                 <i class="bi bi-trash"></i>
             </button></td>
         `;
@@ -996,22 +1031,17 @@ async function eliminarAsignacionAlmacen(e) {
     if (!confirm('¿Eliminar asignación de este almacén?')) return;
 
     const btn = e.currentTarget;
-    const id_almacen     = btn.dataset.id;
-    const id_instalacion = btn.dataset.instalacion;
-    const originalHTML   = btn.innerHTML;
+    const id_almacen = btn.dataset.id;
+    const originalHTML = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
     try {
-        await MaterialApi.removeFromAlmacen(
-            id_almacen,
-            currentMaterialId,
-            id_instalacion ? { id_instalacion: parseInt(id_instalacion) } : undefined
-        );
+        await MaterialApi.removeFromAlmacen(id_almacen, currentMaterialId);
         mostrarExito('Asignación eliminada correctamente');
     } catch (e) {
         console.error('Error eliminando asignación:', e);
-        mostrarError('Error al eliminar: ' + (e.message || 'Error desconocido'));
+        mostrarError('Error al eliminar asignación');
     } finally {
         asignacionesCache.delete(currentMaterialId);
         const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
