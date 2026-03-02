@@ -1,4 +1,5 @@
-import MeritoApi from '../api_f/MeritoApi.js';
+import MeritosApi from '../api_f/MeritoApi.js';
+import PersonaApi from '../api_f/PersonaApi.js';
 import { truncar, mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarNumero } from '../helpers/validacion.js';
 
@@ -8,6 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarMeritos();
     bindCrearMerito();
     bindModalVer();
+    cargarSelectMeritos();
+    cargarSelectPersonas(null, 'n_funcionario');
+    bindAsignarMerito();
+    bindDesasignarMerito();                              // ← añade esto
+    cargarSelectPersonas(null, 'desasignar_persona');    // ← añade esto
+    cargarSelectMeritos('desasignar_merito');            // ← añade esto
 });
 
 // ================================
@@ -15,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================================
 async function cargarMeritos() {
     try {
-        const response = await MeritoApi.getAll();
+        const response = await MeritosApi.getAll();
         meritos = response.data;
         renderTablaMeritos(meritos);
     } catch (e) {
@@ -23,6 +30,48 @@ async function cargarMeritos() {
     }
 }
 
+// ================================
+// CARGAR SELECTS
+// ================================
+
+async function cargarSelectMeritos(id_select = 'merito') {
+    const select = document.getElementById(id_select);
+    if (!select) return;
+
+    try {
+        const res = await MeritosApi.getAll();
+        select.innerHTML = '<option value="">Seleccione mérito...</option>';
+
+        res.data.forEach(r => {
+            const option = document.createElement('option');
+            option.value = r.id_merito;
+            option.textContent = r.nombre;
+            select.appendChild(option);
+        });
+    } catch (e) {
+        mostrarError(e.message || 'Error cargando méritos');
+    }
+}
+
+async function cargarSelectPersonas(seleccionado, id_select) {
+    const select = document.getElementById(id_select);
+    if (!select) return;
+
+    try {
+        const res = await PersonaApi.getAll();
+        select.innerHTML = '<option value="">Seleccione persona...</option>';
+
+        res.data.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id_bombero;
+            option.textContent = `${p.n_funcionario} - ${p.nombre} ${p.apellidos}`;
+            if (seleccionado && p.n_funcionario === seleccionado) option.selected = true;
+            select.appendChild(option);
+        });
+    } catch (e) {
+        mostrarError(e.message || 'Error cargando personas');
+    }
+}
 // ================================
 // RENDER TABLA
 // ================================
@@ -66,7 +115,66 @@ function renderTablaMeritos(lista) {
         tbody.appendChild(tr);
     });
 }
+// ================================
+// ASIGNAR MERITO A PERSONA
+// ================================
+function bindAsignarMerito() {
+    const form = document.getElementById('formAsignarMerito');
+    if (!form) return;
 
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = new FormData(form);
+
+        const data = {
+            id_bombero: f.get('n_funcionario'),
+            id_merito: f.get('merito'),
+        };
+
+        if (!data.id_bombero || !data.id_merito) {
+            mostrarError('Seleccione persona y merito'); // ← era mostrarAlerta
+            return;
+        }
+
+        try {
+            await MeritosApi.assignToPerson(data);
+            mostrarExito('Merito asignado correctamente'); // ← era mostrarAlerta
+            form.reset();
+        } catch (err) {
+            mostrarError(err.message || 'Error asignando merito'); // ← era mostrarAlerta
+        }
+    });
+}
+// ================================
+// DESASIGNAR MERITO DE PERSONA
+// ================================
+function bindDesasignarMerito() {
+    const form = document.getElementById('formDesasignarMerito');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = new FormData(form);
+
+        const data = {
+            id_bombero: f.get('n_funcionario'),
+            id_merito: f.get('merito'),
+        };
+
+        if (!data.id_bombero || !data.id_merito) {
+            mostrarError('Seleccione persona y mérito');
+            return;
+        }
+
+        try {
+            await MeritosApi.unassignFromPerson(data);
+            mostrarExito('Mérito desasignado correctamente');
+            form.reset();
+        } catch (err) {
+            mostrarError(err.message || 'Error desasignando mérito');
+        }
+    });
+}
 // ================================
 // CREAR MÉRITO
 // ================================
@@ -115,7 +223,7 @@ function bindCrearMerito() {
 // MODAL VER
 // ================================
 function bindModalVer() {
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', async function (e) {
         const btn = e.target.closest('.btn-ver');
         if (!btn) return;
 
@@ -123,23 +231,73 @@ function bindModalVer() {
         const merito = meritos.find(m => String(m.id_merito) === String(id));
         if (!merito) return;
 
-        const modalBody = document.getElementById('modalVerBody');
-        modalBody.innerHTML = '';
-
-        const campos = [
+        // Detalle del mérito
+        const detalles = document.getElementById('detallesMerito');
+        detalles.innerHTML = '';
+        [
             { label: 'ID',          valor: merito.id_merito },
             { label: 'Nombre',      valor: merito.nombre },
             { label: 'Descripción', valor: merito.descripcion ?? '—' },
-        ];
-
-        campos.forEach(({ label, valor }) => {
+        ].forEach(({ label, valor }) => {
             const p = document.createElement('p');
             p.innerHTML = `<strong>${label}:</strong> ${valor}`;
-            modalBody.appendChild(p);
+            detalles.appendChild(p);
         });
+
+        // Cargar personas
+        const tbody = document.querySelector('#tablaPersonasMerito tbody');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando...</td></tr>';
+
+        try {
+            const res = await MeritosApi.getPersonsByMerito(id);
+            tbody.innerHTML = '';
+
+            if (!res.data.length) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No hay personas asignadas</td></tr>';
+                return;
+            }
+
+            res.data.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${p.id_bombero}</td>
+                    <td>${p.n_funcionario}</td>
+                    <td>${p.nombre} ${p.apellidos}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger btn-desasignar-persona"
+                                data-id-bombero="${p.id_bombero}"
+                                data-id-merito="${id}">
+                            <i class="bi bi-person-dash"></i> Desasignar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">${err.message || 'Error cargando personas'}</td></tr>`;
+        }
+    });
+
+    // Desasignar desde la tabla del modal
+    document.addEventListener('click', async function (e) {
+        const btn = e.target.closest('.btn-desasignar-persona');
+        if (!btn) return;
+
+        const data = {
+            id_bombero: btn.dataset.idBombero,
+            id_merito:  btn.dataset.idMerito,
+        };
+
+        try {
+            await MeritosApi.unassignFromPerson(data);
+            mostrarExito('Mérito desasignado correctamente');
+            btn.closest('tr').remove();
+        } catch (err) {
+            mostrarError(err.message || 'Error desasignando mérito');
+        }
     });
 }
-
 // ================================
 // MODAL ELIMINAR MÉRITO
 // ================================

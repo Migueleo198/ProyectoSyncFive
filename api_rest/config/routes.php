@@ -39,7 +39,9 @@ $router->protectedSession('DELETE', '/personas/{id_carnet}/carnets/{n_funcionari
 $router->protectedSession('GET', '/personas/{id_bombero}/meritos', 'Controllers\\PersonaController@getMerito', [1,2,3,4,5]);
 $router->protectedSession('POST', '/personas/{id_bombero}/meritos', 'Controllers\\PersonaController@setMerito', [4,5]);
 $router->protectedSession('DELETE', '/personas/{id_bombero}/meritos', 'Controllers\\PersonaController@deleteMerito', [4,5]);
-
+$router->protectedSession('POST', '/meritos/asignar', 'Controllers\\MeritoController@assign', [5]);
+$router->protectedSession('POST', '/meritos/desasignar', 'Controllers\\MeritoController@unassign', [5]);
+$router->protectedSession('GET', '/meritos/{id_merito}/personas', 'Controllers\\MeritoController@persons', [4,5]);
 // FORMACIÓN PERSONA
 $router->protectedSession('GET', '/personas/{id_bombero}/ediciones', 'Controllers\\PersonaController@getFormacion', [1,2,3,4,5]);
 $router->protectedSession('POST', '/personas/{id_bombero}/ediciones', 'Controllers\\PersonaController@setFormacion', [4,5]);
