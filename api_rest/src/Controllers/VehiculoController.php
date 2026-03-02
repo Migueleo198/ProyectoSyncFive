@@ -25,9 +25,9 @@ class VehiculoController
     {
         try {
             $vehiculos = $this->service->getAllVehiculos();
-            $res->status(200)->json($vehiculos);
+            $res->status(200)->json($vehiculos, "Listado de vehículos obtenido correctamente");
         } catch (Throwable $e) {
-            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
+            $res->errorJson($e->getMessage(), 500);
         }
     }
     
@@ -218,3 +218,4 @@ class VehiculoController
         }
     }
 }
+?>

@@ -123,11 +123,12 @@ class Validator
                     case 'datetime':
                         if ($value !== null) {
                             $d = date_create($value);
-                            if (!$d || $d->format('Y-m-d H:i:s') !== $value) {
-                                $errors[$field][] = "El campo $field debe ser una fecha y hora válida (Y-m-d H:i:s).";
+                            if (!$d) {
+                                $errors[$field][] = "El campo $field debe ser una fecha y hora válida.";
                             }
                         }
                         break;
+
 
                     case 'username':
                         if ($value !== null && !preg_match('/^[a-zA-Z0-9_]{4,50}$/', $value)) {
@@ -204,13 +205,14 @@ class Validator
 
     private static function validatePhone(string $phone): bool
     {
-        // Elimina espacios, guiones y paréntesis
         $cleanPhone = preg_replace('/[\s\-\(\)]/', '', $phone);
 
-        // Debe empezar opcionalmente con + seguido de 1 a 3 dígitos (código país)
-        // y luego de 8 a 12 dígitos para el número local
-        return preg_match('/^\+?[1-9]\d{1,3}\d{8,12}$/', $cleanPhone);
+        // Permite:
+        // - 9 dígitos nacionales
+        // - o +34 seguido de 9 dígitos
+        return preg_match('/^(\+34)?[6-9]\d{8}$/', $cleanPhone);
     }
+
 
 
 

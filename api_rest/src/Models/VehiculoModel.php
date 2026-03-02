@@ -22,6 +22,21 @@ class VehiculoModel
             ->fetchAll();
     }
     
+    // GET, /vehiculos?material=XX (NUEVO)
+    public function getVehiculosByMaterial(int $id_material): array
+    {
+        return $this->db
+            ->query("
+                SELECT v.*, vcm.unidades, vcm.nserie
+                FROM Vehiculo v
+                INNER JOIN Vehiculo_Carga_Material vcm ON v.matricula = vcm.matricula
+                WHERE vcm.id_material = :id_material
+                ORDER BY v.matricula ASC
+            ")
+            ->bind(":id_material", $id_material)
+            ->fetchAll();
+    }
+    
     // POST, /vehiculos
     public function create(array $data): int|false
     {
@@ -179,3 +194,4 @@ class VehiculoModel
         return ($actualizado['id_instalacion'] === null) ? 1 : 0;
     }
 }
+?>

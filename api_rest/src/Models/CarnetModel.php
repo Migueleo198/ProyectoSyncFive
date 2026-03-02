@@ -40,8 +40,7 @@ class CarnetModel
                 :duracion_meses
             )
         ")
-        ->bind(':id_carnet', $data['ID_Carnet'])
-        ->bind(':nombre', $data['nombre'])
+        ->bind(':nombre', $data['nombre'])       // ← quitado el bind de :id_carnet
         ->bind(':categoria', $data['categoria'])
         ->bind(':duracion_meses', $data['duracion_meses'])
         ->execute();
@@ -87,7 +86,13 @@ class CarnetModel
             ->fetch()['affected'];
     }
 
-
+    /**
+     * Alias de findById para compatibilidad con el service
+     */
+    public function find(string|int $id_carnet): array|false
+    {
+        return $this->findById((int)$id_carnet);
+    }
     /**
      * Obtener todas las personas que tienen un carnet (con fechas)
      */
@@ -108,11 +113,20 @@ class CarnetModel
             ->bind(':id_carnet', $id_carnet)
             ->fetchAll();
     }
-
+/**
+ * Obtener carnet por ID
+ */
+public function findById(int $id_carnet): array|false
+{
+    return $this->db
+        ->query("SELECT * FROM Carnet WHERE id_carnet = :id_carnet")
+        ->bind(':id_carnet', $id_carnet)
+        ->fetch();
+}
   /**
-     * Asignar un carnet a una persona con fecha de obtención y vencimiento
-     */
-    public function assignToPerson(
+   * Asignar un carnet a una persona con fecha de obtención y vencimiento
+   */
+    public function assign(
         string $id_bombero,
         string $id_carnet,
         string $f_obtencion,
@@ -121,7 +135,7 @@ class CarnetModel
         $this->db->query("
             INSERT INTO Carnet_Persona (
                 id_bombero,
-                ID_Carnet,
+                id_carnet,
                 f_obtencion,
                 f_vencimiento
             ) VALUES (
@@ -155,7 +169,7 @@ class CarnetModel
             ->query("
                 DELETE FROM Carnet_Persona
                 WHERE id_bombero = :id_bombero
-                AND ID_Carnet = :id_carnet
+                AND id_carnet = :id_carnet
             ")
             ->bind(':id_bombero', $id_bombero)
             ->bind(':id_carnet', $id_carnet)

@@ -40,40 +40,37 @@ class GuardiaModel
     /**
      * Crear un guardia
      */
-    public function create(array $data): string|false
-    {
-        $this->db->query("
-            INSERT INTO Guardia (
-                id_guardia,
-                fecha,
-                h_inicio,
-                h_fin,
-                notas
-            ) VALUES (
-                :id_guardia,
-                :fecha,
-                :h_inicio,
-                :h_fin,
-                :notas
-            )
-        ")
-        ->bind(':id_guardia', $data['id_guardia'])
-        ->bind(':fecha', $data['fecha'])
-        ->bind(':h_inicio', $data['h_inicio'])
-        ->bind(':h_fin', $data['h_fin'])
-        ->bind(':notas', $data['notas'] ?? null)
-        ->execute();
+public function create(array $data): int|false
+{
+    $this->db->query("
+        INSERT INTO Guardia (
+            fecha,
+            h_inicio,
+            h_fin,
+            notas
+        ) VALUES (
+            :fecha,
+            :h_inicio,
+            :h_fin,
+            :notas
+        )
+    ")
+    ->bind(':fecha', $data['fecha'])
+    ->bind(':h_inicio', $data['h_inicio'])
+    ->bind(':h_fin', $data['h_fin'])
+    ->bind(':notas', $data['notas'] ?? null)
+    ->execute();
 
-        return $data['id_guardia'];
-    }
+        return (int) $this->db->lastId();
+}
 
     /**
-     * Actualizar carnet (PATCH)
+     * Actualizar Guardia (PATCH)
      */
     public function update(string $id_guardia, array $data): int
     {
         $this->db->query("
-            UPDATE guardia SET
+            UPDATE Guardia SET
                 fecha = :fecha,
                 h_inicio = :h_inicio,
                 h_fin = :h_fin,
@@ -95,7 +92,7 @@ class GuardiaModel
     /**
      * Eliminar guardia
      */
-    public function delete(string $id_guardia): int
+    public function delete(int $id_guardia): int
     {
         $this->db
             ->query("DELETE FROM guardia WHERE id_guardia = :id_guardia")
@@ -107,35 +104,52 @@ class GuardiaModel
             ->fetch()['affected'];
     }
 
+
     /**
-     * Asignar un guardia a una persona con fecha de obtención y vencimiento
+     * Obtener todas las personas que tienen un carnet (con fechas)
      */
-    public function assignToPerson(
-        string $n_funcionario,
+    public function findById(int $id_guardia): array|false
+    {
+        return $this->db
+            ->query("SELECT * FROM Guardia WHERE id_guardia = :id_guardia")
+            ->bind(':id_guardia', $id_guardia)
+            ->fetch();
+    }
+    /**
+     * Asignar un guardia a una persona con un cargo específico 
+     */
+    public function assign(
+        string $id_bombero,
         string $id_guardia,
-        string $cargo,
-    ): bool {
+        string $cargo
+    ): bool 
+    {
         $this->db->query("
-            INSERT INTO Persona_Guardia (
-                n_funcionario,
+            INSERT INTO Persona_Hace_Guardia (
+                id_bombero,
                 id_guardia,
                 cargo
             ) VALUES (
-                :n_funcionario,
+                :id_bombero,
                 :id_guardia,
                 :cargo
             )
         ")
-        ->bind(':n_funcionario', $n_funcionario)
+        ->bind(':id_bombero', $id_bombero)
         ->bind(':id_guardia', $id_guardia)
         ->bind(':cargo', $cargo)
         ->execute();
 
-        return $this->db->rowCount() > 0;
+        $affected = $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+
+        return $affected > 0;
     }
 
+
     /**
-     * Obtener todas las personas que tienen un guardia (con fechas)
+     * Obtener todas las personas que tienen una guardia
      */
     public function getPersonsByGuardia(string $id_guardia): array
     {
@@ -143,13 +157,12 @@ class GuardiaModel
             ->query("
                 SELECT 
                     p.*,
-                    pc.f_obtencion,
-                    pc.f_vencimiento
-                FROM Persona_Guardia pc
+                    phg.cargo
+                FROM Persona_Hace_Guardia phg
                 INNER JOIN Persona p 
-                    ON p.n_funcionario = pc.n_funcionario
-                WHERE pc.id_guardia = :id_guardia
-                ORDER BY p.n_funcionario ASC
+                    ON p.id_bombero = phg.id_bombero
+                WHERE phg.id_guardia = :id_guardia
+                ORDER BY p.id_bombero ASC
             ")
             ->bind(':id_guardia', $id_guardia)
             ->fetchAll();
@@ -158,15 +171,15 @@ class GuardiaModel
     /**
      * Eliminar la asignación de un guardia a una persona
      */
-    public function unassignFromPerson(string $n_funcionario, string $id_guardia): int
+    public function unassignFromPerson(string $id_bombero, string $id_guardia): int
     {
         $this->db
             ->query("
-                DELETE FROM Persona_Guardia
-                WHERE n_funcionario = :n_funcionario
+                DELETE FROM Persona_Hace_Guardia
+                WHERE id_bombero = :id_bombero
                 AND id_guardia = :id_guardia
             ")
-            ->bind(':n_funcionario', $n_funcionario)
+            ->bind(':id_bombero', $id_bombero)
             ->bind(':id_guardia', $id_guardia)
             ->execute();
 

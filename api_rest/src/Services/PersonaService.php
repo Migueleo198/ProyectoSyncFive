@@ -129,76 +129,61 @@ class PersonaService
 
         $this->model->activateUser($user['id_bombero']);
     }
+/**
+ * Actualizar datos de persona
+ */
+public function updatePersona(string $id_bombero, array $input): array  // ← string id_bombero
+{
+    Validator::validate(['id_bombero' => $id_bombero], [
+        'id_bombero' => 'required|string'  // ← id_bombero
+    ]);
 
-    /**
-    * Actualizar datos de persona
-    */
-    public function updatePersona(int $n_funcionario, array $input): array
-    {
-        Validator::validate(['n_funcionario' => $n_funcionario], [
-            'n_funcionario' => 'required|string'
+    $data = Validator::validate($input, [
+        'talla_superior'        => 'string|min:1',
+        'talla_inferior'        => 'string|min:1',
+        'talla_calzado'         => 'int|min:30|max:50',
+        'domicilio'             => 'string|min:5|max:255',
+        'localidad'             => 'string|min:2|max:100',
+        'correo'                => 'email',
+        'telefono'              => 'int',
+        'telefono_emergencia'   => 'int',
+        'nombre_usuario'        => 'text|min:3|max:30',
+        'activo'                => 'boolean'
+    ]);
+
+    if (empty($data)) {
+        throw new ValidationException([
+            'body' => ['No se enviaron campos para actualizar']
         ]);
+    }
 
-        $data = Validator::validate($input, [
-            'ID_bombero'            => 'string',
+    try {
+        $result = $this->model->update($id_bombero, $data);  // ← id_bombero
+    } catch (Throwable $e) {
+        throw new \Exception(
+            "Error interno en la base de datos: " . $e->getMessage(),
+            500
+        );
+    }
 
-            'talla_superior'        => 'string|min:1',
-            'talla_inferior'        => 'string|min:1',
-            'talla_calzado'         => 'int|min:30|max:50',
+    if ($result === 0) {
+        $exists = $this->model->find($id_bombero);  // ← id_bombero
 
-            'domicilio'             => 'string|min:5|max:255',
-            'localidad'             => 'string|min:2|max:100',
-
-            'correo'                => 'email',
-            'telefono'              => 'phone',
-            'telefono_emergencia'   => 'phone',
-
-            'nombre_usuario'        => 'username',
-            'activo'                => 'boolean',
-
-            'fecha_ult_inicio_sesion' => 'datetime',
-        ]);
-
-        if (empty($data)) {
-            throw new ValidationException([
-                'body' => ['No se enviaron campos para actualizar']
-            ]);
-        }
-
-        try {
-            $result = $this->model->update($n_funcionario, $data);
-        } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
-        }
-
-        if ($result === 0) {
-            $exists = $this->model->find($n_funcionario);
-
-            if (!$exists) {
-                throw new \Exception("Persona no encontrada", 404);
-            }
-
-            return [
-                'status'  => 'no_changes',
-                'message' => 'No hubo cambios en la persona'
-            ];
-        }
-
-        if ($result === -1) {
-            throw new \Exception(
-                "No se pudo actualizar la persona: conflicto con restricciones",
-                409
-            );
+        if (!$exists) {
+            throw new \Exception("Persona no encontrada", 404);
         }
 
         return [
-            'status'  => 'updated',
-            'message' => 'Persona actualizada correctamente'
+            'status'  => 'no_changes',
+            'message' => 'No hubo cambios en la persona'
         ];
     }
+
+    return [
+        'status'  => 'updated',
+        'message' => 'Persona actualizada correctamente'
+    ];
+}
 
     /**
      * Eliminar una persona

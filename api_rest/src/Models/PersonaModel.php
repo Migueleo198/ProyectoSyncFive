@@ -25,18 +25,17 @@ class PersonaModel
     }
 
     /**
-     * Buscar persona por n_funcionario
+     * Buscar persona por id_bombero
      */
-    public function find(int $n_funcionario): ?array
+    public function find(string $id_bombero): ?array
     {
         $result = $this->db
-            ->query("SELECT * FROM Persona WHERE n_funcionario = :n_funcionario")
-            ->bind(':n_funcionario', $n_funcionario)
+            ->query("SELECT * FROM Persona WHERE id_bombero = :id_bombero")
+            ->bind(':id_bombero', $id_bombero)
             ->fetch();
 
         return $result ?: null;
     }
-
     /**
      * Crear una persona
      */
@@ -108,57 +107,57 @@ class PersonaModel
 
         return $ok ? $data['id_bombero'] : false;
     }
+/**
+ * Actualizar datos de persona (PATCH)
+ */
+public function update(string $id_bombero, array $data): int  // ← string id_bombero
+{
+    $this->db->query("
+        UPDATE Persona SET
+            talla_superior = :talla_superior,
+            talla_inferior = :talla_inferior,
+            talla_calzado = :talla_calzado,
+            domicilio = :domicilio,
+            localidad = :localidad,
+            correo = :correo,
+            telefono = :telefono,
+            telefono_emergencia = :telefono_emergencia,
+            nombre_usuario = :nombre_usuario,
+            activo = :activo
+        WHERE id_bombero = :id_bombero
+    ")
+    ->bind(':id_bombero', $id_bombero)  // ← id_bombero en WHERE
+    ->bind(':talla_superior', $data['talla_superior'] ?? null)
+    ->bind(':talla_inferior', $data['talla_inferior'] ?? null)
+    ->bind(':talla_calzado', $data['talla_calzado'] ?? null)
+    ->bind(':domicilio', $data['domicilio'] ?? null)
+    ->bind(':localidad', $data['localidad'] ?? null)
+    ->bind(':correo', $data['correo'] ?? null)
+    ->bind(':telefono', $data['telefono'] ?? null)
+    ->bind(':telefono_emergencia', $data['telefono_emergencia'] ?? null)
+    ->bind(':nombre_usuario', $data['nombre_usuario'] ?? null)
+    ->bind(':activo', $data['activo'] ?? null)
+    ->execute();
 
-    /**
-     * Actualizar datos de persona (PATCH)
-     */
-    public function update(int $n_funcionario, array $data): int
-    {
-        $this->db->query("
-            UPDATE Persona SET
-                talla_superior = :talla_superior,
-                talla_inferior = :talla_inferior,
-                talla_calzado = :talla_calzado,
-                domicilio = :domicilio,
-                localidad = :localidad,
-                correo = :correo,
-                telefono = :telefono,
-                telefono_emergencia = :telefono_emergencia,
-                nombre_usuario = :nombre_usuario,
-                activo = :activo,
-                fecha_ult_inicio_sesion = :fecha_ult_inicio_sesion
-            WHERE n_funcionario = :n_funcionario
-        ")
-        ->bind(':n_funcionario', $n_funcionario)
-        ->bind(':talla_superior', $data['talla_superior'] ?? null)
-        ->bind(':talla_inferior', $data['talla_inferior'] ?? null)
-        ->bind(':talla_calzado', $data['talla_calzado'] ?? null)
-        ->bind(':domicilio', $data['domicilio'] ?? null)
-        ->bind(':localidad', $data['localidad'] ?? null)
-        ->bind(':correo', $data['correo'] ?? null)
-        ->bind(':telefono', $data['telefono'] ?? null)
-        ->bind(':telefono_emergencia', $data['telefono_emergencia'] ?? null)
-        ->bind(':nombre_usuario', $data['nombre_usuario'] ?? null)
-        ->bind(':activo', $data['activo'] ?? null)
-        ->bind(':fecha_ult_inicio_sesion', $data['fecha_ult_inicio_sesion'] ?? null)
-        ->execute();
-
-        return $this->db
-            ->query("SELECT ROW_COUNT() AS affected")
-            ->fetch()['affected'];
-    }
+    return $this->db
+        ->query("SELECT ROW_COUNT() AS affected")
+        ->fetch()['affected'];
+}
 
     /**
      * Eliminar persona
      */
-    public function delete(int $n_funcionario): int
+    // ✅ Correcto - usa id_bombero (PK numérica)
+    public function delete(string $id_bombero): int
     {
         $this->db
-            ->query("DELETE FROM Persona WHERE n_funcionario = :n_funcionario")
-            ->bind(':n_funcionario', $n_funcionario)
+            ->query("DELETE FROM Persona WHERE id_bombero = :id_bombero")
+            ->bind(':id_bombero', $id_bombero)
             ->execute();
         
-        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
     }
 
     // ++++++++++++++++++++++++++++++++++ MÉTODOS SESIONES ++++++++++++++++++++++++++++++++++

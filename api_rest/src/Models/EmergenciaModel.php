@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Models;
 
 use Core\DB;
+use Exception;
 
 class EmergenciaModel
 {
@@ -54,7 +55,7 @@ class EmergenciaModel
         ->bind(":estado", $data['estado'])
         ->bind(":direccion", $data['direccion'])
         ->bind(":nombre_solicitante", $data['nombre_solicitante'] ?? null)
-        ->bind(":tlf_solicitante", $data['tlfn_solicitante'] ?? null)
+        ->bind(":tlf_solicitante", $data['tlf_solicitante'] ?? null)
         ->bind(":codigo_tipo", $data['codigo_tipo'] ?? null)
         ->execute();
 
@@ -80,7 +81,7 @@ class EmergenciaModel
         ->bind(":estado", $data['estado'])
         ->bind(":direccion", $data['direccion'])
         ->bind(":nombre_solicitante", $data['nombre_solicitante'] ?? null)
-        ->bind(":tlf_solicitante", $data['tlfn_solicitante'] ?? null)
+        ->bind(":tlf_solicitante", $data['tlf_solicitante'] ?? null)
         ->bind(":codigo_tipo", $data['codigo_tipo'] ?? null)
         ->execute();
 
@@ -89,13 +90,13 @@ class EmergenciaModel
             ->fetch()['affected'];
     }
 
-  
     //================= EMERGENCIA_VEHICULO =====================
 
-    public function allVehiculos(): array
+    public function allVehiculos(int $id): array
     {
         return $this->db
-            ->query("SELECT * FROM Emergencia_Vehiculo")
+            ->query("SELECT * FROM Emergencia_Vehiculo WHERE id_emergencia = :id")
+            ->bind(":id", $id)
             ->fetchAll();
     }
 
@@ -117,20 +118,40 @@ class EmergenciaModel
         return 1; // PK compuesta
     }
 
-
-    public function deleteVehiculo(int $id, string $matricula): int
+    //================= ELIMINAR VEHÍCULO + PERSONAS =====================
+    public function deleteVehiculo(int $id_emergencia, string $matricula): int
     {
-        // id = id_emergencia
-        $this->db->query("
-            DELETE FROM Emergencia_Vehiculo WHERE id_emergencia = :id AND matricula = :matricula
-        ")
-        ->bind(":id", $id)
-        ->bind(":matricula", $matricula)
-        ->execute();
+        try {
+            $this->db->beginTransaction();
 
-        return $this->db
-            ->query("SELECT ROW_COUNT() AS affected")
-            ->fetch()['affected'];
+            // 1️⃣ Borrar todas las personas asociadas
+            $stmt1 = $this->db->query("
+                DELETE FROM Emergencia_Vehiculo_Persona
+                WHERE id_emergencia = :id_emergencia
+                AND matricula = :matricula
+            ");
+            $stmt1->bind(":id_emergencia", $id_emergencia)
+                ->bind(":matricula", $matricula)
+                ->execute();
+
+            // 2️⃣ Borrar el vehículo
+            $stmt2 = $this->db->query("
+                DELETE FROM Emergencia_Vehiculo
+                WHERE id_emergencia = :id_emergencia
+                AND matricula = :matricula
+            ");
+            $stmt2->bind(":id_emergencia", $id_emergencia)
+                ->bind(":matricula", $matricula)
+                ->execute();
+
+            $this->db->commit();
+
+            return $stmt2->rowCount(); // devuelve filas eliminadas del vehículo
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     //================= EMERGENCIA_VEHICULO_PERSONA =====================
@@ -139,8 +160,10 @@ class EmergenciaModel
     {
         return $this->db
             ->query("
-                SELECT * 
-                FROM Emergencia_Vehiculo_Persona
+                SELECT p.nombre, p.id_bombero 
+                FROM Persona p 
+                INNER JOIN Emergencia_Vehiculo_Persona evp 
+                    ON p.id_bombero = evp.id_bombero
                 WHERE matricula = :matricula AND id_emergencia = :id_emergencia
             ")
             ->bind(":matricula", $matricula)
@@ -178,8 +201,6 @@ class EmergenciaModel
         ->bind(":id_bombero", $id_bombero)
         ->execute();
 
-        return $this->db
-            ->query("SELECT ROW_COUNT() AS affected")
-            ->fetch()['affected'];
-    }
+        return $this->db->rowCount();
+    }   
 }

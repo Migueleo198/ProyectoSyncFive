@@ -38,13 +38,9 @@ class CarnetService
     public function createCarnet(array $input): array
     {
         $data = Validator::validate($input, [
-            'ID_Carnet'     => 'required|string',
-            'nombre'        => 'required|string',
-            'categoria'          => 'required|string',
-            'duracion_meses'      => 'required|int|min:1',
-
-            // Si el carnet pertenece a una persona:
-            'id_bombero' => 'string'
+            'nombre'         => 'required|string',
+            'categoria'      => 'required|string',
+            'duracion_meses' => 'required|int|min:1',
         ]);
 
         try {
@@ -60,7 +56,7 @@ class CarnetService
             throw new \Exception("No se pudo crear el carnet");
         }
 
-        return ['ID_Carnet' => $data['ID_Carnet']];
+        return ['ID_Carnet' => $id]; // ← devuelve el id generado por la BDD
     }
 
     /**
@@ -78,7 +74,7 @@ class CarnetService
             'duracion_meses'      => 'int|min:1',
 
             // Asociación a persona (actualizada a string)
-            'n_funcionario' => 'string'
+            'id_bombero' => 'string'
         ]);
 
         if (empty($data)) {
@@ -153,9 +149,9 @@ class CarnetService
     }
 
     /**
-     * Obtener todas las personas asociadas a un carnet
+     * Obtener todas las personas asociadas a un carnet NO SE USA TODAVIA PARA UNA FURUTA EXPANSION
      */
-    public function getPersonsByCarnet(string $ID_Carnet): array
+/*     public function getPersonsByCarnet(string $ID_Carnet): array
     {
         Validator::validate(['ID_Carnet' => $ID_Carnet], [
             'ID_Carnet' => 'required|string'
@@ -177,14 +173,17 @@ class CarnetService
                 500
             );
         }
-    }
+    } */
+
+
+        
     /**
      * Asignar carnet a una persona
      */
-    public function assignCarnetToPerson(array $input): array
+    public function assign(array $input): array
     {
         $data = Validator::validate($input, [
-            'n_funcionario' => 'required|string',
+            'id_bombero' => 'required|string',
             'ID_Carnet'     => 'required|string',
             'f_obtencion'   => 'required|string',
             'f_vencimiento' => 'required|string'
@@ -197,8 +196,8 @@ class CarnetService
                 throw new \Exception("Carnet no encontrado", 404);
             }
 
-            $result = $this->model->assignToPerson(
-                $data['n_funcionario'],
+            $result = $this->model->assign(
+                $data['id_bombero'],
                 $data['ID_Carnet'],
                 $data['f_obtencion'],
                 $data['f_vencimiento']
@@ -220,21 +219,35 @@ class CarnetService
             'message' => 'Carnet asignado correctamente'
         ];
     }
+
+    /**
+ * Obtener carnet por ID
+ */
+public function getCarnetById(int $id): array
+{
+    $carnet = $this->model->findById($id);
+
+    if (!$carnet) {
+        throw new \Exception("Carnet no encontrado", 404);
+    }
+
+    return $carnet;
+}
     /**
      * Eliminar asignación carnet-persona
      */
-    public function unassignCarnetFromPerson(string $n_funcionario, string $ID_Carnet): array
+    public function unassignCarnetFromPerson(string $id_bombero, string $ID_Carnet): array
     {
         Validator::validate([
-            'n_funcionario' => $n_funcionario,
+            'id_bombero' => $id_bombero,
             'ID_Carnet'     => $ID_Carnet
         ], [
-            'n_funcionario' => 'required|string',
+            'id_bombero' => 'required|string',
             'ID_Carnet'     => 'required|string'
         ]);
 
         try {
-            $result = $this->model->unassignFromPerson($n_funcionario, $ID_Carnet);
+            $result = $this->model->unassignFromPerson($id_bombero, $ID_Carnet);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
