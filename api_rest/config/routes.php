@@ -215,6 +215,8 @@ $router->protectedSession('GET', '/avisos/{id_aviso}/remitente', 'Controllers\\A
 $router->protectedSession('POST', '/avisos/{id_aviso}/remitente/{id_bombero}', 'Controllers\\AvisoController@setRemitente', [2,3,4,5]);
 $router->protectedSession('DELETE', '/avisos/{id_aviso}/remitente/{id_bombero}', 'Controllers\\AvisoController@deleteRemitente', [2,3,4,5]);
 
+// AVISOS RECIBIDOS
+$router->protectedSession('GET', '/avisos/{id_bombero}/recibidos', 'Controllers\\AvisoController@getRecibidos', [1,2,3,4,5]);
 
 //++++++++++++++++++++++++++++++ CARNETS ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/carnets', 'Controllers\\CarnetController@index', [1,2,3,4,5]);

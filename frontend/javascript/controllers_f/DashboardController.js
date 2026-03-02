@@ -4,6 +4,7 @@ import GuardiaApi from '../api_f/GuardiaApi.js';
 import VehiculoApi from '../api_f/VehiculoApi.js';
 import EdicionApi from '../api_f/EdicionApi.js';
 import SalidaApi from '../api_f/SalidaApi.js';
+import { mostrarError, formatearFecha } from '../helpers/utils.js'; 
 
 // ──────────────────────────────────────────
 // FECHA ACTUAL
@@ -25,13 +26,6 @@ function extractData(response) {
     return response.data ?? response;
 }
 
-function formatDate(dateStr) {
-    if (!dateStr) return '—';
-    const d = new Date(dateStr);
-    if (isNaN(d)) return dateStr;
-    return d.toLocaleDateString('es-ES');
-}
-
 function getDisponibilidadBadge(disponibilidad) {
     if (disponibilidad === null || disponibilidad === undefined) {
         return `<span class="badge bg-secondary">—</span>`;
@@ -48,7 +42,7 @@ function showTableError(tbodyId, cols, msg = 'Error al cargar los datos') {
 
 // ──────────────────────────────────────────
 // STAT: EMERGENCIAS ACTIVAS
-// estado en BD: 'ACTIVA', 'CERRADA', 'FINALIZADA' (mayúsculas)
+// estado en BD: 'ACTIVA', 'CERRADA' (mayúsculas)
 // ──────────────────────────────────────────
 async function loadEmergenciasActivas() {
     try {
@@ -64,7 +58,7 @@ async function loadEmergenciasActivas() {
         document.getElementById('stat-emergencias').textContent = activas.length;
     } catch (err) {
         document.getElementById('stat-emergencias').textContent = '—';
-        console.error('Error emergencias activas:', err);
+        mostrarError('Error emergencias activas:', err);
     }
 }
 
@@ -83,19 +77,19 @@ async function loadPersonalGuardia() {
 
         // Cogemos la última guardia creada (id_guardia más alto)
         const ultimaGuardia = guardias.reduce((max, g) => {
-            const idActual = g.id_guardia ?? g.ID_Guardia ?? 0;
-            const idMax = max.id_guardia ?? max.ID_Guardia ?? 0;
+            const idActual = g.id_guardia ?? 0;
+            const idMax = max.id_guardia ?? 0;
             return idActual > idMax ? g : max;
         });
 
-        const idGuardia = ultimaGuardia.id_guardia ?? ultimaGuardia.ID_Guardia;
+        const idGuardia = ultimaGuardia.id_guardia;
         const res2 = await GuardiaApi.getPersonGuardias(idGuardia);
         const personas = extractData(res2);
         document.getElementById('stat-personal').textContent =
             Array.isArray(personas) ? personas.length : '0';
     } catch (err) {
         document.getElementById('stat-personal').textContent = '—';
-        console.error('Error personal guardia:', err);
+        mostrarError('Error personal guardia:', err);
     }
 }
 
@@ -121,11 +115,15 @@ async function loadVehiculosStat() {
 }
 
 // ──────────────────────────────────────────
-// STAT: TOTAL DE AVISOS
+// STAT: TOTAL AVISOS RECIBIDOS POR EL USUARIO
 // ──────────────────────────────────────────
-async function loadAvisosStat() {
+async function loadAvisosStat(idBombero) {
     try {
-        const res = await AvisoApi.getAll();
+        if (!idBombero) {
+            document.getElementById('stat-avisos').textContent = '—';
+            return;
+        }
+        const res = await AvisoApi.getRecibidos(idBombero);
         const avisos = extractData(res);
         document.getElementById('stat-avisos').textContent =
             Array.isArray(avisos) ? avisos.length : '—';
@@ -136,31 +134,32 @@ async function loadAvisosStat() {
 }
 
 // ──────────────────────────────────────────
-// TABLA: AVISOS RECIENTES (últimos 5 por fecha)
+// TABLA: AVISOS RECIBIDOS POR EL USUARIO (últimos 5)
 // Columnas: asunto | fecha | remitente
 // ──────────────────────────────────────────
-async function loadAvisosRecientes() {
+async function loadAvisosRecientes(idBombero) {
     const tbody = document.getElementById('tbody-avisos');
     if (!tbody) return;
     tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">
         <span class="spinner-border spinner-border-sm me-2"></span>Cargando...</td></tr>`;
 
     try {
-        const res = await AvisoApi.getAll();
+        if (!idBombero) {
+            tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">Usuario no identificado</td></tr>`;
+            return;
+        }
+
+        const res = await AvisoApi.getRecibidos(idBombero);
         const avisos = extractData(res);
         if (!Array.isArray(avisos) || avisos.length === 0) {
             tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">No hay avisos</td></tr>`;
             return;
         }
 
-        const recientes = [...avisos]
-            .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-            .slice(0, 5);
-
-        tbody.innerHTML = recientes.map(a => `
+        tbody.innerHTML = avisos.slice(0, 5).map(a => `
             <tr>
                 <td>${a.asunto ?? '—'}</td>
-                <td><small class="text-muted">${formatDate(a.fecha)}</small></td>
+                <td><small class="text-muted">${formatearFecha(a.fecha)}</small></td>
                 <td><small class="text-muted">${a.remitente ?? '—'}</small></td>
             </tr>
         `).join('');
@@ -243,10 +242,10 @@ async function loadProximasFormaciones() {
                         <small class="text-muted">
                             ${e.horas ? `${e.horas}h` : ''}
                             ${e.horas && e.f_fin ? ' · ' : ''}
-                            ${e.f_fin ? `Fin: ${formatDate(e.f_fin)}` : ''}
+                            ${e.f_fin ? `Fin: ${formatearFecha(e.f_fin)}` : ''}
                         </small>
                     </div>
-                    <span class="badge bg-primary">${formatDate(e.f_inicio)}</span>
+                    <span class="badge bg-primary">${formatearFecha(e.f_inicio)}</span>
                 </div>
             </li>
         `).join('');
@@ -281,10 +280,10 @@ async function loadUltimasSalidas() {
         tbody.innerHTML = ultimas.map(s => `
             <tr>
                 <td>${s.matricula ?? '—'}</td>
-                <td><small class="text-muted">${formatDate(s.f_salida)}</small></td>
+                <td><small class="text-muted">${formatearFecha(s.f_salida)}</small></td>
                 <td>
                     ${s.f_regreso
-                        ? `<small class="text-muted">${formatDate(s.f_regreso)}</small>`
+                        ? `<small class="text-muted">${formatearFecha(s.f_regreso)}</small>`
                         : `<span class="badge bg-warning text-dark">En curso</span>`
                     }
                 </td>
@@ -302,12 +301,15 @@ async function loadUltimasSalidas() {
 async function initDashboard() {
     renderFecha();
 
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    const idBombero = user.id_bombero ?? null;
+
     await Promise.allSettled([
         loadEmergenciasActivas(),
         loadPersonalGuardia(),
         loadVehiculosStat(),
-        loadAvisosStat(),
-        loadAvisosRecientes(),
+        loadAvisosStat(idBombero),
+        loadAvisosRecientes(idBombero),
         loadVehiculosEstado(),
         loadProximasFormaciones(),
         loadUltimasSalidas(),
