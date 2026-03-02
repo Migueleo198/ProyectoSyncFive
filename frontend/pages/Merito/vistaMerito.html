@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -84,8 +87,60 @@
 
                     </form>
                 </div>
+
+                <div class="contenedorInsertar container mt-5 p-4 border rounded">
+                    <h5 class="text-center mb-4">Insertar usuario a Merito</h5>
+                    <form id="formAsignarMerito" class="mx-auto">
+                        <!-- Campos en la misma fila -->
+                        <div class="row mb-3">
+                            <!-- Merito -->
+                            <div class="col-md-6 col-sm-6">
+                                <label for="merito" class="m-2">Merito</label>
+                                <select name="merito" id="merito" class="form-select form-select-sm" required>
+                                    <option value="">Seleccione merito...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <label for="n_funcionario" class="m-2 form-label">Persona</label>
+                                <select class="form-select" id="n_funcionario" name="n_funcionario">
+                                    <option value="">Seleccione persona...</option>
+                                    <!-- Se llenará dinámicamente desde JS -->
+                                </select>       
+                            </div>
+                            <!-- Botones centrados debajo -->
+                            <div class="d-flex justify-content-center gap-2">
+                                <button type="reset" class="btn btn-secondary">Limpiar</button>
+                                <button type="submit" class="btn btn-primary" id="btnInsertarUsuario">Insertar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="contenedorInsertar container mt-5 p-4 border rounded">
+                    <h5 class="text-center mb-4">Desasignar mérito a persona</h5>
+                    <form id="formDesasignarMerito" class="mx-auto">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="desasignar_persona" class="m-2 form-label">Persona</label>
+                                <select class="form-select" id="desasignar_persona" name="n_funcionario" required>
+                                    <option value="">Seleccione persona...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="desasignar_merito" class="m-2 form-label">Mérito</label>
+                                <select class="form-select" id="desasignar_merito" name="merito" required>
+                                    <option value="">Seleccione mérito...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="reset" class="btn btn-secondary">Limpiar</button>
+                            <button type="submit" class="btn btn-danger">Desasignar</button>
+                        </div>
+                    </form>
+                </div>
             </main>
         </div>
+
     </div>
 
     <!-- Modal de edición -->
@@ -105,26 +160,35 @@
         </div>
     </div>
 
-    <!-- Modal de ver -->
+    <!-- Modal de VER -->
     <div class="modal fade" id="modalVer" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-
                 <div class="modal-header">
                     <h5 class="modal-title">Detalle del mérito</h5>
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
                 <div class="modal-body" id="modalVerBody">
-                   <!-- Body dinámico del modal -->
-                </div>
+                    <!-- Detalle del mérito -->
+                    <div id="detallesMerito" class="mb-4"></div>
 
+                    <!-- Tabla de personas -->
+                    <h6 class="fw-bold">Personas con este mérito</h6>
+                    <table class="table table-bordered table-striped" id="tablaPersonasMerito">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID Bombero</th>
+                                <th>Nº Funcionario</th>
+                                <th>Nombre</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cerrar
-                    </button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
-
             </div>
         </div>
     </div>
@@ -170,3 +234,4 @@
 
 </body>
 </html>
+
