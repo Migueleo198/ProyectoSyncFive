@@ -105,6 +105,12 @@ function loadHead(title, options = {}) {
         hf.type = 'module';
         hf.src  = '/frontend/javascript/helpers/header_footer.js';
         document.head.appendChild(hf);
+
+        // ── Breadcrumb
+        const bc = document.createElement('script');
+        bc.type = 'module';
+        bc.src  = '/frontend/javascript/helpers/breadcrumb.js';
+        document.head.appendChild(bc);
     }
 
     // ── CSS extra opcionales del proyecto
