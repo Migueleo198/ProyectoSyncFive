@@ -53,7 +53,9 @@ $router->protectedSession('POST', '/personas/{id_bombero}/turnos', 'Controllers\
 $router->protectedSession('DELETE', '/personas/{id_bombero}/turnos', 'Controllers\\PersonaController@deleteTurnos', [3,4,5]);
 
 // GUARDIAS PERSONA
+$router->protectedSession('GET', '/personas/guardias/fecha/{fecha}', 'Controllers\\GuardiaController@getGuardiaByFecha', [1,2,3,4,5]); 
 $router->protectedSession('POST', '/personas/{id_bombero}/guardias', 'Controllers\\GuardiaController@assign', [4,5]);
+$router->protectedSession('PATCH', '/personas/{id_bombero}/guardias/{id_guardia}', 'Controllers\\GuardiaController@updateCargo', [1,2,3,4,5]);
 
 
 //++++++++++++++++++++++++++++++ FORMACIONES ++++++++++++++++++++++++++++++
@@ -237,6 +239,7 @@ $router->protectedSession('GET',    '/guardias/{id_guardia}',  'Controllers\\Gua
 $router->protectedSession('POST', '/guardias', 'Controllers\\GuardiaController@store', [4,5]);
 $router->protectedSession('PUT', '/guardias/{id_guardia}', 'Controllers\\GuardiaController@update', [4,5]);
 $router->protectedSession('DELETE', '/guardias/{id_guardia}', 'Controllers\\GuardiaController@delete', [5]);
+$router->protectedSession('PATCH', '/guardias/{id_guardia}', 'Controllers\\GuardiaController@updateNotas', [4,5]);
 
 
 //++++++++++++++++++++++++++++++ PERMISOS ++++++++++++++++++++++++++++++
