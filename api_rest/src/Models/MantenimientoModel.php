@@ -36,8 +36,8 @@ class MantenimientoModel
         ")
         ->bind(":estado", $data['estado'])
         ->bind(":f_inicio", $data['f_inicio'])
-        ->bind(":f_fin", $data['f_fin'] ?? null)           // Puede ser NULL
-        ->bind(":descripcion", $data['descripcion'] ?? null) // Puede ser NULL
+        ->bind(":f_fin", $data['f_fin'] ?? null)          
+        ->bind(":descripcion", $data['descripcion'] ?? null)
         ->execute();
 
         return (int) $this->db->lastId();
