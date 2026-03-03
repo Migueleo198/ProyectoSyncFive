@@ -53,6 +53,7 @@ $router->protectedSession('POST', '/personas/{id_bombero}/turnos', 'Controllers\
 $router->protectedSession('DELETE', '/personas/{id_bombero}/turnos', 'Controllers\\PersonaController@deleteTurnos', [3,4,5]);
 
 // GUARDIAS PERSONA
+$router->protectedSession('GET', '/guardias/{id_guardia}/personas', 'Controllers\\GuardiaController@persons', [1,2,3,4,5]);
 $router->protectedSession('POST', '/personas/{id_bombero}/guardias', 'Controllers\\GuardiaController@assign', [4,5]);
 
 
@@ -217,6 +218,8 @@ $router->protectedSession('GET', '/avisos/{id_aviso}/remitente', 'Controllers\\A
 $router->protectedSession('POST', '/avisos/{id_aviso}/remitente/{id_bombero}', 'Controllers\\AvisoController@setRemitente', [2,3,4,5]);
 $router->protectedSession('DELETE', '/avisos/{id_aviso}/remitente/{id_bombero}', 'Controllers\\AvisoController@deleteRemitente', [2,3,4,5]);
 
+// AVISOS RECIBIDOS
+$router->protectedSession('GET', '/avisos/{id_bombero}/recibidos', 'Controllers\\AvisoController@getRecibidos', [1,2,3,4,5]);
 
 //++++++++++++++++++++++++++++++ CARNETS ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/carnets', 'Controllers\\CarnetController@index', [1,2,3,4,5]);

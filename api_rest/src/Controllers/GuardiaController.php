@@ -114,12 +114,12 @@ class GuardiaController
     }
 
     /**
-     * GET /carnets/{id_guardia}/personas NO SE USA PERO POR SI HACE FALTA PRA DESPUES
+     * GET /guardias/{id_guardia}/personas NO SE USA PERO POR SI HACE FALTA PRA DESPUES
      */
- /*    public function persons(Request $req, Response $res, string $id_guardia): void
+    public function persons(Request $req, Response $res, string $id_guardia): void
     {
         try {
-            $persons = $this->service->getPersonsByGuardia($id_guardia);
+            $persons = $this->service->getPersonsByGuardia((int)$id_guardia);
 
             $res->status(200)->json(
                 $persons,
@@ -130,7 +130,7 @@ class GuardiaController
             $code = ($e->getCode() >= 400) ? $e->getCode() : 500;
             $res->errorJson($e->getMessage(), $code);
         }
-    } */
+    } 
 
     /**
      * POST /Guardia/assign
