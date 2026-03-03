@@ -107,42 +107,43 @@ class PersonaModel
 
         return $ok ? $data['id_bombero'] : false;
     }
-/**
- * Actualizar datos de persona (PATCH)
- */
-public function update(string $id_bombero, array $data): int  // ← string id_bombero
-{
-    $this->db->query("
-        UPDATE Persona SET
-            talla_superior = :talla_superior,
-            talla_inferior = :talla_inferior,
-            talla_calzado = :talla_calzado,
-            domicilio = :domicilio,
-            localidad = :localidad,
-            correo = :correo,
-            telefono = :telefono,
-            telefono_emergencia = :telefono_emergencia,
-            nombre_usuario = :nombre_usuario,
-            activo = :activo
-        WHERE id_bombero = :id_bombero
-    ")
-    ->bind(':id_bombero', $id_bombero)  // ← id_bombero en WHERE
-    ->bind(':talla_superior', $data['talla_superior'] ?? null)
-    ->bind(':talla_inferior', $data['talla_inferior'] ?? null)
-    ->bind(':talla_calzado', $data['talla_calzado'] ?? null)
-    ->bind(':domicilio', $data['domicilio'] ?? null)
-    ->bind(':localidad', $data['localidad'] ?? null)
-    ->bind(':correo', $data['correo'] ?? null)
-    ->bind(':telefono', $data['telefono'] ?? null)
-    ->bind(':telefono_emergencia', $data['telefono_emergencia'] ?? null)
-    ->bind(':nombre_usuario', $data['nombre_usuario'] ?? null)
-    ->bind(':activo', $data['activo'] ?? null)
-    ->execute();
+    
+    /**
+     * Actualizar datos de persona (PATCH)
+     */
+    public function update(string $id_bombero, array $data): int  // ← string id_bombero
+    {
+        $this->db->query("
+            UPDATE Persona SET
+                talla_superior = :talla_superior,
+                talla_inferior = :talla_inferior,
+                talla_calzado = :talla_calzado,
+                domicilio = :domicilio,
+                localidad = :localidad,
+                correo = :correo,
+                telefono = :telefono,
+                telefono_emergencia = :telefono_emergencia,
+                nombre_usuario = :nombre_usuario,
+                activo = :activo
+            WHERE id_bombero = :id_bombero
+        ")
+        ->bind(':id_bombero', $id_bombero)  // ← id_bombero en WHERE
+        ->bind(':talla_superior', $data['talla_superior'] ?? null)
+        ->bind(':talla_inferior', $data['talla_inferior'] ?? null)
+        ->bind(':talla_calzado', $data['talla_calzado'] ?? null)
+        ->bind(':domicilio', $data['domicilio'] ?? null)
+        ->bind(':localidad', $data['localidad'] ?? null)
+        ->bind(':correo', $data['correo'] ?? null)
+        ->bind(':telefono', $data['telefono'] ?? null)
+        ->bind(':telefono_emergencia', $data['telefono_emergencia'] ?? null)
+        ->bind(':nombre_usuario', $data['nombre_usuario'] ?? null)
+        ->bind(':activo', $data['activo'] ?? null)
+        ->execute();
 
-    return $this->db
-        ->query("SELECT ROW_COUNT() AS affected")
-        ->fetch()['affected'];
-}
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
 
     /**
      * Eliminar persona
@@ -336,7 +337,7 @@ public function update(string $id_bombero, array $data): int  // ← string id_b
             ->fetchAll();
     }
 
-    public function addMaterialToBombero(int $id_bombero, int $id_material, string $nserie): void
+    public function addMaterialToBombero(string $id_bombero, int $id_material, string $nserie): void
     {
         $this->db
             ->query("
@@ -345,11 +346,11 @@ public function update(string $id_bombero, array $data): int  // ← string id_b
             ")
             ->bind(':id_bombero', $id_bombero)
             ->bind(':id_material', $id_material)
-            ->bind(':nserie', $nserie ?? null)
+            ->bind(':nserie', $nserie)
             ->execute();
     }
 
-    public function removeMaterialBombero(int $id_bombero, int $id_material): int
+    public function removeMaterialBombero(string $id_bombero, int $id_material): int
     {
         $this->db
             ->query("
