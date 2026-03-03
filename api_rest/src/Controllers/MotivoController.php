@@ -55,7 +55,7 @@ class MotivoController
             $data = $req->json();
 
             // Ahora puede incluir cod_motivo (string)
-            $result = $this->service->registerMotivo($data);
+            $result = $this->service->createMotivo($data);
 
             $res->status(201)->json(
                 [

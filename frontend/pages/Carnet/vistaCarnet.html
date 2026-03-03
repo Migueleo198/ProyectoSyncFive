@@ -2,37 +2,11 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestion de Carnets</title>
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-
-    <!-- Configuración y rutas absolutas -->
     <script src="/frontend/config/config.js"></script>
-
-    <!-- CSS del proyecto usando loadCSS() -->
-    <script>
-        loadCSS("header_footer.css");
-        loadCSS("plantilla_css.css");
-        // Cargar favicon dinámicamente
-        loadFavicon("favicon.png");
-    </script>
-
-    <!-- JS dependientes -->
-    <script type="module" src="/frontend/javascript/helpers/header_footer.js" defer></script>
-    <script src="/frontend/javascript/helpers/script_filtro_tabla.js" defer></script>
-
-    <!-- Bootstrap Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-        <!-- Controlador específico de la vista -->
-    <script type="module"
-        src="/frontend/javascript/controllers_f/CarnetController.js">
-    </script>
+    <script>loadHead("Gestión de Carnets")</script>
+    <script type="module" src="/frontend/javascript/controllers_f/CarnetController.js"></script>
 </head>
-
-<body class="bg-white text-dark">
+<body class="bg-white text-dark d-flex flex-column">
 
     <!-- HEADER -->
     <div id="header-placeholder"></div>
@@ -55,9 +29,8 @@
                     </a>
                 </div>
 
-                <div>
-                    <p>[Migas de pan]</p>
-                </div>
+                <!-- MIGAS DE PAN -->
+                <div id="breadcrumb-placeholder"></div>
 
                 <!-- Contenedor tabla con filtro-->
                 <div class="container mt-4 p-0"> 
@@ -85,34 +58,42 @@
                         <tbody></tbody>
                     </table>
                 </div>
-                <!-- Contenedor insertar -->
+
+                
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Insertar Carnet a Funcionario</h5>
+                    <h5 class="text-center mb-4">Asignar Carnet a Funcionario</h5>
                     <form id="formInsertar" class="mx-auto">
-                        <!-- Campos en la misma fila -->
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label class="m-2" for="seleccionarCarnet">ID_Carnet:</label>
-                                <select class="form-select form-select-sm mt-1 filtro" id="seleccionarCarnet" data-col="2">
-                                    <option value="">ID_Carnet</option>
-
-                                </select>  
-                                  
+                                <label class="form-label" for="seleccionarCarnet">Carnet:</label>
+                                <select class="form-select" id="seleccionarCarnet" name="seleccionarCarnet" required>
+                                    <option value="">Seleccione carnet...</option>
+                                </select>
                             </div>
+
                             <div class="col-md-6">
-                                <label class="m-2" for="id_bombero">ID Bombero:</label>
-                                <select class="form-select form-select-sm mt-1 filtro" id="id_bombero" data-col="2">
-                                </select>   
+                                <label class="form-label" for="id_bombero">Bombero:</label>
+                                <select class="form-select" id="id_bombero" name="id_bombero" required>
+                                    <option value="">Seleccione bombero...</option>
+                                </select>
                             </div>
                         </div>
-                        <!-- Botones centrados debajo -->
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="f_obtencion">Fecha Obtención:</label>
+                                <input type="date" class="form-control" id="f_obtencion" name="f_obtencion" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label" for="f_vencimiento">Fecha Vencimiento:</label>
+                                <input type="date" class="form-control" id="f_vencimiento" name="f_vencimiento" required>
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-center gap-2">
-                            <button type="reset" class="btn btn-secondary">
-                                Limpiar
-                            </button>
-                            <button type="submit" class="btn btn-primary" id="btnInsertar">
-                                Insertar
-                            </button>
+                            <button type="reset" class="btn btn-secondary">Limpiar</button>
+                            <button type="submit" class="btn btn-primary">Asignar</button>
                         </div>
                     </form>
                 </div>
@@ -152,9 +133,6 @@
             </main>
         </div>
     </div>
-
-    
-
  
     <!-- Modal de ver -->
     <div class="modal fade" id="modalVer" tabindex="-1">

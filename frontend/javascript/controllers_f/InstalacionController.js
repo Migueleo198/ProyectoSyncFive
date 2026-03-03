@@ -1,4 +1,6 @@
 import InstalacionApi from '../api_f/InstalacionApi.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarEmail, validarTelefono } from '../helpers/validacion.js';
 
 let instalaciones = [];
 
@@ -124,11 +126,25 @@ function bindCrearInstalacion() {
       localidad: f.get('localidad')
     };
 
+    // VALIDACIONES
+    if (!data.nombre || !data.direccion || !data.localidad) {
+      mostrarError('Nombre, dirección y localidad son obligatorios');
+      return;
+    }
+    if (!validarEmail(data.correo)) {
+      mostrarError('Correo no válido');
+      return;
+    }
+    if (!validarTelefono(data.telefono)) {
+      mostrarError('Teléfono no válido');
+      return;
+    }
+
     try {
       await InstalacionApi.create(data);
       await cargarInstalaciones();
       form.reset();
-      mostrarExito('Instalación creada correctamente');
+      mostrarExito('Instalacion creada correctamente');
     } catch (err) {
       console.error('Error completo:', err);
       
@@ -144,23 +160,126 @@ function bindCrearInstalacion() {
 // ================================
 // CAMPOS DE LA TABLA PARA MODALES
 // ================================
-const nombresCampos = [
-  'ID',
-  'Nombre',
-  'Dirección',
-  'Teléfono',
-  'Correo',
-  'Localidad'
-];
+document.addEventListener('click', async function (e) {
+  const btn = e.target.closest('.btn-editar');
+  if (!btn) return;
 
-const camposBd = [
-  'id_instalacion',
-  'nombre',
-  'direccion',
-  'telefono',
-  'correo',
-  'localidad'
-];
+  const id = btn.dataset.id;
+
+  try {
+    // Obtener datos de la instalacion
+    const response = await InstalacionApi.getById(id);
+    const instalacion = response.data;
+    if (!instalacion) return;
+
+    const form = document.getElementById('formEditar');
+    form.innerHTML = ''; // Limpiar contenido previo
+
+    // Insertar formulario
+    form.innerHTML = `
+    <div class="row mb-3">
+      <div class="col-lg-6">
+        <label class="form-label">Nombre</label>
+        <input type="text" class="form-control" name="nombre" value="${instalacion.nombre || ''}">
+      </div>
+
+      <div class="col-lg-6">
+        <label class="form-label">Teléfono</label>
+        <input type="text" class="form-control" name="telefono" value="${instalacion.telefono || ''}">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-lg-6">
+        <label class="form-label">Correo</label>
+        <input type="email" class="form-control" name="correo" value="${instalacion.correo || ''}">
+      </div>
+
+      <div class="col-lg-6">
+        <label class="form-label">Localidad</label>
+        <input type="text" class="form-control" name="localidad" value="${instalacion.localidad || ''}">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Dirección</label>
+      <input type="text" class="form-control" name="direccion" value="${instalacion.direccion || ''}">
+    </div>
+
+    <div class="text-center">
+      <button type="button" id="btnGuardarCambios" class="btn btn-primary">
+        Guardar cambios
+      </button>
+    </div>
+  `;
+
+
+  await cargarInstalaciones(instalacion.codigo_tipo, 'selectInstalacion'); // DENTRO DEL HTML PREVIO hemos creado un select vacío con id= selectInstalacion, donde se cargarán tipos y marcará el seleccionado
+
+  // Guardar cambios
+  document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
+    const data = {};
+
+    camposBd.forEach(campo => {
+      const input = form.querySelector(`[name="${campo}"]`);
+      if (input) data[campo] = input.value;
+    });
+
+    // VALIDACIONES
+    if (!data.nombre || !data.direccion || !data.localidad) {
+      mostrarError('Nombre, dirección y localidad son obligatorios');
+      return;
+    }
+    if (!validarEmail(data.correo)) {
+      mostrarError('Correo no válido');
+      return;
+    }
+    if (!validarTelefono(data.telefono)) {
+      mostrarError('Teléfono no válido');
+      return;
+    }
+
+    try{
+      await InstalacionApi.update(id, data);             // Enviar datos al backend para actualizar la instalacion
+      await cargarInstalaciones();                        // Recargar tabla para mostrar cambios
+
+      const modal = bootstrap.Modal.getInstance(        // Cerrar modal
+        document.getElementById('modalEditar')
+      );
+      modal.hide();
+
+      mostrarExito('Instalación actualizada correctamente');
+
+    } catch (err) {
+      mostrarError(err.message || 'Error actualizando instalación');
+    }
+  });
+
+  } catch (error) {
+    console.error('Error al editar instalacion:', error);
+  }
+});
+
+    
+// ================================
+// CAMPOS DE LA TABLA  estos arrays se usan para mostrar los campos en el modal ver (arriba como lo quieres ver, abajo como están en la base de datos, el orden debe coincidir)  
+// ================================
+  const nombresCampos = [
+    'Nombre',
+    'Dirección',
+    'Teléfono',
+    'Correo',
+    'Localidad'
+  ];
+
+  const camposBd = [
+    'nombre',
+    'direccion',
+    'telefono',
+    'correo',
+    'localidad'
+  ];
+
 
 // ================================
 // MODAL VER
@@ -343,63 +462,5 @@ function bindModales() {
         mostrarError('❌ Error al eliminar: ' + error.message);
       }
     }
-  });
+});
 }
-
-// ================================
-// FUNCIONES AUXILIARES
-// ================================
-function mostrarError(msg) {
-  const container = document.getElementById("alert-container");
-  if (!container) return;
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = `
-    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-      <strong>Error:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-
-  container.append(wrapper);
-  
-  setTimeout(() => {
-    wrapper.remove();
-  }, 5000);
-}
-
-function mostrarExito(msg) {
-  const container = document.getElementById("alert-container");
-  if (!container) return;
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = `
-    <div class="alert alert-success alert-dismissible fade show shadow" role="alert">
-      <strong>Éxito:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-
-  container.append(wrapper);
-  
-  setTimeout(() => {
-    wrapper.remove();
-  }, 3000);
-}
-
-// ================================
-// REFRESCAR DATOS
-// ================================
-window.refrescarInstalaciones = async function() {
-  await cargarInstalaciones();
-  mostrarExito('Datos actualizados');
-};
-
-// ================================
-// EXPORTAR FUNCIONES PARA USO GLOBAL
-// ================================
-window.InstalacionController = {
-  cargarInstalaciones: cargarInstalaciones,
-  refrescarInstalaciones: window.refrescarInstalaciones,
-  aplicarFiltros: aplicarFiltros
-};
