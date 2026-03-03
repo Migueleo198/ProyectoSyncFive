@@ -244,12 +244,13 @@ $router->protectedSession('GET', '/permisos', 'Controllers\\PermisoController@in
 $router->protectedSession('POST', '/permisos', 'Controllers\\PermisoController@store', [1,2,3,4,5]);
 $router->protectedSession('PUT', '/permisos/{id_permiso}', 'Controllers\\PermisoController@update', [4,5]);
 $router->protectedSession('DELETE', '/permisos/{id_permiso}', 'Controllers\\PermisoController@delete', [5]);
-
+$router->protectedSession('PATCH', '/permisos/{id_permiso}', 'Controllers\\PermisoController@update', [4,5]);
 
 //++++++++++++++++++++++++++++++ MOTIVOS DE PERMISO ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/motivos', 'Controllers\\MotivoController@index', [1,2,3,4,5]);
 $router->protectedSession('POST', '/motivos', 'Controllers\\MotivoController@store', [4,5]);
 $router->protectedSession('DELETE', '/motivos/{cod_motivo}', 'Controllers\\MotivoController@delete', [5]);
+$router->protectedSession('PUT', '/motivos/{cod_motivo}', 'Controllers\\MotivoController@update', [5]);
 
 
 ?>
