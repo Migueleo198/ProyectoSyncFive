@@ -258,13 +258,54 @@ const nombresCampos = ['ID', 'Nombre', 'Descripción', 'Estado', 'Categoría'];
 const camposBd      = ['id_material', 'nombre', 'descripcion', 'estado', 'id_categoria'];
 
 
+// HELPER: HTML FILTRO con el mismo estilo que la página principal
+
+function htmlFiltroTabla(idA, idB, labelA, labelB) {
+    return `
+        <div id="filtroTabla" class="row d-flex justify-content-around m-0 mb-0">
+            <div class="col-md-5 d-flex align-items-center m-1">
+                <label class="m-2" for="${idA}">${labelA}:</label>
+                <input placeholder="${labelA}" id="${idA}" type="text" class="form-control m-1">
+            </div>
+            <div class="col-md-5 d-flex align-items-center m-1">
+                <label class="m-2" for="${idB}">${labelB}:</label>
+                <input placeholder="${labelB}" id="${idB}" type="text" class="form-control m-1">
+            </div>
+        </div>`;
+}
+
+// HELPER: bind filtro sobre un tbody (filtra por dos columnas de texto)
+function bindFiltroTablaModal(idA, idB, tbodyId, colA, colB) {
+    const inputA = document.getElementById(idA);
+    const inputB = document.getElementById(idB);
+    if (!inputA || !inputB) return;
+
+    function filtrar() {
+        const textoA = inputA.value.toLowerCase();
+        const textoB = inputB.value.toLowerCase();
+        const tbody  = document.getElementById(tbodyId);
+        if (!tbody) return;
+        tbody.querySelectorAll('tr').forEach(tr => {
+            const celdas = tr.querySelectorAll('td');
+            const cumpleA = !textoA || (celdas[colA]?.textContent?.toLowerCase().includes(textoA));
+            const cumpleB = !textoB || (celdas[colB]?.textContent?.toLowerCase().includes(textoB));
+            tr.style.display = (cumpleA && cumpleB) ? '' : 'none';
+        });
+    }
+
+    inputA.addEventListener('input', filtrar);
+    inputB.addEventListener('input', filtrar);
+}
+
+
 // FUNCIONES PARA RENDERIZAR TABLAS EN MODAL VER
 
 function crearTablaVehiculosVer(asignaciones) {
     let html = '<div class="mt-4"><h6 class="fw-bold">Asignaciones a vehículos</h6>';
+    html += htmlFiltroTabla('verVehNombre', 'verVehVehiculo', 'Matrícula', 'Vehículo');
     html += '<table class="table table-bordered table-striped table-sm">';
     html += '<thead class="table-dark"><tr><th>Matrícula</th><th>Vehículo</th><th>Unidades</th><th>Nº Serie</th></tr></thead>';
-    html += '<tbody>';
+    html += '<tbody id="tbodyVerVehiculos">';
     if (asignaciones.length === 0) {
         html += '<tr><td colspan="4" class="text-center text-muted">Sin asignaciones</td></tr>';
     } else {
@@ -272,7 +313,7 @@ function crearTablaVehiculosVer(asignaciones) {
             html += `<tr>
                 <td>${a.identificador || a.matricula || '-'}</td>
                 <td>${a.elemento || a.matricula || '-'}</td>
-                <td>${a.unidades || '-'}</td>
+                <td>${a.unidades ?? (a.numero_serie || a.nserie ? 1 : '-')}</td>
                 <td>${a.numero_serie || a.nserie || '-'}</td>
             </tr>`;
         });
@@ -283,9 +324,10 @@ function crearTablaVehiculosVer(asignaciones) {
 
 function crearTablaPersonasVer(asignaciones) {
     let html = '<div class="mt-4"><h6 class="fw-bold">Asignaciones a personas</h6>';
+    html += htmlFiltroTabla('verPerNombre', 'verPerFuncionario', 'Nombre', 'Nº Funcionario');
     html += '<table class="table table-bordered table-striped table-sm">';
     html += '<thead class="table-dark"><tr><th>ID</th><th>Nombre</th><th>Nº Funcionario</th><th>Nº Serie</th></tr></thead>';
-    html += '<tbody>';
+    html += '<tbody id="tbodyVerPersonas">';
     if (asignaciones.length === 0) {
         html += '<tr><td colspan="4" class="text-center text-muted">Sin asignaciones</td></tr>';
     } else {
@@ -304,9 +346,10 @@ function crearTablaPersonasVer(asignaciones) {
 
 function crearTablaAlmacenesVer(asignaciones) {
     let html = '<div class="mt-4"><h6 class="fw-bold">Asignaciones a almacenes</h6>';
+    html += htmlFiltroTabla('verAlmInstalacion', 'verAlmNombre', 'Instalación', 'Almacén');
     html += '<table class="table table-bordered table-striped table-sm">';
     html += '<thead class="table-dark"><tr><th>Instalación</th><th>Almacén</th><th>Planta</th><th>Unidades</th><th>Nº Serie</th></tr></thead>';
-    html += '<tbody>';
+    html += '<tbody id="tbodyVerAlmacenes">';
     if (asignaciones.length === 0) {
         html += '<tr><td colspan="5" class="text-center text-muted">Sin asignaciones</td></tr>';
     } else {
@@ -316,8 +359,8 @@ function crearTablaAlmacenesVer(asignaciones) {
             html += `<tr>
                 <td>${nombreInstalacion}</td>
                 <td>${nombreAlmacen}</td>
-                <td>${a.planta || '-'}</td>
-                <td>${a.unidades || '-'}</td>
+                <td>${a.planta || '0'}</td>
+                <td>${a.unidades ?? (a.numero_serie || a.nserie ? 1 : '-')}</td>
                 <td>${a.numero_serie || a.n_serie || '-'}</td>
             </tr>`;
         });
@@ -363,6 +406,12 @@ function bindModales() {
             const htmlAlmacenes = crearTablaAlmacenesVer(asignaciones.almacenes);
 
             modalBody.insertAdjacentHTML('beforeend', htmlVehiculos + htmlPersonas + htmlAlmacenes);
+
+            // Activar filtros modal ver
+            // col 1 = Vehículo, no hay estado → pasamos -1 para ignorarlo
+            bindFiltroTablaModal('verVehNombre', 'verVehVehiculo', 'tbodyVerVehiculos', 0, 1);
+            bindFiltroTablaModal('verPerNombre', 'verPerFuncionario', 'tbodyVerPersonas', 1, 2);
+            bindFiltroTablaModal('verAlmInstalacion', 'verAlmNombre', 'tbodyVerAlmacenes', 0, 1);
         } catch (error) {
             console.error('Error cargando asignaciones:', error);
         }
@@ -483,6 +532,7 @@ function bindModales() {
                                 </div>
                             </div>
                         </div>
+                        ${htmlFiltroTabla('editVehNombre', 'editVehVehiculo', 'Matrícula', 'Vehículo')}
                         <table class="table table-bordered table-sm">
                             <thead class="table-dark"><tr><th>Matrícula</th><th>Vehículo</th><th>Unidades</th><th>Nº Serie</th><th>Acción</th></tr></thead>
                             <tbody id="tbodyVehiculos"><tr><td colspan="5" class="text-center">Cargando...</td></tr></tbody>
@@ -509,6 +559,7 @@ function bindModales() {
                                 </div>
                             </div>
                         </div>
+                        ${htmlFiltroTabla('editPerNombre', 'editPerFuncionario', 'Nombre', 'Nº Funcionario')}
                         <table class="table table-bordered table-sm">
                             <thead class="table-dark"><tr><th>ID</th><th>Nombre</th><th>Nº Funcionario</th><th>Nº Serie</th><th>Acción</th></tr></thead>
                             <tbody id="tbodyPersonas"><tr><td colspan="5" class="text-center">Cargando...</td></tr></tbody>
@@ -552,6 +603,7 @@ function bindModales() {
                                 </div>
                             </div>
                         </div>
+                        ${htmlFiltroTabla('editAlmInstalacion', 'editAlmNombre', 'Instalación', 'Almacén')}
                         <table class="table table-bordered table-sm">
                             <thead class="table-dark"><tr><th>Instalación</th><th>Almacén</th><th>Planta</th><th>Unidades</th><th>Nº Serie</th><th>Acción</th></tr></thead>
                             <tbody id="tbodyAlmacenes"><tr><td colspan="6" class="text-center">Cargando...</td></tr></tbody>
@@ -566,6 +618,11 @@ function bindModales() {
             renderTablaVehiculos(asignaciones.vehiculos);
             renderTablaPersonas(asignaciones.personas);
             renderTablaAlmacenes(asignaciones.almacenes);
+
+            // Activar filtros modal editar
+            bindFiltroTablaModal('editVehNombre', 'editVehVehiculo', 'tbodyVehiculos', 0, 1);
+            bindFiltroTablaModal('editPerNombre', 'editPerFuncionario', 'tbodyPersonas', 1, 2);
+            bindFiltroTablaModal('editAlmInstalacion', 'editAlmNombre', 'tbodyAlmacenes', 0, 1);
 
             bindEventosModalEditar(form);
 
@@ -770,15 +827,12 @@ function bindEventosModalEditar(form) {
         });
     }
 
-    // ============================================
-    // ASIGNAR ALMACÉN - VERSIÓN FINAL FUNCIONAL
-    // ============================================
+    // ASIGNAR ALMACÉN
     const btnAsignarAlmacen = form.querySelector('#btnAsignarAlmacen');
     if (btnAsignarAlmacen) {
-        // Eliminar event listeners anteriores
         btnAsignarAlmacen.replaceWith(btnAsignarAlmacen.cloneNode(true));
         const nuevoBtn = form.querySelector('#btnAsignarAlmacen');
-        
+
         nuevoBtn.addEventListener('click', async () => {
             const id_instalacion = parseInt(form.querySelector('#asigInstalacionSelect').value);
             const id_almacen     = parseInt(form.querySelector('#asigAlmacenSelect').value);
@@ -787,53 +841,25 @@ function bindEventosModalEditar(form) {
             if (!id_instalacion) return mostrarError('Seleccione instalación');
             if (!id_almacen)     return mostrarError('Seleccione almacén');
 
-            // Verificar si ya existe la asignación
-            try {
-                const asignacionesActuales = await obtenerAsignacionesMaterial(currentMaterialId);
-                const instalacionNombre = instalaciones.find(i => i.id_instalacion == id_instalacion)?.nombre;
-                
-                const yaExiste = asignacionesActuales.almacenes.some(a => {
-                    const idAlmacenCoincide = a.id_almacen == id_almacen;
-                    const instalacionCoincide = a.nombre_instalacion === instalacionNombre || 
-                                                extraerNombreInstalacion(a.elemento) === instalacionNombre;
-                    return idAlmacenCoincide && instalacionCoincide;
-                });
-                
-                if (yaExiste) {
-                    return mostrarError('Este material ya está asignado a este almacén en esta instalación');
-                }
-            } catch (e) {
-                console.error('Error verificando asignación existente:', e);
-            }
-
-            // Construir payload BASE
             let payload = {
                 id_material: parseInt(currentMaterialId),
                 id_instalacion: id_instalacion
             };
 
-            // MODO EXCLUYENTE: SOLO UN CAMPO
             if (modo === 'unidades') {
                 const unidades = parseInt(form.querySelector('#asigAlmacenUnidades').value);
                 if (!unidades || unidades < 1) return mostrarError('Unidades inválidas');
                 payload.unidades = unidades;
-                
-            } else { 
+            } else {
                 const n_serie = form.querySelector('#asigAlmacenNserie').value.trim();
                 if (!n_serie) return mostrarError('Introduzca el número de serie');
-                
-                if (!/^\d+$/.test(n_serie)) {
-                    return mostrarError('El número de serie del almacén debe ser numérico (solo dígitos)');
-                }
-                
-                payload.n_serie = parseInt(n_serie, 10);
+                payload.n_serie = n_serie;
             }
 
             try {
                 await MaterialApi.assignToAlmacen(id_almacen, payload);
                 mostrarExito('Asignado correctamente');
-                
-                // Limpiar formulario
+
                 form.querySelector('#asigInstalacionSelect').value = '';
                 form.querySelector('#asigAlmacenSelect').innerHTML = '<option value="">Primero seleccione instalación</option>';
                 form.querySelector('#asigAlmacenSelect').disabled = true;
@@ -842,22 +868,10 @@ function bindEventosModalEditar(form) {
                 form.querySelector('#modoAsigAlmacen').value = 'unidades';
                 form.querySelector('#wrapAlmacenUnidades').classList.remove('d-none');
                 form.querySelector('#wrapAlmacenNserie').classList.add('d-none');
-                
+
             } catch (e) {
                 console.error('Error:', e);
-                if (e.response) {
-                    if (e.response.status === 409) {
-                        if (e.response.data?.message?.includes('número de serie')) {
-                            mostrarError('El número de serie ya existe en este almacén');
-                        } else {
-                            mostrarError('El material ya existe en este almacén');
-                        }
-                    } else {
-                        mostrarError(e.response.data?.message || 'Error al asignar');
-                    }
-                } else {
-                    mostrarError(e.message || 'Error al asignar');
-                }
+                mostrarError(e.message || 'Error al asignar');
             } finally {
                 asignacionesCache.delete(currentMaterialId);
                 const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
@@ -885,7 +899,7 @@ function renderTablaVehiculos(asignaciones) {
         tr.innerHTML = `
             <td>${a.identificador || a.matricula || '-'}</td>
             <td>${a.elemento || a.matricula || '-'}</td>
-            <td>${a.unidades || '-'}</td>
+            <td>${a.unidades ?? (a.numero_serie || a.nserie ? 1 : '-')}</td>
             <td>${a.numero_serie || a.nserie || '-'}</td>
             <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-vehiculo"
                         data-matricula="${a.identificador || a.matricula}">
@@ -952,7 +966,7 @@ function renderTablaAlmacenes(asignaciones) {
             <td>${nombreInstalacion}</td>
             <td>${nombreAlmacen}</td>
             <td>${a.planta || '-'}</td>
-            <td>${a.unidades || '-'}</td>
+            <td>${a.unidades ?? (a.numero_serie || a.nserie ? 1 : '-')}</td>
             <td>${a.numero_serie || a.n_serie || '-'}</td>
             <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-almacen"
                         data-id="${idAlmacen}">

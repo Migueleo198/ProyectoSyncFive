@@ -172,25 +172,23 @@ class PersonaController
     /**
      * SET /personas/{id_bombero}/material/{id_material}/{nserie}
      */
-
     public function setMaterial(Request $req, Response $res, string $id_bombero, int $id_material, string $nserie): void
     {
         try {
-            $result = $this->service->setMaterial($id_bombero, (int) $id_material, $nserie);
+            $this->service->setMaterial($id_bombero, (int) $id_material, $nserie);
 
             $res->status(201)->json(
-                ['ids' => $result['ids']],
+                ['id_bombero' => $id_bombero, 'id_material' => $id_material],
                 "Material asignado correctamente"
             );
 
         } catch (ValidationException $e) {
-            $res->status(422)->json(
-                ['errors' => $e->errors],
-                "Errores de validación"
-            );
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
             return;
         } catch (Throwable $e) {
-            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor", 500);
+            $code = (int)$e->getCode();
+            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor",
+                ($code >= 400 && $code < 600) ? $code : 500);
             return;
         }
     }  
