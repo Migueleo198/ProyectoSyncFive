@@ -40,43 +40,63 @@ class PermisoModel
     /**
      * Crear un permiso
      */
-    public function create(array $data): int|false
+    public function create(array $data): string|false
     {
         $this->db->query("
-            INSERT INTO Permiso (cod_motivo, fecha, h_inicio, h_fin, estado, descripcion)
-            VALUES (:cod_motivo, CURDATE(), :h_inicio, :h_fin, 'REVISION', :descripcion)
+            INSERT INTO permiso (
+                id_permiso,
+                fecha,
+                h_inicio,
+                h_fin,
+                descripcion,
+                estado
+            ) VALUES (
+                :id_permiso,
+                :fecha,
+                :h_inicio,
+                :h_fin,
+                :descripcion,
+                :estado
+            )
         ")
-        ->bind(':cod_motivo',  $data['cod_motivo'])
-        ->bind(':h_inicio',    $data['h_inicio'] ?? null)
-        ->bind(':h_fin',       $data['h_fin'] ?? null)
+        ->bind(':id_permiso', $data['id_permiso'])
+        ->bind(':fecha', $data['fecha'])
+        ->bind(':h_inicio', $data['h_inicio'])
+        ->bind(':h_fin', $data['h_fin'])
         ->bind(':descripcion', $data['descripcion'] ?? null)
+        ->bind(':estado', $data['estado'] ?? null)
         ->execute();
 
-        return (int) $this->db->lastId();
+        return $data['id_permiso'];
     }
 
     /**
      * Actualizar permiso (PATCH)
      */
     public function update(string $id_permiso, array $data): int
-{
-    $this->db->query("
-        UPDATE Permiso SET
-            h_inicio    = COALESCE(:h_inicio, h_inicio),
-            h_fin       = COALESCE(:h_fin, h_fin),
-            estado      = COALESCE(:estado, estado),
-            descripcion = COALESCE(:descripcion, descripcion)
-        WHERE id_permiso = :id_permiso
-    ")
-    ->bind(':id_permiso',  $id_permiso)
-    ->bind(':h_inicio',    $data['h_inicio'] ?? null)
-    ->bind(':h_fin',       $data['h_fin'] ?? null)
-    ->bind(':estado',      $data['estado'] ?? null)
-    ->bind(':descripcion', $data['descripcion'] ?? null)
-    ->execute();
+    {
+        $this->db->query("
+            UPDATE permiso SET
+                fecha = :fecha,
+                h_inicio = :h_inicio,
+                h_fin = :h_fin,
+                descripcion = :descripcion,
+                estado = :estado
+            WHERE ID_Permiso = :id_permiso
+        ")
+        ->bind(':id_permiso', $id_permiso)
+        ->bind(':fecha', $data['fecha'])
+        ->bind(':h_inicio', $data['h_inicio'])
+        ->bind(':h_fin', $data['h_fin'])
+        ->bind(':descripcion', $data['descripcion'] ?? null)
+        ->bind(':estado', $data['estado'] ?? null)
+        ->execute();
 
-    return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-}
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
+
     /**
      * Eliminar permiso
      */

@@ -33,17 +33,17 @@ class MotivoService
         }
     }
 
-    public function getMotivoById(string $cod_motivo): array
+    public function getMotivoById(string $ID_Motivo): array
     {
-        Validator::validate(['cod_motivo' => $cod_motivo], [
-            'cod_motivo' => 'required|string'
+        Validator::validate(['ID_Motivo' => $ID_Motivo], [
+            'ID_Motivo' => 'required|string'
         ]);
 
         try {
-            $motivo = $this->model->find($cod_motivo);
+            $motivo = $this->model->find($ID_Motivo);
         } catch (Throwable $e) {
             throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
+                "Error interno en la base de datos",
                 500
             );
         }
@@ -58,8 +58,9 @@ class MotivoService
     public function createMotivo(array $input): array
     {
         $data = Validator::validate($input, [
-            'nombre' => 'required|string',  // ← era ID_Motivo, Nombre, Dias
-            'dias'   => 'required|int|min:1'
+            'ID_Motivo' => 'required|string',
+            'Nombre'    => 'required|string',
+            'Dias'      => 'required|int|min:1'
         ]);
 
         try {
@@ -75,18 +76,18 @@ class MotivoService
             throw new \Exception("No se pudo crear el motivo", 500);
         }
 
-        return ['cod_motivo' => $id];
+        return ['ID_Motivo' => $id];
     }
 
-    public function updateMotivo(string $cod_motivo, array $input): array
+    public function updateMotivo(string $ID_Motivo, array $input): array
     {
-        Validator::validate(['cod_motivo' => $cod_motivo], [
-            'cod_motivo' => 'required|string'
+        Validator::validate(['ID_Motivo' => $ID_Motivo], [
+            'ID_Motivo' => 'required|string'
         ]);
 
         $data = Validator::validate($input, [
-            'nombre' => 'string|min:1',
-            'dias'   => 'int|min:1'
+            'Nombre' => 'string|min:1',
+            'Dias'   => 'int|min:1'
         ]);
 
         if (empty($data)) {
@@ -96,9 +97,8 @@ class MotivoService
         }
 
         try {
-            $result = $this->model->update($cod_motivo, $data);
+            $result = $this->model->update($ID_Motivo, $data);
         } catch (Throwable $e) {
-                throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500); // ← añade . $e->getMessage()
             throw new \Exception(
                 "Error interno en la base de datos",
                 500
@@ -106,7 +106,7 @@ class MotivoService
         }
 
         if ($result === 0) {
-            if (!$this->model->find($cod_motivo)) {
+            if (!$this->model->find($ID_Motivo)) {
                 throw new \Exception("Motivo no encontrado", 404);
             }
 
@@ -122,17 +122,17 @@ class MotivoService
         ];
     }
 
-    public function deleteMotivo(string $cod_motivo): void
+    public function deleteMotivo(string $ID_Motivo): void
     {
-        Validator::validate(['cod_motivo' => $cod_motivo], [
-            'cod_motivo' => 'required|string'
+        Validator::validate(['ID_Motivo' => $ID_Motivo], [
+            'ID_Motivo' => 'required|string'
         ]);
 
         try {
-            $result = $this->model->delete($cod_motivo);
+            $result = $this->model->delete($ID_Motivo);
         } catch (Throwable $e) {
             throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
+                "Error interno en la base de datos",
                 500
             );
         }
@@ -150,24 +150,24 @@ class MotivoService
     {
         $data = Validator::validate($input, [
             'ID_Permiso' => 'required|string',
-            'cod_motivo'  => 'required|string',
+            'ID_Motivo'  => 'required|string',
             'Fecha'      => 'required|date'
         ]);
 
         // comprobar que el motivo existe
-        if (!$this->model->find($data['cod_motivo'])) {
+        if (!$this->model->find($data['ID_Motivo'])) {
             throw new \Exception("Motivo no encontrado", 404);
         }
 
         try {
             $ok = $this->model->assignToPermiso(
                 $data['ID_Permiso'],
-                $data['cod_motivo'],
+                $data['ID_Motivo'],
                 $data['Fecha']
             );
         } catch (Throwable $e) {
             throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
+                "Error interno en la base de datos",
                 500
             );
         }
@@ -195,21 +195,21 @@ class MotivoService
         }
     }
 
-    public function unassignMotivoFromPermiso(string $ID_Permiso, string $cod_motivo): void
+    public function unassignMotivoFromPermiso(string $ID_Permiso, string $ID_Motivo): void
     {
         Validator::validate(
-            ['ID_Permiso' => $ID_Permiso, 'cod_motivo' => $cod_motivo],
+            ['ID_Permiso' => $ID_Permiso, 'ID_Motivo' => $ID_Motivo],
             [
                 'ID_Permiso' => 'required|string',
-                'cod_motivo'  => 'required|string'
+                'ID_Motivo'  => 'required|string'
             ]
         );
 
         try {
-            $result = $this->model->unassignFromPermiso($ID_Permiso, $cod_motivo);
+            $result = $this->model->unassignFromPermiso($ID_Permiso, $ID_Motivo);
         } catch (Throwable $e) {
             throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
+                "Error interno en la base de datos",
                 500
             );
         }
