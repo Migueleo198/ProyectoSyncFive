@@ -3,38 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <script src="/frontend/config/config.js"></script>
-    <script>loadHead("Cuadrante Anual", { filtroTabla: false, extraCSS: ["vistaCuadranteAnual.css"] })</script>
-</head>
+    <script>loadHead("Cuadrante Anual")</script> <!-- Cambiado de "Almacenes" -->
+    <!-- Carga UNA SOLA VEZ el script -->
+    <script type="module" src="/frontend/javascript/controllers_f/CuadranteAnualController.js"></script></head>
 <body class="bg-white text-dark d-flex flex-column">
 
-    <!-- HEADER -->
     <div id="header-placeholder"></div>
 
-    <!-- LAYOUT -->
     <div class="container-fluid">
         <div class="row">
-
-            <!-- SIDEBAR -->
             <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
 
-            <!-- MAIN -->
             <main class="col p-3 p-md-4 main-container">
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1 class="mb-0">Cuadrante Anual</h1>
-                    <a href="https://www.notion.so/TU_PAGINA" target="_blank" class="text-dark">
+                    <a href="https://www.notion.so/TU_PAGINA" target="_blank"
+                        class="text-dark" title="Abrir ayuda en Notion">
                         <i class="bi bi-question-circle fs-3"></i>
                     </a>
                 </div>
 
-                <!-- MIGAS DE PAN -->
                 <div id="breadcrumb-placeholder"></div>
-                
-                <div class="leyenda-box">Leyenda</div>
-                <br>
-                <div class="container-fluid calendar-main">
 
-                    <div id="year_elems_placeholder" class="d-flex justify-content-center align-items-center gap-2 mb-3">
+                <!-- LEYENDA -->
+                <div class="leyenda-box mb-3">Leyenda</div>
+
+                <!-- CONTROLES DE AÑO Y VISTA -->
+                <div class="container-fluid calendar-main py-3">
+                    <div id="year_elems_placeholder"
+                         class="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-4">
                     </div>
 
                     <!-- CALENDARIO -->
@@ -43,64 +41,44 @@
                     </div>
                 </div>
 
-                <!-- LEYENDA + HORAS -->
-                <div class="justify-content-center cuadrante-bottom mt-4">
-
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        
-                        <button class="btn btn-outline-secondary btn-sm">Horas asignadas</button>
-                    </div>
-
-                    <div class="detalles-label mb-1">Detalles</div>
-
+                <!-- TABLA DE DETALLES -->
+                <div class="cuadrante-bottom mt-4">
+                    <div class="detalles-label mb-1">Detalles del año</div>
                     <table class="table table-bordered detalles-table">
                         <thead>
                             <tr>
                                 <th>Guardias</th>
-                                <th>G.Asignadas</th>
-                                <th>H.Adicionales</th>
+                                <th>H. Guardia</th>
+                                <th>H. Refuerzo</th>
                                 <th>Permisos</th>
-                                <th>Dif. Guardias</th>
+                                <th>Turnos Refuerzo</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
                             </tr>
                             <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td colspan="5" class="text-muted text-start px-2"
+                                    style="font-size:11px">Cargando datos...</td>
                             </tr>
                         </tbody>
                     </table>
-
                 </div>
 
             </main>
         </div>
     </div>
 
-    <!-- FOOTER -->
     <div id="footer-placeholder" class="mt-auto"></div>
-    
-    <script src="/frontend/javascript/Anual.js"></script>
-    <!-- ALERT-->
+
+    <!-- ELIMINADO EL SCRIPT DUPLICADO -->
+
     <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
 
 </body>
-
 </html>
