@@ -151,7 +151,7 @@ async function guardarAlineacion() {
     } finally {
         btnGuardar.disabled = false;
         btnGuardar.textContent = 'Guardar';
-    }
+    } 
 }
 
 async function cargarTurnoRefuerzo(fecha) {
