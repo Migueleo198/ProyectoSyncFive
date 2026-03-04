@@ -14,12 +14,10 @@ class MantenimientoModel
         $this->db = new DB();
     }
 
-    // ─── MANTENIMIENTO PRINCIPAL ──────────────────────────────────────────────
-
     public function all(): array
     {
         return $this->db->query("
-            SELECT 
+            SELECT
                 m.cod_mantenimiento,
                 m.id_bombero,
                 CONCAT(p.nombre, ' ', p.apellidos) AS nombre_bombero,
@@ -28,10 +26,17 @@ class MantenimientoModel
                 m.f_fin,
                 m.descripcion,
                 CASE
-                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Vehiculo  mv WHERE mv.cod_mantenimiento = m.cod_mantenimiento) THEN 'Vehiculo'
-                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Material  mm WHERE mm.cod_mantenimiento = m.cod_mantenimiento) THEN 'Material'
+                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Vehiculo mv WHERE mv.cod_mantenimiento = m.cod_mantenimiento) THEN 'Vehiculo'
+                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Material mm WHERE mm.cod_mantenimiento = m.cod_mantenimiento) THEN 'Material'
                     ELSE NULL
-                END AS tipo
+                END AS tipo,
+                CASE
+                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Vehiculo mv WHERE mv.cod_mantenimiento = m.cod_mantenimiento)
+                        THEN (SELECT mv2.matricula FROM Mantenimiento_Vehiculo mv2 WHERE mv2.cod_mantenimiento = m.cod_mantenimiento LIMIT 1)
+                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Material mm WHERE mm.cod_mantenimiento = m.cod_mantenimiento)
+                        THEN (SELECT mat.nombre FROM Mantenimiento_Material mm2 INNER JOIN Material mat ON mm2.cod_material = mat.id_material WHERE mm2.cod_mantenimiento = m.cod_mantenimiento LIMIT 1)
+                    ELSE NULL
+                END AS recurso
             FROM Mantenimiento m
             LEFT JOIN Persona p ON m.id_bombero = p.id_bombero
             ORDER BY m.cod_mantenimiento DESC
@@ -41,7 +46,7 @@ class MantenimientoModel
     public function find(int $id): ?array
     {
         $result = $this->db->query("
-            SELECT 
+            SELECT
                 m.cod_mantenimiento,
                 m.id_bombero,
                 CONCAT(p.nombre, ' ', p.apellidos) AS nombre_bombero,
@@ -50,10 +55,17 @@ class MantenimientoModel
                 m.f_fin,
                 m.descripcion,
                 CASE
-                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Vehiculo  mv WHERE mv.cod_mantenimiento = m.cod_mantenimiento) THEN 'Vehiculo'
-                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Material  mm WHERE mm.cod_mantenimiento = m.cod_mantenimiento) THEN 'Material'
+                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Vehiculo mv WHERE mv.cod_mantenimiento = m.cod_mantenimiento) THEN 'Vehiculo'
+                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Material mm WHERE mm.cod_mantenimiento = m.cod_mantenimiento) THEN 'Material'
                     ELSE NULL
-                END AS tipo
+                END AS tipo,
+                CASE
+                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Vehiculo mv WHERE mv.cod_mantenimiento = m.cod_mantenimiento)
+                        THEN (SELECT mv2.matricula FROM Mantenimiento_Vehiculo mv2 WHERE mv2.cod_mantenimiento = m.cod_mantenimiento LIMIT 1)
+                    WHEN EXISTS (SELECT 1 FROM Mantenimiento_Material mm WHERE mm.cod_mantenimiento = m.cod_mantenimiento)
+                        THEN (SELECT mat.nombre FROM Mantenimiento_Material mm2 INNER JOIN Material mat ON mm2.cod_material = mat.id_material WHERE mm2.cod_mantenimiento = m.cod_mantenimiento LIMIT 1)
+                    ELSE NULL
+                END AS recurso
             FROM Mantenimiento m
             LEFT JOIN Persona p ON m.id_bombero = p.id_bombero
             WHERE m.cod_mantenimiento = :id
@@ -102,13 +114,11 @@ class MantenimientoModel
         return (int) $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
     }
 
-    public function delete(int $id): int
+    public function delete(int $id): void
     {
         $this->db->query("DELETE FROM Mantenimiento WHERE cod_mantenimiento = :id")
             ->bind(":id", $id)
             ->execute();
-
-        return (int) $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
     }
 
     public function deleteRelaciones(int $id): void
@@ -121,126 +131,49 @@ class MantenimientoModel
             ->bind(":id", $id)->execute();
     }
 
-
-    // ─── VEHÍCULOS ────────────────────────────────────────────────────────────
-
-    public function getVehiculos(int $cod): array
-    {
-        return $this->db->query("
-            SELECT v.matricula, v.nombre, v.tipo
-            FROM Mantenimiento_Vehiculo mv
-            INNER JOIN Vehiculo v ON mv.matricula = v.matricula
-            WHERE mv.cod_mantenimiento = :cod
-        ")
-        ->bind(":cod", $cod)
-        ->fetchAll();
-    }
-
-    public function addVehiculo(int $cod, string $matricula): int
+    // VEHICULOS
+    public function addVehiculo(int $cod, string $matricula): void
     {
         $this->db->query("
             INSERT IGNORE INTO Mantenimiento_Vehiculo (cod_mantenimiento, matricula)
             VALUES (:cod, :matricula)
         ")
-        ->bind(":cod",      $cod)
+        ->bind(":cod", $cod)
         ->bind(":matricula", $matricula)
         ->execute();
-
-        return (int) $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
     }
 
-    public function removeVehiculo(int $cod, string $matricula): int
+    public function removeVehiculo(int $cod, string $matricula): void
     {
         $this->db->query("
             DELETE FROM Mantenimiento_Vehiculo
             WHERE cod_mantenimiento = :cod AND matricula = :matricula
         ")
-        ->bind(":cod",      $cod)
+        ->bind(":cod", $cod)
         ->bind(":matricula", $matricula)
         ->execute();
-
-        return (int) $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
     }
 
-
-    // ─── MATERIALES ───────────────────────────────────────────────────────────
-
-    public function getMateriales(int $cod): array
-    {
-        return $this->db->query("
-            SELECT mat.id_material, mat.nombre, mat.estado
-            FROM Mantenimiento_Material mm
-            INNER JOIN Material mat ON mm.cod_material = mat.id_material
-            WHERE mm.cod_mantenimiento = :cod
-        ")
-        ->bind(":cod", $cod)
-        ->fetchAll();
-    }
-
-    public function addMaterial(int $cod, int $cod_material): int
+    // MATERIALES
+    public function addMaterial(int $cod, int $id_material): void
     {
         $this->db->query("
             INSERT IGNORE INTO Mantenimiento_Material (cod_mantenimiento, cod_material)
-            VALUES (:cod, :cod_material)
+            VALUES (:cod, :id_material)
         ")
-        ->bind(":cod",          $cod)
-        ->bind(":cod_material", $cod_material)
+        ->bind(":cod", $cod)
+        ->bind(":id_material", $id_material)
         ->execute();
-
-        return (int) $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
     }
 
-    public function removeMaterial(int $cod, int $cod_material): int
+    public function removeMaterial(int $cod, int $id_material): void
     {
         $this->db->query("
             DELETE FROM Mantenimiento_Material
-            WHERE cod_mantenimiento = :cod AND cod_material = :cod_material
-        ")
-        ->bind(":cod",          $cod)
-        ->bind(":cod_material", $cod_material)
-        ->execute();
-
-        return (int) $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-    }
-
-
-    // ─── PERSONAS (responsables) ──────────────────────────────────────────────
-
-    public function getPersonas(int $cod): array
-    {
-        return $this->db->query("
-            SELECT p.id_bombero, p.nombre, p.apellidos, p.n_funcionario
-            FROM Mantenimiento_Persona mp
-            INNER JOIN Persona p ON mp.id_bombero = p.id_bombero
-            WHERE mp.cod_mantenimiento = :cod
+            WHERE cod_mantenimiento = :cod AND cod_material = :id_material
         ")
         ->bind(":cod", $cod)
-        ->fetchAll();
-    }
-
-    public function addPersona(int $cod, string $id_bombero): int
-    {
-        $this->db->query("
-            INSERT IGNORE INTO Mantenimiento_Persona (cod_mantenimiento, id_bombero)
-            VALUES (:cod, :id_bombero)
-        ")
-        ->bind(":cod",        $cod)
-        ->bind(":id_bombero", $id_bombero)
+        ->bind(":id_material", $id_material)
         ->execute();
-
-        return (int) $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-    }
-
-    public function removePersona(int $cod, string $id_bombero): int
-    {
-        $this->db->query("
-            DELETE FROM Mantenimiento_Persona
-            WHERE cod_mantenimiento = :cod AND id_bombero = :id_bombero
-        ")
-        ->bind(":cod",        $cod)
-        ->bind(":id_bombero", $id_bombero)
-        ->execute();
-
-        return (int) $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
     }
 }

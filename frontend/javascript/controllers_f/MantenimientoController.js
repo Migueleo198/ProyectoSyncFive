@@ -1,5 +1,11 @@
+// ================================
+// MANTENIMIENTO CONTROLLER
+// ================================
+
 let mantenimientos = [];
 let personas = [];
+let vehiculos = [];
+let materiales = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   cargarDatosIniciales();
@@ -9,17 +15,40 @@ document.addEventListener('DOMContentLoaded', () => {
   bindModales();
 });
 
+// ================================
 // CARGAR DATOS INICIALES
-
+// ================================
 async function cargarDatosIniciales() {
   try {
-    await cargarPersonas();
+    await Promise.all([cargarPersonas(), cargarVehiculos(), cargarMateriales()]);
     await cargarMantenimientos();
     poblarSelectPersonas();
+    poblarSelectVehiculos();
+    poblarSelectMateriales();
     renderTabla(mantenimientos);
   } catch (e) {
     console.error('Error cargando datos:', e);
     mostrarError('Error cargando datos: ' + e.message);
+  }
+}
+
+async function cargarVehiculos() {
+  try {
+    const response = await fetch('/api/vehiculos');
+    const data = await response.json();
+    vehiculos = data.data || [];
+  } catch (e) {
+    console.error('Error cargando vehiculos:', e);
+  }
+}
+
+async function cargarMateriales() {
+  try {
+    const response = await fetch('/api/materiales');
+    const data = await response.json();
+    materiales = data.data || [];
+  } catch (e) {
+    console.error('Error cargando materiales:', e);
   }
 }
 
@@ -44,8 +73,9 @@ async function cargarMantenimientos() {
   }
 }
 
+// ================================
 // POBLAR SELECT DE PERSONAS
-
+// ================================
 function poblarSelectPersonas() {
   const selects = ['selectBomberoVeh', 'selectBomberoMat', 'editBombero'];
 
@@ -63,8 +93,9 @@ function poblarSelectPersonas() {
   });
 }
 
+// ================================
 // RENDER TABLA
-
+// ================================
 function renderTabla(lista) {
   const tbody = document.querySelector('#tabla tbody');
   if (!tbody) return;
@@ -83,12 +114,13 @@ function renderTabla(lista) {
     tr.dataset.id = m.cod_mantenimiento;
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${m.cod_mantenimiento ?? ''}</td>
-      <td>${m.nombre_bombero || m.id_bombero || ''}</td>
-      <td>${m.tipo ?? ''}</td>
-      <td>${m.estado ?? ''}</td>
-      <td class="d-none d-lg-table-cell">${m.descripcion ?? ''}</td>
-      <td class="d-none d-md-table-cell">${m.f_inicio ?? ''}</td>
-      <td class="d-none d-md-table-cell">${m.f_fin ?? ''}</td>
+      <td>${m.nombre_bombero || ''}</td>
+      <td class="d-none d-lg-table-cell">${m.tipo || '-'}</td>
+      <td>${m.recurso || '-'}</td>
+      <td class="d-none d-md-table-cell">${m.estado ?? ''}</td>
+      <td class="d-none d-lg-table-cell">${m.descripcion || '-'}</td>
+      <td class="d-none d-md-table-cell">${m.f_inicio || '-'}</td>
+      <td class="d-none d-md-table-cell">${m.f_fin || '-'}</td>
       <td class="d-flex justify-content-around">
         <button type="button" class="btn p-0 btn-ver"
                 data-bs-toggle="modal" data-bs-target="#modalVer"
@@ -111,8 +143,9 @@ function renderTabla(lista) {
   });
 }
 
+// ================================
 // FILTROS
-
+// ================================
 function bindFiltros() {
   const filtroResponsable = document.getElementById('filtroResponsable');
   const filtroEstado      = document.getElementById('filtroEstado');
@@ -142,8 +175,9 @@ function aplicarFiltros() {
   renderTabla(filtrados);
 }
 
+// ================================
 // CREAR MANTENIMIENTO VEHICULO
-
+// ================================
 function bindCrearMantenimientoVehiculo() {
   const form = document.getElementById('formInsertarVehiculo');
   if (!form) return;
@@ -176,6 +210,15 @@ function bindCrearMantenimientoVehiculo() {
         throw new Error(result.message || 'Error al crear');
       }
 
+      // Asociar vehículo si se seleccionó
+      const matricula = form.querySelector('[name="matricula"]')?.value;
+      if (matricula && result.data?.cod_mantenimiento) {
+        await fetch(`/api/mantenimientos/${result.data.cod_mantenimiento}/vehiculos/${encodeURIComponent(matricula)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
       await cargarMantenimientos();
       renderTabla(mantenimientos);
       form.reset();
@@ -186,8 +229,9 @@ function bindCrearMantenimientoVehiculo() {
   });
 }
 
+// ================================
 // CREAR MANTENIMIENTO MATERIAL
-
+// ================================
 function bindCrearMantenimientoMaterial() {
   const form = document.getElementById('formInsertarMaterial');
   if (!form) return;
@@ -220,6 +264,15 @@ function bindCrearMantenimientoMaterial() {
         throw new Error(result.message || 'Error al crear');
       }
 
+      // Asociar material si se seleccionó
+      const id_material = form.querySelector('[name="id_material"]')?.value;
+      if (id_material && result.data?.cod_mantenimiento) {
+        await fetch(`/api/mantenimientos/${result.data.cod_mantenimiento}/materiales/${id_material}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
       await cargarMantenimientos();
       renderTabla(mantenimientos);
       form.reset();
@@ -230,8 +283,9 @@ function bindCrearMantenimientoMaterial() {
   });
 }
 
+// ================================
 // MODALES
-
+// ================================
 function bindModales() {
 
   // MODAL VER
@@ -249,6 +303,7 @@ function bindModales() {
       <p><strong>ID:</strong> ${mant.cod_mantenimiento}</p>
       <p><strong>Responsable:</strong> ${mant.nombre_bombero || mant.id_bombero || '-'}</p>
       <p><strong>Tipo:</strong> ${mant.tipo || '-'}</p>
+      <p><strong>Vehículo/Material:</strong> ${mant.recurso || '-'}</p>
       <p><strong>Estado:</strong> ${mant.estado}</p>
       <p><strong>Fecha inicio:</strong> ${mant.f_inicio || '-'}</p>
       <p><strong>Fecha fin:</strong> ${mant.f_fin || '-'}</p>
@@ -356,9 +411,8 @@ function bindModales() {
         method: 'DELETE'
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
         mostrarError(result.message || 'Error al eliminar');
         return;
       }
@@ -370,13 +424,14 @@ function bindModales() {
       modal.hide();
       mostrarExito('Mantenimiento eliminado correctamente');
     } catch (error) {
-      mostrarError('Error al eliminar');
+      mostrarError(error.message || JSON.stringify(error));
     }
   });
 }
 
+// ================================
 // FUNCIONES AUXILIARES
-
+// ================================
 function mostrarError(msg) {
   const alertDiv = document.createElement('div');
   alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
@@ -399,6 +454,30 @@ function mostrarExito(msg) {
   `;
   document.body.appendChild(alertDiv);
   setTimeout(() => alertDiv.remove(), 3000);
+}
+
+function poblarSelectVehiculos() {
+  const sel = document.getElementById('selectVehiculoVeh');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Seleccione un vehículo...</option>';
+  vehiculos.forEach(v => {
+    const option = document.createElement('option');
+    option.value = v.matricula;
+    option.textContent = `${v.nombre || ''} (${v.matricula})`;
+    sel.appendChild(option);
+  });
+}
+
+function poblarSelectMateriales() {
+  const sel = document.getElementById('selectMaterialMat');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Seleccione un material...</option>';
+  materiales.forEach(m => {
+    const option = document.createElement('option');
+    option.value = m.id_material;
+    option.textContent = m.nombre || m.id_material;
+    sel.appendChild(option);
+  });
 }
 
 window.MantenimientoController = {

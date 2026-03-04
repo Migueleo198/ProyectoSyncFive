@@ -29,9 +29,7 @@ class MantenimientoService
     public function getMantenimientoById(int $id): array
     {
         $m = $this->model->find($id);
-        if (!$m) {
-            throw new \Exception("Mantenimiento no encontrado", 404);
-        }
+        if (!$m) throw new \Exception("Mantenimiento no encontrado", 404);
         return $m;
     }
 
@@ -62,12 +60,10 @@ class MantenimientoService
             'descripcion' => 'string',
         ]);
         try {
-            $affected = $this->model->update($id, $data);
-            if ($affected === 0) {
-                $existing = $this->model->find($id);
-                if (!$existing) throw new \Exception("Mantenimiento no encontrado", 404);
-            }
-            return $this->model->find($id);
+            $this->model->update($id, $data);
+            $existing = $this->model->find($id);
+            if (!$existing) throw new \Exception("Mantenimiento no encontrado", 404);
+            return $existing;
         } catch (\Exception $e) {
             throw $e;
         } catch (Throwable $e) {
@@ -79,7 +75,6 @@ class MantenimientoService
     {
         $existing = $this->model->find($id);
         if (!$existing) throw new \Exception("Mantenimiento no encontrado", 404);
-
         $data = Validator::validate($input, [
             'id_bombero'  => 'string|min:1',
             'estado'      => 'string|in:ABIERTO,REALIZADO',
@@ -99,7 +94,6 @@ class MantenimientoService
     {
         if (!$this->model->find($id)) throw new \Exception("Mantenimiento no encontrado", 404);
         try {
-            // Eliminar relaciones FK antes de borrar el padre
             $this->model->deleteRelaciones($id);
             $this->model->delete($id);
         } catch (Throwable $e) {
@@ -108,59 +102,32 @@ class MantenimientoService
     }
 
     // VEHICULOS
-    public function getVehiculos(int $cod): array
-    {
-        $this->getMantenimientoById($cod);
-        return $this->model->getVehiculos($cod);
-    }
     public function addVehiculo(int $cod, string $matricula): void
     {
         $this->getMantenimientoById($cod);
         try { $this->model->addVehiculo($cod, $matricula); }
         catch (Throwable $e) { throw new \Exception("Error al asignar vehiculo: " . $e->getMessage(), 500); }
     }
+
     public function removeVehiculo(int $cod, string $matricula): void
     {
         $this->getMantenimientoById($cod);
-        if ($this->model->removeVehiculo($cod, $matricula) === 0)
-            throw new \Exception("El vehiculo no esta asignado a este mantenimiento", 404);
+        try { $this->model->removeVehiculo($cod, $matricula); }
+        catch (Throwable $e) { throw new \Exception("Error al eliminar vehiculo: " . $e->getMessage(), 500); }
     }
 
     // MATERIALES
-    public function getMateriales(int $cod): array
+    public function addMaterial(int $cod, int $id_material): void
     {
         $this->getMantenimientoById($cod);
-        return $this->model->getMateriales($cod);
-    }
-    public function addMaterial(int $cod, int $cod_material): void
-    {
-        $this->getMantenimientoById($cod);
-        try { $this->model->addMaterial($cod, $cod_material); }
+        try { $this->model->addMaterial($cod, $id_material); }
         catch (Throwable $e) { throw new \Exception("Error al asignar material: " . $e->getMessage(), 500); }
     }
-    public function removeMaterial(int $cod, int $cod_material): void
-    {
-        $this->getMantenimientoById($cod);
-        if ($this->model->removeMaterial($cod, $cod_material) === 0)
-            throw new \Exception("El material no esta asignado a este mantenimiento", 404);
-    }
 
-    // PERSONAS
-    public function getPersonas(int $cod): array
+    public function removeMaterial(int $cod, int $id_material): void
     {
         $this->getMantenimientoById($cod);
-        return $this->model->getPersonas($cod);
-    }
-    public function addPersona(int $cod, string $id_bombero): void
-    {
-        $this->getMantenimientoById($cod);
-        try { $this->model->addPersona($cod, $id_bombero); }
-        catch (Throwable $e) { throw new \Exception("Error al asignar persona: " . $e->getMessage(), 500); }
-    }
-    public function removePersona(int $cod, string $id_bombero): void
-    {
-        $this->getMantenimientoById($cod);
-        if ($this->model->removePersona($cod, $id_bombero) === 0)
-            throw new \Exception("La persona no esta asignada a este mantenimiento", 404);
+        try { $this->model->removeMaterial($cod, $id_material); }
+        catch (Throwable $e) { throw new \Exception("Error al eliminar material: " . $e->getMessage(), 500); }
     }
 }

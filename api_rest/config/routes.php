@@ -178,7 +178,12 @@ $router->protectedSession('POST', '/mantenimientos', 'Controllers\\Mantenimiento
 $router->protectedSession('PUT', '/mantenimientos/{cod_mantenimiento}', 'Controllers\\MantenimientoController@update', [4,5]);
 $router->protectedSession('PATCH', '/mantenimientos/{cod_mantenimiento}', 'Controllers\\MantenimientoController@patch', [4,5]);
 $router->protectedSession('DELETE', '/mantenimientos/{cod_mantenimiento}', 'Controllers\\MantenimientoController@delete', [5]);
-
+// VEHICULOS EN MANTENIMIENTO
+$router->protectedSession('POST', '/mantenimientos/{cod_mantenimiento}/vehiculos/{matricula}', 'Controllers\\MantenimientoController@addVehiculo', [4,5]);
+$router->protectedSession('DELETE', '/mantenimientos/{cod_mantenimiento}/vehiculos/{matricula}', 'Controllers\\MantenimientoController@removeVehiculo', [4,5]);
+// MATERIALES EN MANTENIMIENTO
+$router->protectedSession('POST', '/mantenimientos/{cod_mantenimiento}/materiales/{id_material}', 'Controllers\\MantenimientoController@addMaterial', [4,5]);
+$router->protectedSession('DELETE', '/mantenimientos/{cod_mantenimiento}/materiales/{id_material}', 'Controllers\\MantenimientoController@removeMaterial', [4,5]);
 
 //++++++++++++++++++++++++++++++ INCIDENCIAS ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/incidencias', 'Controllers\\IncidenciaController@index', [1,2,3,4,5]);
