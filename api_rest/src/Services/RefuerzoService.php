@@ -242,5 +242,23 @@ public function assignRefuerzoToPerson(array $input): array
             'ID_Refuerzo' => $ID_Refuerzo
         ];
     }
+
+    /**
+     * Obtener turno de refuerzo por fecha
+     */
+    public function getTurnoRefuerzoByFecha(string $fecha): ?array
+    {
+        Validator::validate(['fecha' => $fecha], [
+            'fecha' => 'required|date'
+        ]);
+        try {
+            return $this->model->getTurnoRefuerzoByFecha($fecha);
+        } catch (Throwable $e) {
+            throw new \Exception(
+                "Error interno al obtener turno de refuerzo: " . $e->getMessage(),
+                500
+            );
+        }
+    }
 }
 ?>

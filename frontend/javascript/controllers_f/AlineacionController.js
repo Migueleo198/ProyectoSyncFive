@@ -8,7 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputFecha = document.getElementById('fechaGuardia');
     inputFecha.value = getFechaHoy();
     cargarGuardiaPorFecha(inputFecha.value);
-    inputFecha.addEventListener('change', e => cargarGuardiaPorFecha(e.target.value));
+    cargarTurnoRefuerzo(inputFecha.value);
+    inputFecha.addEventListener('change', e => 
+        cargarTurnoRefuerzo(e.target.value) &&
+        cargarGuardiaPorFecha(e.target.value));
     document.getElementById('btnInsertar').addEventListener('click', guardarAlineacion);
     document.getElementById('btnLimpiar').addEventListener('click', limpiarFormulario);
     document.getElementById('gridAlineacion').addEventListener('change', () => sincronizarSelectsYLista());
@@ -50,7 +53,6 @@ async function cargarGuardiaPorFecha(fecha) {
         });
         sincronizarSelectsYLista();
     } catch (err) {
-        console.error('Error cargando guardia:', err);
         mostrarError('Error al cargar la guardia.');
     }
 }
@@ -145,11 +147,43 @@ async function guardarAlineacion() {
         mostrarExito('Alineación guardada correctamente.');
         await cargarGuardiaPorFecha(document.getElementById('fechaGuardia').value);
     } catch (err) {
-        console.error('Error guardando alineación:', err);
         mostrarError('Error al guardar la alineación.');
     } finally {
         btnGuardar.disabled = false;
         btnGuardar.textContent = 'Guardar';
+    }
+}
+
+async function cargarTurnoRefuerzo(fecha) {
+    const contenedor = document.getElementById('refuerzosDia'); // ← ID correcto
+    contenedor.innerHTML = '';
+    try {
+        const respuesta = await GuardiaApi.getTurnoRefuerzoByFecha(fecha);
+        const datos = respuesta.data;
+        if (!datos || datos.length === 0) {
+            contenedor.innerHTML = '<p class="text-muted small mb-0">Sin refuerzos para este día.</p>';
+            return;
+        }
+        datos.forEach(turno => {                          // ← iterar todos
+            const card = document.createElement('div');
+            card.className = 'card-bombero d-flex align-items-center gap-2 px-3 py-2 border rounded bg-white';
+            card.style.cssText = 'min-height: 48px;';
+            card.innerHTML = `
+                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center flex-shrink-0"
+                     style="width:32px; height:32px;">
+                    <span class="text-white fw-bold" style="font-size:0.7rem; line-height:1;">
+                        ${iniciales(turno.nombre, turno.apellidos)}
+                    </span>
+                </div>
+                <div class="overflow-hidden">
+                    <div class="fw-semibold text-dark small text-truncate">${turno.nombre} ${turno.apellidos}</div>
+                    <div class="text-muted" style="font-size:0.7rem;">Turno refuerzo</div>
+                </div>
+            `;
+            contenedor.appendChild(card);
+        });
+    } catch (err) {
+        mostrarError('Error al cargar el turno de refuerzo.');
     }
 }
 

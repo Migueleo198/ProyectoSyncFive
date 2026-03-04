@@ -35,6 +35,10 @@ const GuardiaApi = {
 
   updateNotas(id_guardia, notas) {
     return ApiClient.patch(`/guardias/${id_guardia}`, { notas });
+  },
+
+  getTurnoRefuerzoByFecha(fecha) {
+    return ApiClient.get(`/turnos-refuerzo/fecha/${fecha}`);
   }
 };
 

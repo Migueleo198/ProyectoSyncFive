@@ -80,11 +80,12 @@ $router->protectedSession('DELETE', '/ediciones/{id_formacion}/{id_edicion}/pers
 
 
 //++++++++++++++++++++++++++++++ TURNOS DE REFUERZO ++++++++++++++++++++++++++++++
-$router->protectedSession('GET', '/turnos-refuerzo', 'Controllers\\TurnoController@index', [1,2,3,4,5]);
-$router->protectedSession('POST', '/turnos-refuerzo', 'Controllers\\TurnoController@store', [4,5]);
-$router->protectedSession('GET', '/turnos-refuerzo/{id_turno}', 'Controllers\\TurnoController@show', [1,2,3,4,5]);
-$router->protectedSession('PUT', '/turnos-refuerzo/{id_turno}', 'Controllers\\TurnoController@update', [4,5]);
-$router->protectedSession('DELETE', '/turnos-refuerzo/{id_turno}', 'Controllers\\TurnoController@delete', [5]);
+$router->protectedSession('GET', '/turnos-refuerzo', 'Controllers\\RefuerzoController@index', [1,2,3,4,5]);
+$router->protectedSession('POST', '/turnos-refuerzo', 'Controllers\\RefuerzoController@store', [4,5]);
+$router->protectedSession('GET', '/turnos-refuerzo/{id_turno}', 'Controllers\\RefuerzoController@show', [1,2,3,4,5]);
+$router->protectedSession('GET', '/turnos-refuerzo/fecha/{fecha}', 'Controllers\\RefuerzoController@getTurnoByFecha', [1,2,3,4,5]);
+$router->protectedSession('PUT', '/turnos-refuerzo/{id_turno}', 'Controllers\\RefuerzoController@update', [4,5]);
+$router->protectedSession('DELETE', '/turnos-refuerzo/{id_turno}', 'Controllers\\RefuerzoController@delete', [5]);
 
 
 //++++++++++++++++++++++++++++++ ROLES ++++++++++++++++++++++++++++++
