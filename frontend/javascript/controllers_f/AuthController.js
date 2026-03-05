@@ -249,22 +249,11 @@ function showActivationState(state, errorMsg = null) {
 // ================================
 export function mostrarNombreUsuario() {
   const userData = sessionStorage.getItem('user');
-  
-  if (!userData) {
-    // Si no hay usuario, redirigir al login
-    if (!window.location.pathname.includes('login.html') &&
-        !window.location.pathname.includes('cambiarPassword.html') &&
-        !window.location.pathname.includes('activarCuenta.html')) {
-        window.location.href = '/frontend/pages/Login/login.html';
-    }
-    return;
-  }
+  if (!userData) return; // el authGuard ya se encarga de redirigir
 
   const user = JSON.parse(userData);
-
-  // Actualizar todos los spans de usuario en el header
   document.querySelectorAll('.header-user span').forEach(span => {
-        span.textContent = user.nombre_usuario || user.login || 'Usuario';
+    span.textContent = user.nombre_usuario || user.login || 'Usuario';
   });
 }
 
