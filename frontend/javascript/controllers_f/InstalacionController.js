@@ -1,466 +1,167 @@
 import InstalacionApi from '../api_f/InstalacionApi.js';
+import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarEmail, validarTelefono } from '../helpers/validacion.js';
 
 let instalaciones = [];
+let sesionActual = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  sesionActual = await authGuard('instalaciones');
+  if (!sesionActual) return;
+
   cargarInstalaciones();
-  bindCrearInstalacion();
   bindFiltros();
-  bindModales();
+
+  if (sesionActual.puedeEscribir) {
+    bindCrearInstalacion();
+    bindModalesEscritura();
+  }
+
+  bindModalVer();
 });
 
-// ================================
-// CARGAR INSTALACIONES
-// ================================
 async function cargarInstalaciones() {
   try {
-    const response = await InstalacionApi.getAll();
-    instalaciones = response.data;
+    const r = await InstalacionApi.getAll();
+    instalaciones = r.data;
     renderTablaInstalaciones(instalaciones);
-  } catch (e) {
-    mostrarError(e.message || 'Error cargando instalaciones');
-  }
+  } catch (e) { mostrarError(e.message || 'Error cargando instalaciones'); }
 }
 
-// ================================
-// RENDER TABLA
-// ================================
-function renderTablaInstalaciones(instalaciones) {
+const nombresCampos = ['Nombre','Dirección','Teléfono','Correo','Localidad'];
+const camposBd      = ['nombre','direccion','telefono','correo','localidad'];
+
+function renderTablaInstalaciones(lista) {
   const tbody = document.querySelector('#tabla tbody');
   if (!tbody) return;
-  
   tbody.innerHTML = '';
 
-  instalaciones.forEach(i => {
-    const tr = document.createElement('tr');
+  const puedeEscribir = sesionActual?.puedeEscribir ?? false;
 
+  lista.forEach(i => {
+    const tr = document.createElement('tr');
+    const botones = puedeEscribir
+      ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${i.id_instalacion}"><i class="bi bi-eye"></i></button>
+         <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${i.id_instalacion}"><i class="bi bi-pencil"></i></button>
+         <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${i.id_instalacion}"><i class="bi bi-trash3"></i></button>`
+      : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${i.id_instalacion}"><i class="bi bi-eye"></i></button>`;
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${i.id_instalacion}</td>
-      <td>${i.nombre ?? ''}</td>
-      <td>${i.direccion ?? ''}</td>
-      <td>${i.telefono ?? ''}</td>
-      <td>${i.correo ?? ''}</td>
-      <td>${i.localidad ?? ''}</td>
-      <td class="d-flex justify-content-around">                     
-        <button type="button" class="btn p-0 btn-ver" 
-                data-bs-toggle="modal" 
-                data-bs-target="#modalVer"
-                data-id="${i.id_instalacion}">
-            <i class="bi bi-eye"></i>
-        </button>
-
-        <button type="button" class="btn p-0 btn-editar" 
-                data-bs-toggle="modal" 
-                data-bs-target="#modalEditar" 
-                data-id="${i.id_instalacion}">
-            <i class="bi bi-pencil"></i>
-        </button>
-        
-        <button type="button" class="btn p-0 btn-eliminar" 
-                data-bs-toggle="modal"                                         
-                data-bs-target="#modalEliminar" 
-                data-id="${i.id_instalacion}">          
-            <i class="bi bi-trash3"></i>
-        </button>
-      </td>  
-    `;
+      <td>${i.nombre??''}</td><td>${i.direccion??''}</td>
+      <td>${i.telefono??''}</td><td>${i.correo??''}</td><td>${i.localidad??''}</td>
+      <td class="d-flex justify-content-around">${botones}</td>`;
     tbody.appendChild(tr);
   });
 }
 
-// ================================
-// FILTROS
-// ================================
 function bindFiltros() {
-  const filtroNombre = document.getElementById('nombre');
-  const filtroLocalidad = document.getElementById('localidad');
-  
-  if (filtroNombre) {
-    filtroNombre.addEventListener('input', aplicarFiltros);
-  }
-  if (filtroLocalidad) {
-    filtroLocalidad.addEventListener('input', aplicarFiltros);
-  }
+  document.getElementById('nombre')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('localidad')?.addEventListener('input', aplicarFiltros);
 }
 
 function aplicarFiltros() {
-  const filtroNombre = document.getElementById('nombre')?.value?.toLowerCase();
-  const filtroLocalidad = document.getElementById('localidad')?.value?.toLowerCase();
-  
-  const filtrados = instalaciones.filter(i => {
-    let cumple = true;
-    
-    if (filtroNombre && filtroNombre !== '') {
-      cumple = cumple && i.nombre?.toLowerCase().includes(filtroNombre);
-    }
-    
-    if (filtroLocalidad && filtroLocalidad !== '') {
-      cumple = cumple && i.localidad?.toLowerCase().includes(filtroLocalidad);
-    }
-    
-    return cumple;
-  });
-  
-  renderTablaInstalaciones(filtrados);
+  const fn = document.getElementById('nombre')?.value?.toLowerCase();
+  const fl = document.getElementById('localidad')?.value?.toLowerCase();
+  renderTablaInstalaciones(instalaciones.filter(i =>
+    (!fn || i.nombre?.toLowerCase().includes(fn)) &&
+    (!fl || i.localidad?.toLowerCase().includes(fl))
+  ));
 }
 
-// ================================
-// CREAR / INSERTAR INSTALACIÓN
-// ================================
+function bindModalVer() {
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-ver');
+    if (!btn) return;
+    const inst = instalaciones.find(i => i.id_instalacion == btn.dataset.id);
+    if (!inst) return;
+    const modalBody = document.getElementById('modalVerBody');
+    if (!modalBody) return;
+    modalBody.innerHTML = '';
+    nombresCampos.forEach((nombre, idx) => {
+      const p = document.createElement('p');
+      p.innerHTML = `<strong>${nombre}:</strong> ${inst[camposBd[idx]] ?? ''}`;
+      modalBody.appendChild(p);
+    });
+  });
+}
+
 function bindCrearInstalacion() {
   const form = document.getElementById('formInsertar');
   if (!form) return;
-
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const f = new FormData(form);
-
-    const data = {
-      nombre: f.get('nombre'),
-      direccion: f.get('direccion'),
-      telefono: f.get('telefono'),
-      correo: f.get('correo'),
-      localidad: f.get('localidad')
-    };
-
-    // VALIDACIONES
-    if (!data.nombre || !data.direccion || !data.localidad) {
-      mostrarError('Nombre, dirección y localidad son obligatorios');
-      return;
-    }
-    if (!validarEmail(data.correo)) {
-      mostrarError('Correo no válido');
-      return;
-    }
-    if (!validarTelefono(data.telefono)) {
-      mostrarError('Teléfono no válido');
-      return;
-    }
-
+    const data = { nombre: f.get('nombre'), direccion: f.get('direccion'), telefono: f.get('telefono'), correo: f.get('correo'), localidad: f.get('localidad') };
+    if (!data.nombre || !data.direccion || !data.localidad) { mostrarError('Nombre, dirección y localidad son obligatorios'); return; }
+    if (!validarEmail(data.correo)) { mostrarError('Correo no válido'); return; }
+    if (!validarTelefono(data.telefono)) { mostrarError('Teléfono no válido'); return; }
     try {
       await InstalacionApi.create(data);
       await cargarInstalaciones();
       form.reset();
-      mostrarExito('Instalacion creada correctamente');
-    } catch (err) {
-      console.error('Error completo:', err);
-      
-      if (err.message && err.message.includes('Duplicate entry')) {
-        mostrarError('No se puede añadir: ya existe una instalación con ese nombre');
-      } else {
-        mostrarError(err.message || 'Error creando instalación');
-      }
-    }
+      mostrarExito('Instalación creada correctamente');
+    } catch (err) { mostrarError(err.message || 'Error creando instalación'); }
   });
 }
 
-// ================================
-// CAMPOS DE LA TABLA PARA MODALES
-// ================================
-document.addEventListener('click', async function (e) {
-  const btn = e.target.closest('.btn-editar');
-  if (!btn) return;
-
-  const id = btn.dataset.id;
-
-  try {
-    // Obtener datos de la instalacion
-    const response = await InstalacionApi.getById(id);
-    const instalacion = response.data;
-    if (!instalacion) return;
-
-    const form = document.getElementById('formEditar');
-    form.innerHTML = ''; // Limpiar contenido previo
-
-    // Insertar formulario
-    form.innerHTML = `
-    <div class="row mb-3">
-      <div class="col-lg-6">
-        <label class="form-label">Nombre</label>
-        <input type="text" class="form-control" name="nombre" value="${instalacion.nombre || ''}">
-      </div>
-
-      <div class="col-lg-6">
-        <label class="form-label">Teléfono</label>
-        <input type="text" class="form-control" name="telefono" value="${instalacion.telefono || ''}">
-      </div>
-    </div>
-
-    <div class="row mb-3">
-      <div class="col-lg-6">
-        <label class="form-label">Correo</label>
-        <input type="email" class="form-control" name="correo" value="${instalacion.correo || ''}">
-      </div>
-
-      <div class="col-lg-6">
-        <label class="form-label">Localidad</label>
-        <input type="text" class="form-control" name="localidad" value="${instalacion.localidad || ''}">
-      </div>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Dirección</label>
-      <input type="text" class="form-control" name="direccion" value="${instalacion.direccion || ''}">
-    </div>
-
-    <div class="text-center">
-      <button type="button" id="btnGuardarCambios" class="btn btn-primary">
-        Guardar cambios
-      </button>
-    </div>
-  `;
-
-
-  await cargarInstalaciones(instalacion.codigo_tipo, 'selectInstalacion'); // DENTRO DEL HTML PREVIO hemos creado un select vacío con id= selectInstalacion, donde se cargarán tipos y marcará el seleccionado
-
-  // Guardar cambios
-  document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-    const data = {};
-
-    camposBd.forEach(campo => {
-      const input = form.querySelector(`[name="${campo}"]`);
-      if (input) data[campo] = input.value;
-    });
-
-    // VALIDACIONES
-    if (!data.nombre || !data.direccion || !data.localidad) {
-      mostrarError('Nombre, dirección y localidad son obligatorios');
-      return;
-    }
-    if (!validarEmail(data.correo)) {
-      mostrarError('Correo no válido');
-      return;
-    }
-    if (!validarTelefono(data.telefono)) {
-      mostrarError('Teléfono no válido');
-      return;
-    }
-
-    try{
-      await InstalacionApi.update(id, data);             // Enviar datos al backend para actualizar la instalacion
-      await cargarInstalaciones();                        // Recargar tabla para mostrar cambios
-
-      const modal = bootstrap.Modal.getInstance(        // Cerrar modal
-        document.getElementById('modalEditar')
-      );
-      modal.hide();
-
-      mostrarExito('Instalación actualizada correctamente');
-
-    } catch (err) {
-      mostrarError(err.message || 'Error actualizando instalación');
-    }
-  });
-
-  } catch (error) {
-    console.error('Error al editar instalacion:', error);
-  }
-});
-
-    
-// ================================
-// CAMPOS DE LA TABLA  estos arrays se usan para mostrar los campos en el modal ver (arriba como lo quieres ver, abajo como están en la base de datos, el orden debe coincidir)  
-// ================================
-  const nombresCampos = [
-    'Nombre',
-    'Dirección',
-    'Teléfono',
-    'Correo',
-    'Localidad'
-  ];
-
-  const camposBd = [
-    'nombre',
-    'direccion',
-    'telefono',
-    'correo',
-    'localidad'
-  ];
-
-
-// ================================
-// MODAL VER
-// ================================
-function bindModales() {
-  
-  // MODAL VER
-  document.addEventListener('click', function (e) {
-    const btn = e.target.closest('.btn-ver');
-    if (!btn) return;
-
-    const id = btn.dataset.id;
-    const instalacion = instalaciones.find(i => i.id_instalacion == id);
-    if (!instalacion) return;
-
-    const modalBody = document.getElementById('modalVerBody');
-    if (!modalBody) return;
-
-    modalBody.innerHTML = '';
-
-    nombresCampos.forEach((nombre, index) => {
-      const campo = camposBd[index];
-      let valor = instalacion[campo] ?? '';
-
-      const p = document.createElement('p');
-      const strong = document.createElement('strong');
-      strong.textContent = nombre + ': ';
-      
-      p.appendChild(strong);
-      p.appendChild(document.createTextNode(valor));
-      modalBody.appendChild(p);
-    });
-  });
-
+function bindModalesEscritura() {
   // MODAL EDITAR
   document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
-    
     const id = btn.dataset.id;
-
     try {
-      const response = await InstalacionApi.getById(id);
-      const instalacion = response.data;
-      if (!instalacion) return;
-
+      const r = await InstalacionApi.getById(id);
+      const inst = r.data;
+      if (!inst) return;
       const form = document.getElementById('formEditar');
-      if (!form) return;
-      
-      form.innerHTML = '';
-
       form.innerHTML = `
         <div class="row mb-3">
-          <div class="col-lg-4">
-            <label class="form-label">ID</label>
-            <input type="text" class="form-control" value="${instalacion.id_instalacion || ''}" disabled>
-            <input type="hidden" name="id_instalacion" value="${instalacion.id_instalacion || ''}">
-          </div>
-
-          <div class="col-lg-4">
-            <label class="form-label">Nombre</label>
-            <input type="text" class="form-control" name="nombre" value="${instalacion.nombre || ''}" required>
-          </div>
-
-          <div class="col-lg-4">
-            <label class="form-label">Teléfono</label>
-            <input type="text" class="form-control" name="telefono" value="${instalacion.telefono || ''}" required>
-          </div>
+          <div class="col-lg-4"><label class="form-label">ID</label><input type="text" class="form-control" value="${inst.id_instalacion}" disabled><input type="hidden" name="id_instalacion" value="${inst.id_instalacion}"></div>
+          <div class="col-lg-4"><label class="form-label">Nombre</label><input type="text" class="form-control" name="nombre" value="${inst.nombre||''}" required></div>
+          <div class="col-lg-4"><label class="form-label">Teléfono</label><input type="text" class="form-control" name="telefono" value="${inst.telefono||''}" required></div>
         </div>
-
         <div class="row mb-3">
-          <div class="col-lg-6">
-            <label class="form-label">Dirección</label>
-            <input type="text" class="form-control" name="direccion" value="${instalacion.direccion || ''}" required>
-          </div>
-
-          <div class="col-lg-6">
-            <label class="form-label">Correo</label>
-            <input type="email" class="form-control" name="correo" value="${instalacion.correo || ''}" required>
-          </div>
+          <div class="col-lg-6"><label class="form-label">Dirección</label><input type="text" class="form-control" name="direccion" value="${inst.direccion||''}" required></div>
+          <div class="col-lg-6"><label class="form-label">Correo</label><input type="email" class="form-control" name="correo" value="${inst.correo||''}" required></div>
         </div>
-
-        <div class="row mb-3">
-          <div class="col-lg-6">
-            <label class="form-label">Localidad</label>
-            <input type="text" class="form-control" name="localidad" value="${instalacion.localidad || ''}" required>
-          </div>
-        </div>
-
-        <div class="text-center">
-          <button type="button" class="btn btn-primary btn-guardar-instalacion">
-            Guardar cambios
-          </button>
-        </div>
-      `;
-
-      form.querySelector('.btn-guardar-instalacion').addEventListener('click', async function() {
-        const form = document.getElementById('formEditar');
-        const id = form.querySelector('input[name="id_instalacion"]').value;
-        
-        const data = {
-          nombre: form.querySelector('input[name="nombre"]').value,
-          direccion: form.querySelector('input[name="direccion"]').value,
-          telefono: form.querySelector('input[name="telefono"]').value,
-          correo: form.querySelector('input[name="correo"]').value,
-          localidad: form.querySelector('input[name="localidad"]').value
-        };
-
+        <div class="row mb-3"><div class="col-lg-6"><label class="form-label">Localidad</label><input type="text" class="form-control" name="localidad" value="${inst.localidad||''}" required></div></div>
+        <div class="text-center"><button type="button" class="btn btn-primary btn-guardar-inst">Guardar cambios</button></div>`;
+      form.querySelector('.btn-guardar-inst').addEventListener('click', async function () {
+        const data = { nombre: form.querySelector('[name="nombre"]').value, direccion: form.querySelector('[name="direccion"]').value, telefono: form.querySelector('[name="telefono"]').value, correo: form.querySelector('[name="correo"]').value, localidad: form.querySelector('[name="localidad"]').value };
+        if (!data.nombre || !data.direccion || !data.localidad) { mostrarError('Nombre, dirección y localidad son obligatorios'); return; }
+        if (!validarEmail(data.correo)) { mostrarError('Correo no válido'); return; }
+        if (!validarTelefono(data.telefono)) { mostrarError('Teléfono no válido'); return; }
         try {
           await InstalacionApi.update(id, data);
           await cargarInstalaciones();
-
-          const modal = bootstrap.Modal.getInstance(
-            document.getElementById('modalEditar')
-          );
-          modal.hide();
-          
+          bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
           mostrarExito('Instalación actualizada correctamente');
-          
-        } catch (error) {
-          console.error('Error al actualizar:', error);
-          
-          if (error.message && error.message.includes('Duplicate entry')) {
-            mostrarError('No se puede actualizar: ya existe una instalación con ese nombre');
-          } else {
-            mostrarError('Error al actualizar instalación: ' + error.message);
-          }
-        }
+        } catch (err) { mostrarError(err.message || 'Error actualizando'); }
       });
-
-    } catch (error) {
-      console.error('Error al editar instalación:', error);
-      mostrarError('Error al cargar datos de la instalación');
-    }
+    } catch (err) { mostrarError('Error cargando instalación'); }
   });
 
-  // MODAL ELIMINAR - Preparar
+  // MODAL ELIMINAR
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar');
     if (!btn) return;
-
     const id = btn.dataset.id;
-    const instalacion = instalaciones.find(i => i.id_instalacion == id);
-
-    const btnConfirm = document.getElementById('btnConfirmarEliminar');
-    btnConfirm.dataset.id = id;
-    
+    const inst = instalaciones.find(i => i.id_instalacion == id);
+    document.getElementById('btnConfirmarEliminar').dataset.id = id;
     const modalBody = document.querySelector('#modalEliminar .modal-body');
-    if (modalBody && instalacion) {
-      modalBody.innerHTML = `
-        ¿Eliminar la instalación "${instalacion.nombre}"?
-        <p class="text-muted">Esta acción no se puede deshacer.</p>
-      `;
-    }
+    if (modalBody && inst) modalBody.innerHTML = `¿Eliminar la instalación "${inst.nombre}"?<p class="text-muted">Esta acción no se puede deshacer.</p>`;
   });
 
-  // MODAL ELIMINAR - Confirmar
   document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
     const id = this.dataset.id;
     if (!id) return;
-
     try {
       await InstalacionApi.delete(id);
       await cargarInstalaciones();
-
-      const modal = bootstrap.Modal.getInstance(
-        document.getElementById('modalEliminar')
-      );
-      modal.hide();
-      
-      mostrarExito('✅ Instalación eliminada correctamente');
-
-    } catch (error) {
-      console.error('Error al eliminar:', error);
-      
-      // FORZAMOS el mensaje para cualquier error 1451
-      if (error.message && error.message.includes('1451')) {
-        mostrarError('❌ No se puede eliminar: la instalación tiene vehículos o almacenes asignados');
-      } else {
-        mostrarError('❌ Error al eliminar: ' + error.message);
-      }
-    }
-});
+      bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+      mostrarExito('Instalación eliminada correctamente');
+    } catch (err) { mostrarError(err.message?.includes('1451') ? 'No se puede eliminar: tiene vehículos o almacenes asignados' : err.message || 'Error al eliminar'); }
+  });
 }

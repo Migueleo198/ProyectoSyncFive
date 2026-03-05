@@ -23,7 +23,7 @@ export const PERMISOS = {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [3, 4, 5],
   },
-  tipoEmergencia: {
+  tiposEmergencia: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [3, 4, 5],
   },
@@ -41,7 +41,7 @@ export const PERMISOS = {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
   },
-  turnoRefuerzo: {
+  turnoRefuerzos: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [3, 4, 5],
   },
@@ -51,7 +51,7 @@ export const PERMISOS = {
   },
   ediciones: {
     rolesLectura:   [1, 2, 3, 4, 5],
-    rolesEscritura: [1, 2, 3, 4, 5], // todos pueden matricularse
+    rolesEscritura: [4, 5], 
   },
   carnets: {
     rolesLectura:   [1, 2, 3, 4, 5],
@@ -71,7 +71,7 @@ export const PERMISOS = {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
   },
-  salida: {
+  salidas: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
   },

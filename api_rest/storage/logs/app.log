@@ -495,3 +495,40 @@
 2026-02-23T11:38:19+01:00 - Exception: Controllers\PersonaController::setMaterial(): Argument #3 ($id_bombero) must be of type int, string given
 2026-02-23T11:44:25+01:00 - Exception: Controllers\PersonaController::setMaterial(): Argument #3 ($id_bombero) must be of type int, string given
 2026-02-23T11:44:30+01:00 - Exception: Controllers\PersonaController::setMaterial(): Argument #3 ($id_bombero) must be of type int, string given
+2026-03-05T12:23:43+01:00 - Exception: Error de conexión a la base de datos.
+2026-03-05T12:24:14+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T12:24:24+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T12:24:42+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T12:35:51+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T12:36:11+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T13:36:36+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T13:36:45+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T13:36:50+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T13:36:55+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T13:38:02+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T13:47:00+01:00 - Exception: No autorizado
+2026-03-05T13:47:00+01:00 - Exception: No autorizado
+2026-03-05T13:47:00+01:00 - Exception: No autorizado
+2026-03-05T13:47:00+01:00 - Exception: No autorizado
+2026-03-05T13:47:00+01:00 - Exception: No autorizado
+2026-03-05T13:47:00+01:00 - Exception: No autorizado
+2026-03-05T13:47:00+01:00 - Exception: No autorizado
+2026-03-05T13:47:18+01:00 - Exception: No autorizado
+2026-03-05T13:47:18+01:00 - Exception: No autorizado
+2026-03-05T13:47:18+01:00 - Exception: No autorizado
+2026-03-05T13:47:18+01:00 - Exception: No autorizado
+2026-03-05T13:47:18+01:00 - Exception: No autorizado
+2026-03-05T13:47:18+01:00 - Exception: No autorizado
+2026-03-05T13:47:18+01:00 - Exception: No autorizado
+2026-03-05T13:47:23+01:00 - Exception: No autorizado
+2026-03-05T13:47:37+01:00 - Exception: No autorizado
+2026-03-05T13:47:37+01:00 - Exception: No autorizado
+2026-03-05T13:47:37+01:00 - Exception: No autorizado
+2026-03-05T13:47:37+01:00 - Exception: No autorizado
+2026-03-05T13:47:37+01:00 - Exception: No autorizado
+2026-03-05T13:47:37+01:00 - Exception: No autorizado
+2026-03-05T13:47:37+01:00 - Exception: No autorizado
+2026-03-05T13:49:07+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T13:49:54+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T13:49:57+01:00 - Exception: No tienes permisos para acceder a este recurso
+2026-03-05T13:52:34+01:00 - Exception: No tienes permisos para acceder a este recurso
