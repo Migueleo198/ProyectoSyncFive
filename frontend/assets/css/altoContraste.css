@@ -1,0 +1,268 @@
+/* =========================
+   VARIABLES BASE
+========================= */
+:root {
+    --rojo-chillon: #f21d2f;
+    --rojo-granate: #a61c28;
+    --rojo-pastel: #ff827e;
+    --negro: #262223;
+    --blanco: #f2f2f2;
+    --gris: #cfcfcf;
+}
+
+/* =========================
+   MODO NORMAL
+========================= */
+
+body {
+    background-color: var(--negro);
+    color: var(--blanco);
+
+}
+
+
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--rojo-chillon);
+}
+
+a {
+    color: var(--rojo-pastel);
+}
+
+a:hover {
+    color: var(--rojo-chillon);
+}
+
+/* =========================
+   MODO ALTO CONTRASTE
+   (Se activa añadiendo
+   class="high-contrast" al body)
+========================= */
+
+body.high-contrast {
+    background-color: #000 !important;
+    color: #fff !important;
+    
+}
+
+body.high-contrast p{
+    color: #fff !important;
+}
+
+/* Títulos */
+body.high-contrast h1,
+body.high-contrast h2,
+body.high-contrast h3,
+body.high-contrast h4,
+body.high-contrast h5,
+body.high-contrast h6 {
+    color: #ffff00 !important; /* Amarillo alto contraste */
+}
+
+/* Links */
+body.high-contrast a {
+    color: #00ffff !important; /* Cian */
+    text-decoration: none;
+}
+
+body.high-contrast a:hover {
+    color: #ffffff !important;
+}
+
+/* Bootstrap - botones */
+body.high-contrast .btn {
+    background-color: #000 !important;
+    color: #fff !important;
+    border: 2px solid #fff !important;
+}
+
+body.high-contrast .btn:hover {
+    background-color: #ffff00 !important;
+    color: #000 !important;
+}
+
+/* Cards */
+body.high-contrast .card {
+    background-color: #000 !important;
+    border: 2px solid #fff !important;
+}
+
+
+
+body.high-contrast table,
+body.high-contrast div
+
+{
+    color: #fff !important;
+}
+
+body.high-contrast input:focus,
+body.high-contrast select:focus,
+body.high-contrast textarea:focus {
+    outline: 3px solid #ffff00 !important;
+    box-shadow: none !important;
+}
+
+/* Tablas */
+body.high-contrast table {
+    background-color: #000 !important;
+    color: #fff !important;
+}
+
+body.high-contrast th,
+body.high-contrast td {
+    border: 1px solid #fff !important;
+}
+
+/* Navbar Bootstrap */
+body.high-contrast .navbar {
+    background-color: #000 !important;
+    border-bottom: 2px solid #fff !important;
+}
+
+body.high-contrast .navbar a {
+    color: #fff !important;
+}
+
+/* =========================
+   DASHBOARD - MODO NORMAL
+========================= */
+
+/* Section titles */
+
+body.high-contrast .section-title {
+    color: var(--rojo-chillon);
+    border-bottom: 2px solid var(--rojo-granate);
+}
+
+/* Stat cards */
+
+body.high-contrast .stat-card {
+    background-color: #1f1b1c;
+    color: var(--blanco);
+    border: 1px solid var(--gris);
+}
+
+/* Quick access cards */
+
+body.high-contrast .quick-access-card {
+    background-color: #1f1b1c;
+    color: var(--blanco);
+    border-width: 2px !important;
+}
+
+
+body.high-contrast .quick-access-card:hover {
+    background-color: #2a2526;
+}
+
+/* Card headers */
+
+body.high-contrast .card-header {
+    background-color: #1a1718 !important;
+    color: var(--rojo-pastel);
+    border-bottom: 1px solid var(--gris);
+}
+
+/* Tables */
+
+body.high-contrast .table {
+    color: var(--blanco);
+}
+
+
+body.high-contrast .table-light {
+    background-color: #2a2526 !important;
+    color: var(--blanco) !important;
+}
+
+body.high-contrast p{
+     color: var(--negro) !important;
+}
+
+body.high-contrast .top{
+    color: var(--blanco) !important;
+}
+
+body.high-contrast .ignoreHighlight{
+    color: var(--negro) !important;
+}
+
+body.high-contrast small{
+    color: var(--negro) !important;
+}
+
+/* Badges adjust slightly */
+
+body.high-contrast .badge.bg-success { background-color: #198754 !important; }
+
+body.high-contrast .badge.bg-danger { background-color: #dc3545 !important; }
+
+body.high-contrast .badge.bg-warning { background-color: #ffc107 !important; color: #000 !important; }
+
+body.high-contrast .badge.bg-primary { background-color: #0d6efd !important; }
+
+body.high-contrast .side-content{
+    background-color:#212121 !important
+}
+
+/* Container */
+.accessibility-controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 12px;
+}
+
+/* Buttons */
+.access-btn{
+    border:none;
+    background:linear-gradient(135deg,#3a7bd5,#00d2ff);
+    color:white;
+    font-weight:600;
+    padding:6px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:all .25s ease;
+    font-size:0.9rem;
+    box-shadow:0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* Hover */
+.access-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 14px rgba(0,0,0,0.25);
+}
+
+/* Click */
+.access-btn:active{
+    transform:scale(0.95);
+}
+
+/* Counter */
+.TextSizeCounter{
+    min-width:35px;
+    text-align:center;
+    font-weight:bold;
+    background:#f2f2f2;
+    color:black;
+    padding:4px 8px;
+    border-radius:6px;
+}
+
+/* High contrast mode */
+.high-contrast{
+    background:black !important;
+    color:white !important;
+}
+
+.high-contrast a{
+    color:yellow !important;
+}
+
+/* Buttons in contrast mode */
+.high-contrast .access-btn{
+    background:white;
+    color:black;
+}
