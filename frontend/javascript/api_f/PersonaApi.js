@@ -19,6 +19,18 @@ const PersonaApi = {
 
   remove(idPersona) {
     return ApiClient.delete(`/personas/${idPersona}`);
+  },
+    // MATERIAL DE LA PERSONA
+  getMaterial(idBombero) {
+    return ApiClient.get(`/personas/${idBombero}/material`);
+  },
+
+  assignMaterial(idBombero, idMaterial, nserie) {
+    return ApiClient.post(`/personas/${idBombero}/material/${idMaterial}/${nserie}`);
+  },
+
+  removeMaterial(idBombero, idMaterial) {
+    return ApiClient.delete(`/personas/${idBombero}/material/${idMaterial}`);
   }
 };
 

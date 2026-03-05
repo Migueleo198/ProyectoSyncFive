@@ -379,7 +379,7 @@ class PersonaModel
             ->fetchAll();
     }
 
-    public function addMaterialToBombero(int $id_bombero, int $id_material, string $nserie): void
+    public function addMaterialToBombero(string $id_bombero, int $id_material, string $nserie): void
     {
         $this->db
             ->query("
@@ -388,11 +388,11 @@ class PersonaModel
             ")
             ->bind(':id_bombero', $id_bombero)
             ->bind(':id_material', $id_material)
-            ->bind(':nserie', $nserie ?? null)
+            ->bind(':nserie', $nserie)
             ->execute();
     }
 
-    public function removeMaterialBombero(int $id_bombero, int $id_material): int
+    public function removeMaterialBombero(string $id_bombero, int $id_material): int
     {
         $this->db
             ->query("

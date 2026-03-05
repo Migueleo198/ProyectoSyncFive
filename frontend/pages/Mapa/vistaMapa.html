@@ -21,9 +21,9 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="mb-0">Mapa de Emergencias</h1>
             </div>
-            <div>
-                <p>[Migas de pan]</p>
-            </div>
+            
+            <!-- MIGAS DE PAN -->
+            <div id="breadcrumb-placeholder"></div>
 
             <!-- Map container -->
             <div id="map-container">
@@ -31,36 +31,38 @@
             </div>
 
             <script>
-                // Inicializar mapa
-                let map = L.map('map').setView([40.4168, -3.7038], 13);
+                function initMap() {
+                    if (typeof L === "undefined") {
+                        setTimeout(initMap, 50);
+                        return;
+                    }
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                }).addTo(map);
+                    let map = L.map('map').setView([40.4168, -3.7038], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                    }).addTo(map);
 
-                // Función para añadir incidencias
-                function agregarIncidencia(lat, lon, nombre, descripcion, funcionario = "N/A") {
-                    L.marker([lat, lon])
-                        .addTo(map)
-                        .bindPopup(`<b>${nombre}</b><br>${descripcion}<br>Funcionario: ${funcionario}`);
+                    function agregarIncidencia(lat, lon, nombre, descripcion, funcionario = "N/A") {
+                        L.marker([lat, lon])
+                            .addTo(map)
+                            .bindPopup(`<b>${nombre}</b><br>${descripcion}<br>Funcionario: ${funcionario}`);
+                    }
+
+                    agregarIncidencia(40.417, -3.703, "Incendio en vivienda", "Fuego en un tercer piso, 2 unidades enviadas");
+                    agregarIncidencia(40.410, -3.700, "Falsa alarma", "Descripción de ejemplo");
+
+                    map.on('click', function(e) {
+                        let lat = e.latlng.lat;
+                        let lon = e.latlng.lng;
+                        let nombre = prompt("Nombre de la incidencia:");
+                        let descripcion = prompt("Descripción de la incidencia:");
+                        if (nombre && descripcion) {
+                            agregarIncidencia(lat, lon, nombre, descripcion);
+                        }
+                    });
                 }
 
-                // Ejemplos
-                agregarIncidencia(40.417, -3.703, "Incendio en vivienda", "Fuego en un tercer piso, 2 unidades enviadas");
-                agregarIncidencia(40.410, -3.700, "Falsa alarma", "Descripción de ejemplo");
-
-                // Click para agregar incidencia
-                map.on('click', function (e) {
-                    let lat = e.latlng.lat;
-                    let lon = e.latlng.lng;
-
-                    let nombre = prompt("Nombre de la incidencia:");
-                    let descripcion = prompt("Descripción de la incidencia:");
-
-                    if (nombre && descripcion) {
-                        agregarIncidencia(lat, lon, nombre, descripcion);
-                    }
-                });
+                initMap();
             </script>
         </main>
     </div>

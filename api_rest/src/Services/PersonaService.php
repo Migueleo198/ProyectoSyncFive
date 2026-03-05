@@ -299,10 +299,10 @@ class PersonaService
         return $material;
     }
 
-    public function setMaterial(int $id_bombero,int $id_material, string $nserie): array
+    public function setMaterial(string $id_bombero,int $id_material, string $nserie): void
     {
         Validator::validate(['id_bombero' => $id_bombero], [
-            'id_bombero' => 'required|int|min:1'
+            'id_bombero' => 'required|string'
         ]);
         Validator::validate(['id_material' => $id_material], [
             'id_material' => 'required|int|min:1'
@@ -320,10 +320,10 @@ class PersonaService
         }
     }
 
-    public function deleteMaterial(int $id_bombero, int $id_material): void
+    public function deleteMaterial(string $id_bombero, int $id_material): void
     {
         Validator::validate(['id_bombero' => $id_bombero], [
-            'id_bombero' => 'required|int|min:1'
+            'id_bombero' => 'required|string'
         ]);
         Validator::validate(['id_material' => $id_material], [
             'id_material' => 'required|int|min:1'

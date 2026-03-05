@@ -198,25 +198,23 @@ class PersonaController
     /**
      * SET /personas/{id_bombero}/material/{id_material}/{nserie}
      */
-
-    public function setMaterial(Request $req, Response $res, int $id_bombero, int $id_material, string $nserie): void
+    public function setMaterial(Request $req, Response $res, string $id_bombero, int $id_material, string $nserie): void
     {
         try {
-            $result = $this->service->setMaterial($id_bombero, $id_material, $nserie);
+            $this->service->setMaterial($id_bombero, (int) $id_material, $nserie);
 
             $res->status(201)->json(
-                ['ids' => $result['ids']],
+                ['id_bombero' => $id_bombero, 'id_material' => $id_material],
                 "Material asignado correctamente"
             );
 
         } catch (ValidationException $e) {
-            $res->status(422)->json(
-                ['errors' => $e->errors],
-                "Errores de validación"
-            );
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
             return;
         } catch (Throwable $e) {
-            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor", 500);
+            $code = (int)$e->getCode();
+            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor",
+                ($code >= 400 && $code < 600) ? $code : 500);
             return;
         }
     }  
@@ -224,10 +222,10 @@ class PersonaController
     /**
      * DELETE /personas/{id_bombero}/material/{id_material}/
      */
-    public function deleteMaterial(Request $req, Response $res, int $id_bombero, string $id_material): void
+    public function deleteMaterial(Request $req, Response $res, string $id_bombero, string $id_material): void
     {
         try {
-            $this->service->deleteMaterial($id_bombero, $id_material);
+            $this->service->deleteMaterial($id_bombero, (int) $id_material);
             $res->status(200)->json([], "Material eliminado correctamente");
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");

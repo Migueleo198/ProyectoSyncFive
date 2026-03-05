@@ -222,5 +222,22 @@ class AvisoService
         }
     }
 
+
+    // ===========================
+    // Avisos recibidos por bombero
+    // ===========================
+
+    public function getAvisosRecibidos(string $id_bombero): array
+    {
+        Validator::validate(['id_bombero' => $id_bombero], [
+            'id_bombero' => 'required|string'
+        ]);
+
+        try {
+            return $this->model->getRecibidos($id_bombero);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
 }
 ?>

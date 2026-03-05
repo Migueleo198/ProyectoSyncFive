@@ -22,6 +22,9 @@ const GuardiaApi = {
       id_guardia: data.id_guardia,
       cargo: data.cargo
     });
+  },
+  getPersonGuardias(idGuardia) {
+    return ApiClient.get(`/guardias/${idGuardia}/personas`);
   }
 };
 
