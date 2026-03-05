@@ -44,5 +44,40 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log('click');
         document.body.classList.toggle("high-contrast");
     }
+
+    setTimeout(() => {
+        const INCREASE_TXT_SIZE = document.querySelector('.increaseTxtSize');
+        const DECREASE_TXT_SIZE = document.querySelector('.decreaseTxtSize');
+        const TEXT_SIZE = document.querySelector('.TextSizeCounter');
+
+        if (!INCREASE_TXT_SIZE || !DECREASE_TXT_SIZE || !TEXT_SIZE) return;
+
+        const html = document.documentElement;
+
+        let firstSize = parseFloat(getComputedStyle(html).fontSize);
+        TEXT_SIZE.textContent = firstSize;
+
+        INCREASE_TXT_SIZE.addEventListener('click', increaseSize);
+        DECREASE_TXT_SIZE.addEventListener('click', decreaseSize);
+
+        function increaseSize() {
+            let currentSize = parseFloat(getComputedStyle(html).fontSize);
+            let newSize = currentSize + 1;
+
+            html.style.fontSize = newSize + "px";
+            TEXT_SIZE.textContent = newSize;
+        }
+
+        function decreaseSize() {
+            let currentSize = parseFloat(getComputedStyle(html).fontSize);
+            let newSize = currentSize - 1;
+
+            html.style.fontSize = newSize + "px";
+            TEXT_SIZE.textContent = newSize;
+        }
+
+    }, 500);
+
+
 });
 
