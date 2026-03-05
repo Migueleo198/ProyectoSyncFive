@@ -183,7 +183,6 @@ async function cargarTurnoRefuerzo(fecha) {
             contenedor.appendChild(card);
         });
     } catch (err) {
-        mostrarError('Error al cargar el turno de refuerzo.');
     }
 }
 
