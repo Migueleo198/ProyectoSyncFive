@@ -174,5 +174,26 @@ class RefuerzoModel
             ->query("SELECT ROW_COUNT() AS affected")
             ->fetch()['affected'];
     }
+
+    /**
+     * Obtener turno de refuerzo por fecha
+     */
+    public function getTurnoRefuerzoByFecha(string $fecha): array
+    {
+        return $this->db
+            ->query("
+                SELECT 
+                    tr.*,
+                    p.id_bombero,
+                    p.nombre,
+                    p.apellidos
+                FROM Turno_refuerzo tr
+                INNER JOIN Persona_Turno pt ON tr.id_turno_refuerzo = pt.id_turno
+                INNER JOIN Persona p ON pt.id_bombero = p.id_bombero
+                WHERE DATE(tr.f_inicio) = :fecha
+            ")
+            ->bind(':fecha', $fecha)
+            ->fetchAll();
+    }
 }
 ?>
