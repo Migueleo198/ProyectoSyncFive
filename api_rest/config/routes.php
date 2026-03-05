@@ -16,10 +16,16 @@ $router->protectedSession('GET', '/auth/me', 'Controllers\\AuthSessionController
 //++++++++++++++++++++++++++++++ PERSONA ++++++++++++++++++++++++++++++
 $router->protectedSession('GET',    '/personas',              'Controllers\\PersonaController@index',  [1,2,3,4,5]);
 $router->protectedSession('GET',    '/personas/{id_bombero}', 'Controllers\\PersonaController@show',   [1,2,3,4,5]);
-$router->protectedSession('POST',   '/personas',              'Controllers\\PersonaController@store',  [4,5]);       // ← AÑADE ESTA
+$router->protectedSession('POST',   '/personas',              'Controllers\\PersonaController@store',  [4,5]);
 $router->protectedSession('PUT',    '/personas/{id_bombero}', 'Controllers\\PersonaController@update', [4,5]);
 $router->protectedSession('PATCH',  '/personas/{id_bombero}', 'Controllers\\PersonaController@update', [4,5]);
+$router->protectedSession('PATCH', '/personas/{id_bombero}/me', 'Controllers\\PersonaController@updateMe', [1,2,3,4,5]);
 $router->protectedSession('DELETE', '/personas/{id_bombero}', 'Controllers\\PersonaController@delete', [5]);
+
+// Foto perfil
+$router->protectedSession('GET', '/storage/fotos/{filename}', 'Controllers\\PersonaController@servirFoto', [1,2,3,4,5]);
+$router->protectedSession('PATCH', '/personas/{id_bombero}/foto', 'Controllers\\PersonaController@uploadFoto', [1,2,3,4,5]);
+
 // ROL PERSONA
 $router->protectedSession('GET', '/personas/{id_bombero}/roles', 'Controllers\\RolController@persons', [4,5]);
 $router->protectedSession('POST', '/roles/asignar', 'Controllers\\RolController@assign', [5]);

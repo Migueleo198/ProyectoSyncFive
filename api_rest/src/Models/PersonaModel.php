@@ -107,47 +107,90 @@ class PersonaModel
 
         return $ok ? $data['id_bombero'] : false;
     }
-/**
- * Actualizar datos de persona (PATCH)
- */
-public function update(string $id_bombero, array $data): int  // ← string id_bombero
-{
-    $this->db->query("
-        UPDATE Persona SET
-            talla_superior = :talla_superior,
-            talla_inferior = :talla_inferior,
-            talla_calzado = :talla_calzado,
-            domicilio = :domicilio,
-            localidad = :localidad,
-            correo = :correo,
-            telefono = :telefono,
-            telefono_emergencia = :telefono_emergencia,
-            nombre_usuario = :nombre_usuario,
-            activo = :activo
-        WHERE id_bombero = :id_bombero
-    ")
-    ->bind(':id_bombero', $id_bombero)  // ← id_bombero en WHERE
-    ->bind(':talla_superior', $data['talla_superior'] ?? null)
-    ->bind(':talla_inferior', $data['talla_inferior'] ?? null)
-    ->bind(':talla_calzado', $data['talla_calzado'] ?? null)
-    ->bind(':domicilio', $data['domicilio'] ?? null)
-    ->bind(':localidad', $data['localidad'] ?? null)
-    ->bind(':correo', $data['correo'] ?? null)
-    ->bind(':telefono', $data['telefono'] ?? null)
-    ->bind(':telefono_emergencia', $data['telefono_emergencia'] ?? null)
-    ->bind(':nombre_usuario', $data['nombre_usuario'] ?? null)
-    ->bind(':activo', $data['activo'] ?? null)
-    ->execute();
 
-    return $this->db
-        ->query("SELECT ROW_COUNT() AS affected")
-        ->fetch()['affected'];
-}
+    /**
+     * Actualizar datos de persona (PATCH)
+     */
+    public function update(string $id_bombero, array $data): int  // ← string id_bombero
+    {
+        $this->db->query("
+            UPDATE Persona SET
+                talla_superior = :talla_superior,
+                talla_inferior = :talla_inferior,
+                talla_calzado = :talla_calzado,
+                domicilio = :domicilio,
+                localidad = :localidad,
+                correo = :correo,
+                telefono = :telefono,
+                telefono_emergencia = :telefono_emergencia,
+                nombre_usuario = :nombre_usuario,
+                activo = :activo
+            WHERE id_bombero = :id_bombero
+        ")
+        ->bind(':id_bombero', $id_bombero)  // ← id_bombero en WHERE
+        ->bind(':talla_superior', $data['talla_superior'] ?? null)
+        ->bind(':talla_inferior', $data['talla_inferior'] ?? null)
+        ->bind(':talla_calzado', $data['talla_calzado'] ?? null)
+        ->bind(':domicilio', $data['domicilio'] ?? null)
+        ->bind(':localidad', $data['localidad'] ?? null)
+        ->bind(':correo', $data['correo'] ?? null)
+        ->bind(':telefono', $data['telefono'] ?? null)
+        ->bind(':telefono_emergencia', $data['telefono_emergencia'] ?? null)
+        ->bind(':nombre_usuario', $data['nombre_usuario'] ?? null)
+        ->bind(':activo', $data['activo'] ?? null)
+        ->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
+
+    /**
+     * Actualizar solo los campos recibidos (PATCH parcial).
+     * No toca ningún campo que no esté en $data.
+     */
+    public function updatePartial(string $id_bombero, array $data): int
+    {
+        // Campos permitidos en la tabla (whitelist a nivel de modelo)
+        $permitidos = [
+            'correo', 'telefono', 'telefono_emergencia',
+            'talla_superior', 'talla_inferior', 'talla_calzado',
+            'domicilio', 'localidad', 'nombre_usuario',
+            'activo',  // solo accesible desde update() de admins
+        ];
+
+        // Filtrar y construir el SET dinámico
+        $sets = [];
+        foreach ($data as $campo => $valor) {
+            if (in_array($campo, $permitidos, true)) {
+                $sets[] = "{$campo} = :{$campo}";
+            }
+        }
+
+        if (empty($sets)) {
+            return 0; // Nada que actualizar
+        }
+
+        $sql = "UPDATE Persona SET " . implode(', ', $sets) . " WHERE id_bombero = :id_bombero";
+
+        $query = $this->db->query($sql)->bind(':id_bombero', $id_bombero);
+
+        foreach ($data as $campo => $valor) {
+            if (in_array($campo, $permitidos, true)) {
+                $query->bind(":{$campo}", $valor);
+            }
+        }
+
+        $query->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
 
     /**
      * Eliminar persona
      */
-    // ✅ Correcto - usa id_bombero (PK numérica)
     public function delete(string $id_bombero): int
     {
         $this->db
@@ -419,23 +462,23 @@ public function update(string $id_bombero, array $data): int  // ← string id_b
                     SUM(CASE WHEN te.grupo = 'Fenómenos meteorológicos'
                                 OR te.grupo = 'Estructuras y colapsos'
                             THEN 1 ELSE 0 END)                                AS otros,
-                    -- Tiempo promedio de respuesta (minutos: f_salida → f_llegada)
+                    -- Tiempo promedio de respuesta (minutos: f_registro_emergencia → f_llegada)
                     ROUND(AVG(
                         CASE WHEN ev.f_llegada IS NOT NULL
-                        THEN TIMESTAMPDIFF(MINUTE, ev.f_salida, ev.f_llegada)
+                        THEN TIMESTAMPDIFF(MINUTE, e.fecha, ev.f_llegada)
                         END
-                    ), 1)                                                       AS avg_respuesta_min,
+                    ), 1) AS avg_respuesta_min,
                     -- Tiempo promedio de resolución (minutos: f_salida → f_regreso)
                     ROUND(AVG(
                         CASE WHEN ev.f_regreso IS NOT NULL
                         THEN TIMESTAMPDIFF(MINUTE, ev.f_salida, ev.f_regreso)
                         END
-                    ), 1)                                                       AS avg_resolucion_min,
+                    ), 1) AS avg_resolucion_min,
                     -- % intervenciones cerradas (éxito)
                     ROUND(
                         SUM(CASE WHEN e.estado = 'CERRADA' THEN 1 ELSE 0 END)
                         * 100.0 / COUNT(DISTINCT evp.id_emergencia)
-                    , 1)                                                        AS pct_exitosas
+                    , 1) AS pct_exitosas
                 FROM Emergencia_Vehiculo_Persona evp
                 JOIN Emergencia_Vehiculo ev
                     ON ev.matricula      = evp.matricula
@@ -609,38 +652,109 @@ public function update(string $id_bombero, array $data): int  // ← string id_b
 
         // ── 8. Permisos / Bienestar ────────────────────────────────────────────
         $permisos = $this->db
-            ->query("
-                SELECT
-                    COUNT(*)                                                    AS total_permisos,
-                    SUM(CASE WHEN p.estado = 'ACEPTADO' THEN 1 ELSE 0 END)     AS aceptados,
-                    SUM(CASE WHEN p.estado = 'DENEGADO' THEN 1 ELSE 0 END)     AS denegados,
-                    SUM(CASE WHEN p.estado = 'REVISION' THEN 1 ELSE 0 END)     AS en_revision,
-                    -- Días tomados por tipo de motivo
-                    SUM(CASE WHEN m.nombre LIKE '%propios%'
-                                AND p.estado = 'ACEPTADO'
-                            THEN 1 ELSE 0 END)                                AS dias_asuntos_propios,
-                    SUM(CASE WHEN (m.nombre LIKE '%Enfermedad%'
-                                OR m.nombre LIKE '%accidente no%')
-                                AND p.estado = 'ACEPTADO'
-                            THEN 1 ELSE 0 END)                                AS dias_enfermedad,
-                    SUM(CASE WHEN m.nombre LIKE '%Accidente laboral%'
-                                AND p.estado = 'ACEPTADO'
-                            THEN 1 ELSE 0 END)                                AS dias_accidente_laboral,
-                    SUM(CASE WHEN m.nombre LIKE '%1er grado%'
-                                AND p.estado = 'ACEPTADO'
-                            THEN m.dias ELSE 0 END)                           AS dias_fallecimiento_1,
-                    SUM(CASE WHEN m.nombre LIKE '%2%grado%'
-                                AND p.estado = 'ACEPTADO'
-                            THEN m.dias ELSE 0 END)                           AS dias_fallecimiento_2,
-                    SUM(CASE WHEN YEAR(p.fecha) = YEAR(CURDATE())
-                                AND p.estado = 'ACEPTADO'
-                            THEN 1 ELSE 0 END)                                AS permisos_anio_actual
-                FROM Permiso p
-                JOIN Motivo m ON m.cod_motivo = p.cod_motivo
-                WHERE p.id_bombero = :id
-            ")
-            ->bind(':id', $id_bombero)
-            ->fetch();
+        ->query("
+            SELECT
+                COUNT(*)                                                            AS total_permisos,
+                SUM(CASE WHEN p.estado = 'ACEPTADO' THEN 1 ELSE 0 END)             AS aceptados,
+                SUM(CASE WHEN p.estado = 'DENEGADO' THEN 1 ELSE 0 END)             AS denegados,
+                SUM(CASE WHEN p.estado = 'REVISION' THEN 1 ELSE 0 END)             AS en_revision,
+
+                -- Días totales aceptados (suma de todas las categorías)
+                ROUND(SUM(
+                    CASE WHEN p.estado = 'ACEPTADO'
+                    THEN
+                        CASE
+                            WHEN m.dias > 0 THEN m.dias
+                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
+                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
+                            ELSE 0
+                        END
+                    ELSE 0 END
+                ), 1)                                                               AS total_dias,
+
+                -- Asuntos propios
+                ROUND(SUM(
+                    CASE WHEN m.nombre LIKE '%propios%' AND p.estado = 'ACEPTADO'
+                    THEN
+                        CASE
+                            WHEN m.dias > 0 THEN m.dias
+                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
+                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
+                            ELSE 0
+                        END
+                    ELSE 0 END
+                ), 1)                                                               AS dias_asuntos_propios,
+
+                -- Enfermedad / accidente no laboral
+                ROUND(SUM(
+                    CASE WHEN (m.nombre LIKE '%Enfermedad%' OR m.nombre LIKE '%accidente no%')
+                            AND p.estado = 'ACEPTADO'
+                    THEN
+                        CASE
+                            WHEN m.dias > 0 THEN m.dias
+                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
+                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
+                            ELSE 0
+                        END
+                    ELSE 0 END
+                ), 1)                                                               AS dias_enfermedad,
+
+                -- Accidente laboral
+                ROUND(SUM(
+                    CASE WHEN m.nombre LIKE '%Accidente laboral%' AND p.estado = 'ACEPTADO'
+                    THEN
+                        CASE
+                            WHEN m.dias > 0 THEN m.dias
+                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
+                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
+                            ELSE 0
+                        END
+                    ELSE 0 END
+                ), 1)                                                               AS dias_accidente_laboral,
+
+                -- Fallecimiento (1er + 2º grado)
+                ROUND(SUM(
+                    CASE WHEN (m.nombre LIKE '%grado%' OR m.nombre LIKE '%fallec%')
+                            AND p.estado = 'ACEPTADO'
+                    THEN
+                        CASE
+                            WHEN m.dias > 0 THEN m.dias
+                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
+                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
+                            ELSE 0
+                        END
+                    ELSE 0 END
+                ), 1)                                                               AS dias_fallecimiento,
+
+                -- Otros motivos no clasificados
+                ROUND(SUM(
+                    CASE WHEN m.nombre NOT LIKE '%propios%'
+                            AND m.nombre NOT LIKE '%Enfermedad%'
+                            AND m.nombre NOT LIKE '%accidente no%'
+                            AND m.nombre NOT LIKE '%Accidente laboral%'
+                            AND m.nombre NOT LIKE '%grado%'
+                            AND m.nombre NOT LIKE '%fallec%'
+                            AND p.estado = 'ACEPTADO'
+                    THEN
+                        CASE
+                            WHEN m.dias > 0 THEN m.dias
+                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
+                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
+                            ELSE 0
+                        END
+                    ELSE 0 END
+                ), 1)                                                               AS dias_otros,
+
+                -- Permisos aceptados en el año en curso (sigue siendo COUNT para referencia)
+                SUM(CASE WHEN YEAR(p.fecha) = YEAR(CURDATE())
+                            AND p.estado = 'ACEPTADO'
+                        THEN 1 ELSE 0 END)                                         AS permisos_anio_actual
+            FROM Permiso p
+            JOIN Motivo m ON m.cod_motivo = p.cod_motivo
+            WHERE p.id_bombero = :id
+        ")
+        ->bind(':id', $id_bombero)
+        ->fetch();
 
         // Próximos permisos en revisión
         $permisos_pendientes = $this->db
@@ -689,5 +803,15 @@ public function update(string $id_bombero, array $data): int  // ← string id_b
                 'pendientes'       => $permisos_pendientes,
             ],
         ];
+    }
+
+    /* Actualizar foto de perfil del usuario */
+    public function updateFoto(string $id_bombero, string $filename): void
+    {
+        $this->db
+            ->query("UPDATE Persona SET foto_perfil = :foto WHERE id_bombero = :id")
+            ->bind(':foto', $filename)
+            ->bind(':id', $id_bombero)
+            ->execute();
     }
 }

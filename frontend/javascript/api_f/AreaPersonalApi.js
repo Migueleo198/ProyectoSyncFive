@@ -20,7 +20,7 @@ const AreaPersonalApi = {
      *   domicilio, localidad, nombre_usuario
      */
     updateDatosPersonales(id_bombero, data) {
-        return ApiClient.patch(`/personas/${id_bombero}`, data);
+        return ApiClient.patch(`/personas/${id_bombero}/me`, data);
     },
 
     /**
@@ -30,7 +30,22 @@ const AreaPersonalApi = {
     uploadFotoPerfil(id_bombero, file) {
         const formData = new FormData();
         formData.append('foto', file);
-        return ApiClient.postFormData(`/personas/${id_bombero}/foto`, formData);
+        return ApiClient.patchFormData(`/personas/${id_bombero}/foto`, formData);
+    },
+
+    /**
+     * Obtiene la foto de perfil como Object URL (blob).
+     * Necesario porque la ruta está protegida por sesión y el navegador
+     * no puede cargarla directamente en un <img src="...">.
+     */
+    async getFotoPerfil(filename) {
+        const { API_BASE_PATH } = await import('../../config/apiConfig.js');
+        const response = await fetch(`${API_BASE_PATH}/storage/fotos/${filename}`, {
+            credentials: 'include'
+        });
+        if (!response.ok) return null;
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
     },
 };
 

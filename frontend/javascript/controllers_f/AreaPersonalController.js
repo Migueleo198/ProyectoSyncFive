@@ -45,8 +45,8 @@ async function cargarAreaPersonal(id_bombero) {
 }
 
 // ── Render completo ───────────────────────────────────────────────────────────
-function renderTodo(data) {
-    renderPerfil(data.persona);
+async function renderTodo(data) {
+    await renderPerfil(data.persona);
     renderEstadisticas(data);
     renderMeritos(data.meritos);
     renderProximasGuardias(data.guardias.proximas);
@@ -57,15 +57,28 @@ function renderTodo(data) {
 }
 
 // ── PERFIL ────────────────────────────────────────────────────────────────────
-function renderPerfil(persona) {
+async function renderPerfil(persona) {
     if (!persona) return;
 
     // Foto de perfil
     const img = document.getElementById('profilePic');
     if (img) {
-        img.src = persona.foto_perfil
-            ? `/storage/fotos/${persona.foto_perfil}`
-            : `https://ui-avatars.com/api/?name=${encodeURIComponent(persona.nombre + '+' + persona.apellidos)}&background=dc3545&color=fff&size=150`;
+        if (persona.foto_perfil) {
+            // Revocar Object URL anterior para liberar memoria
+            if (img.dataset.objectUrl) {
+                URL.revokeObjectURL(img.dataset.objectUrl);
+            }
+            const objectUrl = await AreaPersonalApi.getFotoPerfil(persona.foto_perfil);
+            if (objectUrl) {
+                img.src = objectUrl;
+                img.dataset.objectUrl = objectUrl; // guardar para revocar después
+            } else {
+                // Fallback si no se pudo cargar
+                img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(persona.nombre + '+' + persona.apellidos)}&background=dc3545&color=fff&size=150`;
+            }
+        } else {
+            img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(persona.nombre + '+' + persona.apellidos)}&background=dc3545&color=fff&size=150`;
+        }
     }
 
     // Nombre, rol, ID, antigüedad
@@ -243,11 +256,11 @@ function renderPermisosBienestar(resumen) {
     setNum('bienestar-asuntos-propios',   resumen.dias_asuntos_propios);
     setNum('bienestar-enfermedad',        resumen.dias_enfermedad);
     setNum('bienestar-accidente-laboral', resumen.dias_accidente_laboral);
-    setNum('bienestar-fallecimiento-1',   resumen.dias_fallecimiento_1);
-    setNum('bienestar-fallecimiento-2',   resumen.dias_fallecimiento_2);
-    setNum('bienestar-total-permisos',    resumen.total_permisos);
-    setNum('bienestar-aceptados',         resumen.aceptados);
-    setNum('bienestar-denegados',         resumen.denegados);
+    setNum('bienestar-fallecimiento',     resumen.dias_fallecimiento);
+    setNum('bienestar-otros',             resumen.dias_otros);
+    setNum('bienestar-total-dias',        resumen.total_dias);        // ← total_dias
+    setNum('bienestar-aceptados',         resumen.aceptados);         // ← COUNT permisos
+    setNum('bienestar-denegados',         resumen.denegados);         // ← COUNT permisos
 }
 
 // ── DATOS PERSONALES ──────────────────────────────────────────────────────────
@@ -279,19 +292,33 @@ function bindFormDatosPersonales() {
         e.preventDefault();
         if (!idBomberoActual) return;
 
-        const data = {};
-        const campos = [
-            'correo','telefono','telefono_emergencia',
-            'talla_superior','talla_inferior','talla_calzado',
-            'domicilio','localidad','nombre_usuario'
+        // Whitelist: exactamente los mismos campos que permite el backend
+        const camposEditables = [
+            'correo',
+            'telefono',
+            'telefono_emergencia',
+            'talla_superior',
+            'talla_inferior',
+            'talla_calzado',
+            'domicilio',
+            'localidad',
+            'nombre_usuario',
         ];
 
-        campos.forEach(campo => {
-            const el = document.getElementById(`dp-${campo.replace(/_/g,'-')}`);
-            if (el && !el.readOnly && el.value !== '') {
-                data[campo] = campo === 'talla_calzado' ? Number(el.value) || el.value : el.value;
-            }
+        const data = {};
+        camposEditables.forEach(campo => {
+            const id  = `dp-${campo.replace(/_/g, '-')}`;
+            const el  = document.getElementById(id);
+            if (!el || el.readOnly) return;        // saltar campos readonly
+            const val = el.value.trim();
+            if (val === '') return;                 // no enviar vacíos
+            data[campo] = (campo === 'talla_calzado') ? Number(val) || val : val;
         });
+
+        if (Object.keys(data).length === 0) {
+            mostrarError('No hay cambios para guardar');
+            return;
+        }
 
         try {
             await AreaPersonalApi.updateDatosPersonales(idBomberoActual, data);
@@ -301,7 +328,6 @@ function bindFormDatosPersonales() {
         }
     });
 
-    // Botón cancelar: recarga los datos originales
     const btnCancelar = document.getElementById('btn-cancelar-datos');
     if (btnCancelar) {
         btnCancelar.addEventListener('click', () => {
@@ -311,7 +337,7 @@ function bindFormDatosPersonales() {
 }
 
 // ── FOTO DE PERFIL ────────────────────────────────────────────────────────────
-function bindFotoPerfil() {
+async function bindFotoPerfil() {
     const fileInput = document.getElementById('fileInput');
     if (!fileInput) return;
 
@@ -319,7 +345,7 @@ function bindFotoPerfil() {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Preview inmediato
+        // Preview inmediato con FileReader (sin esperar al servidor)
         const reader = new FileReader();
         reader.onload = (ev) => {
             const img = document.getElementById('profilePic');
@@ -327,10 +353,42 @@ function bindFotoPerfil() {
         };
         reader.readAsDataURL(file);
 
-        // Subir al servidor
         if (!idBomberoActual) return;
         try {
-            await AreaPersonalApi.uploadFotoPerfil(idBomberoActual, file);
+            const result = await AreaPersonalApi.uploadFotoPerfil(idBomberoActual, file);
+            const objectUrl = await AreaPersonalApi.getFotoPerfil(result.data.foto_perfil);
+            if (objectUrl) {
+                const img = document.getElementById('profilePic');
+                if (img) {
+                    if (img.dataset.objectUrl) URL.revokeObjectURL(img.dataset.objectUrl);
+                    img.src = objectUrl;
+                    img.dataset.objectUrl = objectUrl;
+                }
+
+                // ── Actualizar sessionStorage para que el header refleje el cambio ──
+                const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+                user.foto_perfil = result.data.foto_perfil;
+                sessionStorage.setItem('user', JSON.stringify(user));
+
+                // ── Actualizar también el icono del header sin recargar ──
+                const headerIcon = document.querySelector('#header-placeholder .header-user .bi-person-circle');
+                const headerImg  = document.querySelector('#header-placeholder .header-user img.rounded-circle');
+                const targetEl   = headerIcon || headerImg;
+                if (targetEl) {
+                    if (headerImg) {
+                        // Ya hay foto, solo actualizar src
+                        URL.revokeObjectURL(headerImg.src);
+                        headerImg.src = objectUrl;
+                    } else {
+                        // Primera vez, reemplazar icono
+                        const newImg = document.createElement('img');
+                        newImg.src = objectUrl;
+                        newImg.alt = 'Foto de perfil';
+                        newImg.className = 'header-profile-pic';
+                        headerIcon.replaceWith(newImg);
+                    }
+                }
+            }
             mostrarExito('Foto de perfil actualizada');
         } catch (err) {
             mostrarError(err.message || 'Error al subir la foto');
