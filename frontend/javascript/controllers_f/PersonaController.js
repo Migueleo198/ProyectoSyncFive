@@ -6,7 +6,7 @@ let personas = [];
 let sesionActual = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  sesionActual = await authGuard('personas');
+  sesionActual = await authGuard('usuarios');
   if (!sesionActual) return;
 
   cargarPersonas();
