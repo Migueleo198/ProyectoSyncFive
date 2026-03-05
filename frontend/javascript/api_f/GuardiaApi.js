@@ -16,6 +16,7 @@ const GuardiaApi = {
   update(idGuardia, data) {
     return ApiClient.put(`/guardias/${idGuardia}`, data);
   },
+
   assignToPerson(data) {
     return ApiClient.post(`/personas/${data.id_bombero}/guardias`, {
       id_bombero: data.id_bombero,
@@ -23,8 +24,21 @@ const GuardiaApi = {
       cargo: data.cargo
     });
   },
-  getPersonGuardias(idGuardia) {
-    return ApiClient.get(`/guardias/${idGuardia}/personas`);
+
+  getByDate(date) {
+    return ApiClient.get(`/personas/guardias/fecha/${date}`);
+  },
+  
+  updateCargo(id_bombero, id_guardia, cargo) {
+    return ApiClient.patch(`/personas/${id_bombero}/guardias/${id_guardia}`, { cargo });
+  },
+
+  updateNotas(id_guardia, notas) {
+    return ApiClient.patch(`/guardias/${id_guardia}`, { notas });
+  },
+
+  getTurnoRefuerzoByFecha(fecha) {
+    return ApiClient.get(`/turnos-refuerzo/fecha/${fecha}`);
   }
 };
 

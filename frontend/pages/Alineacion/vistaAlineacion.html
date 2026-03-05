@@ -53,37 +53,94 @@
                                     alineación diaria
                                 </div>
                                 <div class="card-body">
-                                    <div class="row g-2">
-                                        <div class="col-6"><input class="form-control" placeholder="OF1"></div>
-                                        <div class="col-6"><input class="form-control" placeholder="OF2"></div>
+                                    <div class="row g-2" id="gridAlineacion">
 
-                                        <div class="col-6"><input class="form-control" placeholder="C1"></div>
-                                        <div class="col-6"><input class="form-control" placeholder="C2"></div>
+                                        <!-- OF1 / OF2 -->
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">OF1</label>
+                                            <select class="form-select" data-slot="OF1" data-cargo="OFICIAL1">
+                                                <option value="">— sin asignar —</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">OF2</label>
+                                            <select class="form-select" data-slot="OF2" data-cargo="OFICIAL2">
+                                                <option value="">— sin asignar —</option>
+                                            </select>
+                                        </div>
 
-                                        <div class="col-6"><input class="form-control" placeholder="B1"></div>
-                                        <div class="col-6"><input class="form-control" placeholder="B2"></div>
+                                        <!-- C1 / C2 -->
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">C1</label>
+                                            <select class="form-select" data-slot="C1" data-cargo="CONDUCTOR1">
+                                                <option value="">— sin asignar —</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">C2</label>
+                                            <select class="form-select" data-slot="C2" data-cargo="CONDUCTOR2">
+                                                <option value="">— sin asignar —</option>
+                                            </select>
+                                        </div>
 
-                                        <div class="col-6"><input class="form-control" placeholder="B3"></div>
-                                        <div class="col-6"><input class="form-control" placeholder="B4"></div>
+                                        <!-- B1 / B2 -->
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">B1</label>
+                                            <select class="form-select" data-slot="B1" data-cargo="BOMBERO1">
+                                                <option value="">— sin asignar —</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">B2</label>
+                                            <select class="form-select" data-slot="B2" data-cargo="BOMBERO2">
+                                                <option value="">— sin asignar —</option>
+                                            </select>
+                                        </div>
 
-                                        <div class="col-6"><input class="form-control" placeholder="B5"></div>
-                                        <div class="col-6"><input class="form-control" placeholder="B6"></div>
+                                        <!-- B3 / B4 -->
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">B3</label>
+                                            <select class="form-select" data-slot="B3" data-cargo="BOMBERO3">
+                                                <option value="">— sin asignar —</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">B4</label>
+                                            <select class="form-select" data-slot="B4" data-cargo="BOMBERO4">
+                                                <option value="">— sin asignar —</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- B5 / B6 -->
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">B5</label>
+                                            <select class="form-select" data-slot="B5" data-cargo="BOMBERO5">
+                                                <option value="">— sin asignar —</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted mb-1">B6</label>
+                                            <select class="form-select" data-slot="B6" data-cargo="BOMBERO6">
+                                                <option value="">— sin asignar —</option>
+                                            </select>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Bomberos de guardia -->
+                        <!-- Bomberos de guardia (sin cargo asignado) -->
                         <div class="col-xl-4 col-lg-5">
                             <div class="card h-100 contenedorInsertar">
                                 <div class="card-header fw-bold">
                                     bomberos de guardia
                                 </div>
-                                <div class="card-body d-grid gap-2">
-                                    <input class="form-control">
-                                    <input class="form-control">
-                                    <input class="form-control">
-                                    <input class="form-control">
+                                <div class="card-body d-grid gap-2" id="listaSinCargo">
+                                    <!-- Se rellena dinámicamente con los bomberos sin cargo -->
+                                    <p class="text-muted small mb-0" id="sinCargoPlaceholder">
+                                        Selecciona una fecha para cargar la guardia.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -95,7 +152,7 @@
                                     notas
                                 </div>
                                 <div class="card-body">
-                                    <textarea class="form-control" rows="5"></textarea>
+                                    <textarea class="form-control" rows="5" id="notasGuardia"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -106,9 +163,8 @@
                                 <div class="card-header fw-bold">
                                     refuerzos del día
                                 </div>
-                                <div class="card-body">
-                                    <input class="form-control mb-3">
-                                    <input class="form-control">
+                                <div id="refuerzosDia" class="card-body">
+                                    
                                 </div>
                             </div>
                         </div>
@@ -116,14 +172,15 @@
                         <!-- Botones centrados debajo -->
                         <div class="col-12">
                             <div class="d-flex justify-content-center gap-2">
-                                <button type="reset" class="btn btn-secondary">
+                                <button type="button" class="btn btn-secondary" id="btnLimpiar">
                                     Limpiar
                                 </button>
-                                <button type="submit" class="btn btn-primary" id="btnInsertar">
+                                <button type="button" class="btn btn-primary" id="btnInsertar">
                                     Guardar
                                 </button>
                             </div>
                         </div>
+
                     </div>
                 </main>
             </div>
@@ -135,5 +192,6 @@
     <!-- ALERT-->
     <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
 
+    <script type="module" src="/frontend/javascript/controllers_f/AlineacionController.js"></script>
 </body>
 </html>
