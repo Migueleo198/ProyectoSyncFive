@@ -63,13 +63,10 @@ class PermisoService
     public function createPermiso(array $input): array
     {
         $data = Validator::validate($input, [
-
-            'id_permiso'     => 'required|string',
-            'fecha'        => 'required|date',
-            'h_inicio'          => 'int',
-            'h_fin'          => 'int',
-            'descripcion'      => 'string',
-            'estado'      => 'boolean'
+            'cod_motivo'  => 'required|int',
+            'h_inicio'    => 'string',
+            'h_fin'       => 'string',
+            'descripcion' => 'string'
         ]);
 
         try {
@@ -85,67 +82,51 @@ class PermisoService
             throw new \Exception("No se pudo crear el permiso");
         }
 
-        return ['ID_Permiso' => $data['id_permiso']];
+        return [
+            'id_permiso'  => $id,
+            'cod_motivo'  => $data['cod_motivo'],
+            'h_inicio'    => $data['h_inicio'] ?? null,
+            'h_fin'       => $data['h_fin'] ?? null,
+            'descripcion' => $data['descripcion'] ?? null
+        ];
     }
 
     /**
      * Actualizar permiso
      */
-    public function updatePermiso(string $ID_Permiso, array $input): array
-    {
-        Validator::validate(['ID_Permiso' => $ID_Permiso], [
-            'ID_Permiso' => 'required|string'
+    public function updatePermiso(string $id_permiso, array $input): array
+{
+    $data = Validator::validate($input, [
+        'h_inicio'    => 'string',
+        'h_fin'       => 'string',
+        'estado'      => 'string|in:ACEPTADO,REVISION,DENEGADO',
+        'descripcion' => 'string'
+    ]);
+
+    if (empty($data)) {
+        throw new ValidationException([
+            'body' => ['No se enviaron campos para actualizar']
         ]);
-
-        $data = Validator::validate($input, [
-            'ID_Permiso'     => 'required|string',
-            'fecha'        => 'required|date',
-            'h_inicio'          => 'int',
-            'h_fin'          => 'int',
-            'descripcion'      => 'string',
-            'estado'      => 'boolean'
-        ]);
-
-        if (empty($data)) {
-            throw new ValidationException([
-                'body' => ['No se enviaron campos para actualizar']
-            ]);
-        }
-
-        try {
-            $result = $this->model->update($ID_Permiso, $data);
-        } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
-        }
-
-        if ($result === 0) {
-            $exists = $this->model->find($ID_Permiso);
-
-            if (!$exists) {
-                throw new \Exception("Permiso no encontrado", 404);
-            }
-
-            return [
-                'status'  => 'no_changes',
-                'message' => 'No hubo cambios en el permiso'
-            ];
-        }
-
-        if ($result === -1) {
-            throw new \Exception(
-                "No se pudo actualizar el permiso: conflicto con restricciones",
-                409
-            );
-        }
-
-        return [
-            'status'  => 'updated',
-            'message' => 'Permiso actualizado correctamente'
-        ];
     }
+
+    try {
+        $result = $this->model->update($id_permiso, $data);
+    } catch (Throwable $e) {
+        throw new \Exception(
+            "Error interno en la base de datos: " . $e->getMessage(),
+            500
+        );
+    }
+
+    if ($result === 0) {
+        if (!$this->model->find($id_permiso)) {
+            throw new \Exception("Permiso no encontrado", 404);
+        }
+        return ['status' => 'no_changes', 'message' => 'No hubo cambios en el permiso'];
+    }
+
+    return ['status' => 'updated', 'message' => 'Permiso actualizado correctamente'];
+}
 
     /**
      * Eliminar un permiso

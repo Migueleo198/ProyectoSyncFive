@@ -1,6 +1,7 @@
 // Recibimos el nombre de usuario y logouts
 import { mostrarNombreUsuario, bindLogoutButtons } from '../controllers_f/AuthController.js';
 import { mostrarEmergenciasHeader } from '../controllers_f/EmergenciasActivasController.js';
+import ApiClient from '../api_f/ApiClient.js';
 
 // Carga HTML en un contenedor usando getPath de config.js
 async function cargarHTML(id, fileName) {
@@ -25,6 +26,7 @@ async function cargarHTML(id, fileName) {
         if (fileName === 'header.html') {
             mostrarNombreUsuario();
             mostrarEmergenciasHeader();
+            cargarFotoHeader();
         }
         
         if (fileName === 'sidebar.html') {
@@ -34,6 +36,39 @@ async function cargarHTML(id, fileName) {
     } catch (err) {
         console.error(err);
         container.innerHTML = `<div class="alert alert-danger">Error al cargar ${fileName}</div>`;
+    }
+}
+
+/**
+ * Carga la foto de perfil del usuario logueado en el header.
+ * Si no tiene foto usa el icono por defecto (no hace nada).
+ */
+async function cargarFotoHeader() {
+    const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+    if (!user?.foto_perfil) return;
+
+    try {
+        // Reutilizamos el mismo endpoint protegido que usa el área personal
+        const { API_BASE_PATH } = await import('../../config/apiConfig.js');
+        const response = await fetch(`${API_BASE_PATH}/storage/fotos/${user.foto_perfil}`, {
+            credentials: 'include'
+        });
+        if (!response.ok) return;
+
+        const blob      = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        // Sustituir el icono por la foto en el header
+        const iconEl = document.querySelector('#header-placeholder .header-user .bi-person-circle');
+        if (iconEl) {
+            const img = document.createElement('img');
+            img.src = objectUrl;
+            img.alt = 'Foto de perfil';
+            img.className = 'header-profile-pic';
+            iconEl.replaceWith(img);
+        }
+    } catch (_) {
+        // Si falla silenciosamente, el icono por defecto permanece
     }
 }
 

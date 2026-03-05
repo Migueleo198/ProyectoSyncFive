@@ -43,6 +43,11 @@ const AvisoApi = {
 
     deleteRemitente(idAviso, idBombero) {
         return ApiClient.delete(`/avisos/${idAviso}/remitente/${idBombero}`);
+    },
+
+    // AVISOS RECIBIDOS
+    getRecibidos(idBombero) {
+        return ApiClient.get(`/avisos/${idBombero}/recibidos`);
     }
 
 };

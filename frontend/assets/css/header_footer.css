@@ -18,9 +18,18 @@
         color: var(--blanco);
     }
 
-    header img {
+    header a.d-block img {
         width: 205px;
         min-width: 100px;
+    }
+
+    .header-profile-pic {
+        width: 36px !important;
+        min-width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        object-fit: cover !important;
+        flex-shrink: 0;
     }
 
     .gris{
