@@ -261,5 +261,10 @@ $router->protectedSession('POST', '/motivos', 'Controllers\\MotivoController@sto
 $router->protectedSession('DELETE', '/motivos/{cod_motivo}', 'Controllers\\MotivoController@delete', [5]);
 $router->protectedSession('PUT', '/motivos/{cod_motivo}', 'Controllers\\MotivoController@update', [5]);
 
-
+// +++++++++++++++++ INFRAESTRUCTURAS DE AGUA +++++++++++++++++
+$router->protectedSession('GET',    '/infraestructuras-agua',      'Controllers\\InfraestructuraAguaController@index',   [1,2,3,4,5]);
+$router->protectedSession('GET',    '/infraestructuras-agua/{id}', 'Controllers\\InfraestructuraAguaController@show',    [1,2,3,4,5]);
+$router->protectedSession('POST',   '/infraestructuras-agua',      'Controllers\\InfraestructuraAguaController@store',   [3,4,5]);
+$router->protectedSession('PUT',    '/infraestructuras-agua/{id}', 'Controllers\\InfraestructuraAguaController@update',  [4,5]);
+$router->protectedSession('DELETE', '/infraestructuras-agua/{id}', 'Controllers\\InfraestructuraAguaController@destroy', [5]);
 ?>
