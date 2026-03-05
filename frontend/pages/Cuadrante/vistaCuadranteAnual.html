@@ -6,7 +6,7 @@
     <script>loadHead("Cuadrante Anual")</script> <!-- Cambiado de "Almacenes" -->
     <!-- Carga UNA SOLA VEZ el script -->
     <script type="module" src="/frontend/javascript/controllers_f/CuadranteAnualController.js"></script></head>
-<body class="bg-white text-dark d-flex flex-column">
+<body class="text-dark d-flex flex-column">
 
     <div id="header-placeholder"></div>
 
@@ -30,13 +30,13 @@
                 <div class="leyenda-box mb-3">Leyenda</div>
 
                 <!-- CONTROLES DE AÑO Y VISTA -->
-                <div class="container-fluid calendar-main py-3">
+                <div class="container-fluid calendar-main py-3 gris rounded">
                     <div id="year_elems_placeholder"
                          class="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-4">
                     </div>
 
                     <!-- CALENDARIO -->
-                    <div class="container-fluid">
+                    <div class="container-fluid bg-light rounded p-3">
                         <div id="calendar" class="row g-4"></div>
                     </div>
                 </div>
@@ -69,7 +69,6 @@
                         </tbody>
                     </table>
                 </div>
-
             </main>
         </div>
     </div>
