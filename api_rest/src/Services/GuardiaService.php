@@ -182,15 +182,15 @@ public function createGuardia(array $input): array
     /**
  * Obtener todas las personas asociadas a una guardia NO SE USA TODAVIA PARA UNA FURUTA EXPANSION
  */
-/*     public function getPersonsByGuardia(string $id_guardia): array
+    public function getPersonsByGuardia(int $id_guardia): array
     {
         Validator::validate(['id_guardia' => $id_guardia], [
-            'id_guardia' => 'required|string'
+            'id_guardia' => 'required|int'
         ]);
 
         try {
             // Verificar que la guardia exista
-            $exists = $this->model->find($id_guardia);
+            $exists = $this->model->getPersonsByGuardia($id_guardia);
 
             if (!$exists) {
                 throw new \Exception("Guardia no encontrada", 404);
@@ -204,7 +204,7 @@ public function createGuardia(array $input): array
                 500
             );
         }
-    } */
+    } 
         /**
          * POST /Guardia/assign
          */

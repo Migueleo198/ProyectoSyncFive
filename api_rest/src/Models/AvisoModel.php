@@ -153,5 +153,19 @@ class AvisoModel
         ->bind(":id_aviso", $id_aviso)
         ->execute();
     }
+
+    public function getRecibidos(string $id_bombero): array
+    {
+        return $this->db
+            ->query("
+                SELECT a.*
+                FROM Aviso a
+                JOIN Persona_Recibe_Aviso pra ON a.id_aviso = pra.id_aviso
+                WHERE pra.id_bombero = :id_bombero
+                ORDER BY a.fecha DESC
+            ")
+            ->bind(":id_bombero", $id_bombero)
+            ->fetchAll();
+    }
 }
 ?>
