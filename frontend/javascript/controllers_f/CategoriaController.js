@@ -1,11 +1,20 @@
 import CategoriaApi from '../api_f/CategoriaApi.js';
+import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 
 let categorias = [];
+let sesionActual = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  sesionActual = await authGuard('categorias');
+  if (!sesionActual) return;
+
   cargarCategorias();
-  bindCrearCategoria();
+
+  if (sesionActual.puedeEscribir) {
+    bindCrearCategoria();
+    bindModalEliminar();
+  }
 });
 
 // ================================
@@ -24,24 +33,28 @@ async function cargarCategorias() {
 // ================================
 // RENDER TABLA
 // ================================
-function renderTablaCategorias(categorias) {
+function renderTablaCategorias(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
 
-  categorias.forEach(c => {
+  const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+
+  lista.forEach(c => {
     const tr = document.createElement('tr');
+
+    const botonesAccion = puedeEscribir
+      ? `<button type="button" class="btn p-0 btn-eliminar"
+              data-bs-toggle="modal" data-bs-target="#modalEliminar"
+              data-id="${c.id_categoria}">
+           <i class="bi bi-trash3"></i>
+         </button>`
+      : '';
+
     tr.innerHTML = `
       <td>${c.id_categoria}</td>
       <td>${c.nombre}</td>
       <td>${Number(c.inventariable) === 1 ? 'Sí' : 'No'}</td>
-      <td class="d-flex justify-content-around">
-        <button type="button" class="btn p-0 btn-eliminar"
-                data-bs-toggle="modal"
-                data-bs-target="#modalEliminar"
-                data-id="${c.id_categoria}">
-          <i class="bi bi-trash3"></i>
-        </button>
-      </td>
+      <td class="d-flex justify-content-around">${botonesAccion}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -52,10 +65,10 @@ function renderTablaCategorias(categorias) {
 // ================================
 function bindCrearCategoria() {
   const form = document.getElementById('formInsertar');
+  if (!form) return;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const f = new FormData(form);
     const data = {
       nombre:        f.get('nombre'),
@@ -76,28 +89,24 @@ function bindCrearCategoria() {
 // ================================
 // MODAL ELIMINAR
 // ================================
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.btn-eliminar');
-  if (!btn) return;
+function bindModalEliminar() {
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-eliminar');
+    if (!btn) return;
+    document.getElementById('btnConfirmarEliminar').dataset.id = btn.dataset.id;
+  });
 
-  const btnConfirm = document.getElementById('btnConfirmarEliminar');
-  btnConfirm.dataset.id = btn.dataset.id;
-});
-
-document.getElementById('btnConfirmarEliminar')
-  .addEventListener('click', async function () {
+  document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
     const id = this.dataset.id;
     if (!id) return;
 
     try {
       await CategoriaApi.delete(id);
       await cargarCategorias();
-
-      const modal = bootstrap.Modal.getInstance(
-        document.getElementById('modalEliminar')
-      );
-      modal.hide();
+      bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+      mostrarExito('Categoría eliminada correctamente');
     } catch (error) {
       mostrarError('Error al eliminar categoría: ' + error.message);
     }
   });
+}

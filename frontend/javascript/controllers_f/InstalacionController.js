@@ -1,14 +1,24 @@
 import InstalacionApi from '../api_f/InstalacionApi.js';
+import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarEmail, validarTelefono } from '../helpers/validacion.js';
 
 let instalaciones = [];
+let sesionActual = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  sesionActual = await authGuard('instalaciones');
+  if (!sesionActual) return;
+
   cargarInstalaciones();
-  bindCrearInstalacion();
   bindFiltros();
-  bindModales();
+
+  if (sesionActual.puedeEscribir) {
+    bindCrearInstalacion();
+    bindModalesEscritura();
+  }
+
+  bindModalVer();
 });
 
 // ================================
@@ -21,10 +31,11 @@ async function cargarInstalaciones() {
     poblarFiltroLocalidad();
     poblarSelectLocalidad(); // Nueva función para poblar el select de inserción
     renderTablaInstalaciones(instalaciones);
-  } catch (e) {
-    mostrarError(e.message || 'Error cargando instalaciones');
-  }
+  } catch (e) { mostrarError(e.message || 'Error cargando instalaciones'); }
 }
+
+const nombresCampos = ['Nombre','Dirección','Teléfono','Correo','Localidad'];
+const camposBd      = ['nombre','direccion','telefono','correo','localidad'];
 
 // ================================
 // POBLAR SELECT DE LOCALIDAD PARA INSERCIÓN
@@ -80,15 +91,20 @@ function poblarFiltroLocalidad() {
 // ================================
 // RENDER TABLA
 // ================================
-function renderTablaInstalaciones(instalaciones) {
+function renderTablaInstalaciones(lista) {
   const tbody = document.querySelector('#tabla tbody');
   if (!tbody) return;
-  
   tbody.innerHTML = '';
 
-  instalaciones.forEach(i => {
-    const tr = document.createElement('tr');
+  const puedeEscribir = sesionActual?.puedeEscribir ?? false;
 
+  lista.forEach(i => {
+    const tr = document.createElement('tr');
+    const botones = puedeEscribir
+      ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${i.id_instalacion}"><i class="bi bi-eye"></i></button>
+         <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${i.id_instalacion}"><i class="bi bi-pencil"></i></button>
+         <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${i.id_instalacion}"><i class="bi bi-trash3"></i></button>`
+      : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${i.id_instalacion}"><i class="bi bi-eye"></i></button>`;
     tr.innerHTML = `
       <td>${i.nombre ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.direccion ?? ''}</td>
@@ -128,6 +144,9 @@ function bindFiltros() {
   document.getElementById('localidad')?.addEventListener('change', aplicarFiltros);
 }
 
+// ================================
+// APLICAR FILTROS
+// ================================
 function aplicarFiltros() {
   const filtroNombre    = document.getElementById('nombre')?.value?.toLowerCase() || '';
   const filtroLocalidad = document.getElementById('localidad')?.value?.toLowerCase() || '';
@@ -147,10 +166,8 @@ function aplicarFiltros() {
 function bindCrearInstalacion() {
   const form = document.getElementById('formInsertar');
   if (!form) return;
-
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const f = new FormData(form);
     const data = {
       nombre:    f.get('nombre'),
@@ -228,7 +245,6 @@ function bindModales() {
     if (!btn) return;
 
     const id = btn.dataset.id;
-
     try {
       const response    = await InstalacionApi.getById(id);
       const instalacion = response.data;
@@ -318,7 +334,6 @@ function bindModales() {
     }
   });
 
-  // MODAL ELIMINAR - Preparar
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar');
     if (!btn) return;
@@ -330,19 +345,12 @@ function bindModales() {
     btnConfirm.dataset.id = id;
 
     const modalBody = document.querySelector('#modalEliminar .modal-body');
-    if (modalBody && instalacion) {
-      modalBody.innerHTML = `
-        ¿Eliminar la instalación "${instalacion.nombre}"?
-        <p class="text-muted">Esta acción no se puede deshacer.</p>
-      `;
-    }
+    if (modalBody && inst) modalBody.innerHTML = `¿Eliminar la instalación "${inst.nombre}"?<p class="text-muted">Esta acción no se puede deshacer.</p>`;
   });
 
-  // MODAL ELIMINAR - Confirmar
   document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
     const id = this.dataset.id;
     if (!id) return;
-
     try {
       await InstalacionApi.delete(id);
       await cargarInstalaciones();

@@ -1,11 +1,23 @@
 import FormacionApi from '../api_f/FormacionApi.js';
+import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 
-let formaciones = []; // variable global para almacenar formaciones
+let formaciones = [];
+let sesionActual = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  sesionActual = await authGuard('formaciones');
+  if (!sesionActual) return;
+
   cargarFormaciones();
-  bindCrearFormacion();
+
+  if (sesionActual.puedeEscribir) {
+    bindCrearFormacion();
+    bindModalEliminar();
+  }
+
+  bindModalVer();
+  bindModalEditar();
 });
 
 // ================================
@@ -14,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function cargarFormaciones() {
   try {
     const response = await FormacionApi.getAll();
-    formaciones = response.data; // guardamos globalmente
+    formaciones = response.data;
     renderTablaFormaciones(formaciones);
   } catch (e) {
     mostrarError(e.message || 'Error cargando formaciones');
@@ -24,215 +36,172 @@ async function cargarFormaciones() {
 // ================================
 // RENDER TABLA
 // ================================
-function renderTablaFormaciones(formaciones) {
+function renderTablaFormaciones(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
 
-  formaciones.forEach(f => {
+  const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+
+  lista.forEach(f => {
     const tr = document.createElement('tr');
-                                                                                // FORMATO FECHA ESPAÑA
+
+    const botonesAccion = puedeEscribir
+      ? `<button type="button" class="btn p-0 btn-ver"
+              data-bs-toggle="modal" data-bs-target="#modalVer"
+              data-id="${f.id_formacion}"><i class="bi bi-eye"></i></button>
+         <button type="button" class="btn p-0 btn-editar"
+              data-bs-toggle="modal" data-bs-target="#modalEditar"
+              data-id="${f.id_formacion}"><i class="bi bi-pencil"></i></button>
+         <button type="button" class="btn p-0 btn-eliminar"
+              data-bs-toggle="modal" data-bs-target="#modalEliminar"
+              data-id="${f.id_formacion}"><i class="bi bi-trash3"></i></button>`
+      : `<button type="button" class="btn p-0 btn-ver"
+              data-bs-toggle="modal" data-bs-target="#modalVer"
+              data-id="${f.id_formacion}"><i class="bi bi-eye"></i></button>`;
+
     tr.innerHTML = `
-      <td">${f.id_formacion}</td>
+      <td>${f.id_formacion}</td>
       <td>${f.nombre}</td>
       <td>${f.descripcion}</td>
-      <td class="d-flex justify-content-around">                     
-        <button type="button" class="btn p-0 btn-ver" 
-                data-bs-toggle="modal" 
-                data-bs-target="#modalVer"
-                data-id="${f.id_formacion}">
-            <i class="bi bi-eye"></i>
-        </button>
-
-        <button type="button" class="btn p-0 btn-editar" 
-                data-bs-toggle="modal" 
-                data-bs-target="#modalEditar" 
-                data-id="${f.id_formacion}">
-            <i class="bi bi-pencil"></i>
-        </button>
-        
-        <button type="button" class="btn p-0 btn-eliminar" 
-                data-bs-toggle="modal"                                              BOTON ELIMINAR (AÑADIR SI SE REQUIERE) meter dentro del td de botones
-                data-bs-target="#modalEliminar" 
-                data-id="${f.id_formacion}">          
-            <i class="bi bi-trash3"></i>
-        </button>
-        
-      </td>  
+      <td class="d-flex justify-content-around">${botonesAccion}</td>
     `;
-        
-
     tbody.appendChild(tr);
   });
 }
 
 // ================================
-// CREAR / INSERTAR FORMACION
+// CREAR FORMACION
 // ================================
 function bindCrearFormacion() {
   const form = document.getElementById('formInsertar');
+  if (!form) return;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const f = new FormData(form);
-
     const data = {
-      nombre: f.get('nombre'),
+      nombre:      f.get('nombre'),
       descripcion: f.get('descripcion')
     };
 
     try {
-      await FormacionApi.create(data); // ← INSERT al backend
-      await cargarFormaciones();        // ← refrescar tabla
+      await FormacionApi.create(data);
+      await cargarFormaciones();
       form.reset();
-      mostrarExito('Formacion creada correctamente');
+      mostrarExito('Formación creada correctamente');
     } catch (err) {
-      mostrarError(err.message || 'Error creando formacion');
+      mostrarError(err.message || 'Error creando formación');
     }
+  });
+}
+
+// ================================
+// CAMPOS BD
+// ================================
+const nombresCampos = ['Nombre', 'Descripcion'];
+const camposBd      = ['nombre', 'descripcion'];
+
+// ================================
+// MODAL VER
+// ================================
+function bindModalVer() {
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-ver');
+    if (!btn) return;
+
+    const formacion = formaciones.find(f => f.id_formacion == btn.dataset.id);
+    if (!formacion) return;
+
+    const modalBody = document.getElementById('modalVerBody');
+    modalBody.innerHTML = '';
+
+    nombresCampos.forEach((nombre, index) => {
+      const p = document.createElement('p');
+      const strong = document.createElement('strong');
+      strong.textContent = nombre + ': ';
+      p.appendChild(strong);
+      p.appendChild(document.createTextNode(formacion[camposBd[index]] ?? ''));
+      modalBody.appendChild(p);
+    });
   });
 }
 
 // ================================
 // MODAL EDITAR
 // ================================
-document.addEventListener('click', async function (e) {
-  const btn = e.target.closest('.btn-editar');
-  if (!btn) return;
+function bindModalEditar() {
+  document.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.btn-editar');
+    if (!btn) return;
 
-  const id = btn.dataset.id;
+    const id = btn.dataset.id;
 
-  try {
-    // Obtener datos de la formacion
-    const response = await FormacionApi.getById(id);
-    const formacion = response.data;
-    if (!formacion) return;
+    try {
+      const response  = await FormacionApi.getById(id);
+      const formacion = response.data;
+      if (!formacion) return;
 
-    const form = document.getElementById('formEditar');
-    form.innerHTML = ''; // Limpiar contenido previo
-
-    // Insertar formulario                                             TENER EN CUENTA EL FORMATO DE LA FECHA
-    form.innerHTML = `
-      <div class="row mb-3 d-flex">
+      const form = document.getElementById('formEditar');
+      form.innerHTML = `
+        <div class="row mb-3 d-flex">
           <div class="col-12 justify-content-center">
-              <label for="insertNombre" class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="insertNombre" name="nombre" 
-              value="${formacion.nombre}" required>
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" name="nombre" value="${formacion.nombre}" required>
           </div>
-      </div>
-      <!-- Descripción -->
-      <div class="mb-4">
-          <label for="descripcion" class="form-label">Descripción</label>
-          <textarea class="form-control" id="descripcion" name="descripcion" rows="4"
-          >${formacion.descripcion}</textarea>
-      </div>
-      <!-- Botones centrados debajo -->
-      <div class="d-flex justify-content-center gap-2">
-          <button type="button" id="btnGuardarCambios" class="btn btn-primary">
-            Guardar cambios
-          </button>
-      </div>
-    `;
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-control" name="descripcion" rows="4">${formacion.descripcion}</textarea>
+        </div>
+        <div class="d-flex justify-content-center gap-2">
+          <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
+        </div>
+      `;
 
-    // Guardar cambios
-    document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-      const data = {};
+      document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
+        const data = {};
+        camposBd.forEach(campo => {
+          const input = form.querySelector(`[name="${campo}"]`);
+          if (input) data[campo] = input.value;
+        });
 
-      camposBd.forEach(campo => {
-        const input = form.querySelector(`[name="${campo}"]`);
-        if (input) data[campo] = input.value;
+        try {
+          await FormacionApi.update(id, data);
+          await cargarFormaciones();
+          bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+          mostrarExito('Formación actualizada correctamente');
+        } catch (err) {
+          mostrarError(err.message || 'Error al guardar cambios');
+        }
       });
 
-      await FormacionApi.update(id, data);             // Enviar datos al backend para actualizar la Formacion
-      await cargarFormaciones();                        // Recargar tabla para mostrar cambios
-
-      const modal = bootstrap.Modal.getInstance(        // Cerrar modal
-        document.getElementById('modalEditar')
-      );
-      modal.hide();
-    });
-
-  } catch (error) {
-    mostrarError('Error al editar formacion:', error);
-  }
-});
-
-// ================================
-// CAMPOS DE LA TABLA      estos arrays se usan para mostrar los campos en el modal ver (arriba como lo quieres ver, abajo como están en la base de datos, el orden debe coincidir)  
-// ================================
-  const nombresCampos = [
-    'Nombre',
-    'Descripcion'
-  ];
-  const camposBd = [      //tambien se usan para el modal editar, para recoger los datos de los inputs y enviarlos al backend, por eso deben coincidir con los name de los inputs del formulario editar
-    'nombre',
-    'descripcion'
-  ];
-
-// ================================
-// MODAL VER
-// ================================
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.btn-ver');
-  if (!btn) return;
-
-  const id = btn.dataset.id;
-
-  // Buscar la formacion correspondiente
-  const formacion = formaciones.find(em => em.id_formacion == id);
-  if (!formacion) return;
-
-  const modalBody = document.getElementById('modalVerBody');
-
-  // Limpiar contenido previo
-  modalBody.innerHTML = '';
-
-  nombresCampos.forEach((nombre, index) => {
-
-    const campo = camposBd[index];
-    let valor = formacion[campo] ?? '';
-
-    const p = document.createElement('p');
-
-    const strong = document.createElement('strong');
-    strong.textContent = nombre + ': ';
-
-    p.appendChild(strong);
-    p.appendChild(document.createTextNode(valor));
-
-    modalBody.appendChild(p);
+    } catch (error) {
+      mostrarError('Error al editar formación: ' + error.message);
+    }
   });
-});
+}
 
 // ================================
-// MODAL ELIMINAR (AÑADIR SI SE REQUIERE)   
+// MODAL ELIMINAR
 // ================================
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.btn-eliminar');
-  if (!btn) return;
+function bindModalEliminar() {
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-eliminar');
+    if (!btn) return;
+    document.getElementById('btnConfirmarEliminar').dataset.id = btn.dataset.id;
+  });
 
-  const id = btn.dataset.id;
-
-  const btnConfirm = document.getElementById('btnConfirmarEliminar');
-  btnConfirm.dataset.id = id;
-});
-
-document.getElementById('btnConfirmarEliminar')
-  .addEventListener('click', async function () {
-
+  document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
     const id = this.dataset.id;
     if (!id) return;
 
     try {
       await FormacionApi.delete(id);
       await cargarFormaciones();
-
-      // Cerrar modal
-      const modal = bootstrap.Modal.getInstance(
-        document.getElementById('modalEliminar')
-      );
-      modal.hide();
-
+      bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+      mostrarExito('Formación eliminada correctamente');
     } catch (error) {
-      mostrarError('Error al eliminar emergencia: ' + error.message);
+      mostrarError('Error al eliminar formación: ' + error.message);
     }
-});
+  });
+}

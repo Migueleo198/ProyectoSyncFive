@@ -9,7 +9,7 @@ const VehiculoApi = {
   getByMatricula(matricula) {
     return ApiClient.get(`/vehiculos/${matricula}`);
   },
-
+ 
   create(data) {
     return ApiClient.post('/vehiculos', data);
   },
@@ -53,4 +53,4 @@ const VehiculoApi = {
   }
 };
 
-export default VehiculoApi;
+export default VehiculoApi; 

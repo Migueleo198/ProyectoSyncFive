@@ -1,9 +1,14 @@
 import EmergenciaApi from '../api_f/EmergenciaApi.js';
+import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
 
 let emergencias = [];
+let sesionActual = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  sesionActual = await authGuard('emergencias');
+  if (!sesionActual) return;
+
   if (document.getElementById('contenedor-emergencias')) {
     cargarEmergenciasActivas();
     bindEventos();
@@ -49,6 +54,18 @@ function crearCard(e) {
   const card = document.createElement('div');
   card.className = 'card mb-4 shadow border-danger';
 
+  const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+
+  const botonCerrar = puedeEscribir
+    ? `<button 
+        class="btn btn-outline-danger btn-sm btn-cerrar"
+        data-bs-toggle="modal"
+        data-bs-target="#modalCerrarEmergencia"
+        data-id="${e.id_emergencia}">
+        <i class="bi bi-check-circle"></i> Cerrar emergencia
+      </button>`
+    : '';
+
   card.innerHTML = `
     <div class="card-body">
       <div class="row">
@@ -70,7 +87,7 @@ function crearCard(e) {
           <p><strong>Dirección:</strong> ${e.direccion ?? ''}</p>
           <p><strong>Solicitante:</strong> ${e.nombre_solicitante ?? 'No informado'}</p>
 
-          <div class="d-flex gap-2 mt-3">
+          <div class="d-flex flex-column gap-2 mt-3" style="max-width: 200px;">
             <button 
               class="btn btn-outline-primary btn-sm btn-ver"
               data-bs-toggle="modal"
@@ -79,13 +96,7 @@ function crearCard(e) {
               <i class="bi bi-eye"></i> Ver detalle
             </button>
 
-            <button 
-              class="btn btn-outline-danger btn-sm btn-cerrar"
-              data-bs-toggle="modal"
-              data-bs-target="#modalCerrarEmergencia"
-              data-id="${e.id_emergencia}">
-              <i class="bi bi-check-circle"></i> Cerrar emergencia
-            </button>
+            ${botonCerrar}
           </div>
         </div>
 
@@ -101,11 +112,8 @@ function crearCard(e) {
 // =================================
 function bindEventos() {
 
-  // =============================
   // MODAL VER
-  // =============================
   document.addEventListener('click', function (e) {
-
     const btnVer = e.target.closest('.btn-ver');
     if (btnVer) {
       const id = btnVer.dataset.id;
@@ -116,15 +124,15 @@ function bindEventos() {
       modalBody.innerHTML = '';
 
       const campos = [
-        ['ID Emergencia', emergencia.id_emergencia],
-        ['Fecha', formatearFechaHora(emergencia.fecha)],
-        ['Estado', emergencia.estado],
-        ['Dirección', emergencia.direccion],
-        ['Tipo', emergencia.nombre_tipo],
-        ['ID Bombero', emergencia.id_bombero],
+        ['ID Emergencia',      emergencia.id_emergencia],
+        ['Fecha',              formatearFechaHora(emergencia.fecha)],
+        ['Estado',             emergencia.estado],
+        ['Dirección',          emergencia.direccion],
+        ['Tipo',               emergencia.nombre_tipo],
+        ['ID Bombero',         emergencia.id_bombero],
         ['Nombre Solicitante', emergencia.nombre_solicitante],
         ['Teléfono Solicitante', emergencia.tlf_solicitante ?? 'No informado'],
-        ['Descripción', emergencia.descripcion ?? '']
+        ['Descripción',        emergencia.descripcion ?? '']
       ];
 
       campos.forEach(([nombre, valor]) => {
@@ -134,19 +142,16 @@ function bindEventos() {
       });
     }
 
-    // =============================
-    // ABRIR MODAL CERRAR
-    // =============================
+    // ABRIR MODAL CERRAR (solo llega aquí si puedeEscribir, porque el botón no se renderiza si no)
     const btnCerrar = e.target.closest('.btn-cerrar');
     if (btnCerrar) {
-      const id = btnCerrar.dataset.id;
-      document.getElementById('cerrarEmergenciaId').value = id;
+      document.getElementById('cerrarEmergenciaId').value = btnCerrar.dataset.id;
     }
   });
 
-  // =============================
   // CONFIRMAR CIERRE
-  // =============================
+  if (!sesionActual?.puedeEscribir) return;
+
   const btnConfirmar = document.getElementById('btnConfirmarCerrarEmergencia');
   if (!btnConfirmar) return;
 
@@ -159,23 +164,22 @@ function bindEventos() {
       const emergencia = response.data;
 
       const data = {
-        fecha: emergencia.fecha,
-        descripcion: emergencia.descripcion,
-        direccion: emergencia.direccion,
-        estado: 'CERRADA',
-        codigo_tipo: emergencia.codigo_tipo,
-        id_bombero: emergencia.id_bombero,
+        fecha:             emergencia.fecha,
+        descripcion:       emergencia.descripcion,
+        direccion:         emergencia.direccion,
+        estado:            'CERRADA',
+        codigo_tipo:       emergencia.codigo_tipo,
+        id_bombero:        emergencia.id_bombero,
         nombre_solicitante: emergencia.nombre_solicitante,
-        tlf_solicitante: emergencia.tlf_solicitante
+        tlf_solicitante:   emergencia.tlf_solicitante
       };
 
       await EmergenciaApi.update(id, data);
       mostrarExito('Emergencia cerrada correctamente');
 
-      const modal = bootstrap.Modal.getInstance(
+      bootstrap.Modal.getInstance(
         document.getElementById('modalCerrarEmergencia')
-      );
-      modal.hide();
+      ).hide();
 
       await cargarEmergenciasActivas();
       mostrarEmergenciasHeader();
@@ -195,16 +199,16 @@ export async function mostrarEmergenciasHeader() {
     emergencias = response.data;
     const count = emergencias.filter(e => e.estado === 'ACTIVA').length;
     const el = document.getElementById('header-emergencias-count');
-    const icono = document.querySelector('.bi-exclamation-triangle-fill');  // ✅ Selecciona el icono
+    const icono = document.querySelector('.bi-exclamation-triangle-fill');
     if (!el) return;
 
     if (count > 0) {
       el.textContent = count;
       el.style.display = 'inline-block';
-      icono?.classList.add('alerta-activa');       // ✅ Activa animación
+      icono?.classList.add('alerta-activa');
     } else {
       el.style.display = 'none';
-      icono?.classList.remove('alerta-activa');    // ✅ Desactiva animación
+      icono?.classList.remove('alerta-activa');
     }
   } catch (error) {
     console.error('Error cargando emergencias para el header:', error);

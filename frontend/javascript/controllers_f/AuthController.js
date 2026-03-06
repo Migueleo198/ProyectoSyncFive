@@ -248,24 +248,13 @@ function showActivationState(state, errorMsg = null) {
 // MOSTRAR NOMBRE DE USUARIO
 // ================================
 export function mostrarNombreUsuario() {
-    const userData = sessionStorage.getItem('user');
+  const userData = sessionStorage.getItem('user');
+  if (!userData) return; // el authGuard ya se encarga de redirigir
 
-    if (!userData) {
-        // Si no hay usuario, redirigir al login
-        if (!window.location.pathname.includes('login.html') &&
-            !window.location.pathname.includes('cambiarPassword.html') &&
-            !window.location.pathname.includes('activarCuenta.html')) {
-            window.location.href = '/frontend/pages/Login/login.html';
-        }
-        return;
-    }
-
-    const user = JSON.parse(userData);
-
-    // Actualizar todos los spans de usuario en el header
-    document.querySelectorAll('.header-user span').forEach(span => {
-        span.textContent = user.nombre_usuario || user.login || 'Usuario';
-    });
+  const user = JSON.parse(userData);
+  document.querySelectorAll('.header-user span').forEach(span => {
+    span.textContent = user.nombre_usuario || user.login || 'Usuario';
+  });
 
     // Foto de perfil en el header (si existe)
     if (user.foto_perfil) {
