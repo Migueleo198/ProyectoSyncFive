@@ -181,5 +181,59 @@ public function create(array $data): int|false
             ->query("SELECT ROW_COUNT() AS affected")
             ->fetch()['affected'];
     }
+
+    /**
+     * Obtener guardia en una fecha específica
+     */
+    public function findByDate(string $fecha): array
+    {
+        $result = $this->db
+            ->query("SELECT g.*, p.nombre,p.apellidos, p.id_bombero, phg.cargo FROM Guardia g
+            INNER JOIN Persona_Hace_Guardia phg ON g.id_guardia = phg.id_guardia
+            INNER JOIN Persona p ON phg.id_bombero = p.id_bombero
+            WHERE g.fecha = :fecha")
+            ->bind(':fecha', $fecha)
+            ->fetchAll();
+        return $result ?: [];
+    }
+
+    /**
+     * Actualizar el cargo de una persona en una guardia específica
+     */
+    public function updateCargo(string $id_bombero, string $id_guardia, string $cargo): int
+    {
+        $this->db->query("
+            UPDATE Persona_Hace_Guardia 
+            SET cargo = :cargo
+            WHERE id_bombero = :id_bombero 
+            AND id_guardia = :id_guardia
+        ")
+        ->bind(':cargo', $cargo)
+        ->bind(':id_bombero', $id_bombero)
+        ->bind(':id_guardia', $id_guardia)
+        ->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
+
+    /**
+     * PATCH /Guardias/{id_guardia} - Actualizar notas de una guardia
+     */ 
+    public function updateNotas(string $id_guardia, string $notas): int
+    {
+        $this->db->query("
+            UPDATE Guardia 
+            SET notas = :notas
+            WHERE id_guardia = :id_guardia
+        ")
+        ->bind(':notas', $notas)
+        ->bind(':id_guardia', $id_guardia)
+        ->execute();
+
+        return $this->db
+            ->query("SELECT ROW_COUNT() AS affected")
+            ->fetch()['affected'];
+    }
 }
-?>
