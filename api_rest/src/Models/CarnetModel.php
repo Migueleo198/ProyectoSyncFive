@@ -86,7 +86,13 @@ class CarnetModel
             ->fetch()['affected'];
     }
 
-
+    /**
+     * Alias de findById para compatibilidad con el service
+     */
+    public function find(string|int $id_carnet): array|false
+    {
+        return $this->findById((int)$id_carnet);
+    }
     /**
      * Obtener todas las personas que tienen un carnet (con fechas)
      */
@@ -118,9 +124,9 @@ public function findById(int $id_carnet): array|false
         ->fetch();
 }
   /**
-     * Asignar un carnet a una persona con fecha de obtención y vencimiento
-     */
-    public function assignToPerson(
+   * Asignar un carnet a una persona con fecha de obtención y vencimiento
+   */
+    public function assign(
         string $id_bombero,
         string $id_carnet,
         string $f_obtencion,
@@ -129,7 +135,7 @@ public function findById(int $id_carnet): array|false
         $this->db->query("
             INSERT INTO Carnet_Persona (
                 id_bombero,
-                ID_Carnet,
+                id_carnet,
                 f_obtencion,
                 f_vencimiento
             ) VALUES (
@@ -163,7 +169,7 @@ public function findById(int $id_carnet): array|false
             ->query("
                 DELETE FROM Carnet_Persona
                 WHERE id_bombero = :id_bombero
-                AND ID_Carnet = :id_carnet
+                AND id_carnet = :id_carnet
             ")
             ->bind(':id_bombero', $id_bombero)
             ->bind(':id_carnet', $id_carnet)

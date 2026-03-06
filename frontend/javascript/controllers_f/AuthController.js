@@ -1,5 +1,6 @@
 import AuthApi from '../api_f/AuthApi.js';
 import * as Validaciones from '../helpers/validacion.js';
+import { mostrarError} from '../helpers/utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // ── Página login ──────────────────────────────────
@@ -247,37 +248,71 @@ function showActivationState(state, errorMsg = null) {
 // MOSTRAR NOMBRE DE USUARIO
 // ================================
 export function mostrarNombreUsuario() {
-  const userData = sessionStorage.getItem('user');
-  
-  if (!userData) {
-    // Si no hay usuario, redirigir al login
-    if (!window.location.pathname.includes('login.html') &&
-        !window.location.pathname.includes('cambiarPassword.html') &&
-        !window.location.pathname.includes('activarCuenta.html')) {
-        window.location.href = '/frontend/pages/Login/login.html';
+    const userData = sessionStorage.getItem('user');
+
+    if (!userData) {
+        // Si no hay usuario, redirigir al login
+        if (!window.location.pathname.includes('login.html') &&
+            !window.location.pathname.includes('cambiarPassword.html') &&
+            !window.location.pathname.includes('activarCuenta.html')) {
+            window.location.href = '/frontend/pages/Login/login.html';
+        }
+        return;
     }
-    return;
-  }
 
-  const user = JSON.parse(userData);
+    const user = JSON.parse(userData);
 
-  // Actualizar todos los spans de usuario en el header
-  document.querySelectorAll('.header-user span').forEach(span => {
+    // Actualizar todos los spans de usuario en el header
+    document.querySelectorAll('.header-user span').forEach(span => {
         span.textContent = user.nombre_usuario || user.login || 'Usuario';
-  });
+    });
+
+    // Foto de perfil en el header (si existe)
+    if (user.foto_perfil) {
+        cargarFotoHeader(user.foto_perfil);
+    }
 }
+
+/**
+ * Carga la foto de perfil en el icono del header mediante fetch autenticado.
+ * Se llama desde mostrarNombreUsuario y desde header_footer.js tras cargar el header.
+ */
+async function cargarFotoHeader(fotoPerfil) {
+    try {
+        const { API_BASE_PATH } = await import('../../config/apiConfig.js');
+        const response = await fetch(`${API_BASE_PATH}/storage/fotos/${fotoPerfil}`, {
+            credentials: 'include'
+        });
+        if (!response.ok) return;
+
+        const blob      = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        const iconEl = document.querySelector('#header-placeholder .header-user .bi-person-circle');
+        if (iconEl) {
+            const img = document.createElement('img');
+            img.src = objectUrl;
+            img.alt = 'Foto de perfil';
+            img.className = 'header-profile-pic';
+            iconEl.replaceWith(img);
+        }
+    } catch (_) {
+        // Silencioso: si falla queda el icono por defecto
+    }
+}
+
 
 // ================================
 // BIND LOGOUT BUTTONS
 // ================================
 export function bindLogoutButtons() {
-  // Seleccionar todos los enlaces/botones de logout
-  document.querySelectorAll('.logout-link').forEach(link => {
-      link.addEventListener('click', async (e) => {
-          e.preventDefault();
-          await cerrarSesion();
-      });
-  });
+    // Seleccionar todos los enlaces/botones de logout
+    document.querySelectorAll('.logout-link').forEach(link => {
+        link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await cerrarSesion();
+        });
+    });
 }
 
 // ================================
@@ -294,11 +329,4 @@ export async function cerrarSesion() {
         sessionStorage.removeItem('user');
         window.location.href = '/frontend/pages/Login/login.html';
     }
-}
-
-// ================================
-// ERROR
-// ================================
-function mostrarError(msg) {
-  alert(msg);
 }

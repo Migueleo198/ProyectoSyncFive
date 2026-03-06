@@ -111,7 +111,7 @@ class RolModel
         return $this->db
             ->query("
                 UPDATE Persona
-                SET ID_Rol = :id_rol
+                SET id_rol = :id_rol
                 WHERE id_bombero = :id_bombero
             ")
             ->bind(':id_bombero', $id_bombero)

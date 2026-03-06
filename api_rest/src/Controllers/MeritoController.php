@@ -98,4 +98,40 @@ class MeritoController
             $res->errorJson($e->getMessage(), $code);
         }
     }
+    public function assign(Request $req, Response $res): void
+    {
+        try {
+            $data = $req->json();
+            $result = $this->service->assignMeritoToPerson($data);
+            $res->status(201)->json([], $result['message']);
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = $e->getCode() > 0 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+    public function unassign(Request $req, Response $res): void
+    {
+        try {
+            $data = $req->json();
+            $result = $this->service->unassignMeritoFromPerson($data);
+            $res->status(200)->json([], $result['message']);
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = $e->getCode() > 0 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+    public function persons(Request $req, Response $res, string $id_merito): void
+    {
+        try {
+            $persons = $this->service->getPersonsByMerito($id_merito);
+            $res->status(200)->json($persons, "Personas obtenidas correctamente");
+        } catch (Throwable $e) {
+            $code = $e->getCode() > 0 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
 }

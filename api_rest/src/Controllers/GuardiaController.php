@@ -54,14 +54,13 @@ class GuardiaController
         try {
             $data = $req->json();
 
-            // Ahora puede incluir id_guardia (string)
             $result = $this->service->createGuardia($data);
 
             $res->status(201)->json(
                 [
-                    'id_guardia'    => $result['id_guardia'],    
-                    'f_inicio' => $result['f_inicio'],
-                    'f_fin' => $result['f_fin'],
+                    'fecha' => $result['fecha'],
+                    'h_inicio' => $result['h_inicio'],
+                    'h_fin' => $result['h_fin'],
                     'notas' => $result['notas']
                 ],
                 "Guardia creado correctamente"
@@ -84,34 +83,23 @@ class GuardiaController
      */
     public function update(Request $req, Response $res, string $id_guardia): void
     {
-        try {
-            $data = $req->json();
-
-            // Ya no se convierte a entero
-            $result = $this->service->updateGuardia($id_guardia, $data);
-
-            if ($result['status'] === 'no_changes') {
-                $res->status(200)->json([], $result['message']);
-                return;
-            }
-
-            $res->status(200)->json([], $result['message']);
-
-        } catch (ValidationException $e) {
-            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-        } catch (Throwable $e) {
-            $code = $e->getCode() > 0 ? $e->getCode() : 500;
-            $res->errorJson($e->getMessage(), $code);
-        }
+    try {
+        $result = $this->service->updateGuardia($id_guardia, $req->json());
+        $res->status(200)->json([], $result['message']);
+    } catch (ValidationException $e) {
+        $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+    } catch (Throwable $e) {
+        $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+        $res->errorJson($e->getMessage(), $code);
+    }
     }
 
     /**
      * DELETE /Guardia/{id_guardia}
      */
-    public function delete(Request $req, Response $res, string $id_guardia): void
+    public function delete(Request $req, Response $res, int $id_guardia): void
     {
         try {
-            // Ya no se convierte a entero
             $service = new \Services\GuardiaService();
             $service->deleteGuardia($id_guardia);
 
@@ -124,39 +112,114 @@ class GuardiaController
             $res->errorJson($e->getMessage(), $code);
         }
     }
+
     /**
- * POST /Guardia/assign
- */
-public function assign(Request $req, Response $res): void
-{
-    try {
-        $data = $req->json();
-        $result = $this->service->assignGuardiaToPerson($data);
-        $res->status(200)->json($result, $result['message']);
-    } catch (ValidationException $e) {
-        $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-    } catch (Throwable $e) {
-        $code = $e->getCode() >= 400 ? $e->getCode() : 500;
-        $res->errorJson($e->getMessage(), $code);
+     * GET /guardias/{id_guardia}/personas NO SE USA PERO POR SI HACE FALTA PRA DESPUES
+     */
+    public function persons(Request $req, Response $res, string $id_guardia): void
+    {
+        try {
+            $persons = $this->service->getPersonsByGuardia((int)$id_guardia);
+
+            $res->status(200)->json(
+                $persons,
+                "Personas asociadas al guardia obtenidas correctamente"
+            );
+
+        } catch (Throwable $e) {
+            $code = ($e->getCode() >= 400) ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    } 
+
+    /**
+     * POST /Guardia/assign
+     */
+    public function assign(Request $req, Response $res): void
+    {
+        try {
+            $data = $req->json();
+            $result = $this->service->assignGuardiaToPerson($data);
+            $res->status(200)->json($result, $result['message']);
+            
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
     }
-}
 
 /**
  * DELETE /Guardia/unassign
  */
-public function unassign(Request $req, Response $res): void
-{
-    try {
-        $data = $req->json();
-        $result = $this->service->unassignGuardiaFromPerson($data['n_funcionario'], $data['ID_Guardia']);
-        $res->status(200)->json($result, $result['message']);
-    } catch (ValidationException $e) {
-        $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-    } catch (Throwable $e) {
-        $code = $e->getCode() >= 400 ? $e->getCode() : 500;
-        $res->errorJson($e->getMessage(), $code);
+    public function unassign(Request $req, Response $res): void
+    {
+        try {
+            $data = $req->json();
+            $result = $this->service->unassignGuardiaFromPerson($data['n_funcionario'], $data['ID_Guardia']);
+            $res->status(200)->json($result, $result['message']);
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
     }
-}
+
+    /**
+     * GET /personas/guardias/fecha?fecha=YYYY-MM-DD
+     */
+    public function getGuardiaByFecha(Request $req, Response $res, string $fecha): void
+    {
+        try {
+            if (!$fecha) {
+                throw new ValidationException(['fecha' => 'El parámetro fecha es requerido']);
+            }
+            $guardias = $this->service->getGuardiasByFecha($fecha);
+            $res->status(200)->json($guardias, "Guardia para la fecha obtenida correctamente");
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = ($e->getCode() >= 400) ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+
+    /**
+     * PATCH /personas/{id_bombero}/guardias/{id_guardia}
+     */
+    public function updateCargo(Request $req, Response $res, string $id_bombero, string $id_guardia): void
+    {
+        try {
+            $data = $req->json();
+            $result = $this->service->updateCargo($id_bombero, $id_guardia, $data['cargo']);
+            $res->status(200)->json($result, "Cargo actualizado correctamente");
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+
+    /**
+     * PATCH /guardias/{id_guardia}
+     */
+    public function updateNotas(Request $req, Response $res, string $id_guardia): void
+    {
+        try {
+            $data = $req->json();
+            $result = $this->service->updateNotas($id_guardia, $data['notas']);
+            $res->status(200)->json($result, "Notas actualizadas correctamente");
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+
 
 }
 ?>

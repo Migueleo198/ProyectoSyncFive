@@ -55,19 +55,9 @@ class PermisoController
             $data = $req->json();
 
             // Ahora puede incluir id_permiso (string)
-            $result = $this->service->registerPermiso($data);
+            $result = $this->service->createPermiso($data);
 
-            $res->status(201)->json(
-                [
-                    'id_permiso'    => $result['id_permiso'],    
-                    'fecha' => $result['fecha'],
-                    'estado' => $result['estado'],
-                    'hora_inicio' => $result['hora_inicio'],
-                    'hora_fin' => $result['hora_fin'],
-                    'descripcion' => $result['descripcion']
-                ],
-                "Permiso creado correctamente"
-            );
+        $res->status(201)->json($result, "Permiso creado correctamente"); 
 
         } catch (ValidationException $e) {
             $res->status(422)->json(

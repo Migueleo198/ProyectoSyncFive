@@ -1,4 +1,5 @@
 import FormacionApi from '../api_f/FormacionApi.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
 
 let formaciones = []; // variable global para almacenar formaciones
 
@@ -84,7 +85,7 @@ function bindCrearFormacion() {
       await FormacionApi.create(data); // ← INSERT al backend
       await cargarFormaciones();        // ← refrescar tabla
       form.reset();
-      alert('Formacion creada correctamente');
+      mostrarExito('Formacion creada correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error creando formacion');
     }
@@ -112,7 +113,7 @@ document.addEventListener('click', async function (e) {
     // Insertar formulario                                             TENER EN CUENTA EL FORMATO DE LA FECHA
     form.innerHTML = `
       <div class="row mb-3 d-flex">
-          <div class="col-md-4 justify-content-center">
+          <div class="col-12 justify-content-center">
               <label for="insertNombre" class="form-label">Nombre</label>
               <input type="text" class="form-control" id="insertNombre" name="nombre" 
               value="${formacion.nombre}" required>
@@ -151,7 +152,7 @@ document.addEventListener('click', async function (e) {
     });
 
   } catch (error) {
-    console.error('Error al editar formacion:', error);
+    mostrarError('Error al editar formacion:', error);
   }
 });
 
@@ -189,11 +190,6 @@ document.addEventListener('click', function (e) {
 
     const campo = camposBd[index];
     let valor = formacion[campo] ?? '';
-
-    //FECHA FORMATO ESPAÑA
-    if (campo === 'fecha') {
-      valor = Formateos.formatearFechaHora(valor);
-    }
 
     const p = document.createElement('p');
 
@@ -240,20 +236,3 @@ document.getElementById('btnConfirmarEliminar')
       mostrarError('Error al eliminar emergencia: ' + error.message);
     }
 });
-
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  const container = document.getElementById("alert-container");
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = `
-    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-      <strong>Error:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-
-  container.append(wrapper);
-}

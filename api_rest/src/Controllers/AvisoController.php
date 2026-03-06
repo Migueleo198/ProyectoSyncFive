@@ -207,5 +207,19 @@ class AvisoController
             $res->errorJson($e->getMessage(), $code);
         }
     }
+
+    /**
+     * GET /avisos/{id_bombero}/recibidos
+     */
+    public function getRecibidos(Request $req, Response $res, string $id_bombero): void
+    {
+        try {
+            $avisos = $this->service->getAvisosRecibidos($id_bombero);
+            $res->status(200)->json($avisos, "Avisos recibidos obtenidos correctamente");
+        } catch (Throwable $e) {
+            $code = ($e->getCode() >= 400) ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }   
+    }
 }
 ?>
