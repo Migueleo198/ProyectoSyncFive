@@ -464,7 +464,7 @@ function bindModales() {
     const btnConfirm = document.getElementById('btnConfirmarEliminar');
     btnConfirm.dataset.matricula = matricula;
   });
-
+ 
   // MODAL ELIMINAR - Confirmar
   document.getElementById('btnConfirmarEliminar')
     .addEventListener('click', async function () {
