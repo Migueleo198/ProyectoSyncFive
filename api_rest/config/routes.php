@@ -60,7 +60,7 @@ $router->protectedSession('DELETE', '/personas/{id_bombero}/turnos', 'Controller
 $router->protectedSession('GET', '/guardias/{id_guardia}/personas', 'Controllers\\GuardiaController@persons', [1,2,3,4,5]); 
 $router->protectedSession('GET', '/personas/guardias/fecha/{fecha}', 'Controllers\\GuardiaController@getGuardiaByFecha', [1,2,3,4,5]); 
 $router->protectedSession('POST', '/personas/{id_bombero}/guardias', 'Controllers\\GuardiaController@assign', [4,5]);
-$router->protectedSession('PATCH', '/personas/{id_bombero}/guardias/{id_guardia}', 'Controllers\\GuardiaController@updateCargo', [1,2,3,4,5]);
+$router->protectedSession('PATCH', '/personas/{id_bombero}/guardias/{id_guardia}', 'Controllers\\GuardiaController@updateCargo', [2,3,4,5]);
 
 // ESTADÍSTICAS DE LA PERSONA
 $router->protectedSession('GET', '/personas/{id_bombero}/stats', 'Controllers\\PersonaController@getStats', [1,2,3,4,5]);

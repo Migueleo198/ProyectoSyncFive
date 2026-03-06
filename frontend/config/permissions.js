@@ -37,6 +37,10 @@ export const PERMISOS = {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
   },
+  alineacion:{
+    rolesLectura:   [2, 3, 4, 5],
+    rolesEscritura: [2, 3, 4, 5]
+  },
   guardias: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],

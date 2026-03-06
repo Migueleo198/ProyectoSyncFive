@@ -166,7 +166,7 @@ public function unassign(Request $req, Response $res): void
         try {
             $turno = $this->service->getTurnoRefuerzoByFecha($fecha);
             if (!$turno) {
-                $res->status(404)->json([], "No hay turno de refuerzo registrado para esta fecha.");
+                $res->status(200)->json([], "No hay turno de refuerzo registrado para esta fecha.");
                 return; 
             }
             $res->status(200)->json($turno, "Turno de refuerzo obtenido correctamente");

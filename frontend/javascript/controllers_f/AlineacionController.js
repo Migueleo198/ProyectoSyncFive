@@ -195,6 +195,7 @@ async function cargarTurnoRefuerzo(fecha) {
     try {
         const respuesta = await GuardiaApi.getTurnoRefuerzoByFecha(fecha);
         const datos = respuesta.data;
+        
         if (!datos || datos.length === 0) {
             contenedor.innerHTML = '<p class="text-muted small mb-0">Sin refuerzos para este día.</p>';
             return;
@@ -218,7 +219,6 @@ async function cargarTurnoRefuerzo(fecha) {
             contenedor.appendChild(card);
         });
     } catch (err) {
-        mostrarError('Error al cargar el turno de refuerzo.');
     }
 }
 
