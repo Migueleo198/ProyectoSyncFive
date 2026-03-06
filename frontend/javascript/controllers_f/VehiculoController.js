@@ -88,7 +88,7 @@ function renderTablaVehiculos(vehiculos) {
 
     tr.innerHTML = `
       <td">${v.matricula}</td>
-      <td>${v.nombre ?? ''}</td>
+      <td class="d-none d-md-table-cell">${v.nombre ?? ''}</td>
       <td class="d-none d-md-table-cell">${v.tipo ?? ''}</td>
       <td>${v.disponibilidad == 1 ? 'Disponible' : 'No disponible'}</td>
       <td class="d-none d-md-table-cell">${v.nombre_instalacion ?? 'Sin asignar'}</td>
