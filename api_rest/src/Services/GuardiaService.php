@@ -213,8 +213,7 @@ public function createGuardia(array $input): array
             $data = Validator::validate($input, [
                 'id_bombero' => 'required|string',
                 'id_guardia'    => 'required|string',
-                'cargo'      => 'required|string|in:BOMBERO,OFICIAL,JEFE DE INTERVENCION,JEFE DE MANDO,INSPECTOR'
-            ]);
+                'cargo' => 'required|string|in:BOMBERO1,BOMBERO2,BOMBERO3,BOMBERO4,OFICIAL1,OFICIAL2,CONDUCTOR1,CONDUCTOR2'            ]);
 
             try {
                 // Verificar que la guardia exista

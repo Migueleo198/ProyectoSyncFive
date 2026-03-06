@@ -54,8 +54,7 @@ $router->protectedSession('DELETE', '/personas/{id_bombero}/turnos', 'Controller
 
 // GUARDIAS PERSONA
 $router->protectedSession('GET', '/guardias/{id_guardia}/personas', 'Controllers\\GuardiaController@persons', [1,2,3,4,5]);
-$router->protectedSession('POST', '/personas/{id_bombero}/guardias', 'Controllers\\GuardiaController@assign', [4,5]);
-
+$router->protectedSession('POST', '/guardias/assign', 'Controllers\\GuardiaController@assign', [4,5]);
 
 //++++++++++++++++++++++++++++++ FORMACIONES ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/formaciones', 'Controllers\\FormacionController@index', [1,2,3,4,5]);
