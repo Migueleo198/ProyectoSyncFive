@@ -15,7 +15,7 @@ async function verificarSesion() {
     try {
         const response = await fetch(`${API_BASE_PATH}/auth/me`, { credentials: 'include' });
         if (!response.ok) {
-            window.location.href = '/login.html';
+            window.location.href = '/login';
             return null;
         }
         const data = await response.json();
@@ -25,7 +25,7 @@ async function verificarSesion() {
         sessionStorage.setItem('user', JSON.stringify(usuario));
         return usuario;
     } catch (e) {
-        window.location.href = '/login.html';
+        window.location.href = '/login';
         return null;
     }
 }
@@ -89,7 +89,7 @@ async function loadPersonalGuardia() {
         const ultimaGuardia = guardias.reduce((max, g) =>
             (g.id_guardia ?? 0) > (max.id_guardia ?? 0) ? g : max
         );
-        
+        console.log(ultimaGuardia);
         const res2 = await GuardiaApi.getPersonsGuardia(ultimaGuardia.id_guardia);
         const personas = extractData(res2);
         document.getElementById('stat-personal').textContent = Array.isArray(personas) ? personas.length : '0';
