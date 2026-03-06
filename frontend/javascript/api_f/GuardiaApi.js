@@ -17,12 +17,13 @@ const GuardiaApi = {
     return ApiClient.put(`/guardias/${idGuardia}`, data);
   },
 
+  // GuardiaApi.js
   assignToPerson(data) {
-    return ApiClient.post(`/personas/${data.id_bombero}/guardias`, {
-      id_bombero: data.id_bombero,
-      id_guardia: data.id_guardia,
-      cargo: data.cargo
-    });
+      return ApiClient.post('/guardias/assign', {
+          id_bombero: data.id_bombero,
+          id_guardia: data.id_guardia,
+          cargo: data.cargo
+      });
   },
 
   getByDate(date) {

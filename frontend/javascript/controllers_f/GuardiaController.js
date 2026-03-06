@@ -7,11 +7,20 @@ let guardias = []; // almacenar guardias globalmente
 // CONSTANTES
 // ================================
 const cargos = [
-    "BOMBERO",
-    "OFICIAL",
-    "JEFE DE INTERVENCION",
-    "JEFE DE MANDO",
-    "INSPECTOR"
+    "BOMBERO1",
+    "BOMBERO2",
+    "BOMBERO3",
+    "BOMBERO4",
+    "BOMBERO5",
+    "BOMBERO6",
+    "BOMBERO7",
+    "BOMBERO8",
+    "BOMBERO9",
+    "BOMBERO10",
+    "OFICIAL1",
+    "OFICIAL2",
+    "CONDUCTOR1",
+    "CONDUCTOR2"
 ];
 
 const nombresCampos = ['Fecha', 'Hora Inicio', 'Hora Fin', 'Notas'];
