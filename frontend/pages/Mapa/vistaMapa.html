@@ -1,106 +1,285 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapas</title>
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-
-    <!-- Configuración y rutas absolutas -->
-    <script src="/frontend/config/config.js"></script>
-
-    <!-- CSS del proyecto -->
-    <script>
-        loadCSS("header_footer.css");
-        loadCSS("plantilla_css.css");
-        loadCSS("mapa.css");
-        // Cargar favicon dinámicamente
-        loadFavicon("favicon.png");
-    </script>
-
-    <!-- JS dependientes -->
-    <script type="module" src="/frontend/javascript/header_footer.js" defer></script>
-    <script src="/frontend/javascript/script_filtro_tabla.js" defer></script>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>       
-   
+  <meta charset="UTF-8">
+  <script src="/frontend/config/config.js"></script>
+  <script>loadHead("Infraestructuras de Agua")</script>
 </head>
-
 <body class="bg-white text-dark d-flex flex-column">
 
-    <!-- HEADER -->
-    <div id="header-placeholder"></div>
+<div id="header-placeholder"></div>
+<div class="d-flex flex-grow-1">
+  <div id="sidebar-placeholder" class="sidebar-bg"></div>
+  <main class="p-3 w-100">
 
-    <!-- LAYOUT CON SIDEBAR -->
-    <div class="d-flex flex-grow-1">
-
-        <!-- SIDEBAR -->
-        <div id="sidebar-placeholder" class="sidebar-bg"></div>
-
-        <!-- MAIN CONTENT -->
-        <main class="p-3 w-100">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">Mapa de Emergencias</h1>
-            </div>
-            <div>
-                <p>[Migas de pan]</p>
-            </div>
-
-            <!-- Map container -->
-            <div id="map-container">
-                <div id="map"></div>
-            </div>
-
-            <script>
-                // Inicializar mapa
-                let map = L.map('map').setView([40.4168, -3.7038], 13);
-
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                }).addTo(map);
-
-                // Función para añadir incidencias
-                function agregarIncidencia(lat, lon, nombre, descripcion, funcionario = "N/A") {
-                    L.marker([lat, lon])
-                        .addTo(map)
-                        .bindPopup(`<b>${nombre}</b><br>${descripcion}<br>Funcionario: ${funcionario}`);
-                }
-
-                // Ejemplos
-                agregarIncidencia(40.417, -3.703, "Incendio en vivienda", "Fuego en un tercer piso, 2 unidades enviadas");
-                agregarIncidencia(40.410, -3.700, "Falsa alarma", "Descripción de ejemplo");
-
-                // Click para agregar incidencia
-                map.on('click', function (e) {
-                    let lat = e.latlng.lat;
-                    let lon = e.latlng.lng;
-
-                    let nombre = prompt("Nombre de la incidencia:");
-                    let descripcion = prompt("Descripción de la incidencia:");
-
-                    if (nombre && descripcion) {
-                        agregarIncidencia(lat, lon, nombre, descripcion);
-                    }
-                });
-            </script>
-        </main>
+    <!-- Cabecera -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="mb-0">Infraestructuras de Agua</h1>
+      <button class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#modalCrear">
+        <i class="bi bi-plus-lg me-1"></i> Nueva
+      </button>
     </div>
-    
+    <div id="breadcrumb-placeholder"></div>
 
-    <!-- FOOTER -->
-    <div id="footer-placeholder" class="mt-auto"></div>
-    <!-- ALERT-->
-    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    <!-- Contadores -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="card text-center border-0 shadow-sm h-100">
+          <div class="card-body py-3">
+            <div class="fs-3 fw-bold text-primary" id="cntTotal">—</div>
+            <div class="small text-muted">Total</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card text-center border-0 shadow-sm h-100">
+          <div class="card-body py-3">
+            <div class="fs-3 fw-bold text-info" id="cntHidrante">—</div>
+            <div class="small text-muted">💧 Hidrantes</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card text-center border-0 shadow-sm h-100">
+          <div class="card-body py-3">
+            <div class="fs-3 fw-bold" style="color:#8e44ad" id="cntBoca">—</div>
+            <div class="small text-muted">🌿 Bocas de riego</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card text-center border-0 shadow-sm h-100">
+          <div class="card-body py-3">
+            <div class="fs-3 fw-bold text-success" id="cntActivos">—</div>
+            <div class="small text-muted">Activos</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <div class="row g-2 align-items-end">
+          <div class="col-6 col-md-3">
+            <label class="form-label small mb-1">Tipo</label>
+            <select class="form-select form-select-sm" id="filtroTipo">
+              <option value="">Todos</option>
+              <option value="HIDRANTE">💧 Hidrante</option>
+              <option value="BOCA_RIEGO">🌿 Boca de riego</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label small mb-1">Provincia</label>
+            <select class="form-select form-select-sm" id="filtroProvincia">
+              <option value="">Todas</option>
+              <option value="TERUEL">Teruel</option>
+              <option value="ZARAGOZA">Zaragoza</option>
+              <option value="HUESCA">Huesca</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label small mb-1">Municipio</label>
+            <input type="text"
+                   class="form-control form-control-sm"
+                   id="filtroMunicipio"
+                   placeholder="Buscar municipio…">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label small mb-1">Estado</label>
+            <select class="form-select form-select-sm" id="filtroEstado">
+              <option value="">Todos</option>
+              <option value="ACTIVO">Activo</option>
+              <option value="AVERIA">Avería</option>
+              <option value="FUERA_SERVICIO">Fuera de servicio</option>
+              <option value="RETIRADO">Retirado</option>
+            </select>
+          </div>
+          <div class="col-12 d-flex gap-2 justify-content-end">
+            <button class="btn btn-sm btn-outline-secondary" id="btnLimpiar">
+              <i class="bi bi-x-circle me-1"></i>Limpiar
+            </button>
+            <button class="btn btn-sm btn-primary" id="btnFiltrar">
+              <i class="bi bi-search me-1"></i>Filtrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="tablaInfraestructuras">
+            <thead class="table-light">
+              <tr>
+                <th class="d-none d-md-table-cell">ID</th>
+                <th>Tipo</th>
+                <th>Código</th>
+                <th class="d-none d-md-table-cell">Denominación</th>
+                <th>Municipio</th>
+                <th class="d-none d-lg-table-cell">Provincia</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="8" class="text-center text-muted py-4">
+                  <div class="spinner-border spinner-border-sm me-2"></div>
+                  Cargando…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+<div id="footer-placeholder" class="mt-auto"></div>
+<div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index:1080;"></div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL VER
+══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalVer" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-droplet-fill text-primary me-2"></i>Detalle de infraestructura
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalVerBody">
+        <!-- Generado dinámicamente -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL EDITAR
+══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalEditar" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-pencil-square text-warning me-2"></i>Editar infraestructura
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formEditar" novalidate>
+          <!-- Generado dinámicamente por el controlador JS -->
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL CREAR
+══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalCrear" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-plus-circle-fill text-success me-2"></i>Nueva infraestructura de agua
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formCrear" novalidate>
+
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Código *</label>
+              <input type="text" class="form-control" name="codigo" required
+                     placeholder="Ej: HI-001">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tipo *</label>
+              <select class="form-select" name="tipo" required>
+                <option value="">Seleccione…</option>
+                <option value="HIDRANTE">💧 Hidrante</option>
+                <option value="BOCA_RIEGO">🌿 Boca de riego</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Estado</label>
+              <select class="form-select" name="estado">
+                <option value="ACTIVO" selected>Activo</option>
+                <option value="AVERIA">Avería</option>
+                <option value="FUERA_SERVICIO">Fuera de servicio</option>
+                <option value="RETIRADO">Retirado</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Municipio *</label>
+              <input type="text" class="form-control" name="municipio" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Provincia *</label>
+              <select class="form-select" name="provincia" required>
+                <option value="">Seleccione…</option>
+                <option value="TERUEL">Teruel</option>
+                <option value="ZARAGOZA">Zaragoza</option>
+                <option value="HUESCA">Huesca</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Denominación</label>
+              <input type="text" class="form-control" name="denominacion"
+                     placeholder="Descripción opcional">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Latitud *</label>
+              <input type="number" step="0.000001" class="form-control"
+                     name="latitud" required placeholder="40.416775">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Longitud *</label>
+              <input type="number" step="0.000001" class="form-control"
+                     name="longitud" required placeholder="-3.703790">
+            </div>
+          </div>
+
+          <div class="text-center mt-2">
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-check-lg me-1"></i>Crear infraestructura
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script type="module" src="/frontend/javascript/controllers_f/InfraestructuraAguaController.js"></script>
 </body>
-
 </html>

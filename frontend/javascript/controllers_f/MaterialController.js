@@ -1,942 +1,1153 @@
-// ================================
-// MATERIAL CONTROLLER - VERSIÓN COMPLETA
-// ================================
+import MaterialApi from '../api_f/MaterialApi.js';
+import CategoriaApi from '../api_f/CategoriaApi.js';
+import InstalacionApi from '../api_f/InstalacionApi.js';
+import VehiculoApi from '../api_f/VehiculoApi.js';
+import PersonaApi from '../api_f/PersonaApi.js';
 
 let materiales = [];
+let categorias = [];
+let instalaciones = [];
 let vehiculos = [];
 let personas = [];
-let instalaciones = [];
-let categorias = [];
+let currentMaterialId = null;
+
+// Cache para evitar peticiones duplicadas
+let datosCargados = false;
+let asignacionesCache = new Map();
 
 document.addEventListener('DOMContentLoaded', () => {
-  cargarDatosIniciales();
-  bindCrearMaterial();
-  bindAsignarVehiculo();
-  bindAsignarFuncionario();
-  bindAsignarAlmacen();
-  bindFiltros();
+    cargarDatosIniciales();
+    bindCrearMaterial();
+    bindFiltros();
+    bindModales();
+    limpiarBackdropsAlCerrarModal();
 });
 
-// ================================
+
+// LIMPIAR BACKDROPS DE BOOTSTRAP
+
+function limpiarBackdropsAlCerrarModal() {
+    const modales = ['modalVer', 'modalEditar', 'modalEliminar'];
+    modales.forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            });
+        }
+    });
+}
+
+
 // CARGAR DATOS INICIALES
-// ================================
+
 async function cargarDatosIniciales() {
-  try {
-    await Promise.all([
-      cargarMateriales(),
-      cargarVehiculos(),
-      cargarPersonas(),
-      cargarInstalaciones(),
-      cargarCategorias()
-    ]);
-    
-    poblarSelectCategorias();
-    poblarSelectMateriales();
-    poblarSelectVehiculos();
-    poblarSelectPersonas();
-    poblarSelectInstalaciones();
-    
-  } catch (e) {
-    mostrarError('Error cargando datos: ' + e.message);
-  }
+    if (datosCargados) return;
+
+    try {
+        const [catRes, instRes, vehRes, perRes] = await Promise.allSettled([
+            CategoriaApi.getAll().catch(e => []),
+            InstalacionApi.getAll().catch(e => []),
+            VehiculoApi.getAll().catch(e => []),
+            PersonaApi.getAll().catch(e => [])
+        ]);
+
+        categorias    = catRes.status  === 'fulfilled' ? (Array.isArray(catRes.value)  ? catRes.value  : (catRes.value?.data  || [])) : [];
+        instalaciones = instRes.status === 'fulfilled' ? (Array.isArray(instRes.value) ? instRes.value : (instRes.value?.data || [])) : [];
+        vehiculos     = vehRes.status  === 'fulfilled' ? (Array.isArray(vehRes.value)  ? vehRes.value  : (vehRes.value?.data  || [])) : [];
+        personas      = perRes.status  === 'fulfilled' ? (Array.isArray(perRes.value)  ? perRes.value  : (perRes.value?.data  || [])) : [];
+
+        poblarSelectCategorias();
+        await cargarMateriales();
+
+        datosCargados = true;
+    } catch (e) {
+        console.error('Error cargando datos:', e);
+    }
 }
 
-// ================================
-// CARGAR MATERIALES
-// ================================
 async function cargarMateriales() {
-  try {
-    const response = await fetch('/api/materiales');
-    const data = await response.json();
-    materiales = data.data || [];
-    await enrichMateriales();
-    renderTablaMateriales(materiales);
-  } catch (e) {
-    console.error('Error cargando materiales:', e);
-    mostrarError('Error cargando materiales');
-  }
+    try {
+        const response = await MaterialApi.getAll();
+        materiales = Array.isArray(response) ? response : (response.data || []);
+
+        materiales.forEach(m => {
+            const cat = categorias.find(c => c.id_categoria == m.id_categoria);
+            m.categoria_nombre = cat ? cat.nombre : 'Sin categoría';
+        });
+
+        renderTablaMateriales(materiales);
+    } catch (e) {
+        console.error('Error cargando materiales:', e);
+        materiales = [];
+        renderTablaMateriales([]);
+    }
 }
 
-// ================================
-// CARGAR VEHÍCULOS
-// ================================
-async function cargarVehiculos() {
-  try {
-    const response = await fetch('/api/vehiculos');
-    const data = await response.json();
-    vehiculos = data.data || [];
-  } catch (e) {
-    console.error('Error cargando vehículos:', e);
-  }
-}
 
-// ================================
-// CARGAR PERSONAS
-// ================================
-async function cargarPersonas() {
-  try {
-    const response = await fetch('/api/personas');
-    const data = await response.json();
-    personas = data.data || [];
-  } catch (e) {
-    console.error('Error cargando personas:', e);
-  }
-}
-
-// ================================
-// CARGAR INSTALACIONES
-// ================================
-async function cargarInstalaciones() {
-  try {
-    const response = await fetch('/api/instalaciones');
-    const data = await response.json();
-    instalaciones = data.data || [];
-  } catch (e) {
-    console.error('Error cargando instalaciones:', e);
-  }
-}
-
-// ================================
-// CARGAR CATEGORÍAS
-// ================================
-async function cargarCategorias() {
-  try {
-    const response = await fetch('/api/categorias');
-    const data = await response.json();
-    categorias = data.data || [];
-  } catch (e) {
-    console.error('Error cargando categorías:', e);
-  }
-}
-
-// ================================
-// CARGAR ALMACENES POR INSTALACIÓN
-// ================================
-async function cargarAlmacenesPorInstalacion(id_instalacion) {
-  try {
-    const response = await fetch(`/api/instalaciones/${id_instalacion}/almacenes`);
-    const data = await response.json();
-    return data.data || [];
-  } catch (e) {
-    console.error(`Error cargando almacenes de instalación ${id_instalacion}:`, e);
-    return [];
-  }
-}
-
-// ================================
 // POBLAR SELECT DE CATEGORÍAS
-// ================================
+
 function poblarSelectCategorias() {
-  const select = document.getElementById('insertCategoria');
-  if (select) {
-    select.innerHTML = '<option value="">Seleccione una categoría...</option>';
+    const sel = document.getElementById('insertCategoria');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Seleccione una categoría...</option>';
     categorias.forEach(c => {
-      const option = document.createElement('option');
-      option.value = c.id_categoria;
-      option.textContent = c.nombre;
-      select.appendChild(option);
+        const opt = document.createElement('option');
+        opt.value = c.id_categoria;
+        opt.textContent = c.nombre;
+        sel.appendChild(opt);
     });
-  }
-  
-  const editSelect = document.getElementById('editCategoria');
-  if (editSelect) {
-    editSelect.innerHTML = '<option value="">Seleccione una categoría...</option>';
-    categorias.forEach(c => {
-      const option = document.createElement('option');
-      option.value = c.id_categoria;
-      option.textContent = c.nombre;
-      editSelect.appendChild(option);
-    });
-  }
 }
 
-// ================================
-// POBLAR SELECT DE MATERIALES
-// ================================
-function poblarSelectMateriales() {
-  const selects = [
-    'selectMaterialVehiculo',
-    'selectMaterialFuncionario',
-    'selectMaterialAlmacen'
-  ];
-  
-  selects.forEach(id => {
-    const select = document.getElementById(id);
-    if (select) {
-      select.innerHTML = '<option value="">Seleccione un material...</option>';
-      materiales.forEach(m => {
-        const option = document.createElement('option');
-        option.value = m.id_material;
-        option.textContent = `${m.nombre} (ID: ${m.id_material})`;
-        select.appendChild(option);
-      });
+
+// RENDER TABLA PRINCIPAL
+
+function renderTablaMateriales(lista) {
+    const tbody = document.querySelector('#tabla tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (!lista || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay materiales para mostrar</td></tr>';
+        return;
     }
-  });
-}
 
-// ================================
-// POBLAR SELECT DE VEHÍCULOS
-// ================================
-function poblarSelectVehiculos() {
-  const select = document.getElementById('selectVehiculo');
-  if (select) {
-    select.innerHTML = '<option value="">Seleccione un vehículo...</option>';
-    vehiculos.forEach(v => {
-      const option = document.createElement('option');
-      option.value = v.matricula;
-      option.textContent = `${v.nombre || v.matricula} - ${v.matricula}`;
-      select.appendChild(option);
-    });
-  }
-}
-
-// ================================
-// POBLAR SELECT DE PERSONAS
-// ================================
-function poblarSelectPersonas() {
-  const select = document.getElementById('selectFuncionario');
-  if (select) {
-    select.innerHTML = '<option value="">Seleccione un funcionario...</option>';
-    personas.forEach(p => {
-      const option = document.createElement('option');
-      option.value = p.id_bombero;
-      option.textContent = `${p.nombre || ''} ${p.apellidos || ''} (${p.id_bombero})`.trim();
-      select.appendChild(option);
-    });
-  }
-}
-
-// ================================
-// POBLAR SELECT DE INSTALACIONES
-// ================================
-function poblarSelectInstalaciones() {
-  const selectInstalacion = document.getElementById('selectInstalacion');
-  if (!selectInstalacion) return;
-  
-  selectInstalacion.innerHTML = '<option value="">Seleccione una instalación...</option>';
-  
-  instalaciones.forEach(i => {
-    const option = document.createElement('option');
-    option.value = i.id_instalacion;
-    option.textContent = `${i.nombre} - ${i.localidad || ''}`;
-    selectInstalacion.appendChild(option);
-  });
-  
-  selectInstalacion.addEventListener('change', async function() {
-    const id_instalacion = this.value;
-    const selectAlmacen = document.getElementById('selectAlmacen');
-    if (!selectAlmacen) return;
-    
-    selectAlmacen.innerHTML = '<option value="">Cargando almacenes...</option>';
-    selectAlmacen.disabled = true;
-    
-    if (id_instalacion) {
-      const almacenes = await cargarAlmacenesPorInstalacion(id_instalacion);
-      
-      if (almacenes.length > 0) {
-        selectAlmacen.innerHTML = '<option value="">Seleccione un almacén...</option>';
-        almacenes.forEach(a => {
-          const option = document.createElement('option');
-          option.value = a.id_almacen;
-          option.textContent = `${a.nombre} - Planta ${a.planta || ''}`;
-          selectAlmacen.appendChild(option);
-        });
-        selectAlmacen.disabled = false;
-      } else {
-        selectAlmacen.innerHTML = '<option value="">No hay almacenes en esta instalación</option>';
-        selectAlmacen.disabled = true;
-      }
-    } else {
-      selectAlmacen.innerHTML = '<option value="">Primero seleccione una instalación</option>';
-      selectAlmacen.disabled = true;
-    }
-  });
-  
-  const selectAlmacen = document.getElementById('selectAlmacen');
-  if (selectAlmacen) {
-    selectAlmacen.innerHTML = '<option value="">Primero seleccione una instalación</option>';
-    selectAlmacen.disabled = true;
-  }
-}
-
-// ================================
-// OBTENER ASIGNACIONES REALES
-// ================================
-async function obtenerAsignacionesMaterial(id_material) {
-  let asignaciones = [];
-  
-  // Asignaciones a vehículos
-  try {
-    const response = await fetch(`/api/vehiculos?material=${id_material}`);
-    const data = await response.json();
-    if (data.data && data.data.length > 0) {
-      data.data.forEach(v => {
-        asignaciones.push({
-          tipo: 'Vehículo',
-          elemento: v.nombre || v.matricula,
-          identificador: v.matricula,
-          unidades: v.unidades || '-',
-          numero_serie: v.nserie || '-',
-          instalacionId: null
-        });
-      });
-    }
-  } catch (e) {
-    console.log(`No hay vehículos para material ${id_material}`);
-  }
-
-  // Asignaciones a personas
-  try {
-    const response = await fetch(`/api/personas?material=${id_material}`);
-    const data = await response.json();
-    if (data.data && data.data.length > 0) {
-      data.data.forEach(p => {
-        asignaciones.push({
-          tipo: 'Persona',
-          elemento: `${p.nombre || ''} ${p.apellidos || ''}`.trim() || p.id_bombero,
-          identificador: p.id_bombero,
-          unidades: '-',
-          numero_serie: p.nserie || '-',
-          instalacionId: null
-        });
-      });
-    }
-  } catch (e) {
-    console.log(`No hay personas para material ${id_material}`);
-  }
-
-  // Asignaciones a almacenes
-  try {
-    const response = await fetch(`/api/almacenes?material=${id_material}`);
-    const data = await response.json();
-    if (data.data && data.data.length > 0) {
-      data.data.forEach(a => {
-        asignaciones.push({
-          tipo: 'Almacén',
-          elemento: a.nombre || `ID ${a.id_almacen}`,
-          identificador: a.id_almacen,
-          unidades: a.unidades || '-',
-          numero_serie: a.n_serie || '-',
-          instalacionId: a.id_instalacion
-        });
-      });
-    }
-  } catch (e) {
-    console.log(`No hay almacenes para material ${id_material}`);
-  }
-
-  return asignaciones;
-}
-
-// ================================
-// ENRIQUECER MATERIALES
-// ================================
-async function enrichMateriales() {
-  for (const material of materiales) {
-    const asignaciones = await obtenerAsignacionesMaterial(material.id_material);
-    material.asignaciones = asignaciones;
-
-    if (material.id_categoria) {
-      const categoria = categorias.find(c => c.id_categoria == material.id_categoria);
-      material.categoria_nombre = categoria ? categoria.nombre : material.id_categoria;
-    }
-  }
-}
-
-// ================================
-// RENDER TABLA
-// ================================
-function renderTablaMateriales(materiales) {
-  const tbody = document.querySelector('#tabla tbody');
-  if (!tbody) return;
-  
-  tbody.innerHTML = '';
-
-  materiales.forEach(m => {
-    if (m.asignaciones && m.asignaciones.length > 0) {
-      m.asignaciones.forEach(asignacion => {
+    lista.forEach(m => {
         const tr = document.createElement('tr');
-        
+        tr.dataset.id = m.id_material;
+
         tr.innerHTML = `
-          <td class="d-none d-md-table-cell">${m.id_material}</td>
-          <td>${m.nombre ?? ''}</td>
-          <td class="d-none d-md-table-cell">${m.descripcion ?? ''}</td>
-          <td>${m.estado ?? ''}</td>
-          <td class="d-none d-md-table-cell">${m.categoria_nombre ?? m.id_categoria ?? ''}</td>
-          <td>${asignacion.tipo}</td>
-          <td>${asignacion.elemento || ''}</td>
-          <td>${asignacion.identificador || ''}</td>
-          <td>${asignacion.unidades}</td>
-          <td>${asignacion.numero_serie}</td>
-          <td class="d-flex justify-content-around">
-            <button type="button" class="btn p-0 btn-ver" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#modalVer"
-                    data-id="${m.id_material}">
-                <i class="bi bi-eye"></i>
-            </button>
-            <button type="button" class="btn p-0 btn-editar" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#modalEditar" 
-                    data-id="${m.id_material}">
-                <i class="bi bi-pencil"></i>
-            </button>
-            <button type="button" class="btn p-0 btn-eliminar-relacion text-danger" 
-                    data-tipo="${asignacion.tipo}"
-                    data-identificador="${asignacion.identificador}"
-                    data-material="${m.id_material}"
-                    data-instalacion="${asignacion.instalacionId || ''}"
-                    title="Eliminar esta asignación">
-                <i class="bi bi-link-45deg"></i>
-            </button>
-          </td>
+            <td class="d-none d-md-table-cell">${m.id_material ?? ''}</td>
+            <td>${m.nombre ?? ''}</td>
+            <td class="d-none d-md-table-cell">${m.descripcion ?? ''}</td>
+            <td>${m.estado ?? ''}</td>
+            <td class="d-none d-md-table-cell">${m.categoria_nombre ?? ''}</td>
+            <td class="d-flex justify-content-around">
+                <button type="button" class="btn p-0 btn-ver"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalVer"
+                        data-id="${m.id_material}">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <button type="button" class="btn p-0 btn-editar"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalEditar"
+                        data-id="${m.id_material}">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button type="button" class="btn p-0 btn-eliminar"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalEliminar"
+                        data-id="${m.id_material}"
+                        data-nombre="${m.nombre}">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </td>
         `;
         tbody.appendChild(tr);
-      });
-    } else {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="d-none d-md-table-cell">${m.id_material}</td>
-        <td>${m.nombre ?? ''}</td>
-        <td class="d-none d-md-table-cell">${m.descripcion ?? ''}</td>
-        <td>${m.estado ?? ''}</td>
-        <td class="d-none d-md-table-cell">${m.categoria_nombre ?? m.id_categoria ?? ''}</td>
-        <td>Sin asignar</td>
-        <td>-</td>
-        <td>-</td>
-        <td>-</td>
-        <td>-</td>
-        <td class="d-flex justify-content-around">
-          <button type="button" class="btn p-0 btn-ver" 
-                  data-bs-toggle="modal" 
-                  data-bs-target="#modalVer"
-                  data-id="${m.id_material}">
-              <i class="bi bi-eye"></i>
-          </button>
-          <button type="button" class="btn p-0 btn-editar" 
-                  data-bs-toggle="modal" 
-                  data-bs-target="#modalEditar" 
-                  data-id="${m.id_material}">
-              <i class="bi bi-pencil"></i>
-          </button>
-          <button type="button" class="btn p-0 btn-eliminar" 
-                  data-bs-toggle="modal"                                         
-                  data-bs-target="#modalEliminar" 
-                  data-id="${m.id_material}">
-              <i class="bi bi-trash3"></i>
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    }
-  });
+    });
 }
 
-// ================================
+
 // FILTROS
-// ================================
+
 function bindFiltros() {
-  const filtroEstado = document.getElementById('estado');
-  const filtroNombre = document.getElementById('nombre');
-  
-  if (filtroEstado) filtroEstado.addEventListener('change', aplicarFiltros);
-  if (filtroNombre) filtroNombre.addEventListener('input', aplicarFiltros);
+    document.getElementById('estado')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('nombre')?.addEventListener('input', aplicarFiltros);
 }
 
 function aplicarFiltros() {
-  const filtroEstado = document.getElementById('estado')?.value;
-  const filtroNombre = document.getElementById('nombre')?.value?.toLowerCase();
-  
-  const filtrados = materiales.filter(m => {
-    let cumple = true;
-    if (filtroEstado && filtroEstado !== '') cumple = cumple && m.estado === filtroEstado;
-    if (filtroNombre && filtroNombre !== '') {
-      cumple = cumple && (m.nombre?.toLowerCase().includes(filtroNombre) || 
-                         m.descripcion?.toLowerCase().includes(filtroNombre));
-    }
-    return cumple;
-  });
-  
-  renderTablaMateriales(filtrados);
+    const filtroEstado = document.getElementById('estado')?.value;
+    const filtroNombre = document.getElementById('nombre')?.value?.toLowerCase();
+
+    const filtrados = materiales.filter(m => {
+        let cumple = true;
+        if (filtroEstado) cumple = cumple && m.estado === filtroEstado;
+        if (filtroNombre) cumple = cumple && (
+            m.nombre?.toLowerCase().includes(filtroNombre) ||
+            m.descripcion?.toLowerCase().includes(filtroNombre)
+        );
+        return cumple;
+    });
+
+    renderTablaMateriales(filtrados);
 }
 
-// ================================
+
 // CREAR MATERIAL
-// ================================
+
 function bindCrearMaterial() {
-  const form = document.getElementById('formInsertar');
-  if (!form) return;
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const f = new FormData(form);
-
-    const data = {
-      id_categoria: f.get('id_categoria'),
-      nombre: f.get('nombre'),
-      descripcion: f.get('descripcion'),
-      estado: f.get('estado')
-    };
-
-    try {
-      const response = await fetch('/api/materiales', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (!response.ok) throw new Error('Error al crear material');
-      
-      await cargarDatosIniciales();
-      form.reset();
-      mostrarExito('Material creado correctamente');
-    } catch (err) {
-      mostrarError(err.message || 'Error creando material');
-    }
-  });
-}
-
-// ================================
-// ASIGNAR A VEHÍCULO
-// ================================
-function bindAsignarVehiculo() {
-  const form = document.getElementById('formAsignarVehiculo');
-  if (!form) return;
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const f = new FormData(form);
-    const id_material = parseInt(f.get('id_material'));
-    const matricula = f.get('matricula');
-    const nserie = f.get('nserie') || null;
-    const unidades = parseInt(f.get('unidades'));
-
-    if (isNaN(id_material) || id_material <= 0) {
-      mostrarError('Seleccione un material válido');
-      return;
-    }
-
-    if (!matricula) {
-      mostrarError('Seleccione un vehículo');
-      return;
-    }
-
-    if (isNaN(unidades) || unidades <= 0) {
-      mostrarError('Las unidades deben ser un número mayor que 0');
-      return;
-    }
-
-    const data = { nserie, unidades };
-
-    try {
-      const response = await fetch(`/api/vehiculos/${matricula}/materiales/${id_material}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (!response.ok) throw new Error('Error al asignar');
-      
-      await cargarDatosIniciales();
-      form.reset();
-      mostrarExito('Material asignado a vehículo correctamente');
-    } catch (err) {
-      mostrarError(err.message || 'Error asignando material a vehículo');
-    }
-  });
-}
-
-// ================================
-// ASIGNAR A FUNCIONARIO
-// ================================
-function bindAsignarFuncionario() {
-  const form = document.getElementById('formAsignarFuncionario');
-  if (!form) return;
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const f = new FormData(form);
-    let id_bombero = f.get('id_bombero');
-    const id_material = parseInt(f.get('id_material'));
-    const nserie = f.get('nserie');
-
-    if (isNaN(id_material) || id_material <= 0) {
-      mostrarError('Seleccione un material válido');
-      return;
-    }
-
-    if (!id_bombero) {
-      mostrarError('Seleccione un funcionario');
-      return;
-    }
-
-    if (!nserie) {
-      mostrarError('El número de serie es obligatorio');
-      return;
-    }
-
-    // Extraer SOLO el número si viene como "B100"
-    if (typeof id_bombero === 'string' && id_bombero.startsWith('B')) {
-      id_bombero = parseInt(id_bombero.substring(1));
-    } else {
-      id_bombero = parseInt(id_bombero);
-    }
-
-    try {
-      const response = await fetch(`/api/personas/${id_bombero}/material/${id_material}/${nserie}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      if (!response.ok) throw new Error('Error al asignar');
-      
-      await cargarDatosIniciales();
-      form.reset();
-      mostrarExito('Material asignado a funcionario correctamente');
-    } catch (err) {
-      mostrarError(err.message || 'Error asignando material a funcionario');
-    }
-  });
-}
-
-// ================================
-// ASIGNAR A ALMACÉN
-// ================================
-function bindAsignarAlmacen() {
-  const form = document.getElementById('formAsignarAlmacen');
-  if (!form) return;
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const f = new FormData(form);
-    const id_almacen = parseInt(f.get('id_almacen'));
-    const id_instalacion = parseInt(f.get('id_instalacion'));
-    const id_material = parseInt(f.get('id_material'));
-    const n_serie = f.get('n_serie') || null;
-    const unidades = parseInt(f.get('unidades'));
-
-    if (isNaN(id_almacen) || id_almacen <= 0) {
-      mostrarError('Seleccione un almacén válido');
-      return;
-    }
-
-    if (isNaN(id_instalacion) || id_instalacion <= 0) {
-      mostrarError('Seleccione una instalación válida');
-      return;
-    }
-
-    if (isNaN(id_material) || id_material <= 0) {
-      mostrarError('Seleccione un material válido');
-      return;
-    }
-
-    if (isNaN(unidades) || unidades <= 0) {
-      mostrarError('Las unidades deben ser un número mayor que 0');
-      return;
-    }
-
-    const data = { 
-      id_material, 
-      id_instalacion, 
-      n_serie, 
-      unidades 
-    };
-
-    try {
-      const response = await fetch(`/api/almacenes/${id_almacen}/material`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (!response.ok) throw new Error('Error al asignar');
-      
-      await cargarDatosIniciales();
-      form.reset();
-      
-      const selectInstalacion = document.getElementById('selectInstalacion');
-      const selectAlmacen = document.getElementById('selectAlmacen');
-      if (selectInstalacion) selectInstalacion.value = '';
-      if (selectAlmacen) {
-        selectAlmacen.innerHTML = '<option value="">Primero seleccione una instalación</option>';
-        selectAlmacen.disabled = true;
-      }
-      
-      mostrarExito('Material asignado a almacén correctamente');
-    } catch (err) {
-      mostrarError(err.message || 'Error asignando material a almacén');
-    }
-  });
-}
-
-// ================================
-// MODAL VER
-// ================================
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.btn-ver');
-  if (!btn) return;
-
-  const id = btn.dataset.id;
-  const material = materiales.find(m => m.id_material == id);
-  if (!material) return;
-
-  const modalBody = document.getElementById('modalVerBody');
-  if (!modalBody) return;
-
-  let asignacionesHTML = '';
-  if (material.asignaciones && material.asignaciones.length > 0) {
-    asignacionesHTML = '<p><strong>Asignaciones:</strong></p><ul>';
-    material.asignaciones.forEach(a => {
-      asignacionesHTML += `<li>${a.tipo}: ${a.elemento} (${a.identificador}) - Uds: ${a.unidades} - Serie: ${a.numero_serie}</li>`;
-    });
-    asignacionesHTML += '</ul>';
-  } else {
-    asignacionesHTML = '<p><strong>Asignado a:</strong> No asignado</p>';
-  }
-
-  modalBody.innerHTML = `
-    <p><strong>ID:</strong> ${material.id_material}</p>
-    <p><strong>Nombre:</strong> ${material.nombre}</p>
-    <p><strong>Descripción:</strong> ${material.descripcion || 'Sin descripción'}</p>
-    <p><strong>Estado:</strong> ${material.estado}</p>
-    <p><strong>Categoría:</strong> ${material.categoria_nombre || material.id_categoria}</p>
-    ${asignacionesHTML}
-  `;
-});
-
-// ================================
-// MODAL EDITAR
-// ================================
-document.addEventListener('click', async function (e) {
-  const btn = e.target.closest('.btn-editar');
-  if (!btn) return;
-
-  const id = btn.dataset.id;
-
-  try {
-    const response = await fetch(`/api/materiales/${id}`);
-    const data = await response.json();
-    const material = data.data;
-    if (!material) return;
-
-    let categoriasOptions = '<option value="">Seleccione una categoría...</option>';
-    categorias.forEach(c => {
-      categoriasOptions += `<option value="${c.id_categoria}" ${c.id_categoria == material.id_categoria ? 'selected' : ''}>${c.nombre}</option>`;
-    });
-
-    const form = document.getElementById('formEditar');
+    const form = document.getElementById('formInsertar');
     if (!form) return;
 
-    form.innerHTML = `
-      <div class="mb-3">
-        <label class="form-label">ID Material</label>
-        <input type="text" class="form-control" value="${material.id_material || ''}" readonly disabled>
-        <input type="hidden" name="id_material" value="${material.id_material || ''}">
-      </div>
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-      <div class="row mb-3">
-        <div class="col-lg-6">
-          <label class="form-label">Nombre</label>
-          <input type="text" class="form-control" name="nombre" value="${material.nombre || ''}" required>
-        </div>
+        const data = {
+            id_categoria: parseInt(document.getElementById('insertCategoria').value),
+            nombre:       document.getElementById('insertNombre').value.trim(),
+            descripcion:  document.getElementById('insertDescripcion').value.trim(),
+            estado:       document.getElementById('insertEstado').value
+        };
 
-        <div class="col-lg-6">
-          <label class="form-label">Categoría</label>
-          <select class="form-select" name="id_categoria" required>
-            ${categoriasOptions}
-          </select>
-        </div>
-      </div>
+        if (!data.id_categoria) { mostrarError('Debe seleccionar una categoría'); return; }
+        if (!data.nombre)       { mostrarError('El nombre es obligatorio'); return; }
+        if (!data.descripcion)  { mostrarError('La descripción es obligatoria'); return; }
+        if (!data.estado)       { mostrarError('Debe seleccionar un estado'); return; }
 
-      <div class="mb-3">
-        <label class="form-label">Descripción</label>
-        <textarea class="form-control" name="descripcion" rows="3" required>${material.descripcion || ''}</textarea>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Estado</label>
-        <select class="form-select" name="estado" required>
-          <option value="ALTA" ${material.estado === 'ALTA' ? 'selected' : ''}>ALTA</option>
-          <option value="BAJA" ${material.estado === 'BAJA' ? 'selected' : ''}>BAJA</option>
-        </select>
-      </div>
-    `;
-
-    document.getElementById('btnGuardarCambios').onclick = async () => {
-      const form = document.getElementById('formEditar');
-      const data = {
-        nombre: form.querySelector('[name="nombre"]').value,
-        id_categoria: parseInt(form.querySelector('[name="id_categoria"]').value),
-        descripcion: form.querySelector('[name="descripcion"]').value,
-        estado: form.querySelector('[name="estado"]').value
-      };
-
-      try {
-        const response = await fetch(`/api/materiales/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        
-        if (!response.ok) throw new Error('Error al actualizar');
-        
-        await cargarDatosIniciales();
-
-        const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
-        modal.hide();
-        mostrarExito('Material actualizado correctamente');
-      } catch (error) {
-        mostrarError('Error al actualizar material: ' + error.message);
-      }
-    };
-
-  } catch (error) {
-    console.error('Error al editar material:', error);
-    mostrarError('Error al cargar datos del material');
-  }
-});
-
-// ================================
-// ELIMINAR SOLO LA RELACIÓN
-// ================================
-document.addEventListener('click', async function(e) {
-  const btn = e.target.closest('.btn-eliminar-relacion');
-  if (!btn) return;
-  
-  const tipo = btn.dataset.tipo;
-  const identificador = btn.dataset.identificador;
-  const idMaterial = btn.dataset.material;
-  const idInstalacion = btn.dataset.instalacion;
-  
-  if (!confirm(`¿Eliminar esta asignación de ${tipo}?`)) return;
-  
-  try {
-    let url = '';
-    let options = {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' }
-    };
-    
-    if (tipo === 'Vehículo') {
-      url = `/api/vehiculos/${identificador}/materiales/${idMaterial}`;
-    } 
-    else if (tipo === 'Persona') {
-      url = `/api/personas/${identificador}/material/${idMaterial}`;
-    } 
-    else if (tipo === 'Almacén') {
-      url = `/api/almacenes/${identificador}/material/${idMaterial}`;
-      if (idInstalacion) {
-        options.body = JSON.stringify({ id_instalacion: parseInt(idInstalacion) });
-      }
-    }
-    
-    const response = await fetch(url, options);
-    
-    if (!response.ok) throw new Error('Error al eliminar la relación');
-    
-    await cargarDatosIniciales();
-    mostrarExito('Asignación eliminada correctamente');
-    
-  } catch (error) {
-    mostrarError('Error al eliminar la asignación: ' + error.message);
-  }
-});
-
-// ================================
-// MODAL ELIMINAR (PARA MATERIALES SIN ASIGNACIONES)
-// ================================
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.btn-eliminar');
-  if (!btn) return;
-
-  const id = btn.dataset.id;
-  const material = materiales.find(m => m.id_material == id);
-  
-  const btnConfirm = document.getElementById('btnConfirmarEliminar');
-  if (btnConfirm) {
-    btnConfirm.dataset.id = id;
-    
-    const modalBody = document.querySelector('#modalEliminar .modal-body');
-    if (modalBody && material) {
-      modalBody.innerHTML = `
-        ¿Estás seguro de que deseas eliminar el material "${material.nombre}"?
-        <p class="text-muted mb-0 mt-2">Esta acción no se puede deshacer.</p>
-      `;
-    }
-  }
-});
-
-document.getElementById('btnConfirmarEliminar')?.addEventListener('click', async function() {
-  const id = this.dataset.id;
-  if (!id) return;
-
-  try {
-    const response = await fetch(`/api/materiales/${id}`, {
-      method: 'DELETE'
+        try {
+            await MaterialApi.create(data);
+            await cargarMateriales();
+            form.reset();
+            mostrarExito('Material creado correctamente');
+        } catch (err) {
+            mostrarError(err.message || 'Error creando material');
+        }
     });
-    
-    if (!response.ok) throw new Error('Error al eliminar');
-    
-    await cargarDatosIniciales();
+}
 
-    const modal = bootstrap.Modal.getInstance(document.getElementById('modalEliminar'));
-    modal.hide();
-    mostrarExito('Material eliminado correctamente');
-  } catch (error) {
-    if (error.message.includes('foreign key constraint')) {
-      mostrarError('No se puede eliminar el material porque tiene asignaciones');
-    } else {
-      mostrarError('Error al eliminar material: ' + error.message);
+
+// OBTENER ASIGNACIONES CON CACHE
+
+async function obtenerAsignacionesMaterial(idMaterial) {
+    if (asignacionesCache.has(idMaterial)) {
+        return asignacionesCache.get(idMaterial);
     }
-  }
-});
 
-// ================================
+    try {
+        const response = await MaterialApi.getCompleto();
+        const todos = Array.isArray(response) ? response : (response.data || []);
+        const filtrados = todos.filter(m => m.id_material == idMaterial);
+
+        const resultado = {
+            vehiculos: filtrados.filter(a => a.tipo === 'Vehículo'),
+            personas:  filtrados.filter(a => a.tipo === 'Persona'),
+            almacenes: filtrados.filter(a => a.tipo === 'Almacén')
+        };
+
+        asignacionesCache.set(idMaterial, resultado);
+        return resultado;
+    } catch (e) {
+        console.error('Error obteniendo asignaciones:', e);
+        return { vehiculos: [], personas: [], almacenes: [] };
+    }
+}
+
+
+// EXTRAER NOMBRE DE INSTALACIÓN DESDE EL CAMPO 'elemento'
+
+function extraerNombreInstalacion(elemento) {
+    if (!elemento) return null;
+    const match = elemento.match(/\(([^)]+)\)\s*$/);
+    return match ? match[1].trim() : null;
+}
+
+function extraerNombreAlmacen(elemento) {
+    if (!elemento) return elemento;
+    return elemento.replace(/\s*\([^)]+\)\s*$/, '').trim();
+}
+
+
+// CAMPOS PARA MODAL VER
+
+const nombresCampos = ['ID', 'Nombre', 'Descripción', 'Estado', 'Categoría'];
+const camposBd      = ['id_material', 'nombre', 'descripcion', 'estado', 'id_categoria'];
+
+
+// HELPER: HTML FILTRO con el mismo estilo que la página principal
+
+function htmlFiltroTabla(idA, idB, labelA, labelB) {
+    return `
+        <div id="filtroTabla" class="row d-flex justify-content-around m-0 mb-0">
+            <div class="col-md-5 d-flex align-items-center m-1">
+                <label class="m-2" for="${idA}">${labelA}:</label>
+                <input placeholder="${labelA}" id="${idA}" type="text" class="form-control m-1">
+            </div>
+            <div class="col-md-5 d-flex align-items-center m-1">
+                <label class="m-2" for="${idB}">${labelB}:</label>
+                <input placeholder="${labelB}" id="${idB}" type="text" class="form-control m-1">
+            </div>
+        </div>`;
+}
+
+// HELPER: bind filtro sobre un tbody (filtra por dos columnas de texto)
+function bindFiltroTablaModal(idA, idB, tbodyId, colA, colB) {
+    const inputA = document.getElementById(idA);
+    const inputB = document.getElementById(idB);
+    if (!inputA || !inputB) return;
+
+    function filtrar() {
+        const textoA = inputA.value.toLowerCase();
+        const textoB = inputB.value.toLowerCase();
+        const tbody  = document.getElementById(tbodyId);
+        if (!tbody) return;
+        tbody.querySelectorAll('tr').forEach(tr => {
+            const celdas = tr.querySelectorAll('td');
+            const cumpleA = !textoA || (celdas[colA]?.textContent?.toLowerCase().includes(textoA));
+            const cumpleB = !textoB || (celdas[colB]?.textContent?.toLowerCase().includes(textoB));
+            tr.style.display = (cumpleA && cumpleB) ? '' : 'none';
+        });
+    }
+
+    inputA.addEventListener('input', filtrar);
+    inputB.addEventListener('input', filtrar);
+}
+
+
+// FUNCIONES PARA RENDERIZAR TABLAS EN MODAL VER
+
+function crearTablaVehiculosVer(asignaciones) {
+    let html = '<div class="mt-4"><h6 class="fw-bold">Asignaciones a vehículos</h6>';
+    html += htmlFiltroTabla('verVehNombre', 'verVehVehiculo', 'Matrícula', 'Vehículo');
+    html += '<table class="table table-bordered table-striped table-sm">';
+    html += '<thead class="table-dark"><tr><th>Matrícula</th><th>Vehículo</th><th>Unidades</th><th>Nº Serie</th></tr></thead>';
+    html += '<tbody id="tbodyVerVehiculos">';
+    if (asignaciones.length === 0) {
+        html += '<tr><td colspan="4" class="text-center text-muted">Sin asignaciones</td></tr>';
+    } else {
+        asignaciones.forEach(a => {
+            html += `<tr>
+                <td>${a.identificador || a.matricula || '-'}</td>
+                <td>${a.elemento || a.matricula || '-'}</td>
+                <td>${a.unidades ?? (a.numero_serie || a.nserie ? 1 : '-')}</td>
+                <td>${a.numero_serie || a.nserie || '-'}</td>
+            </tr>`;
+        });
+    }
+    html += '</tbody></table></div>';
+    return html;
+}
+
+function crearTablaPersonasVer(asignaciones) {
+    let html = '<div class="mt-4"><h6 class="fw-bold">Asignaciones a personas</h6>';
+    html += htmlFiltroTabla('verPerNombre', 'verPerFuncionario', 'Nombre', 'Nº Funcionario');
+    html += '<table class="table table-bordered table-striped table-sm">';
+    html += '<thead class="table-dark"><tr><th>ID</th><th>Nombre</th><th>Nº Funcionario</th><th>Nº Serie</th></tr></thead>';
+    html += '<tbody id="tbodyVerPersonas">';
+    if (asignaciones.length === 0) {
+        html += '<tr><td colspan="4" class="text-center text-muted">Sin asignaciones</td></tr>';
+    } else {
+        asignaciones.forEach(a => {
+            html += `<tr>
+                <td>${a.identificador || a.id_bombero || '-'}</td>
+                <td>${a.elemento || a.nombre || '-'}</td>
+                <td>${a.n_funcionario || '-'}</td>
+                <td>${a.numero_serie || a.nserie || '-'}</td>
+            </tr>`;
+        });
+    }
+    html += '</tbody></table></div>';
+    return html;
+}
+
+function crearTablaAlmacenesVer(asignaciones) {
+    let html = '<div class="mt-4"><h6 class="fw-bold">Asignaciones a almacenes</h6>';
+    html += htmlFiltroTabla('verAlmInstalacion', 'verAlmNombre', 'Instalación', 'Almacén');
+    html += '<table class="table table-bordered table-striped table-sm">';
+    html += '<thead class="table-dark"><tr><th>Instalación</th><th>Almacén</th><th>Planta</th><th>Unidades</th><th>Nº Serie</th></tr></thead>';
+    html += '<tbody id="tbodyVerAlmacenes">';
+    if (asignaciones.length === 0) {
+        html += '<tr><td colspan="5" class="text-center text-muted">Sin asignaciones</td></tr>';
+    } else {
+        asignaciones.forEach(a => {
+            const nombreInstalacion = a.nombre_instalacion || extraerNombreInstalacion(a.elemento) || '-';
+            const nombreAlmacen     = a.nombre_almacen     || extraerNombreAlmacen(a.elemento)     || '-';
+            html += `<tr>
+                <td>${nombreInstalacion}</td>
+                <td>${nombreAlmacen}</td>
+                <td>${a.planta || '0'}</td>
+                <td>${a.unidades ?? (a.numero_serie || a.nserie ? 1 : '-')}</td>
+                <td>${a.numero_serie || a.n_serie || '-'}</td>
+            </tr>`;
+        });
+    }
+    html += '</tbody></table></div>';
+    return html;
+}
+
+
+// BIND MODALES
+
+function bindModales() {
+
+    // ---- MODAL VER ----
+    document.addEventListener('click', async function (e) {
+        const btn = e.target.closest('.btn-ver');
+        if (!btn) return;
+
+        const material = materiales.find(m => m.id_material == btn.dataset.id);
+        if (!material) return;
+
+        const modalBody = document.getElementById('modalVerBody');
+        if (!modalBody) return;
+
+        modalBody.innerHTML = '';
+        nombresCampos.forEach((nombre, index) => {
+            const campo = camposBd[index];
+            let valor = material[campo] ?? '';
+            if (campo === 'id_categoria') valor = material.categoria_nombre ?? 'Sin categoría';
+
+            const p = document.createElement('p');
+            const strong = document.createElement('strong');
+            strong.textContent = nombre + ': ';
+            p.appendChild(strong);
+            p.appendChild(document.createTextNode(valor));
+            modalBody.appendChild(p);
+        });
+
+        try {
+            const asignaciones = await obtenerAsignacionesMaterial(material.id_material);
+            const htmlVehiculos = crearTablaVehiculosVer(asignaciones.vehiculos);
+            const htmlPersonas  = crearTablaPersonasVer(asignaciones.personas);
+            const htmlAlmacenes = crearTablaAlmacenesVer(asignaciones.almacenes);
+
+            modalBody.insertAdjacentHTML('beforeend', htmlVehiculos + htmlPersonas + htmlAlmacenes);
+
+            // Activar filtros modal ver
+            // col 1 = Vehículo, no hay estado → pasamos -1 para ignorarlo
+            bindFiltroTablaModal('verVehNombre', 'verVehVehiculo', 'tbodyVerVehiculos', 0, 1);
+            bindFiltroTablaModal('verPerNombre', 'verPerFuncionario', 'tbodyVerPersonas', 1, 2);
+            bindFiltroTablaModal('verAlmInstalacion', 'verAlmNombre', 'tbodyVerAlmacenes', 0, 1);
+        } catch (error) {
+            console.error('Error cargando asignaciones:', error);
+        }
+    });
+
+
+    // ---- MODAL EDITAR ----
+    document.addEventListener('click', async function (e) {
+        const btn = e.target.closest('.btn-editar');
+        if (!btn) return;
+
+        currentMaterialId = btn.dataset.id;
+
+        try {
+            const response = await MaterialApi.getById(currentMaterialId);
+            const material = Array.isArray(response) ? response[0] : (response.data ?? response);
+            if (!material) return;
+
+            const form = document.getElementById('formEditar');
+            if (!form) return;
+
+            let catOptions = '<option value="">Seleccione una categoría...</option>';
+            categorias.forEach(c => {
+                const sel = c.id_categoria == material.id_categoria ? 'selected' : '';
+                catOptions += `<option value="${c.id_categoria}" ${sel}>${c.nombre}</option>`;
+            });
+
+            form.innerHTML = `
+                <div class="row mb-3">
+                    <div class="col-lg-4">
+                        <label class="form-label">ID</label>
+                        <input type="text" class="form-control" value="${material.id_material ?? ''}" disabled>
+                        <input type="hidden" name="id_material" value="${material.id_material ?? ''}">
+                    </div>
+                    <div class="col-lg-8">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" class="form-control" name="nombre" value="${material.nombre ?? ''}" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" name="descripcion" rows="3" required>${material.descripcion ?? ''}</textarea>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-lg-6">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-select" name="id_categoria" required>
+                            ${catOptions}
+                        </select>
+                    </div>
+                    <div class="col-lg-6">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" name="estado" required>
+                            <option value="ALTA" ${material.estado === 'ALTA' ? 'selected' : ''}>ALTA</option>
+                            <option value="BAJA" ${material.estado === 'BAJA' ? 'selected' : ''}>BAJA</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="text-center mb-4">
+                    <button type="button" class="btn btn-primary btn-guardar-material">
+                        Guardar cambios
+                    </button>
+                </div>
+
+                <hr>
+
+                <!-- ASIGNACIONES EN PESTAÑAS -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-vehiculos" role="tab">
+                            <i class="bi bi-truck"></i> Vehículos
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-personas" role="tab">
+                            <i class="bi bi-person"></i> Personas
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-almacenes" role="tab">
+                            <i class="bi bi-building"></i> Almacenes
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-3">
+
+                    <!-- VEHÍCULOS -->
+                    <div class="tab-pane fade show active" id="tab-vehiculos" role="tabpanel">
+                        <div class="card card-body bg-light mb-3">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="form-label form-label-sm">Vehículo</label>
+                                    <select class="form-select form-select-sm" id="asigVehiculoSelect">
+                                        <option value="">Seleccione...</option>
+                                        ${vehiculos.map(v => `<option value="${v.matricula}">${v.nombre} (${v.matricula})</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label form-label-sm">Asignar por</label>
+                                    <select class="form-select form-select-sm" id="modoAsigVehiculo">
+                                        <option value="unidades">Unidades</option>
+                                        <option value="nserie">Nº Serie</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3" id="wrapVehiculoUnidades">
+                                    <label class="form-label form-label-sm">Unidades</label>
+                                    <input type="number" class="form-control form-control-sm" id="asigVehiculoUnidades" min="1" value="1">
+                                </div>
+                                <div class="col-md-3 d-none" id="wrapVehiculoNserie">
+                                    <label class="form-label form-label-sm">Nº Serie</label>
+                                    <input type="text" class="form-control form-control-sm" id="asigVehiculoNserie" placeholder="ej: NS-1234">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-success btn-sm w-100" id="btnAsignarVehiculo">Asignar</button>
+                                </div>
+                            </div>
+                        </div>
+                        ${htmlFiltroTabla('editVehNombre', 'editVehVehiculo', 'Matrícula', 'Vehículo')}
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-dark"><tr><th>Matrícula</th><th>Vehículo</th><th>Unidades</th><th>Nº Serie</th><th>Acción</th></tr></thead>
+                            <tbody id="tbodyVehiculos"><tr><td colspan="5" class="text-center">Cargando...</td></tr></tbody>
+                        </table>
+                    </div>
+
+                    <!-- PERSONAS -->
+                    <div class="tab-pane fade" id="tab-personas" role="tabpanel">
+                        <div class="card card-body bg-light mb-3">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label form-label-sm">Persona</label>
+                                    <select class="form-select form-select-sm" id="asigPersonaSelect">
+                                        <option value="">Seleccione...</option>
+                                        ${personas.map(p => `<option value="${p.id_bombero}">${p.nombre} ${p.apellidos || ''} (${p.n_funcionario || p.id_bombero})</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label form-label-sm">Nº Serie <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-sm" id="asigPersonaNserie" placeholder="ej: SN001">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-success btn-sm w-100" id="btnAsignarPersona">Asignar</button>
+                                </div>
+                            </div>
+                        </div>
+                        ${htmlFiltroTabla('editPerNombre', 'editPerFuncionario', 'Nombre', 'Nº Funcionario')}
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-dark"><tr><th>ID</th><th>Nombre</th><th>Nº Funcionario</th><th>Nº Serie</th><th>Acción</th></tr></thead>
+                            <tbody id="tbodyPersonas"><tr><td colspan="5" class="text-center">Cargando...</td></tr></tbody>
+                        </table>
+                    </div>
+
+                    <!-- ALMACENES -->
+                    <div class="tab-pane fade" id="tab-almacenes" role="tabpanel">
+                        <div class="card card-body bg-light mb-3">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-3">
+                                    <label class="form-label form-label-sm">Instalación</label>
+                                    <select class="form-select form-select-sm" id="asigInstalacionSelect">
+                                        <option value="">Seleccione...</option>
+                                        ${instalaciones.map(i => `<option value="${i.id_instalacion}">${i.nombre}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label form-label-sm">Almacén</label>
+                                    <select class="form-select form-select-sm" id="asigAlmacenSelect" disabled>
+                                        <option value="">Primero seleccione instalación</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label form-label-sm">Asignar por</label>
+                                    <select class="form-select form-select-sm" id="modoAsigAlmacen">
+                                        <option value="unidades">Unidades</option>
+                                        <option value="nserie">Nº Serie</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2" id="wrapAlmacenUnidades">
+                                    <label class="form-label form-label-sm">Unidades</label>
+                                    <input type="number" class="form-control form-control-sm" id="asigAlmacenUnidades" min="1" value="1">
+                                </div>
+                                <div class="col-md-2 d-none" id="wrapAlmacenNserie">
+                                    <label class="form-label form-label-sm">Nº Serie</label>
+                                    <input type="text" class="form-control form-control-sm" id="asigAlmacenNserie" placeholder="ej: 12345">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-success btn-sm w-100" id="btnAsignarAlmacen">Asignar</button>
+                                </div>
+                            </div>
+                        </div>
+                        ${htmlFiltroTabla('editAlmInstalacion', 'editAlmNombre', 'Instalación', 'Almacén')}
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-dark"><tr><th>Instalación</th><th>Almacén</th><th>Planta</th><th>Unidades</th><th>Nº Serie</th><th>Acción</th></tr></thead>
+                            <tbody id="tbodyAlmacenes"><tr><td colspan="6" class="text-center">Cargando...</td></tr></tbody>
+                        </table>
+                    </div>
+
+                </div>
+            `;
+
+            // Cargar asignaciones
+            const asignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
+            renderTablaVehiculos(asignaciones.vehiculos);
+            renderTablaPersonas(asignaciones.personas);
+            renderTablaAlmacenes(asignaciones.almacenes);
+
+            // Activar filtros modal editar
+            bindFiltroTablaModal('editVehNombre', 'editVehVehiculo', 'tbodyVehiculos', 0, 1);
+            bindFiltroTablaModal('editPerNombre', 'editPerFuncionario', 'tbodyPersonas', 1, 2);
+            bindFiltroTablaModal('editAlmInstalacion', 'editAlmNombre', 'tbodyAlmacenes', 0, 1);
+
+            bindEventosModalEditar(form);
+
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarError('Error al cargar datos');
+        }
+    });
+
+
+    // ---- MODAL ELIMINAR - Preparar ----
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-eliminar');
+        if (!btn) return;
+
+        e.preventDefault();
+
+        const id = btn.dataset.id;
+        const nombre = btn.dataset.nombre;
+
+        const btnConfirm = document.getElementById('btnConfirmarEliminar');
+        if (btnConfirm) {
+            btnConfirm.dataset.id = id;
+            btnConfirm.disabled = false;
+            btnConfirm.textContent = 'Eliminar';
+        }
+
+        const modalBody = document.querySelector('#modalEliminar .modal-body');
+        if (modalBody) {
+            modalBody.innerHTML = `¿Eliminar el material <strong>"${nombre}"</strong>?<br><small class="text-muted">Esta acción no se puede deshacer.</small>`;
+        }
+    });
+
+    // ---- MODAL ELIMINAR - Confirmar ----
+    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+    if (btnConfirmar) {
+        btnConfirmar.addEventListener('click', async function (e) {
+            e.preventDefault();
+
+            const id = this.dataset.id;
+            if (!id) return;
+
+            this.disabled = true;
+            this.textContent = 'Eliminando...';
+
+            try {
+                await MaterialApi.delete(id);
+                asignacionesCache.delete(id);
+                await cargarMateriales();
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalEliminar'));
+                if (modal) modal.hide();
+
+                mostrarExito('Material eliminado');
+            } catch (error) {
+                console.error('Error:', error);
+                if (error.message?.includes('foreign') || error.message?.includes('constraint')) {
+                    mostrarError('No se puede eliminar: el material tiene asignaciones');
+                } else {
+                    mostrarError(error.message || 'Error al eliminar');
+                }
+                this.disabled = false;
+                this.textContent = 'Eliminar';
+            }
+        });
+    }
+}
+
+
+// BIND EVENTOS MODAL EDITAR
+
+function bindEventosModalEditar(form) {
+
+    // Guardar cambios del material
+    form.querySelector('.btn-guardar-material').addEventListener('click', async function () {
+        const data = {
+            nombre:       form.querySelector('input[name="nombre"]').value.trim(),
+            descripcion:  form.querySelector('textarea[name="descripcion"]').value.trim(),
+            id_categoria: parseInt(form.querySelector('select[name="id_categoria"]').value),
+            estado:       form.querySelector('select[name="estado"]').value
+        };
+
+        if (!data.nombre || !data.descripcion || !data.id_categoria) {
+            mostrarError('Complete todos los campos');
+            return;
+        }
+
+        try {
+            await MaterialApi.update(currentMaterialId, data);
+            asignacionesCache.delete(currentMaterialId);
+            await cargarMateriales();
+            bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+            mostrarExito('Material actualizado');
+        } catch (error) {
+            mostrarError(error.message);
+        }
+    });
+
+    // Toggle unidades / nserie en VEHÍCULO
+    const modoVehiculo = form.querySelector('#modoAsigVehiculo');
+    if (modoVehiculo) {
+        modoVehiculo.addEventListener('change', function () {
+            const esNserie = this.value === 'nserie';
+            form.querySelector('#wrapVehiculoUnidades').classList.toggle('d-none', esNserie);
+            form.querySelector('#wrapVehiculoNserie').classList.toggle('d-none', !esNserie);
+        });
+    }
+
+    // Toggle unidades / nserie en ALMACÉN
+    const modoAlmacen = form.querySelector('#modoAsigAlmacen');
+    if (modoAlmacen) {
+        modoAlmacen.addEventListener('change', function () {
+            const esNserie = this.value === 'nserie';
+            form.querySelector('#wrapAlmacenUnidades').classList.toggle('d-none', esNserie);
+            form.querySelector('#wrapAlmacenNserie').classList.toggle('d-none', !esNserie);
+        });
+    }
+
+    // Asignar vehículo
+    const btnAsignarVehiculo = form.querySelector('#btnAsignarVehiculo');
+    if (btnAsignarVehiculo) {
+        btnAsignarVehiculo.addEventListener('click', async () => {
+            const matricula = form.querySelector('#asigVehiculoSelect').value;
+            const modo      = form.querySelector('#modoAsigVehiculo').value;
+
+            if (!matricula) return mostrarError('Seleccione un vehículo');
+
+            let payload = {};
+            if (modo === 'unidades') {
+                const unidades = parseInt(form.querySelector('#asigVehiculoUnidades').value);
+                if (!unidades || unidades < 1) return mostrarError('Unidades inválidas');
+                payload = { unidades };
+            } else {
+                const nserie = form.querySelector('#asigVehiculoNserie').value.trim();
+                if (!nserie) return mostrarError('Introduzca el número de serie');
+                payload = { nserie };
+            }
+
+            try {
+                await MaterialApi.assignToVehiculo(matricula, currentMaterialId, payload);
+                mostrarExito('Asignado correctamente');
+            } catch (e) {
+                console.error('Error asignando vehículo:', e);
+                mostrarError(e.message || 'Error al asignar vehículo');
+            } finally {
+                asignacionesCache.delete(currentMaterialId);
+                const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+                renderTablaVehiculos(nuevas.vehiculos);
+
+                form.querySelector('#asigVehiculoSelect').value = '';
+                form.querySelector('#asigVehiculoUnidades').value = '1';
+                form.querySelector('#asigVehiculoNserie').value = '';
+                form.querySelector('#modoAsigVehiculo').value = 'unidades';
+                form.querySelector('#wrapVehiculoUnidades').classList.remove('d-none');
+                form.querySelector('#wrapVehiculoNserie').classList.add('d-none');
+            }
+        });
+    }
+
+    // Asignar persona
+    const btnAsignarPersona = form.querySelector('#btnAsignarPersona');
+    if (btnAsignarPersona) {
+        btnAsignarPersona.addEventListener('click', async function () {
+            const id_bombero = String(form.querySelector('#asigPersonaSelect').value);
+            const nserie     = form.querySelector('#asigPersonaNserie').value.trim();
+
+            if (!id_bombero) return mostrarError('Seleccione una persona');
+            if (!nserie)     return mostrarError('El número de serie es obligatorio');
+
+            const nserieEncoded = encodeURIComponent(nserie);
+
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            try {
+                await MaterialApi.assignToPersona(id_bombero, currentMaterialId, nserieEncoded);
+                mostrarExito('Asignado correctamente');
+            } catch (e) {
+                console.error('Error asignando persona:', e);
+                mostrarError(e.message || 'Error al asignar persona');
+            } finally {
+                asignacionesCache.delete(currentMaterialId);
+                const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+                renderTablaPersonas(nuevas.personas);
+
+                form.querySelector('#asigPersonaSelect').value = '';
+                form.querySelector('#asigPersonaNserie').value = '';
+
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+    }
+
+    // Cambio instalación → cargar almacenes
+    const instalacionSelect = form.querySelector('#asigInstalacionSelect');
+    if (instalacionSelect) {
+        instalacionSelect.addEventListener('change', function () {
+            cargarAlmacenesEnSelect(this.value);
+        });
+    }
+
+    // ASIGNAR ALMACÉN
+    const btnAsignarAlmacen = form.querySelector('#btnAsignarAlmacen');
+    if (btnAsignarAlmacen) {
+        btnAsignarAlmacen.replaceWith(btnAsignarAlmacen.cloneNode(true));
+        const nuevoBtn = form.querySelector('#btnAsignarAlmacen');
+
+        nuevoBtn.addEventListener('click', async () => {
+            const id_instalacion = parseInt(form.querySelector('#asigInstalacionSelect').value);
+            const id_almacen     = parseInt(form.querySelector('#asigAlmacenSelect').value);
+            const modo           = form.querySelector('#modoAsigAlmacen').value;
+
+            if (!id_instalacion) return mostrarError('Seleccione instalación');
+            if (!id_almacen)     return mostrarError('Seleccione almacén');
+
+            let payload = {
+                id_material: parseInt(currentMaterialId),
+                id_instalacion: id_instalacion
+            };
+
+            if (modo === 'unidades') {
+                const unidades = parseInt(form.querySelector('#asigAlmacenUnidades').value);
+                if (!unidades || unidades < 1) return mostrarError('Unidades inválidas');
+                payload.unidades = unidades;
+            } else {
+                const n_serie = form.querySelector('#asigAlmacenNserie').value.trim();
+                if (!n_serie) return mostrarError('Introduzca el número de serie');
+                payload.n_serie = n_serie;
+            }
+
+            try {
+                await MaterialApi.assignToAlmacen(id_almacen, payload);
+                mostrarExito('Asignado correctamente');
+
+                form.querySelector('#asigInstalacionSelect').value = '';
+                form.querySelector('#asigAlmacenSelect').innerHTML = '<option value="">Primero seleccione instalación</option>';
+                form.querySelector('#asigAlmacenSelect').disabled = true;
+                form.querySelector('#asigAlmacenUnidades').value = '1';
+                form.querySelector('#asigAlmacenNserie').value = '';
+                form.querySelector('#modoAsigAlmacen').value = 'unidades';
+                form.querySelector('#wrapAlmacenUnidades').classList.remove('d-none');
+                form.querySelector('#wrapAlmacenNserie').classList.add('d-none');
+
+            } catch (e) {
+                console.error('Error:', e);
+                mostrarError(e.message || 'Error al asignar');
+            } finally {
+                asignacionesCache.delete(currentMaterialId);
+                const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+                renderTablaAlmacenes(nuevas.almacenes);
+            }
+        });
+    }
+}
+
+
+// FUNCIONES PARA RENDERIZAR TABLAS
+
+function renderTablaVehiculos(asignaciones) {
+    const tbody = document.getElementById('tbodyVehiculos');
+    if (!tbody) return;
+
+    if (!asignaciones || asignaciones.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Sin asignaciones</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '';
+    asignaciones.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${a.identificador || a.matricula || '-'}</td>
+            <td>${a.elemento || a.matricula || '-'}</td>
+            <td>${a.unidades ?? (a.numero_serie || a.nserie ? 1 : '-')}</td>
+            <td>${a.numero_serie || a.nserie || '-'}</td>
+            <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-vehiculo"
+                        data-matricula="${a.identificador || a.matricula}">
+                <i class="bi bi-trash"></i>
+            </button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.querySelectorAll('.btn-eliminar-vehiculo').forEach(btn => {
+        btn.addEventListener('click', eliminarAsignacionVehiculo);
+    });
+}
+
+function renderTablaPersonas(asignaciones) {
+    const tbody = document.getElementById('tbodyPersonas');
+    if (!tbody) return;
+
+    if (!asignaciones || asignaciones.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Sin asignaciones</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '';
+    asignaciones.forEach(a => {
+        const idOriginal = a.identificador || a.id_bombero || '-';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${idOriginal}</td>
+            <td>${a.elemento || a.nombre || '-'}</td>
+            <td>${a.n_funcionario || '-'}</td>
+            <td>${a.numero_serie || a.nserie || '-'}</td>
+            <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-persona"
+                        data-id="${idOriginal}">
+                <i class="bi bi-trash"></i>
+            </button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.querySelectorAll('.btn-eliminar-persona').forEach(btn => {
+        btn.addEventListener('click', eliminarAsignacionPersona);
+    });
+}
+
+function renderTablaAlmacenes(asignaciones) {
+    const tbody = document.getElementById('tbodyAlmacenes');
+    if (!tbody) return;
+
+    if (!asignaciones || asignaciones.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Sin asignaciones</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '';
+    asignaciones.forEach(a => {
+        const idAlmacen = a.identificador || a.id_almacen;
+        const nombreInstalacion = a.nombre_instalacion || extraerNombreInstalacion(a.elemento) || '-';
+        const nombreAlmacen     = a.nombre_almacen     || extraerNombreAlmacen(a.elemento)     || '-';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${nombreInstalacion}</td>
+            <td>${nombreAlmacen}</td>
+            <td>${a.planta || '-'}</td>
+            <td>${a.unidades ?? (a.numero_serie || a.nserie ? 1 : '-')}</td>
+            <td>${a.numero_serie || a.n_serie || '-'}</td>
+            <td><button type="button" class="btn btn-sm btn-danger btn-eliminar-almacen"
+                        data-id="${idAlmacen}">
+                <i class="bi bi-trash"></i>
+            </button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.querySelectorAll('.btn-eliminar-almacen').forEach(btn => {
+        btn.addEventListener('click', eliminarAsignacionAlmacen);
+    });
+}
+
+
+// ELIMINAR ASIGNACIONES
+
+async function eliminarAsignacionVehiculo(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!confirm('¿Eliminar asignación de este vehículo?')) return;
+
+    const btn = e.currentTarget;
+    const matricula = btn.dataset.matricula;
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    try {
+        await MaterialApi.removeFromVehiculo(matricula, currentMaterialId);
+        mostrarExito('Asignación eliminada');
+    } catch (e) {
+        console.error('Error eliminando asignación:', e);
+        mostrarError('Error en servidor, pero recargando...');
+    } finally {
+        asignacionesCache.delete(currentMaterialId);
+        const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+        renderTablaVehiculos(nuevas.vehiculos);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+async function eliminarAsignacionPersona(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!confirm('¿Eliminar asignación de esta persona?')) return;
+
+    const btn = e.currentTarget;
+    const id_persona = btn.dataset.id;
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    try {
+        await MaterialApi.removeFromPersona(id_persona, currentMaterialId);
+        mostrarExito('Asignación eliminada');
+    } catch (e) {
+        console.error('Error eliminando asignación:', e);
+        mostrarError('Error en servidor, pero recargando...');
+    } finally {
+        asignacionesCache.delete(currentMaterialId);
+        const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+        renderTablaPersonas(nuevas.personas);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+async function eliminarAsignacionAlmacen(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!confirm('¿Eliminar asignación de este almacén?')) return;
+
+    const btn = e.currentTarget;
+    const id_almacen = btn.dataset.id;
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    try {
+        await MaterialApi.removeFromAlmacen(id_almacen, currentMaterialId);
+        mostrarExito('Asignación eliminada correctamente');
+    } catch (e) {
+        console.error('Error eliminando asignación:', e);
+        mostrarError('Error al eliminar asignación');
+    } finally {
+        asignacionesCache.delete(currentMaterialId);
+        const nuevas = await obtenerAsignacionesMaterial(currentMaterialId);
+        renderTablaAlmacenes(nuevas.almacenes);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+
+// CARGAR ALMACENES EN SELECT
+
+async function cargarAlmacenesEnSelect(id_instalacion) {
+    const sel = document.getElementById('asigAlmacenSelect');
+    if (!sel) return;
+
+    if (!id_instalacion) {
+        sel.innerHTML = '<option value="">Primero seleccione instalación</option>';
+        sel.disabled = true;
+        return;
+    }
+
+    sel.innerHTML = '<option value="">Cargando...</option>';
+    sel.disabled = true;
+
+    try {
+        const res  = await fetch(`/api/instalaciones/${id_instalacion}/almacenes`);
+        if (!res.ok) throw new Error(`Error ${res.status}`);
+
+        const data     = await res.json();
+        const almacenes = Array.isArray(data) ? data : (data.data || []);
+
+        if (almacenes.length === 0) {
+            sel.innerHTML = '<option value="">No hay almacenes</option>';
+            sel.disabled = true;
+            return;
+        }
+
+        sel.innerHTML = '<option value="">Seleccione un almacén...</option>';
+        almacenes.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a.id_almacen;
+            opt.textContent = `${a.nombre} - Planta ${a.planta || ''}`;
+            sel.appendChild(opt);
+        });
+        sel.disabled = false;
+    } catch (e) {
+        console.error('Error cargando almacenes:', e);
+        sel.innerHTML = '<option value="">Error cargando almacenes</option>';
+        sel.disabled = true;
+    }
+}
+
+
 // FUNCIONES AUXILIARES
-// ================================
+
 function mostrarError(msg) {
-  console.error(msg);
-  
-  const alertDiv = document.createElement('div');
-  alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
-  alertDiv.style.zIndex = '9999';
-  alertDiv.innerHTML = `
-    <strong>Error:</strong> ${msg}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  `;
-  document.body.appendChild(alertDiv);
-  
-  setTimeout(() => {
-    alertDiv.remove();
-  }, 5000);
+    const container = document.getElementById('alert-container');
+    if (!container) return;
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `
+        <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+            <strong>Error:</strong> ${msg}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    container.appendChild(wrapper);
+    setTimeout(() => wrapper.remove(), 5000);
 }
 
 function mostrarExito(msg) {
-  const alertDiv = document.createElement('div');
-  alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
-  alertDiv.style.zIndex = '9999';
-  alertDiv.innerHTML = `
-    <strong>Éxito:</strong> ${msg}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  `;
-  document.body.appendChild(alertDiv);
-  
-  setTimeout(() => {
-    alertDiv.remove();
-  }, 3000);
+    const container = document.getElementById('alert-container');
+    if (!container) return;
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `
+        <div class="alert alert-success alert-dismissible fade show shadow" role="alert">
+            <strong>Éxito:</strong> ${msg}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    container.appendChild(wrapper);
+    setTimeout(() => wrapper.remove(), 3000);
 }
 
-window.refrescarMateriales = async function() {
-  await cargarDatosIniciales();
-  mostrarExito('Datos actualizados');
+window.refrescarMateriales = async function () {
+    datosCargados = false;
+    asignacionesCache.clear();
+    await cargarDatosIniciales();
+    mostrarExito('Datos actualizados');
 };
 
 window.MaterialController = {
-  cargarMateriales,
-  refrescarMateriales,
-  aplicarFiltros
+    cargarMateriales,
+    aplicarFiltros
 };

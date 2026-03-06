@@ -130,9 +130,7 @@ public function show(Request $req, Response $res, string $id_carnet): void
     {
         try {
             $data = $req->json();
-
-            $result = $this->service->assignCarnetToPerson($data);
-
+            $result = $this->service->assign($data);
             $res->status(201)->json([], $result['message']);
 
         } catch (ValidationException $e) {
@@ -159,17 +157,17 @@ public function update(Request $req, Response $res, string $id_carnet): void
     }
 }
     /**
-     * DELETE /carnets/{ID_Carnet}/personas/{n_funcionario}
+     * DELETE /carnets/{ID_Carnet}/personas/{id_bombero}
      */
     public function unassign(
         Request $req,
         Response $res,
         string $ID_Carnet,
-        string $n_funcionario
+        string $id_bombero
     ): void {
         try {
             $result = $this->service->unassignCarnetFromPerson(
-                $n_funcionario,
+                $id_bombero,
                 $ID_Carnet
             );
 

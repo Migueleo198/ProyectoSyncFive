@@ -14,18 +14,31 @@ class AlmacenModel
         $this->db = new DB();
     }
 
+    // ========== ALMACÉN ==========
+
     public function all(): array
     {
         return $this->db
-            ->query("SELECT * FROM Almacen ORDER BY id_almacen ASC")
+            ->query("SELECT * FROM Almacen ORDER BY id_instalacion ASC, id_almacen ASC")
             ->fetchAll();
     }
 
-    public function find(int $id): ?array
+    public function find(int $id_almacen, int $id_instalacion): ?array
     {
         $result = $this->db
-            ->query("SELECT * FROM Almacen WHERE id_almacen = :id")
-            ->bind(":id", $id)
+            ->query("SELECT * FROM Almacen WHERE id_almacen = :id_almacen AND id_instalacion = :id_instalacion")
+            ->bind(":id_almacen", $id_almacen)
+            ->bind(":id_instalacion", $id_instalacion)
+            ->fetch();
+
+        return $result ?: null;
+    }
+
+    public function findById(int $id_almacen): ?array
+    {
+        $result = $this->db
+            ->query("SELECT * FROM Almacen WHERE id_almacen = :id_almacen LIMIT 1")
+            ->bind(":id_almacen", $id_almacen)
             ->fetch();
 
         return $result ?: null;
@@ -34,53 +47,38 @@ class AlmacenModel
     public function findByInstalacion(int $id_instalacion): array
     {
         return $this->db
-            ->query("
-                SELECT a.* 
-                FROM Almacen a
-                INNER JOIN Almacen_Instalacion ai ON a.id_almacen = ai.id_almacen
-                WHERE ai.id_instalacion = :id_instalacion
-                ORDER BY a.id_almacen ASC
-            ")
+            ->query("SELECT * FROM Almacen WHERE id_instalacion = :id_instalacion ORDER BY id_almacen ASC")
             ->bind(":id_instalacion", $id_instalacion)
             ->fetchAll();
     }
 
-    public function create(array $data): int|false
+    public function create(array $data, int $id_instalacion): int|false
     {
         $this->db->query("
-            INSERT INTO Almacen (planta, nombre)
-            VALUES (:planta, :nombre)
+            INSERT INTO Almacen (id_almacen, id_instalacion, planta, nombre)
+            VALUES (siguiente_id_almacen(:id_instalacion), :id_instalacion, :planta, :nombre)
         ")
+        ->bind(":id_instalacion", $id_instalacion)
         ->bind(":planta", $data['planta'])
         ->bind(":nombre", $data['nombre'])
         ->execute();
 
-        return (int) $this->db->lastId();
+        $result = $this->db
+            ->query("SELECT MAX(id_almacen) AS id_almacen FROM Almacen WHERE id_instalacion = :id_instalacion")
+            ->bind(":id_instalacion", $id_instalacion)
+            ->fetch();
+
+        return $result ? (int) $result['id_almacen'] : false;
     }
 
-    public function asociarConInstalacion(int $id_almacen, int $id_instalacion): bool
+    public function update(int $id_almacen, int $id_instalacion, array $data): int
     {
         $this->db->query("
-            INSERT INTO Almacen_Instalacion (id_almacen, id_instalacion)
-            VALUES (:id_almacen, :id_instalacion)
+            UPDATE Almacen SET planta = :planta, nombre = :nombre
+            WHERE id_almacen = :id_almacen AND id_instalacion = :id_instalacion
         ")
         ->bind(":id_almacen", $id_almacen)
         ->bind(":id_instalacion", $id_instalacion)
-        ->execute();
-
-        $result = $this->db->query("SELECT ROW_COUNT() AS affected")->fetch();
-        return $result['affected'] > 0;
-    }
-
-    public function update(int $id, array $data): int
-    {
-        $this->db->query("
-            UPDATE Almacen SET
-                planta = :planta,
-                nombre = :nombre
-            WHERE id_almacen = :id
-        ")
-        ->bind(":id", $id)
         ->bind(":planta", $data['planta'])
         ->bind(":nombre", $data['nombre'])
         ->execute();
@@ -90,36 +88,21 @@ class AlmacenModel
 
     public function delete(int $id_almacen, int $id_instalacion): int
     {
-        $this->db->query("DELETE FROM Almacen WHERE id_almacen = :id_almacen")
-                 ->bind(":id_almacen", $id_almacen)
-                 ->execute();
+        if (!$this->find($id_almacen, $id_instalacion)) return 0;
 
-        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+        $this->db->query("DELETE FROM Almacen WHERE id_almacen = :id_almacen AND id_instalacion = :id_instalacion")
+            ->bind(":id_almacen", $id_almacen)
+            ->bind(":id_instalacion", $id_instalacion)
+            ->execute();
+
+        $result = $this->db->query("SELECT ROW_COUNT() AS affected")->fetch();
+        return $result['affected'] > 0 ? 1 : -1;
     }
 
-    public function desasociarDeInstalacion(int $id_instalacion, int $id_almacen): int
-    {
-        $this->db->query("
-            DELETE FROM Almacen_Instalacion 
-            WHERE id_almacen = :id_almacen 
-            AND id_instalacion = :id_instalacion
-        ")
-        ->bind(":id_almacen", $id_almacen)
-        ->bind(":id_instalacion", $id_instalacion)
-        ->execute();
-
-        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-    }
-
-    public function existeAsociacion(int $id_instalacion, int $id_almacen): bool
+    public function almacenPerteneceAInstalacion(int $id_almacen, int $id_instalacion): bool
     {
         $result = $this->db
-            ->query("
-                SELECT 1 
-                FROM Almacen_Instalacion 
-                WHERE id_almacen = :id_almacen 
-                AND id_instalacion = :id_instalacion
-            ")
+            ->query("SELECT 1 FROM Almacen WHERE id_almacen = :id_almacen AND id_instalacion = :id_instalacion")
             ->bind(":id_almacen", $id_almacen)
             ->bind(":id_instalacion", $id_instalacion)
             ->fetch();
@@ -127,156 +110,25 @@ class AlmacenModel
         return $result !== null;
     }
 
-    public function countInstalacionesAsociadas(int $id_almacen): int
-    {
-        $result = $this->db->query("
-            SELECT COUNT(*) as count 
-            FROM Almacen_Instalacion 
-            WHERE id_almacen = :id_almacen
-        ")
-        ->bind(":id_almacen", $id_almacen)
-        ->fetch();
-        
-        return (int) $result['count'];
-    }
-
-    // ========== MÉTODOS PARA MATERIAL EN ALMACÉN ==========
-
-    public function getMaterialesEnAlmacen(int $id_almacen): array
-    {
-        return $this->db
-            ->query("
-                SELECT 
-                    am.id_almacen,
-                    am.id_instalacion,
-                    am.id_material,
-                    am.n_serie,
-                    am.unidades,
-                    m.nombre as material_nombre,
-                    m.descripcion as material_descripcion,
-                    m.id_categoria,
-                    m.estado,
-                    i.nombre as instalacion_nombre
-                FROM Almacen_material am
-                INNER JOIN Material m ON am.id_material = m.id_material
-                INNER JOIN Almacen_Instalacion ai ON am.id_almacen = ai.id_almacen 
-                    AND am.id_instalacion = ai.id_instalacion
-                INNER JOIN Instalacion i ON ai.id_instalacion = i.id_instalacion
-                WHERE am.id_almacen = :id_almacen
-                ORDER BY m.nombre ASC
-            ")
-            ->bind(":id_almacen", $id_almacen)
-            ->fetchAll();
-    }
-
     public function getInstalacionesDeAlmacen(int $id_almacen): array
     {
         return $this->db
-            ->query("
-                SELECT ai.id_instalacion
-                FROM Almacen_Instalacion ai
-                WHERE ai.id_almacen = :id_almacen
-            ")
+            ->query("SELECT id_instalacion FROM Almacen WHERE id_almacen = :id_almacen")
             ->bind(":id_almacen", $id_almacen)
             ->fetchAll();
     }
 
-    public function materialExisteEnAlmacen(int $id_almacen, int $id_material): bool
+    // ========== MATERIAL POR UNIDADES ==========
+
+    public function getMaterialUnidades(int $id_almacen, int $id_instalacion, int $id_material): ?array
     {
         $result = $this->db
             ->query("
-                SELECT 1 
-                FROM Almacen_material 
-                WHERE id_almacen = :id_almacen 
-                AND id_material = :id_material
-            ")
-            ->bind(":id_almacen", $id_almacen)
-            ->bind(":id_material", $id_material)
-            ->fetch();
-
-        return $result !== null;
-    }
-
-    public function addMaterialToAlmacen(int $id_almacen, int $id_instalacion, int $id_material, ?int $n_serie, int $unidades): int
-    {
-        $this->db->query("
-            INSERT INTO Almacen_material (
-                id_almacen, 
-                id_instalacion, 
-                id_material, 
-                n_serie, 
-                unidades
-            ) VALUES (
-                :id_almacen, 
-                :id_instalacion, 
-                :id_material, 
-                :n_serie, 
-                :unidades
-            )
-        ")
-        ->bind(":id_almacen", $id_almacen)
-        ->bind(":id_instalacion", $id_instalacion)
-        ->bind(":id_material", $id_material)
-        ->bind(":n_serie", $n_serie)
-        ->bind(":unidades", $unidades)
-        ->execute();
-
-        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-    }
-
-    public function updateMaterialInAlmacen(int $id_almacen, int $id_instalacion, int $id_material, ?int $n_serie, int $unidades): int
-    {
-        $this->db->query("
-            UPDATE Almacen_material 
-            SET n_serie = :n_serie, 
-                unidades = :unidades 
-            WHERE id_almacen = :id_almacen 
-                AND id_instalacion = :id_instalacion
-                AND id_material = :id_material
-        ")
-        ->bind(":n_serie", $n_serie)
-        ->bind(":unidades", $unidades)
-        ->bind(":id_almacen", $id_almacen)
-        ->bind(":id_instalacion", $id_instalacion)
-        ->bind(":id_material", $id_material)
-        ->execute();
-
-        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-    }
-
-    public function deleteMaterialFromAlmacen(int $id_almacen, int $id_instalacion, int $id_material): int
-    {
-        $this->db->query("
-            DELETE FROM Almacen_material 
-            WHERE id_almacen = :id_almacen 
-                AND id_instalacion = :id_instalacion
-                AND id_material = :id_material
-        ")
-        ->bind(":id_almacen", $id_almacen)
-        ->bind(":id_instalacion", $id_instalacion)
-        ->bind(":id_material", $id_material)
-        ->execute();
-
-        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-    }
-
-    public function getMaterialEnAlmacen(int $id_almacen, int $id_instalacion, int $id_material): ?array
-    {
-        $result = $this->db
-            ->query("
-                SELECT 
-                    am.*,
-                    m.nombre as material_nombre,
-                    m.descripcion as material_descripcion,
-                    m.id_categoria,
-                    m.estado,
-                    i.nombre as instalacion_nombre
-                FROM Almacen_material am
-                INNER JOIN Material m ON am.id_material = m.id_material
-                INNER JOIN Instalacion i ON am.id_instalacion = i.id_instalacion
-                WHERE am.id_almacen = :id_almacen 
-                    AND am.id_instalacion = :id_instalacion
-                    AND am.id_material = :id_material
+                SELECT u.*, m.nombre AS material_nombre, i.nombre AS instalacion_nombre
+                FROM Almacen_Material_Unidades u
+                INNER JOIN Material m ON u.id_material = m.id_material
+                INNER JOIN Instalacion i ON u.id_instalacion = i.id_instalacion
+                WHERE u.id_almacen = :id_almacen AND u.id_instalacion = :id_instalacion AND u.id_material = :id_material
             ")
             ->bind(":id_almacen", $id_almacen)
             ->bind(":id_instalacion", $id_instalacion)
@@ -286,36 +138,131 @@ class AlmacenModel
         return $result ?: null;
     }
 
-    public function almacenAsociadoAInstalacion(int $id_almacen, int $id_instalacion): bool
+    public function addMaterialUnidades(int $id_almacen, int $id_instalacion, int $id_material, int $unidades): int
+    {
+        $this->db->query("
+            INSERT INTO Almacen_Material_Unidades (id_almacen, id_instalacion, id_material, unidades)
+            VALUES (:id_almacen, :id_instalacion, :id_material, :unidades)
+        ")
+        ->bind(":id_almacen", $id_almacen)
+        ->bind(":id_instalacion", $id_instalacion)
+        ->bind(":id_material", $id_material)
+        ->bind(":unidades", $unidades)
+        ->execute();
+
+        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+    }
+
+    public function updateMaterialUnidades(int $id_almacen, int $id_instalacion, int $id_material, int $unidades): int
+    {
+        $this->db->query("
+            UPDATE Almacen_Material_Unidades SET unidades = :unidades
+            WHERE id_almacen = :id_almacen AND id_instalacion = :id_instalacion AND id_material = :id_material
+        ")
+        ->bind(":unidades", $unidades)
+        ->bind(":id_almacen", $id_almacen)
+        ->bind(":id_instalacion", $id_instalacion)
+        ->bind(":id_material", $id_material)
+        ->execute();
+
+        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+    }
+
+    public function deleteMaterialUnidades(int $id_almacen, int $id_instalacion, int $id_material): int
+    {
+        $this->db->query("
+            DELETE FROM Almacen_Material_Unidades
+            WHERE id_almacen = :id_almacen AND id_instalacion = :id_instalacion AND id_material = :id_material
+        ")
+        ->bind(":id_almacen", $id_almacen)
+        ->bind(":id_instalacion", $id_instalacion)
+        ->bind(":id_material", $id_material)
+        ->execute();
+
+        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+    }
+
+    // ========== MATERIAL POR SERIE ==========
+
+    public function existeNserieEnAlmacen(int $id_almacen, int $id_material, string $n_serie): bool
     {
         $result = $this->db
             ->query("
-                SELECT 1 
-                FROM Almacen_Instalacion 
+                SELECT 1 FROM Almacen_Material_Serie 
                 WHERE id_almacen = :id_almacen 
-                AND id_instalacion = :id_instalacion
+                AND id_material = :id_material
+                AND n_serie = :n_serie
             ")
             ->bind(":id_almacen", $id_almacen)
-            ->bind(":id_instalacion", $id_instalacion)
+            ->bind(":id_material", $id_material)
+            ->bind(":n_serie", $n_serie)
             ->fetch();
 
         return $result !== null;
     }
 
-    public function existeNserieEnAlmacen(int $id_almacen, int $n_serie): bool
+    public function addMaterialSerie(int $id_almacen, int $id_instalacion, int $id_material, string $n_serie): int
     {
-        $result = $this->db
+        $this->db->query("
+            INSERT INTO Almacen_Material_Serie (id_almacen, id_instalacion, id_material, n_serie)
+            VALUES (:id_almacen, :id_instalacion, :id_material, :n_serie)
+        ")
+        ->bind(":id_almacen", $id_almacen)
+        ->bind(":id_instalacion", $id_instalacion)
+        ->bind(":id_material", $id_material)
+        ->bind(":n_serie", $n_serie)
+        ->execute();
+
+        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+    }
+
+    public function deleteMaterialSerie(int $id_almacen, int $id_instalacion, int $id_material): int
+    {
+        $this->db->query("
+            DELETE FROM Almacen_Material_Serie
+            WHERE id_almacen = :id_almacen AND id_instalacion = :id_instalacion AND id_material = :id_material
+        ")
+        ->bind(":id_almacen", $id_almacen)
+        ->bind(":id_instalacion", $id_instalacion)
+        ->bind(":id_material", $id_material)
+        ->execute();
+
+        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
+    }
+
+    // ========== LISTADO UNIFICADO ==========
+
+    public function getMaterialesEnAlmacen(int $id_almacen): array
+    {
+        $porUnidades = $this->db
             ->query("
-                SELECT 1 
-                FROM Almacen_material 
-                WHERE id_almacen = :id_almacen 
-                AND n_serie = :n_serie
+                SELECT u.id_almacen, u.id_instalacion, u.id_material,
+                       u.unidades, NULL AS n_serie, 'unidades' AS modo,
+                       m.nombre AS material_nombre, m.descripcion AS material_descripcion,
+                       m.id_categoria, m.estado, i.nombre AS instalacion_nombre
+                FROM Almacen_Material_Unidades u
+                INNER JOIN Material m ON u.id_material = m.id_material
+                INNER JOIN Instalacion i ON u.id_instalacion = i.id_instalacion
+                WHERE u.id_almacen = :id_almacen
             ")
             ->bind(":id_almacen", $id_almacen)
-            ->bind(":n_serie", $n_serie)
-            ->fetch();
+            ->fetchAll();
 
-        return $result !== null;
+        $porSerie = $this->db
+            ->query("
+                SELECT s.id_almacen, s.id_instalacion, s.id_material,
+                       NULL AS unidades, s.n_serie, 'serie' AS modo,
+                       m.nombre AS material_nombre, m.descripcion AS material_descripcion,
+                       m.id_categoria, m.estado, i.nombre AS instalacion_nombre
+                FROM Almacen_Material_Serie s
+                INNER JOIN Material m ON s.id_material = m.id_material
+                INNER JOIN Instalacion i ON s.id_instalacion = i.id_instalacion
+                WHERE s.id_almacen = :id_almacen
+            ")
+            ->bind(":id_almacen", $id_almacen)
+            ->fetchAll();
+
+        return array_merge($porUnidades, $porSerie);
     }
 }
 ?>

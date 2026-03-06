@@ -1,4 +1,5 @@
 import RolesApi from '../api_f/RolApi.js';
+import PersonaApi from '../api_f/PersonaApi.js';
 
 let roles = [];
 
@@ -7,6 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     bindCrearRol();
     bindModalVer();
     bindModalEditar();
+    cargarSelectRoles();
+    cargarSelectPersonas(null, 'n_funcionario');
+    bindAsignarRol();
 });
 
 // ================================
@@ -22,6 +26,48 @@ async function cargarRoles() {
     }
 }
 
+// ================================
+// CARGAR SELECTS
+// ================================
+
+async function cargarSelectRoles() {
+    const select = document.getElementById('rol');
+    if (!select) return;
+
+    try {
+        const res = await RolesApi.getAll();
+        select.innerHTML = '<option value="">Seleccione rol...</option>';
+
+        res.data.forEach(r => {
+            const option = document.createElement('option');
+            option.value = r.id_rol;         // ajusta según el campo de tu BD
+            option.textContent = r.nombre; // ajusta según el campo de tu BD
+            select.appendChild(option);
+        });
+    } catch (e) {
+        mostrarError(e.message || 'Error cargando roles');
+    }
+}
+
+async function cargarSelectPersonas(seleccionado, id_select) {
+    const select = document.getElementById(id_select);
+    if (!select) return;
+
+    try {
+        const res = await PersonaApi.getAll();
+        select.innerHTML = '<option value="">Seleccione persona...</option>';
+
+        res.data.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id_bombero;
+            option.textContent = `${p.n_funcionario} - ${p.nombre} ${p.apellidos}`;
+            if (seleccionado && p.n_funcionario === seleccionado) option.selected = true;
+            select.appendChild(option);
+        });
+    } catch (e) {
+        mostrarError(e.message || 'Error cargando personas');
+    }
+}
 // ================================
 // RENDER TABLA
 // ================================
@@ -108,6 +154,36 @@ function bindCrearRol() {
     });
 }
 
+// ================================
+// ASIGNAR ROL A PERSONA
+// ================================
+function bindAsignarRol() {
+    const form = document.getElementById('formAsignarRol');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = new FormData(form);
+
+        const data = {
+            id_bombero: f.get('n_funcionario'), // el select tiene name="n_funcionario"
+            id_rol: f.get('rol'),               // el select tiene name="rol"
+        };
+
+        if (!data.id_bombero || !data.id_rol) {
+            mostrarAlerta('Seleccione persona y rol', 'danger');
+            return;
+        }
+
+        try {
+            await RolesApi.assignToPerson(data);
+            mostrarAlerta('Rol asignado correctamente', 'success');
+            form.reset();
+        } catch (err) {
+            mostrarAlerta(err.message || 'Error asignando rol', 'danger');
+        }
+    });
+}
 // ================================
 // MODAL VER
 // ================================
@@ -276,4 +352,19 @@ function mostrarAlerta(msg, tipo = 'info') {
         const el = document.getElementById(id);
         if (el) el.remove();
     }, 4000);
+}
+
+// ================================
+// ERRORES / ÉXITO
+// ================================
+function mostrarError(msg) {
+  const container = document.getElementById('alert-container');
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = `
+    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+      <strong>Error:</strong> ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  `;
+  container.append(wrapper);
 }

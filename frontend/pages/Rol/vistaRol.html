@@ -2,33 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Roles</title>
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-
-    <!-- Configuración y rutas absolutas -->
     <script src="/frontend/config/config.js"></script>
-
-    <!-- CSS del proyecto -->
-    <script>
-        loadCSS("header_footer.css");
-        loadCSS("plantilla_css.css");
-        loadFavicon("favicon.png");
-    </script>
-
-    <!-- JS comunes -->
-    <script src="/frontend/javascript/header_footer.js" defer></script>
-    <script src="/frontend/javascript/script_filtro_tabla.js" defer></script>
-
-    <!-- Bootstrap Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Controlador específico -->
+    <script>loadHead("Roles")</script>
     <script type="module" src="/frontend/javascript/controllers_f/RolController.js"></script>
 </head>
-
 <body class="bg-white text-dark">
 
     <!-- HEADER -->
@@ -51,9 +28,8 @@
                 </a>
             </div>
 
-            <div>
-                <p>[Migas de pan]</p>
-            </div>
+            <!-- MIGAS DE PAN -->
+            <div id="breadcrumb-placeholder"></div>
 
             <!-- FILTRO -->
             <div class="container mt-4 p-0"> 
@@ -128,7 +104,58 @@
                 </form>
             </div>
 
+            <div class="contenedorInsertar container mt-5 p-4 border rounded">
+                <h5 class="text-center mb-4">Insertar usuario a guardia</h5>
+                <form id="formAsignarRol" class="mx-auto">
+                    <!-- Campos en la misma fila -->
+                    <div class="row mb-3">
+                        <!-- Rol -->
+                        <div class="col-md-6 col-sm-6">
+                            <label for="rol" class="m-2">Rol</label>
+                            <select name="rol" id="rol" class="form-select form-select-sm" required>
+                                <option value="">Seleccione rol...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-sm-6">
+                            <label for="n_funcionario" class="m-2 form-label">Persona</label>
+                            <select class="form-select" id="n_funcionario" name="n_funcionario">
+                                <option value="">Seleccione persona...</option>
+                                <!-- Se llenará dinámicamente desde JS -->
+                            </select>       
+                        </div>
+                        <!-- Botones centrados debajo -->
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="reset" class="btn btn-secondary">Limpiar</button>
+                            <button type="submit" class="btn btn-primary" id="btnInsertarUsuario">Insertar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </main>
+    </div>
+
+    <!-- MODAL ELIMINAR -->
+    <div class="modal fade" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEliminarLabel">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar este rol?
+                    <p class="text-muted mb-0">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL EDITAR -->
