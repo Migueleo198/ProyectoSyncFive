@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindFiltros();
   bindModales();
 });
-
+ 
 // ================================
 // CARGAR DATOS INICIALES
 // ================================
