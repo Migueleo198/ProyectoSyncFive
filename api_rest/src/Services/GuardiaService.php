@@ -263,7 +263,71 @@ public function createGuardia(array $input): array
             }
         } */
 
+
+        /**
+         * Obtener guardia en una fecha
+         */
+        public function getGuardiasByFecha(string $fecha): array
+        {
+            Validator::validate(['fecha' => $fecha], [
+                'fecha' => 'required|date'
+            ]);
+
+            try {
+                return $this->model->findByDate($fecha);
+            } catch (Throwable $e) {
+                throw new \Exception(
+                    "Error interno en la base de datos: " . $e->getMessage(),
+                    500
+                );
+            }
         }
 
+        /**
+         * PATCH /personas/{id_bombero}/guardias/{id_guardia}
+         */
+        public function updateCargo(string $id_bombero, string $id_guardia, string $cargo): array
+        {
+            Validator::validate(
+                ['id_bombero' => $id_bombero, 'id_guardia' => $id_guardia, 'cargo' => $cargo],
+                [
+                    'id_bombero' => 'required|string',
+                    'id_guardia' => 'required|string',
+                    'cargo'      => 'string|in:OFICIAL1,OFICIAL2,CONDUCTOR1,CONDUCTOR2,BOMBERO1,BOMBERO2,BOMBERO3,BOMBERO4,BOMBERO5,BOMBERO6,BOMBERO7,BOMBERO8,BOMBERO9,BOMBERO10'
+                ]
+            );
+
+            try {
+                $result = $this->model->updateCargo($id_bombero, $id_guardia, $cargo);
+            } catch (Throwable $e) {
+                throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+            }
+
+            // 0 afectadas = la fila existe pero el cargo ya era ese → no es error
+            return ['id_bombero' => $id_bombero, 'id_guardia' => $id_guardia, 'cargo' => $cargo];
+        }
+
+        /**
+         * PATCH /guardias/{id_guardia}/notas
+         */
+        public function updateNotas(string $id_guardia, string $notas): array
+        {
+            Validator::validate(
+                ['id_guardia' => $id_guardia, 'notas' => $notas],
+                [
+                    'id_guardia' => 'required|string',
+                    'notas'      => 'string'
+                ]
+            );
+
+            try {
+                $result = $this->model->updateNotas($id_guardia, $notas);
+            } catch (Throwable $e) {
+                throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+            }
+
+            return ['id_guardia' => $id_guardia, 'notas' => $notas];
+        }
+}
 
 ?>

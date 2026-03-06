@@ -157,6 +157,25 @@ public function unassign(Request $req, Response $res): void
         $res->errorJson($e->getMessage(), $code);
     }
 }
+
+    /**
+     * GET /turno-refuerzo/fecha/{fecha}
+     */
+    public function getTurnoByFecha(Request $req, Response $res, string $fecha): void
+    {
+        try {
+            $turno = $this->service->getTurnoRefuerzoByFecha($fecha);
+            if (!$turno) {
+                $res->status(404)->json([], "No hay turno de refuerzo registrado para esta fecha.");
+                return; 
+            }
+            $res->status(200)->json($turno, "Turno de refuerzo obtenido correctamente");
+        } catch (Throwable $e) {
+            $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);   
+        }
+    }    
+
 }
 
 
