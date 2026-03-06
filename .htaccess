@@ -43,7 +43,8 @@ ErrorDocument 500 /frontend/errores/err500.html
     RewriteRule ^usuarios$ frontend/pages/Persona/vistaPersona.html [L]
     RewriteRule ^perfil$ frontend/pages/AreaPersonal/vistaAreaPersonal.html [L]
     RewriteRule ^emergencias/activas$ frontend/pages/Emergencia/vistaEmergenciaActiva.html [L]
-
+    RewriteRule ^roles$ frontend/pages/Rol/vistaRol.html [L]
+    RewriteRule ^login$ frontend/pages/Login/login.html [L]
     # -------------------------------------------------
     # No tocar frontend directamente
     # -------------------------------------------------
