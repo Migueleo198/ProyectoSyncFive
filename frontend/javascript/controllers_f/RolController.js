@@ -21,11 +21,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// ================================
+// CARGAR ROLES
+// ================================
 async function cargarRoles() {
   try { const r = await RolesApi.getAll(); roles = r.data; renderTablaRoles(roles); }
   catch (e) { mostrarAlerta(e.message || 'Error cargando roles', 'danger'); }
 }
 
+// ================================
+// POBLAR SELECT ROLES
+// ================================
 async function cargarSelectRoles() {
   const select = document.getElementById('rol'); if (!select) return;
   try {
@@ -35,6 +41,9 @@ async function cargarSelectRoles() {
   } catch (e) { mostrarError(e.message || 'Error cargando roles'); }
 }
 
+// ================================
+// POBLAR SELECT PERSONAS
+// ================================
 async function cargarSelectPersonas(seleccionado, id_select) {
   const select = document.getElementById(id_select); if (!select) return;
   try {
@@ -44,6 +53,9 @@ async function cargarSelectPersonas(seleccionado, id_select) {
   } catch (e) { mostrarError(e.message || 'Error cargando personas'); }
 }
 
+// ================================
+// RENDER TABLA
+// ================================
 function renderTablaRoles(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
@@ -64,6 +76,9 @@ function renderTablaRoles(lista) {
   if (puedeEscribir) bindEliminarRol();
 }
 
+// ================================
+// CREAR ROL
+// ================================
 function bindCrearRol() {
   const form = document.getElementById('formRol'); if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -77,6 +92,9 @@ function bindCrearRol() {
   });
 }
 
+// ================================
+// ASIGNAR ROL
+// ================================
 function bindAsignarRol() {
   const form = document.getElementById('formAsignarRol'); if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -89,6 +107,9 @@ function bindAsignarRol() {
   });
 }
 
+// ================================
+// MODAL VER
+// ================================
 function bindModalVer() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-ver'); if (!btn) return;
@@ -101,6 +122,9 @@ function bindModalVer() {
   });
 }
 
+// ================================
+// MODAL EDITAR
+// ================================
 function bindModalEditar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-editar'); if (!btn) return;
@@ -127,6 +151,9 @@ function bindModalEditar() {
   });
 }
 
+// ================================
+// ELIMINAR ROL
+// ================================
 function bindEliminarRol() {
   document.querySelectorAll('.btn-eliminar').forEach(btn => {
     btn.addEventListener('click', async function () {

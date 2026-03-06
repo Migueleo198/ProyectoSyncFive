@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// ================================
+// CARGAR DATOS INICIALES
+// ================================
 async function cargarDatosIniciales() {
   try {
     await Promise.all([cargarInstalaciones()]);
@@ -29,6 +32,9 @@ async function cargarDatosIniciales() {
   }
 }
 
+// ================================
+// CARGAR INSTALACIONES
+// ================================
 async function cargarInstalaciones() {
   try {
     const response = await fetch('/api/instalaciones');
@@ -40,6 +46,9 @@ async function cargarInstalaciones() {
   }
 }
 
+// ================================
+// CARGAR TODOS LOS ALMACENES
+// ================================
 async function cargarTodosLosAlmacenes() {
   almacenes = [];
 
@@ -66,6 +75,9 @@ async function cargarTodosLosAlmacenes() {
   }
 }
 
+// ================================
+// POBLAR SELECT DE INSTALACIONES
+// ================================
 function poblarSelectInstalaciones() {
   const selects = ['selectInstalacion', 'editInstalacion'];
   selects.forEach(id => {
@@ -82,6 +94,9 @@ function poblarSelectInstalaciones() {
   });
 }
 
+// ================================
+// RENDER TABLA
+// ================================
 function renderTablaAlmacenes(lista) {
   const tbody = document.querySelector('#tabla tbody');
   if (!tbody) return;
@@ -126,6 +141,9 @@ function renderTablaAlmacenes(lista) {
   });
 }
 
+// ================================
+// FILTROS
+// ================================
 function bindFiltros() {
   const filtroPlanta = document.getElementById('planta');
   const filtroNombre = document.getElementById('nombre');
@@ -133,6 +151,9 @@ function bindFiltros() {
   if (filtroNombre) filtroNombre.addEventListener('input', aplicarFiltros);
 }
 
+// ================================
+// APLICAR FILTROS
+// ================================
 function aplicarFiltros() {
   const filtroPlanta = document.getElementById('planta')?.value;
   const filtroNombre = document.getElementById('nombre')?.value?.toLowerCase();
@@ -147,6 +168,9 @@ function aplicarFiltros() {
   renderTablaAlmacenes(filtrados);
 }
 
+// ================================
+// CREAR ALMACÉN
+// ================================
 function bindCrearAlmacen() {
   const form = document.getElementById('formInsertar');
   if (!form) return;
@@ -185,8 +209,10 @@ function bindCrearAlmacen() {
   });
 }
 
+// ================================
+// MODALES
+// ================================
 function bindModales() {
-  // MODAL VER
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-ver');
     if (!btn) return;
@@ -202,7 +228,6 @@ function bindModales() {
     `;
   });
 
-  // MODAL EDITAR
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
@@ -274,7 +299,6 @@ function bindModales() {
     }
   });
 
-  // MODAL ELIMINAR
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar');
     if (!btn) return;
@@ -319,6 +343,9 @@ function bindModales() {
   });
 }
 
+// ================================
+// ALERTAS
+// ================================
 function mostrarError(msg) {
   const alertDiv = document.createElement('div');
   alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';

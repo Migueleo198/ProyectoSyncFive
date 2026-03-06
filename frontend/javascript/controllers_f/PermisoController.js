@@ -23,11 +23,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// ================================
+// CARGAR PERMISOS
+// ================================
 async function cargarPermisos() {
   try { const r = await PermisoApi.getAll(); permisos = r.data; renderTablaPermisos(permisos); }
   catch (e) { mostrarError(e.message || 'Error cargando permisos'); }
 }
 
+// ================================
+// POBLAR SELECT PERMISOS
+// ================================
 async function cargarSelectPermisos() {
   const select = document.getElementById('permiso'); if (!select) return;
   try {
@@ -37,6 +43,9 @@ async function cargarSelectPermisos() {
   } catch (e) { mostrarError(e.message || 'Error cargando permisos'); }
 }
 
+// ================================
+// POBLAR SELECT MOTIVOS
+// ================================
 async function cargarSelectMotivos(seleccionado, id_select) {
   const select = document.getElementById(id_select); if (!select) return;
   try {
@@ -46,12 +55,18 @@ async function cargarSelectMotivos(seleccionado, id_select) {
   } catch (e) { mostrarError(e.message || 'Error cargando motivos'); }
 }
 
+// ================================
+// POBLAR SELECT ESTADOS
+// ================================
 function cargarSelectEstados() {
   const select = document.getElementById('estado'); if (!select) return;
   select.innerHTML = '<option value="">Seleccione el estado...</option>';
   ['ACEPTADO','REVISION','DENEGADO'].forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; select.appendChild(o); });
 }
 
+// ================================
+// RENDER TABLA
+// ================================
 function renderTablaPermisos(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
@@ -70,6 +85,9 @@ function renderTablaPermisos(lista) {
   });
 }
 
+// ================================
+// CREAR PERMISO
+// ================================
 function bindCrearPermiso() {
   const form = document.getElementById('formInsertar'); if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -82,6 +100,9 @@ function bindCrearPermiso() {
   });
 }
 
+// ================================
+// MODAL VER
+// ================================
 function bindModalVer() {
   document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-ver'); if (!btn) return;
@@ -103,6 +124,9 @@ function bindModalVer() {
   });
 }
 
+// ================================
+// MODAL EDITAR
+// ================================
 function bindModalEditar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-editar'); if (!btn) return;
@@ -134,6 +158,9 @@ function bindModalEditar() {
   });
 }
 
+// ================================
+// GESTIONAR ESTADO
+// ================================
 function bindGestionarEstado() {
   const form = document.getElementById('formGestionarEstado'); if (!form) return;
   form.addEventListener('submit', async (e) => {

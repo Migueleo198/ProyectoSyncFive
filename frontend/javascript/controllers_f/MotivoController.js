@@ -19,11 +19,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// ================================
+// CARGAR MOTIVOS
+// ================================
 async function cargarMotivos() {
   try { const r = await MotivoApi.getAll(); motivos = r.data; renderTablaMotivos(motivos); }
   catch (e) { mostrarError(e.message || 'Error cargando motivos'); }
 }
 
+// ================================
+// RENDER TABLA
+// ================================
 function renderTablaMotivos(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
@@ -43,6 +49,9 @@ function renderTablaMotivos(lista) {
   });
 }
 
+// ================================
+// CREAR MOTIVO
+// ================================
 function bindCrearMotivo() {
   const form = document.getElementById('formMotivo'); if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -55,6 +64,9 @@ function bindCrearMotivo() {
   });
 }
 
+// ================================
+// MODAL VER
+// ================================
 function bindModalVer() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-ver'); if (!btn) return;
@@ -67,6 +79,9 @@ function bindModalVer() {
   });
 }
 
+// ================================
+// MODAL EDITAR
+// ================================
 function bindModalEditar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-editar'); if (!btn) return;
@@ -94,6 +109,9 @@ function bindModalEditar() {
   });
 }
 
+// ================================
+// MODAL ELIMINAR
+// ================================
 function bindModalEliminar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar'); if (!btn) return;

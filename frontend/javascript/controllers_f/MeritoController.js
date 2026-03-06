@@ -25,11 +25,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// ================================
+// CARGAR MÉRITOS
+// ================================
 async function cargarMeritos() {
   try { const r = await MeritosApi.getAll(); meritos = r.data; renderTablaMeritos(meritos); }
   catch (e) { mostrarError(e.message || 'Error cargando méritos'); }
 }
 
+// ================================
+// POBLAR SELECT MÉRITOS
+// ================================
 async function cargarSelectMeritos(id_select = 'merito') {
   const select = document.getElementById(id_select); if (!select) return;
   try {
@@ -39,6 +45,9 @@ async function cargarSelectMeritos(id_select = 'merito') {
   } catch (e) { mostrarError(e.message || 'Error cargando méritos'); }
 }
 
+// ================================
+// POBLAR SELECT PERSONAS
+// ================================
 async function cargarSelectPersonas(seleccionado, id_select) {
   const select = document.getElementById(id_select); if (!select) return;
   try {
@@ -48,6 +57,9 @@ async function cargarSelectPersonas(seleccionado, id_select) {
   } catch (e) { mostrarError(e.message || 'Error cargando personas'); }
 }
 
+// ================================
+// RENDER TABLA
+// ================================
 function renderTablaMeritos(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
@@ -66,6 +78,9 @@ function renderTablaMeritos(lista) {
   });
 }
 
+// ================================
+// CREAR MÉRITO
+// ================================
 function bindCrearMerito() {
   const form = document.getElementById('formMerito'); if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -81,6 +96,9 @@ function bindCrearMerito() {
   });
 }
 
+// ================================
+// ASIGNAR MÉRITO
+// ================================
 function bindAsignarMerito() {
   const form = document.getElementById('formAsignarMerito'); if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -93,6 +111,9 @@ function bindAsignarMerito() {
   });
 }
 
+// ================================
+// DESASIGNAR MÉRITO
+// ================================
 function bindDesasignarMerito() {
   const form = document.getElementById('formDesasignarMerito'); if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -105,6 +126,9 @@ function bindDesasignarMerito() {
   });
 }
 
+// ================================
+// MODAL VER
+// ================================
 function bindModalVer() {
   document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-ver'); if (!btn) return;
@@ -136,6 +160,9 @@ function bindModalVer() {
   });
 }
 
+// ================================
+// MODAL ELIMINAR
+// ================================
 function bindModalEliminar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar'); if (!btn) return;

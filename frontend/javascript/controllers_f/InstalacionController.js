@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindModalVer();
 });
 
+// ================================
+// CARGAR INSTALACIONES
+// ================================
 async function cargarInstalaciones() {
   try {
     const r = await InstalacionApi.getAll();
@@ -32,6 +35,9 @@ async function cargarInstalaciones() {
 const nombresCampos = ['Nombre','Dirección','Teléfono','Correo','Localidad'];
 const camposBd      = ['nombre','direccion','telefono','correo','localidad'];
 
+// ================================
+// RENDER TABLA
+// ================================
 function renderTablaInstalaciones(lista) {
   const tbody = document.querySelector('#tabla tbody');
   if (!tbody) return;
@@ -55,11 +61,17 @@ function renderTablaInstalaciones(lista) {
   });
 }
 
+// ================================
+// FILTROS
+// ================================
 function bindFiltros() {
   document.getElementById('nombre')?.addEventListener('input', aplicarFiltros);
   document.getElementById('localidad')?.addEventListener('input', aplicarFiltros);
 }
 
+// ================================
+// APLICAR FILTROS
+// ================================
 function aplicarFiltros() {
   const fn = document.getElementById('nombre')?.value?.toLowerCase();
   const fl = document.getElementById('localidad')?.value?.toLowerCase();
@@ -69,6 +81,9 @@ function aplicarFiltros() {
   ));
 }
 
+// ================================
+// MODAL VER
+// ================================
 function bindModalVer() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-ver');
@@ -86,6 +101,9 @@ function bindModalVer() {
   });
 }
 
+// ================================
+// CREAR INSTALACIÓN
+// ================================
 function bindCrearInstalacion() {
   const form = document.getElementById('formInsertar');
   if (!form) return;
@@ -105,8 +123,10 @@ function bindCrearInstalacion() {
   });
 }
 
+// ================================
+// MODALES DE ESCRITURA
+// ================================
 function bindModalesEscritura() {
-  // MODAL EDITAR
   document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
@@ -143,7 +163,6 @@ function bindModalesEscritura() {
     } catch (err) { mostrarError('Error cargando instalación'); }
   });
 
-  // MODAL ELIMINAR
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar');
     if (!btn) return;

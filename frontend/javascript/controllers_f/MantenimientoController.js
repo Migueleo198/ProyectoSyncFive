@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindModalVer();
 });
 
+// ================================
+// CARGAR DATOS INICIALES
+// ================================
 async function cargarDatosIniciales() {
   try {
     await Promise.all([cargarPersonas(), cargarVehiculos(), cargarMateriales()]);
@@ -33,11 +36,26 @@ async function cargarDatosIniciales() {
   } catch (e) { console.error('Error cargando datos:', e); mostrarError('Error cargando datos'); }
 }
 
+// ================================
+// CARGAR VEHÍCULOS
+// ================================
 async function cargarVehiculos() { try { const r = await fetch('/api/vehiculos'); mantenimientos; vehiculos = (await r.json()).data || []; } catch(e) { console.error(e); } }
+// ================================
+// CARGAR MATERIALES
+// ================================
 async function cargarMateriales() { try { const r = await fetch('/api/materiales'); materiales = (await r.json()).data || []; } catch(e) { console.error(e); } }
+// ================================
+// CARGAR PERSONAS
+// ================================
 async function cargarPersonas() { try { const r = await fetch('/api/personas'); personas = (await r.json()).data || []; } catch(e) { console.error(e); } }
+// ================================
+// CARGAR MANTENIMIENTOS
+// ================================
 async function cargarMantenimientos() { try { const r = await fetch('/api/mantenimientos'); mantenimientos = (await r.json()).data || []; } catch(e) { mantenimientos = []; } }
 
+// ================================
+// POBLAR SELECT PERSONAS
+// ================================
 function poblarSelectPersonas() {
   ['selectBomberoVeh','selectBomberoMat','editBombero'].forEach(id => {
     const sel = document.getElementById(id);
@@ -46,17 +64,26 @@ function poblarSelectPersonas() {
     personas.forEach(p => { const o = document.createElement('option'); o.value = p.id_bombero; o.textContent = `${p.nombre} ${p.apellidos||''} (${p.n_funcionario||p.id_bombero})`; sel.appendChild(o); });
   });
 }
+// ================================
+// POBLAR SELECT VEHÍCULOS
+// ================================
 function poblarSelectVehiculos() {
   const sel = document.getElementById('selectVehiculoVeh'); if (!sel) return;
   sel.innerHTML = '<option value="">Seleccione un vehículo...</option>';
   vehiculos.forEach(v => { const o = document.createElement('option'); o.value = v.matricula; o.textContent = `${v.nombre||''} (${v.matricula})`; sel.appendChild(o); });
 }
+// ================================
+// POBLAR SELECT MATERIALES
+// ================================
 function poblarSelectMateriales() {
   const sel = document.getElementById('selectMaterialMat'); if (!sel) return;
   sel.innerHTML = '<option value="">Seleccione un material...</option>';
   materiales.forEach(m => { const o = document.createElement('option'); o.value = m.id_material; o.textContent = m.nombre||m.id_material; sel.appendChild(o); });
 }
 
+// ================================
+// RENDER TABLA
+// ================================
 function renderTabla(lista) {
   const tbody = document.querySelector('#tabla tbody');
   if (!tbody) return;
@@ -83,12 +110,18 @@ function renderTabla(lista) {
   });
 }
 
+// ================================
+// FILTROS
+// ================================
 function bindFiltros() {
   document.getElementById('filtroResponsable')?.addEventListener('input', aplicarFiltros);
   document.getElementById('filtroEstado')?.addEventListener('change', aplicarFiltros);
   document.getElementById('filtroTipo')?.addEventListener('change', aplicarFiltros);
 }
 
+// ================================
+// APLICAR FILTROS
+// ================================
 function aplicarFiltros() {
   const fr = document.getElementById('filtroResponsable')?.value?.toLowerCase();
   const fe = document.getElementById('filtroEstado')?.value;
@@ -102,6 +135,9 @@ function aplicarFiltros() {
   }));
 }
 
+// ================================
+// CREAR MANTENIMIENTO
+// ================================
 async function crearMantenimiento(form, tipo) {
   const f = new FormData(form);
   const id_bombero = f.get('id_bombero'), estado = f.get('estado'), f_inicio = f.get('f_inicio');
@@ -128,18 +164,27 @@ async function crearMantenimiento(form, tipo) {
   } catch (err) { mostrarError(err.message); }
 }
 
+// ================================
+// FORM INSERTAR VEHÍCULO
+// ================================
 function bindCrearMantenimientoVehiculo() {
   const form = document.getElementById('formInsertarVehiculo');
   if (!form) return;
   form.addEventListener('submit', e => { e.preventDefault(); crearMantenimiento(form, 'vehiculo'); });
 }
 
+// ================================
+// FORM INSERTAR MATERIAL
+// ================================
 function bindCrearMantenimientoMaterial() {
   const form = document.getElementById('formInsertarMaterial');
   if (!form) return;
   form.addEventListener('submit', e => { e.preventDefault(); crearMantenimiento(form, 'material'); });
 }
 
+// ================================
+// MODAL VER
+// ================================
 function bindModalVer() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-ver');
@@ -160,8 +205,10 @@ function bindModalVer() {
   });
 }
 
+// ================================
+// MODALES DE ESCRITURA
+// ================================
 function bindModalesEscritura() {
-  // MODAL EDITAR - cargar datos
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;

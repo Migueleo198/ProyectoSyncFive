@@ -22,7 +22,7 @@
 import { PERMISOS }      from '/frontend/config/permissions.js';
 import { API_BASE_PATH } from '/frontend/config/apiConfig.js';
 
-const LOGIN_URL    = '/frontend/pages/Login/login.html';
+const LOGIN_URL    = '/login';
 const ERROR403_URL = '/frontend/errores/err403.html';
 const API_ME_URL   = `${API_BASE_PATH}/auth/me`;
 

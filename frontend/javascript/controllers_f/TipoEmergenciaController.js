@@ -22,11 +22,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// ================================
+// CARGAR TIPOS DE EMERGENCIA
+// ================================
 async function cargarTiposEmergencia() {
   try { const r = await TipoEmergenciaApi.getAll(); tiposEmergencia = r.data; renderTablaTiposEmergencia(tiposEmergencia); }
   catch (e) { mostrarError(e.message || 'Error cargando tipos de emergencia'); }
 }
 
+// ================================
+// RENDER TABLA
+// ================================
 function renderTablaTiposEmergencia(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
@@ -44,6 +50,9 @@ function renderTablaTiposEmergencia(lista) {
   });
 }
 
+// ================================
+// CREAR TIPO DE EMERGENCIA
+// ================================
 function bindCrearTipoEmergencia() {
   const form = document.getElementById('formInsertar'); if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -57,6 +66,9 @@ function bindCrearTipoEmergencia() {
   });
 }
 
+// ================================
+// MODAL VER
+// ================================
 function bindModalVer() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-ver'); if (!btn) return;
@@ -69,6 +81,9 @@ function bindModalVer() {
   });
 }
 
+// ================================
+// MODAL EDITAR
+// ================================
 function bindModalEditar() {
   document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-editar'); if (!btn) return;
@@ -104,6 +119,9 @@ function bindModalEditar() {
   });
 }
 
+// ================================
+// MODAL ELIMINAR
+// ================================
 function bindModalEliminar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar'); if (!btn) return;
@@ -116,4 +134,4 @@ function bindModalEliminar() {
       bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
     } catch (err) { mostrarError('Este tipo de emergencia no se puede eliminar porque tiene emergencias asociadas'); }
   });
-}
+} 

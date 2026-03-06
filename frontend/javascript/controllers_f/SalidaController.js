@@ -20,11 +20,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// ================================
+// CARGAR SALIDAS
+// ================================
 async function cargarSalidas() {
   try { const r = await SalidaApi.getAll(); salidas = r.data; renderTablaSalidas(salidas); }
   catch (e) { mostrarError(e.message || 'Error cargando salidas'); }
 }
 
+// ================================
+// RENDER TABLA
+// ================================
 function renderTablaSalidas(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
@@ -50,6 +56,9 @@ function renderTablaSalidas(lista) {
 const nombresCampos = ['ID Bombero','f_salida','f_regreso','Matricula','KM_Inicio','KM_Fin'];
 const camposBd = ['id_bombero','f_salida','f_regreso','matricula','km_inicio','km_fin'];
 
+// ================================
+// MODAL VER
+// ================================
 function bindModalVer() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-ver'); if (!btn) return;
@@ -65,6 +74,9 @@ function bindModalVer() {
   });
 }
 
+// ================================
+// VALIDACIONES
+// ================================
 function validarDatosSalida(data) {
   if (!data.matricula?.trim()) { mostrarError('La matrícula es obligatoria'); return false; }
   if (!data.id_bombero?.trim()) { mostrarError('El ID del bombero es obligatorio'); return false; }
@@ -81,6 +93,9 @@ function validarDatosSalida(data) {
   return true;
 }
 
+// ================================
+// CREAR SALIDA
+// ================================
 function bindCrearSalida() {
   const form = document.getElementById('formSalida'); if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -93,6 +108,9 @@ function bindCrearSalida() {
   });
 }
 
+// ================================
+// MODAL EDITAR
+// ================================
 function bindModalEditar() {
   document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-editar'); if (!btn) return;
@@ -124,6 +142,9 @@ function bindModalEditar() {
   });
 }
 
+// ================================
+// MODAL ELIMINAR
+// ================================
 function bindModalEliminar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar'); if (!btn) return;

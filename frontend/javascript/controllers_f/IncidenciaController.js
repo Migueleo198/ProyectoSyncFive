@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindModalVer();
 });
 
+// ================================
+// CARGAR DATOS INICIALES
+// ================================
 async function cargarDatosIniciales() {
   try {
     await Promise.all([cargarPersonas(), cargarMateriales(), cargarVehiculos(), cargarIncidencias()]);
@@ -35,14 +38,23 @@ async function cargarDatosIniciales() {
   }
 }
 
+// ================================
+// CARGAR PERSONAS
+// ================================
 async function cargarPersonas() {
   try { const r = await PersonaApi.getAll(); personas = r.data || []; } catch (e) { console.error(e); }
 }
 
+// ================================
+// CARGAR MATERIALES
+// ================================
 async function cargarMateriales() {
   try { const r = await MaterialApi.getAll(); materiales = r.data || []; } catch (e) { console.error(e); }
 }
 
+// ================================
+// CARGAR VEHÍCULOS
+// ================================
 async function cargarVehiculos() {
   try {
     const r = await VehiculoApi.getAll();
@@ -52,6 +64,9 @@ async function cargarVehiculos() {
   }
 }
 
+// ================================
+// CARGAR INCIDENCIAS
+// ================================
 async function cargarIncidencias() {
   try {
     const r = await IncidenciaApi.getAll();
@@ -64,6 +79,9 @@ async function cargarIncidencias() {
   } catch (e) { console.error(e); }
 }
 
+// ================================
+// POBLAR SELECTORES DEL FORMULARIO
+// ================================
 function poblarSelectores() {
   const selResp = document.getElementById('selectResponsable');
   if (selResp) {
@@ -97,6 +115,9 @@ function poblarSelectores() {
   }
 }
 
+// ================================
+// RENDER TABLA
+// ================================
 function renderTablaIncidencias(lista) {
   const tbody = document.querySelector('#tabla tbody');
   if (!tbody) return;
@@ -132,11 +153,17 @@ function renderTablaIncidencias(lista) {
   });
 }
 
+// ================================
+// FILTROS
+// ================================
 function bindFiltros() {
   document.getElementById('estado')?.addEventListener('change', aplicarFiltros);
   document.getElementById('asunto')?.addEventListener('input', aplicarFiltros);
 }
 
+// ================================
+// APLICAR FILTROS
+// ================================
 function aplicarFiltros() {
   const filtroEstado = document.getElementById('estado')?.value;
   const filtroAsunto = document.getElementById('asunto')?.value?.toLowerCase();
@@ -152,6 +179,9 @@ function aplicarFiltros() {
 const nombresCampos = ['ID','Fecha','Asunto','Estado','Tipo','Responsable','Material','Vehículo','Descripción'];
 const camposBd      = ['cod_incidencia','fecha','asunto','estado','tipo','id_bombero','id_material','matricula','descripcion'];
 
+// ================================
+// MODAL VER
+// ================================
 function bindModalVer() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-ver');
@@ -176,6 +206,9 @@ function bindModalVer() {
   });
 }
 
+// ================================
+// MODAL EDITAR
+// ================================
 function bindModalEditar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-editar');
@@ -232,6 +265,9 @@ function bindModalEditar() {
   });
 }
 
+// ================================
+// MODAL ELIMINAR
+// ================================
 function bindModalEliminar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar');
@@ -247,6 +283,9 @@ function bindModalEliminar() {
   });
 }
 
+// ================================
+// CREAR INCIDENCIA
+// ================================
 function bindCrearIncidencia() {
   const form = document.getElementById('formInsertar');
   if (!form) return;

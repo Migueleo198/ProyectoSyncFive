@@ -6,7 +6,7 @@ let personas = [];
 let sesionActual = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  sesionActual = await authGuard('usuarios');
+  sesionActual = await authGuard('personas');
   if (!sesionActual) return;
 
   cargarPersonas();
@@ -20,11 +20,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// ================================
+// CARGAR PERSONAS
+// ================================
 async function cargarPersonas() {
   try { const r = await PersonaApiApi.getAll(); personas = r.data; renderTablaPersonas(personas); }
   catch (e) { mostrarError(e.message || 'Error cargando personas'); }
 }
 
+// ================================
+// POBLAR SELECT ROLES
+// ================================
 async function cargarSelectRoles() {
   const select = document.getElementById('rol'); if (!select) return;
   try {
@@ -34,6 +40,9 @@ async function cargarSelectRoles() {
   } catch (e) { mostrarError(e.message || 'Error cargando roles'); }
 }
 
+// ================================
+// RENDER TABLA
+// ================================
 function renderTablaPersonas(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
@@ -61,6 +70,9 @@ function renderTablaPersonas(lista) {
 const nombresCampos = ['correo','telefono','f_ingreso_diputacion','talla_superior','talla_inferior','talla_calzado','nombre','apellidos','f_nacimiento','telefono_emergencia','domicilio','localidad','id_rol','activo','nombre_usuario'];
 const camposBd = ['correo','telefono','f_ingreso_diputacion','talla_superior','talla_inferior','talla_calzado','nombre','apellidos','f_nacimiento','telefono_emergencia','domicilio','localidad','id_rol','activo','nombre_usuario'];
 
+// ================================
+// MODAL VER
+// ================================
 function bindModalVer() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-ver'); if (!btn) return;
@@ -75,6 +87,9 @@ function bindModalVer() {
   });
 }
 
+// ================================
+// CREAR PERSONA
+// ================================
 function bindCrearPersona() {
   const form = document.getElementById('formInsertarPersona'); if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -93,6 +108,9 @@ function bindCrearPersona() {
   });
 }
 
+// ================================
+// MODAL EDITAR
+// ================================
 function bindModalEditar() {
   document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-editar'); if (!btn) return;
@@ -151,6 +169,9 @@ function bindModalEditar() {
   });
 }
 
+// ================================
+// MODAL ELIMINAR
+// ================================
 function bindModalEliminar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar'); if (!btn) return;

@@ -1,22 +1,45 @@
 import GuardiaApi from '/frontend/javascript/api_f/GuardiaApi.js';
+import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 
 let guardiaActual = null;
 let personasEnGuardia = [];
+let sesionActual = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+// ================================
+// INICIALIZACIÓN
+// ================================
+document.addEventListener('DOMContentLoaded', async () => {
+    sesionActual = await authGuard('alineacion');
+    if (!sesionActual) return;
+
     const inputFecha = document.getElementById('fechaGuardia');
     inputFecha.value = getFechaHoy();
     cargarGuardiaPorFecha(inputFecha.value);
     cargarTurnoRefuerzo(inputFecha.value);
-    inputFecha.addEventListener('change', e => 
-        cargarTurnoRefuerzo(e.target.value) &&
-        cargarGuardiaPorFecha(e.target.value));
-    document.getElementById('btnInsertar').addEventListener('click', guardarAlineacion);
-    document.getElementById('btnLimpiar').addEventListener('click', limpiarFormulario);
+
+    inputFecha.addEventListener('change', e => {
+        cargarTurnoRefuerzo(e.target.value);
+        cargarGuardiaPorFecha(e.target.value);
+    });
+
     document.getElementById('gridAlineacion').addEventListener('change', () => sincronizarSelectsYLista());
+
+    if (sesionActual.puedeEscribir) {
+        document.getElementById('btnInsertar').addEventListener('click', guardarAlineacion);
+        document.getElementById('btnLimpiar').addEventListener('click', limpiarFormulario);
+    } else {
+        // Ocultar controles de escritura si no tiene permisos
+        document.getElementById('btnInsertar')?.classList.add('d-none');
+        document.getElementById('btnLimpiar')?.classList.add('d-none');
+        document.querySelectorAll('#gridAlineacion select[data-cargo]').forEach(s => s.disabled = true);
+        document.getElementById('notasGuardia')?.setAttribute('readonly', true);
+    }
 });
 
+// ================================
+// CARGAR GUARDIA POR FECHA
+// ================================
 async function cargarGuardiaPorFecha(fecha) {
     resetearVista();
     try {
@@ -37,7 +60,6 @@ async function cargarGuardiaPorFecha(fecha) {
             cargo:      r.cargo ?? null,
         }));
 
-        // Rellenar notas desde la guardia
         document.getElementById('notasGuardia').value = datos[0].notas ?? '';
 
         const selects = document.querySelectorAll('#gridAlineacion select[data-cargo]');
@@ -57,6 +79,9 @@ async function cargarGuardiaPorFecha(fecha) {
     }
 }
 
+// ================================
+// SINCRONIZAR SELECTS Y LISTA SIN CARGO
+// ================================
 function sincronizarSelectsYLista() {
     const selects = [...document.querySelectorAll('#gridAlineacion select[data-cargo]')];
     const seleccionados = new Map();
@@ -74,6 +99,9 @@ function sincronizarSelectsYLista() {
     actualizarListaSinCargo(sinAsignar);
 }
 
+// ================================
+// ACTUALIZAR LISTA SIN CARGO
+// ================================
 function actualizarListaSinCargo(personas) {
     const contenedor  = document.getElementById('listaSinCargo');
     const placeholder = document.getElementById('sinCargoPlaceholder');
@@ -106,12 +134,18 @@ function actualizarListaSinCargo(personas) {
     });
 }
 
+// ================================
+// HELPER: INICIALES DEL BOMBERO
+// ================================
 function iniciales(nombre, apellidos) {
     const n = nombre?.charAt(0).toUpperCase() ?? '';
     const a = apellidos?.charAt(0).toUpperCase() ?? '';
     return `${n}${a}`;
 }
 
+// ================================
+// GUARDAR ALINEACIÓN
+// ================================
 async function guardarAlineacion() {
     if (!guardiaActual) { mostrarError('No hay guardia cargada para guardar.'); return; }
 
@@ -135,12 +169,10 @@ async function guardarAlineacion() {
     btnGuardar.textContent = 'Guardando…';
 
     try {
-        // Guardar cargos
         for (const op of operaciones) {
             await GuardiaApi.updateCargo(op.id_bombero, op.id_guardia, op.cargo);
         }
 
-        // Guardar notas
         const notas = document.getElementById('notasGuardia').value;
         await GuardiaApi.updateNotas(guardiaActual.id_guardia, notas);
 
@@ -151,11 +183,14 @@ async function guardarAlineacion() {
     } finally {
         btnGuardar.disabled = false;
         btnGuardar.textContent = 'Guardar';
-    } 
+    }
 }
 
+// ================================
+// CARGAR TURNO DE REFUERZO
+// ================================
 async function cargarTurnoRefuerzo(fecha) {
-    const contenedor = document.getElementById('refuerzosDia'); // ← ID correcto
+    const contenedor = document.getElementById('refuerzosDia');
     contenedor.innerHTML = '';
     try {
         const respuesta = await GuardiaApi.getTurnoRefuerzoByFecha(fecha);
@@ -164,7 +199,7 @@ async function cargarTurnoRefuerzo(fecha) {
             contenedor.innerHTML = '<p class="text-muted small mb-0">Sin refuerzos para este día.</p>';
             return;
         }
-        datos.forEach(turno => {                          // ← iterar todos
+        datos.forEach(turno => {
             const card = document.createElement('div');
             card.className = 'card-bombero d-flex align-items-center gap-2 px-3 py-2 border rounded bg-white';
             card.style.cssText = 'min-height: 48px;';
@@ -187,6 +222,9 @@ async function cargarTurnoRefuerzo(fecha) {
     }
 }
 
+// ================================
+// HELPERS DE FECHA Y RESET
+// ================================
 function getFechaHoy() { return new Date().toISOString().split('T')[0]; }
 
 function resetearVista() {
@@ -198,6 +236,9 @@ function resetearVista() {
     actualizarListaSinCargo([]);
 }
 
+// ================================
+// LIMPIAR FORMULARIO
+// ================================
 function limpiarFormulario() {
     document.querySelectorAll('#gridAlineacion select[data-cargo]').forEach(s => s.value = '');
     document.getElementById('notasGuardia').value = '';

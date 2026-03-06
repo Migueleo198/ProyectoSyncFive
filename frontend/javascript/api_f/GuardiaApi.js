@@ -33,6 +33,10 @@ const GuardiaApi = {
     return ApiClient.patch(`/personas/${id_bombero}/guardias/${id_guardia}`, { cargo });
   },
 
+  getPersonsGuardia(id_guardia){
+    return ApiClient.get(`/guardias/${id_guardia}/personas`);
+  },
+
   updateNotas(id_guardia, notas) {
     return ApiClient.patch(`/guardias/${id_guardia}`, { notas });
   },
