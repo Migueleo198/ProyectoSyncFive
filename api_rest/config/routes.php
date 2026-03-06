@@ -57,12 +57,12 @@ $router->protectedSession('POST', '/personas/{id_bombero}/turnos', 'Controllers\
 $router->protectedSession('DELETE', '/personas/{id_bombero}/turnos', 'Controllers\\PersonaController@deleteTurnos', [3,4,5]);
 
 // GUARDIAS PERSONA
-$router->protectedSession('GET', '/personas/guardias/fecha/{fecha}', 'Controllers\\GuardiaController@getGuardiaByFecha', [1,2,3,4,5]); 
-$router->protectedSession('POST', '/personas/{id_bombero}/guardias', 'Controllers\\GuardiaController@assign', [4,5]);
-$router->protectedSession('PATCH', '/personas/{id_bombero}/guardias/{id_guardia}', 'Controllers\\GuardiaController@updateCargo', [1,2,3,4,5]);
+$router->protectedSession('GET', '/guardias/{id_guardia}/personas', 'Controllers\\GuardiaController@persons', [1,2,3,4,5]);
+$router->protectedSession('POST', '/guardias/assign', 'Controllers\\GuardiaController@assign', [4,5]);
 
 // ESTADÍSTICAS DE LA PERSONA
 $router->protectedSession('GET', '/personas/{id_bombero}/stats', 'Controllers\\PersonaController@getStats', [1,2,3,4,5]);
+
 
 //++++++++++++++++++++++++++++++ FORMACIONES ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/formaciones', 'Controllers\\FormacionController@index', [1,2,3,4,5]);
@@ -270,5 +270,10 @@ $router->protectedSession('POST', '/motivos', 'Controllers\\MotivoController@sto
 $router->protectedSession('DELETE', '/motivos/{cod_motivo}', 'Controllers\\MotivoController@delete', [5]);
 $router->protectedSession('PUT', '/motivos/{cod_motivo}', 'Controllers\\MotivoController@update', [5]);
 
-
+// +++++++++++++++++ INFRAESTRUCTURAS DE AGUA +++++++++++++++++
+$router->protectedSession('GET',    '/infraestructuras-agua',      'Controllers\\InfraestructuraAguaController@index',   [1,2,3,4,5]);
+$router->protectedSession('GET',    '/infraestructuras-agua/{id}', 'Controllers\\InfraestructuraAguaController@show',    [1,2,3,4,5]);
+$router->protectedSession('POST',   '/infraestructuras-agua',      'Controllers\\InfraestructuraAguaController@store',   [3,4,5]);
+$router->protectedSession('PUT',    '/infraestructuras-agua/{id}', 'Controllers\\InfraestructuraAguaController@update',  [4,5]);
+$router->protectedSession('DELETE', '/infraestructuras-agua/{id}', 'Controllers\\InfraestructuraAguaController@destroy', [5]);
 ?>
