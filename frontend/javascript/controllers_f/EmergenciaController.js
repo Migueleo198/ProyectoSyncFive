@@ -2,28 +2,28 @@
  * EmergenciaController.js  —  con authGuard integrado
  *
  * Ejemplo de cómo integrar el guard en un controlador existente.
- * Los cambios respecto a la versión original están marcados con // ← NUEVO
+ * Los cambios respecto a la versión original están marcados con //
  */
 
 import EmergenciaApi      from '../api_f/EmergenciaApi.js';
 import TipoEmergenciaApi  from '../api_f/TipoEmergenciaApi.js';
 import VehiculoApi        from '../api_f/VehiculoApi.js';
 import PersonaApi         from '../api_f/PersonaApi.js';
-import { authGuard }      from '../helpers/authGuard.js';          // ← NUEVO
+import { authGuard }      from '../helpers/authGuard.js';          
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
 
 let modalEquipoDesdeInsertar = false;
 let emergencias = [];
 let vehiculosEnModal = [];
 let todasLasPersonas = [];
-let sesionActual = null;   // ← NUEVO: guardamos la sesión para usarla en renderTabla
+let sesionActual = null;   //: guardamos la sesión para usarla en renderTabla
 
 // ================================
 // DOM CONTENT LOADED
 // ================================
 document.addEventListener('DOMContentLoaded', async () => {
 
-  // ── GUARD ── primero verificamos sesión y permisos ──────────  // ← NUEVO
+  // ── GUARD ── primero verificamos sesión y permisos ──────────  //
   sesionActual = await authGuard('emergencias');
   if (!sesionActual) return; // redirigido automáticamente
   // ────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   cargarPersonas();
   bindModalEquipo();
 
-  // Solo vinculamos el form de insertar si puede escribir             // ← NUEVO
+  // Solo vinculamos el form de insertar si puede escribir             //
   if (sesionActual.puedeEscribir) {
     bindCrearEmergencia();
   }
