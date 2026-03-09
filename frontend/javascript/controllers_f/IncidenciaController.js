@@ -147,7 +147,11 @@ function renderTablaIncidencias(lista) {
       <td>${i.estado ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.tipo ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.nombre_responsable ?? ''}</td>
-      <td class="d-flex justify-content-around">${botones}</td>
+            <td>
+        <div class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>
+      </td>
     `;
     tbody.appendChild(tr);
   });

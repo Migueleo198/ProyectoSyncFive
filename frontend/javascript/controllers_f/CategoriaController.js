@@ -54,7 +54,11 @@ function renderTablaCategorias(lista) {
       <td>${c.id_categoria}</td>
       <td>${c.nombre}</td>
       <td>${Number(c.inventariable) === 1 ? 'Sí' : 'No'}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
+      <td>
+        <div class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>
+      </td>
     `;
     tbody.appendChild(tr);
   });

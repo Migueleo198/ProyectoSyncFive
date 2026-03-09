@@ -157,13 +157,17 @@ async function renderTablaEmergencias(lista) {
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${e.id_emergencia}</td>
       <td>${formatearFechaHora(e.fecha)}</td>
-      <td class="d-none d-md-table-cell">${e.descripcion ?? ''}</td>
+      <td class="d-none d-md-none d-lg-table-cell">${e.descripcion ?? ''}</td>
       <td>${e.estado}</td>
       <td class="d-none d-md-table-cell">${e.direccion ?? ''}</td>
       <td>${e.nombre_tipo ?? ''}</td>
-      <td class="d-none d-md-table-cell">${textoVehiculos}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
-    `;
+      <td class="d-none d-md-none d-lg-table-cell">${textoVehiculos}</td>
+      <td>
+        <div class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>
+      </td>   
+      `;
     tbody.appendChild(tr);
   }
 }

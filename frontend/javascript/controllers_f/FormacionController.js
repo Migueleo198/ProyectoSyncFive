@@ -63,7 +63,11 @@ function renderTablaFormaciones(lista) {
       <td>${f.id_formacion}</td>
       <td>${f.nombre}</td>
       <td>${f.descripcion}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
+      <td>
+        <div class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>
+      </td>
     `;
     tbody.appendChild(tr);
   });

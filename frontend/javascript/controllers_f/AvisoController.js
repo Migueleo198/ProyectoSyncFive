@@ -116,7 +116,7 @@ function renderTablaAvisos(lista) {
          <button type="button" class="btn p-0 btn-eliminar"
               data-bs-toggle="modal" data-bs-target="#modalEliminar"
               data-id="${a.id_aviso}" title="Eliminar">
-            <i class="bi bi-trash3 text-danger"></i>
+            <i class="bi bi-trash3"></i>
          </button>`
       : `<button type="button" class="btn p-0 btn-ver"
               data-bs-toggle="modal" data-bs-target="#modalVer"
