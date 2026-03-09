@@ -1,7 +1,7 @@
 import GuardiaApi from '../api_f/GuardiaApi.js';
 import PermisoApi from '../api_f/PermisoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
-// import TurnoRefuerzoApi from '../api_f/TurnoRefuerzoApi.js'; // TODO: activar cuando esté listo
+import RefuerzoApi from '../api_f/RefuerzoApi.js';
 
 // CONSTANTES
 const MONTH_NAMES = [
@@ -10,11 +10,11 @@ const MONTH_NAMES = [
 ];
 
 const TIPOS = {
-    guardia:          { color: 'success', label: 'Guardia', bgClass: 'bg-success' },
-    turno:            { color: 'purple', label: 'Turno de refuerzo', bgClass: 'bg-purple' },
-    permiso_aceptado: { color: 'primary', label: 'Permiso aceptado', bgClass: 'bg-primary' },
-    permiso_revision: { color: 'warning', label: 'Permiso en revisión', bgClass: 'bg-warning' },
-    permiso_denegado: { color: 'danger', label: 'Permiso denegado', bgClass: 'bg-danger' },
+    guardia:          { color: 'success', label: 'Guardia',            bgClass: 'bg-success' },
+    refuerzo:         { color: 'purple',  label: 'Turno de refuerzo',  bgClass: 'bg-info'  },
+    permiso_aceptado: { color: 'primary', label: 'Permiso aceptado',   bgClass: 'bg-primary' },
+    permiso_revision: { color: 'warning', label: 'Permiso en revisión',bgClass: 'bg-warning' },
+    permiso_denegado: { color: 'danger',  label: 'Permiso denegado',   bgClass: 'bg-danger'  },
 };
 
 // VARIABLES GLOBALES
@@ -24,7 +24,7 @@ let idBomberoActual = null;
 let personas        = [];
 let guardias        = [];
 let permisos        = [];
-// let turnos       = []; // TODO: activar cuando esté listo
+let refuerzos       = [];
 
 // INIT
 document.addEventListener('DOMContentLoaded', async () => {
@@ -50,15 +50,15 @@ function construirControlesBase() {
                     <i class="bi bi-chevron-right"></i>
                 </button>
             </div>
-            
+
             <div class="btn-group ms-2" role="group" aria-label="Modo de vista">
                 <input type="radio" class="btn-check" name="modoVista" id="modoIndividual" value="individual" autocomplete="off" checked>
                 <label class="btn btn-outline-primary" for="modoIndividual">Mi cuadrante</label>
-                
+
                 <input type="radio" class="btn-check" name="modoVista" id="modoGlobal" value="global" autocomplete="off">
                 <label class="btn btn-outline-primary" for="modoGlobal">Global</label>
             </div>
-            
+
             <select class="form-select form-select-sm w-auto" id="selectBombero" style="display:none;min-width:200px">
                 <option value="">Seleccione un bombero...</option>
             </select>
@@ -126,9 +126,7 @@ function configurarEventosVista() {
             const sel = document.getElementById('selectBombero');
             if (sel) {
                 sel.style.display = modoVista === 'global' ? 'block' : 'none';
-                if (modoVista === 'global') {
-                    sel.classList.add('ms-2');
-                }
+                if (modoVista === 'global') sel.classList.add('ms-2');
             }
             await cargarDatosCuadrante();
             renderCalendario();
@@ -145,8 +143,9 @@ function configurarEventosVista() {
 async function cargarDatosCuadrante(idBomberoFiltro = null) {
     const idFiltro = idBomberoFiltro || (modoVista === 'individual' ? idBomberoActual : null);
 
-    let guardiasData = [];
-    let permisosData = [];
+    let guardiasData  = [];
+    let permisosData  = [];
+    let refuerzosData = [];
 
     try {
         const res = await GuardiaApi.getAll();
@@ -162,14 +161,28 @@ async function cargarDatosCuadrante(idBomberoFiltro = null) {
         mostrarError('Error cargando permisos');
     }
 
+    // Refuerzos: si hay filtro por bombero usamos getByPersona (ya filtrado),
+    // si es vista global traemos todos
+    try {
+        const res = idFiltro
+            ? await RefuerzoApi.getByPersona(idFiltro)
+            : await RefuerzoApi.getAll();
+        refuerzosData = res.data || res || [];
+    } catch (e) {
+        mostrarError('Error cargando refuerzos');
+        refuerzosData = [];
+    }
+
     if (idFiltro) {
-        guardias = guardiasData.filter(g =>
+        guardias  = guardiasData.filter(g =>
             g.id_bombero == idFiltro || (g.bomberos && g.bomberos.includes(idFiltro))
         );
-        permisos = permisosData.filter(p => p.id_bombero == idFiltro);
+        permisos  = permisosData.filter(p => p.id_bombero == idFiltro);
+        refuerzos = refuerzosData; // getByPersona ya devuelve solo los del bombero
     } else {
-        guardias = guardiasData;
-        permisos = permisosData;
+        guardias  = guardiasData;
+        permisos  = permisosData;
+        refuerzos = refuerzosData;
     }
 }
 
@@ -182,7 +195,7 @@ function construirLeyenda() {
         <div class="d-flex flex-wrap gap-3 align-items-center p-2 bg-light rounded">
             ${Object.values(TIPOS).map(t => `
                 <div class="d-flex align-items-center gap-2">
-                    <span class="d-inline-block rounded" style="width:18px;height:18px;background-color:var(--bs-${t.color})"></span>
+                    <span class="d-inline-block rounded ${t.bgClass}" style="width:18px;height:18px;"></span>
                     <small class="text-dark">${t.label}</small>
                 </div>
             `).join('')}
@@ -233,13 +246,20 @@ function construirMapaDias() {
         add(p.fecha, tipo);
     });
 
+    // f_inicio es TIMESTAMP → extraer solo la parte de fecha (YYYY-MM-DD)
+    refuerzos.forEach(r => {
+        const fecha = r.f_inicio ? r.f_inicio.substring(0, 10) : null;
+        add(fecha, 'refuerzo');
+    });
+
     return mapa;
 }
 
 // GENERAR MES
 function generarMes(month, y, mapa) {
-    const FIRST_DAY = new Date(y, month, 1).getDay() || 7;
+    const FIRST_DAY    = new Date(y, month, 1).getDay() || 7;
     const DAYS_IN_MONTH = new Date(y, month + 1, 0).getDate();
+
     let html = `
         <div class="col-xl-4 col-md-6">
             <div class="card shadow-sm">
@@ -265,10 +285,10 @@ function generarMes(month, y, mapa) {
             if ((row === 0 && col < FIRST_DAY) || day > DAYS_IN_MONTH) {
                 html += '<td class="p-2 bg-light"></td>';
             } else {
-                const mm = String(month + 1).padStart(2, '0');
-                const dd = String(day).padStart(2, '0');
-                const key = `${y}-${mm}-${dd}`;
-                const tipos = new Set(mapa[key] || []);
+                const mm   = String(month + 1).padStart(2, '0');
+                const dd   = String(day).padStart(2, '0');
+                const key  = `${y}-${mm}-${dd}`;
+                const tipos     = new Set(mapa[key] || []);
                 const tipoClass = getTipoClass(tipos);
                 html += `<td data-fecha="${key}" class="p-2 ${tipoClass} dia-celda" style="cursor:${tipos.size ? 'pointer' : 'default'}">${day}</td>`;
                 day++;
@@ -283,12 +303,13 @@ function generarMes(month, y, mapa) {
 }
 
 // OBTENER CLASE PARA EL TIPO DE DÍA
+// Orden de prioridad: guardia > refuerzo > permisos
 function getTipoClass(tipos) {
-    if (tipos.has('guardia')) return 'bg-success text-white';
+    if (tipos.has('guardia'))          return 'bg-success text-white';
+    if (tipos.has('refuerzo'))         return 'bg-info text-white';
     if (tipos.has('permiso_aceptado')) return 'bg-primary text-white';
     if (tipos.has('permiso_revision')) return 'bg-warning';
     if (tipos.has('permiso_denegado')) return 'bg-danger text-white';
-    if (tipos.has('turno')) return 'bg-purple text-white';
     return '';
 }
 
@@ -297,13 +318,13 @@ function mostrarDetalleDia(td) {
     const fecha = td.dataset.fecha;
     if (!fecha) return;
 
-    const guardiasDelDia = guardias.filter(g => (g.fecha || '').substring(0, 10) === fecha);
-    const permisosDelDia = permisos.filter(p => (p.fecha || '').substring(0, 10) === fecha);
+    const guardiasDelDia  = guardias.filter(g  => (g.fecha    || '').substring(0, 10) === fecha);
+    const permisosDelDia  = permisos.filter(p  => (p.fecha    || '').substring(0, 10) === fecha);
+    const refuerzosDelDia = refuerzos.filter(r => (r.f_inicio || '').substring(0, 10) === fecha);
 
-    // Crear toast de Bootstrap
     const toastContainer = document.getElementById('toastContainer') || crearToastContainer();
-    
     const toastId = 'toast-' + Date.now();
+
     const toastHtml = `
         <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="8000">
             <div class="toast-header bg-primary text-white">
@@ -312,26 +333,21 @@ function mostrarDetalleDia(td) {
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
             </div>
             <div class="toast-body">
-                ${generarContenidoDetalle(guardiasDelDia, permisosDelDia)}
+                ${generarContenidoDetalle(guardiasDelDia, permisosDelDia, refuerzosDelDia)}
             </div>
         </div>
     `;
 
     toastContainer.insertAdjacentHTML('beforeend', toastHtml);
     const toastElement = document.getElementById(toastId);
-    const toast = new bootstrap.Toast(toastElement);
-    toast.show();
-
-    // Eliminar del DOM cuando se oculte
-    toastElement.addEventListener('hidden.bs.toast', () => {
-        toastElement.remove();
-    });
+    new bootstrap.Toast(toastElement).show();
+    toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
 }
 
 // CREAR CONTENEDOR DE TOASTS
 function crearToastContainer() {
     const container = document.createElement('div');
-    container.id = 'toastContainer';
+    container.id        = 'toastContainer';
     container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
     container.style.zIndex = '2000';
     document.body.appendChild(container);
@@ -339,14 +355,14 @@ function crearToastContainer() {
 }
 
 // GENERAR CONTENIDO DEL DETALLE
-function generarContenidoDetalle(guardias, permisos) {
-    if (!guardias.length && !permisos.length) {
+function generarContenidoDetalle(guardiasD, permisosD, refuerzosD) {
+    if (!guardiasD.length && !permisosD.length && !refuerzosD.length) {
         return '<p class="text-muted mb-0">Sin eventos para este día</p>';
     }
 
     let html = '';
-    
-    guardias.forEach(g => {
+
+    guardiasD.forEach(g => {
         html += `
             <div class="mb-2 pb-2 border-bottom">
                 <span class="badge bg-success me-2">Guardia</span>
@@ -354,10 +370,23 @@ function generarContenidoDetalle(guardias, permisos) {
             </div>
         `;
     });
-    
-    permisos.forEach(p => {
-        const badgeClass = p.estado === 'ACEPTADO' ? 'bg-primary' :
-                          p.estado === 'REVISION' ? 'bg-warning text-dark' : 'bg-danger';
+
+    refuerzosD.forEach(r => {
+        const hi = r.f_inicio ? r.f_inicio.substring(11, 16) : '??:??';
+        const hf = r.f_fin    ? r.f_fin.substring(11, 16)    : '??:??';
+        html += `
+            <div class="mb-2 pb-2 border-bottom">
+                <span class="badge bg-info me-2">Turno de refuerzo</span>
+                <span>${hi} - ${hf}</span>
+                ${r.horas ? `<small class="text-muted ms-2">(${r.horas}h)</small>` : ''}
+            </div>
+        `;
+    });
+
+    permisosD.forEach(p => {
+        const badgeClass = p.estado === 'ACEPTADO' ? 'bg-primary'
+                         : p.estado === 'REVISION'  ? 'bg-warning text-dark'
+                         : 'bg-danger';
         html += `
             <div class="mb-2 pb-2 border-bottom">
                 <span class="badge ${badgeClass} me-2">Permiso</span>
@@ -385,18 +414,21 @@ function actualizarTablaDetalles() {
         }
     });
 
+    const horasRefuerzo = refuerzos.reduce((acc, r) => acc + (r.horas || 0), 0);
+
     tbody.innerHTML = `
         <tr>
             <td class="text-center"><span class="badge bg-info">${guardias.length}</span></td>
             <td class="text-center"><span class="badge bg-success">${Math.round(horasGuardia)}h</span></td>
-            <td class="text-center">-</td>
+            <td class="text-center"><span class="badge bg-info">${refuerzos.length} (${horasRefuerzo}h)</span></td>
             <td class="text-center"><span class="badge bg-primary">${permisos.filter(p => p.estado === 'ACEPTADO').length}</span></td>
-            <td class="text-center">-</td>
         </tr>
         <tr class="table-light">
             <td colspan="5" class="text-muted small px-3 py-2">
                 <i class="bi bi-calendar3 me-1"></i> Año ${year}
-                ${modoVista === 'individual' && idBomberoActual ? ` · <i class="bi bi-person me-1"></i>ID: ${idBomberoActual}` : ' · Vista global'}
+                ${modoVista === 'individual' && idBomberoActual
+                    ? ` · <i class="bi bi-person me-1"></i>ID: ${idBomberoActual}`
+                    : ' · Vista global'}
             </td>
         </tr>
     `;
@@ -405,7 +437,7 @@ function actualizarTablaDetalles() {
 // CAMBIAR AÑO
 async function cambiarAnio(delta) {
     year += delta;
-    const selectBombero = document.getElementById('selectBombero');
+    const selectBombero  = document.getElementById('selectBombero');
     const idBomberoFiltro = modoVista === 'global' ? (selectBombero?.value || null) : idBomberoActual;
     await cargarDatosCuadrante(idBomberoFiltro);
     renderCalendario();
@@ -413,19 +445,14 @@ async function cambiarAnio(delta) {
 }
 
 // ALERTAS
-function mostrarError(msg) {
-    mostrarAlerta(msg, 'danger');
-}
-
-function mostrarExito(msg) {
-    mostrarAlerta(msg, 'success');
-}
+function mostrarError(msg)  { mostrarAlerta(msg, 'danger');  }
+function mostrarExito(msg)  { mostrarAlerta(msg, 'success'); }
 
 function mostrarAlerta(msg, tipo) {
     const container = document.getElementById('alert-container');
     if (!container) return;
 
-    const alertId = 'alert-' + Date.now();
+    const alertId  = 'alert-' + Date.now();
     const alertHtml = `
         <div id="${alertId}" class="alert alert-${tipo} alert-dismissible fade show shadow" role="alert">
             <i class="bi bi-${tipo === 'danger' ? 'exclamation-triangle' : 'check-circle'} me-2"></i>
@@ -435,7 +462,7 @@ function mostrarAlerta(msg, tipo) {
     `;
 
     container.insertAdjacentHTML('beforeend', alertHtml);
-    
+
     setTimeout(() => {
         const alert = document.getElementById(alertId);
         if (alert) {
@@ -452,7 +479,6 @@ window.refrescarCuadrante = async function () {
     mostrarExito('Cuadrante actualizado correctamente');
 };
 
-// Agregar estilos al documento
 const styleSheet = document.createElement('style');
 styleSheet.textContent = styles;
 document.head.appendChild(styleSheet);

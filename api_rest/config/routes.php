@@ -52,7 +52,7 @@ $router->protectedSession('POST', '/personas/{id_bombero}/ediciones', 'Controlle
 $router->protectedSession('DELETE', '/personas/{id_bombero}/ediciones/{id_formacion}/{id_edicion}', 'Controllers\\PersonaController@deleteFormacion', [4,5]);
 
 // TURNOS REFUERZO PERSONA
-$router->protectedSession('GET', '/personas/{id_bombero}/turnos', 'Controllers\\PersonaController@getTurnos', [1,2,3]);
+$router->protectedSession('GET', '/personas/{id_bombero}/turnos', 'Controllers\\PersonaController@getTurnos', [1,2,3,4,5]);
 $router->protectedSession('POST', '/personas/{id_bombero}/turnos', 'Controllers\\RefuerzoController@assign', [3,4,5]);
 $router->protectedSession('DELETE', '/personas/{id_bombero}/turnos', 'Controllers\\PersonaController@deleteTurnos', [3,4,5]);
 
