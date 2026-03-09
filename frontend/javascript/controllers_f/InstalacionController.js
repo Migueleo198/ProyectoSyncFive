@@ -12,13 +12,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   cargarInstalaciones();
   bindFiltros();
-
-  if (sesionActual.puedeEscribir) {
-    bindCrearInstalacion();
-    bindModalesEscritura();
-  }
-
-  bindModalVer();
+  bindCrearInstalacion();
+  bindModales();
 });
 
 // ================================
@@ -29,13 +24,12 @@ async function cargarInstalaciones() {
     const response = await InstalacionApi.getAll();
     instalaciones = response.data;
     poblarFiltroLocalidad();
-    poblarSelectLocalidad(); // Nueva función para poblar el select de inserción
+    poblarSelectLocalidad();
     renderTablaInstalaciones(instalaciones);
-  } catch (e) { mostrarError(e.message || 'Error cargando instalaciones'); }
+  } catch (e) {
+    mostrarError(e.message || 'Error cargando instalaciones');
+  }
 }
-
-const nombresCampos = ['Nombre','Dirección','Teléfono','Correo','Localidad'];
-const camposBd      = ['nombre','direccion','telefono','correo','localidad'];
 
 // ================================
 // POBLAR SELECT DE LOCALIDAD PARA INSERCIÓN
@@ -44,23 +38,18 @@ function poblarSelectLocalidad() {
   const select = document.getElementById('insertLocalidad');
   if (!select) return;
 
-  // Obtener localidades únicas ordenadas de los datos reales
   const localidades = [...new Set(
     instalaciones.map(i => i.localidad).filter(Boolean)
   )].sort();
 
-  // Guardar el HTML original con la opción de poder escribir
   select.innerHTML = '<option value="">Selecciona una localidad</option>';
-  
+
   localidades.forEach(loc => {
     const option = document.createElement('option');
     option.value = loc;
     option.textContent = loc;
     select.appendChild(option);
   });
-  
-  // Si quieres permitir escribir además de seleccionar, puedes agregar un atributo
-  // pero select nativo no permite escritura. Si necesitas escritura, considera usar datalist
 }
 
 // ================================
@@ -70,12 +59,10 @@ function poblarFiltroLocalidad() {
   const select = document.getElementById('localidad');
   if (!select) return;
 
-  // Obtener localidades únicas ordenadas de los datos reales
   const localidades = [...new Set(
     instalaciones.map(i => i.localidad).filter(Boolean)
   )].sort();
 
-  // Guardar valor seleccionado para no perderlo al recargar
   const valorActual = select.value;
 
   select.innerHTML = '<option value="">Todos</option>';
@@ -100,38 +87,36 @@ function renderTablaInstalaciones(lista) {
 
   lista.forEach(i => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
-      ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${i.id_instalacion}"><i class="bi bi-eye"></i></button>
-         <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${i.id_instalacion}"><i class="bi bi-pencil"></i></button>
-         <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${i.id_instalacion}"><i class="bi bi-trash3"></i></button>`
-      : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${i.id_instalacion}"><i class="bi bi-eye"></i></button>`;
+
     tr.innerHTML = `
       <td>${i.nombre ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.direccion ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.telefono ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.correo ?? ''}</td>
       <td>${i.localidad ?? ''}</td>
-      <td class="d-flex justify-content-around">                     
-        <button type="button" class="btn p-0 btn-ver" 
-                data-bs-toggle="modal" 
+      <td class="d-flex justify-content-around">
+        <button type="button" class="btn p-0 btn-ver"
+                data-bs-toggle="modal"
                 data-bs-target="#modalVer"
                 data-id="${i.id_instalacion}">
-            <i class="bi bi-eye"></i>
+          <i class="bi bi-eye"></i>
         </button>
-        <button type="button" class="btn p-0 btn-editar" 
-                data-bs-toggle="modal" 
-                data-bs-target="#modalEditar" 
+        ${puedeEscribir ? `
+        <button type="button" class="btn p-0 btn-editar"
+                data-bs-toggle="modal"
+                data-bs-target="#modalEditar"
                 data-id="${i.id_instalacion}">
-            <i class="bi bi-pencil"></i>
+          <i class="bi bi-pencil"></i>
         </button>
-        <button type="button" class="btn p-0 btn-eliminar" 
-                data-bs-toggle="modal"                                         
-                data-bs-target="#modalEliminar" 
-                data-id="${i.id_instalacion}">          
-            <i class="bi bi-trash3"></i>
-        </button>
-      </td>  
+        <button type="button" class="btn p-0 btn-eliminar"
+                data-bs-toggle="modal"
+                data-bs-target="#modalEliminar"
+                data-id="${i.id_instalacion}">
+          <i class="bi bi-trash3"></i>
+        </button>` : ''}
+      </td>
     `;
+
     tbody.appendChild(tr);
   });
 }
@@ -144,9 +129,6 @@ function bindFiltros() {
   document.getElementById('localidad')?.addEventListener('change', aplicarFiltros);
 }
 
-// ================================
-// APLICAR FILTROS
-// ================================
 function aplicarFiltros() {
   const filtroNombre    = document.getElementById('nombre')?.value?.toLowerCase() || '';
   const filtroLocalidad = document.getElementById('localidad')?.value?.toLowerCase() || '';
@@ -166,6 +148,7 @@ function aplicarFiltros() {
 function bindCrearInstalacion() {
   const form = document.getElementById('formInsertar');
   if (!form) return;
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
@@ -206,7 +189,7 @@ function bindCrearInstalacion() {
 }
 
 // ================================
-// CAMPOS BD (modal ver / editar)
+// CAMPOS PARA MODAL VER
 // ================================
 const nombresCampos = ['Nombre', 'Dirección', 'Teléfono', 'Correo', 'Localidad'];
 const camposBd      = ['nombre', 'direccion', 'telefono', 'correo', 'localidad'];
@@ -253,7 +236,6 @@ function bindModales() {
       const form = document.getElementById('formEditar');
       if (!form) return;
 
-      // Obtener localidades para el select de edición
       const localidades = [...new Set(
         instalaciones.map(i => i.localidad).filter(Boolean)
       )].sort();
@@ -293,7 +275,7 @@ function bindModales() {
         <div class="row mb-3">
           <div class="col-lg-6">
             <label class="form-label">Localidad</label>
-            <select class="form-control" name="localidad" required>
+            <select class="form-select" name="localidad" required>
               ${optionsHtml}
             </select>
           </div>
@@ -334,6 +316,7 @@ function bindModales() {
     }
   });
 
+  // MODAL ELIMINAR - Preparar
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar');
     if (!btn) return;
@@ -342,15 +325,20 @@ function bindModales() {
     const instalacion = instalaciones.find(i => i.id_instalacion == id);
 
     const btnConfirm = document.getElementById('btnConfirmarEliminar');
+    if (!btnConfirm) return;
     btnConfirm.dataset.id = id;
 
     const modalBody = document.querySelector('#modalEliminar .modal-body');
-    if (modalBody && inst) modalBody.innerHTML = `¿Eliminar la instalación "${inst.nombre}"?<p class="text-muted">Esta acción no se puede deshacer.</p>`;
+    if (modalBody && instalacion) {
+      modalBody.innerHTML = `¿Eliminar la instalación "<strong>${instalacion.nombre}</strong>"?<p class="text-muted">Esta acción no se puede deshacer.</p>`;
+    }
   });
 
-  document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
+  // MODAL ELIMINAR - Confirmar
+  document.getElementById('btnConfirmarEliminar')?.addEventListener('click', async function () {
     const id = this.dataset.id;
     if (!id) return;
+
     try {
       await InstalacionApi.delete(id);
       await cargarInstalaciones();
