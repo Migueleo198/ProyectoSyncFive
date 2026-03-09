@@ -48,7 +48,11 @@ function renderTablaSalidas(lista) {
       <td>${s.matricula}</td><td class="d-none d-md-table-cell">${s.id_bombero??''}</td>
       <td>${formatearFechaHora(s.f_salida)??''}</td><td>${formatearFechaHora(s.f_regreso)??''}</td>
       <td class="d-none d-md-table-cell">${s.km_inicio??''}</td><td class="d-none d-md-table-cell">${s.km_fin??''}</td>
-      <td class="d-flex justify-content-around">${botones}</td>`;
+      <td>
+        <div class="d-flex justify-content-around">
+          ${botones}
+        </div>
+      </td>`;
     tbody.appendChild(tr);
   });
 }

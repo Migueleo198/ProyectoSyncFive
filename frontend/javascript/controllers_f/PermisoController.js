@@ -80,7 +80,12 @@ function renderTablaPermisos(lista) {
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_permiso}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.id_permiso}"><i class="bi bi-pencil text-primary"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_permiso}"><i class="bi bi-eye"></i></button>`;
-    tr.innerHTML = `<td class="d-none d-md-table-cell">${m.id_permiso}</td><td>${m.cod_motivo??'—'}</td><td class="d-none d-md-table-cell">${m.fecha??'—'}</td><td>${m.h_inicio??'—'}</td><td>${m.h_fin??'—'}</td><td>${m.estado??'—'}</td><td class="d-none d-md-table-cell">${truncar(m.descripcion,80)}</td><td class="d-flex justify-content-around">${botones}</td>`;
+    tr.innerHTML = `<td class="d-none d-md-table-cell">${m.id_permiso}</td><td>${m.cod_motivo??'—'}</td><td class="d-none d-md-table-cell">${m.fecha??'—'}</td><td>${m.h_inicio??'—'}</td><td>${m.h_fin??'—'}</td><td>${m.estado??'—'}</td><td class="d-none d-md-table-cell">${truncar(m.descripcion,80)}</td>
+    <td>
+        <div class="d-flex justify-content-around">
+          ${botones}
+        </div>
+      </td>`;
     tbody.appendChild(tr);
   });
 }

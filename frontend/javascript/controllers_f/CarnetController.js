@@ -95,7 +95,7 @@ function renderTablaCarnets(lista) {
       <td>${c.nombre}</td>
       <td>${c.categoria}</td>
       <td>${c.duracion_meses}</td>
-            <td>
+      <td>
         <div class="d-flex justify-content-around">
           ${botonesAccion}
         </div>

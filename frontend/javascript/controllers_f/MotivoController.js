@@ -44,7 +44,12 @@ function renderTablaMotivos(lista) {
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.cod_motivo}"><i class="bi bi-pencil text-primary"></i></button>
          <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.cod_motivo}"><i class="bi bi-trash3 text-danger"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.cod_motivo}"><i class="bi bi-eye"></i></button>`;
-    tr.innerHTML = `<td class="d-none d-md-table-cell">${m.cod_motivo}</td><td>${m.nombre??''}</td><td class="d-none d-md-table-cell">${m.dias??''}</td><td class="d-flex justify-content-around">${botones}</td>`;
+    tr.innerHTML = `<td class="d-none d-md-table-cell">${m.cod_motivo}</td><td>${m.nombre??''}</td><td class="d-none d-md-table-cell">${m.dias??''}</td>
+      <td>
+        <div class="d-flex justify-content-around">
+          ${botones}
+        </div>
+      </td>`;
     tbody.appendChild(tr);
   });
 }

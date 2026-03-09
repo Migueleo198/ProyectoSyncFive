@@ -62,7 +62,11 @@ function renderTablaPersonas(lista) {
       <td>${p.nombre}</td><td>${p.apellidos}</td>
       <td class="d-none d-md-table-cell">${p.localidad}</td>
       <td>${p.nombre_usuario}</td>
-      <td class="d-flex justify-content-around">${botones}</td>`;
+      <td>
+        <div class="d-flex justify-content-around">
+          ${botones}
+        </div>
+      </td>`;
     tbody.appendChild(tr);
   });
 }

@@ -164,7 +164,11 @@ function renderTablaMateriales(lista) {
             <td class="d-none d-md-table-cell">${m.descripcion ?? ''}</td>
             <td><span class="badge ${m.estado === 'ALTA' ? 'bg-success' : 'bg-danger'}">${m.estado ?? ''}</span></td>
             <td class="d-none d-md-table-cell">${m.categoria_nombre ?? ''}</td>
-            <td class="d-flex justify-content-around">${botones}</td>
+            <td>
+                <div class="d-flex justify-content-around">
+                    ${botones}
+                </div>
+            </td>
         `;
         tbody.appendChild(tr);
     });
@@ -376,9 +380,7 @@ function bindModalEliminarPreparar() {
 // ================================
 // MODALES DE ESCRITURA (solo si puedeEscribir)
 // ================================
-// ================================
-// MODALES DE ESCRITURA
-// ================================
+
 function bindModalesEscritura() {
     document.addEventListener('click', async function (e) {
         const btn = e.target.closest('.btn-editar');

@@ -94,26 +94,28 @@ function renderTablaInstalaciones(lista) {
       <td class="d-none d-md-table-cell">${i.telefono ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.correo ?? ''}</td>
       <td>${i.localidad ?? ''}</td>
-      <td class="d-flex justify-content-around">
-        <button type="button" class="btn p-0 btn-ver"
-                data-bs-toggle="modal"
-                data-bs-target="#modalVer"
-                data-id="${i.id_instalacion}">
-          <i class="bi bi-eye"></i>
-        </button>
-        ${puedeEscribir ? `
-        <button type="button" class="btn p-0 btn-editar"
-                data-bs-toggle="modal"
-                data-bs-target="#modalEditar"
-                data-id="${i.id_instalacion}">
-          <i class="bi bi-pencil"></i>
-        </button>
-        <button type="button" class="btn p-0 btn-eliminar"
-                data-bs-toggle="modal"
-                data-bs-target="#modalEliminar"
-                data-id="${i.id_instalacion}">
-          <i class="bi bi-trash3"></i>
-        </button>` : ''}
+      <td>
+        <div class="d-flex justify-content-around">
+          <button type="button" class="btn p-0 btn-ver"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalVer"
+                  data-id="${i.id_instalacion}">
+            <i class="bi bi-eye"></i>
+          </button>
+          ${puedeEscribir ? `
+          <button type="button" class="btn p-0 btn-editar"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalEditar"
+                  data-id="${i.id_instalacion}">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button type="button" class="btn p-0 btn-eliminar"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalEliminar"
+                  data-id="${i.id_instalacion}">
+            <i class="bi bi-trash3"></i>
+          </button>` : ''}
+        </div>
       </td>
     `;
 

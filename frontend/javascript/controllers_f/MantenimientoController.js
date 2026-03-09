@@ -105,7 +105,11 @@ function renderTabla(lista) {
       <td>${m.recurso||'-'}</td><td class="d-none d-md-table-cell">${m.estado??''}</td>
       <td class="d-none d-lg-table-cell">${m.descripcion||'-'}</td>
       <td class="d-none d-md-table-cell">${m.f_inicio||'-'}</td><td class="d-none d-md-table-cell">${m.f_fin||'-'}</td>
-      <td class="d-flex justify-content-around">${botones}</td>`;
+      <td>
+        <div class="d-flex justify-content-around">
+          ${botones}
+        </div>
+      </td>`;
     tbody.appendChild(tr);
   });
 }
