@@ -91,20 +91,42 @@ function bindModalVer() {
 // CREAR PERSONA
 // ================================
 function bindCrearPersona() {
-  const form = document.getElementById('formInsertarPersona'); if (!form) return;
+  const form = document.getElementById('formInsertarPersona');
+  if (!form) return;
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
+
     const data = {
-      id_bombero: f.get('id_bombero'), n_funcionario: f.get('n_funcionario'), DNI: f.get('dni'),
-      correo: f.get('correo'), telefono: f.get('telefono'), f_ingreso_diputacion: f.get('f_ingreso_diputacion'),
-      talla_superior: f.get('talla_superior'), talla_inferior: f.get('talla_inferior'), talla_calzado: f.get('talla_calzado'),
-      nombre: f.get('nombre'), apellidos: f.get('apellidos'), f_nacimiento: f.get('f_nacimiento'),
-      telefono_emergencia: f.get('telefono_emergencia'), domicilio: f.get('domicilio'), localidad: f.get('localidad'),
-      id_rol: f.get('id_rol'), activo: f.get('activo') === 'on', nombre_usuario: f.get('nombre_usuario'), contrasenia: f.get('contrasenia')
+      id_bombero:           f.get('id_bombero')?.trim(),
+      n_funcionario:        f.get('n_funcionario')?.trim(),
+      DNI:                  f.get('dni')?.trim(),
+      nombre:               f.get('nombre')?.trim(),
+      apellidos:            f.get('apellidos')?.trim(),
+      f_nacimiento:         f.get('f_nacimiento'),
+      correo:               f.get('correo')?.trim(),
+      telefono:             f.get('telefono')?.trim(),
+      telefono_emergencia:  f.get('telefono_emergencia')?.trim() || null,
+      f_ingreso_diputacion: f.get('f_ingreso_diputacion') || null,
+      domicilio:            f.get('domicilio')?.trim() || null,
+      localidad:            f.get('localidad')?.trim() || null,
+      talla_superior:       f.get('talla_superior')?.trim() || null,
+      talla_inferior:       f.get('talla_inferior')?.trim() || null,
+      talla_calzado:        f.get('talla_calzado')?.trim() || null,
+      id_rol:               f.get('id_rol') || null,   // ← nombre corregido
+      nombre_usuario:       f.get('nombre_usuario')?.trim(),
+      contrasenia:          f.get('contrasenia'),
     };
-    try { await PersonaApiApi.create(data); await cargarPersonas(); form.reset(); mostrarExito('Persona creada correctamente'); }
-    catch (err) { mostrarError(err.message || 'Error creando persona'); }
+
+    try {
+      await PersonaApiApi.create(data);
+      await cargarPersonas();
+      form.reset();
+      mostrarExito('Persona creada correctamente');
+    } catch (err) {
+      mostrarError(err.message || 'Error creando persona');
+    }
   });
 }
 

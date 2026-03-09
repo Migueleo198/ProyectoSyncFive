@@ -74,133 +74,146 @@
 
                 <!-- Contenedor insertar Usuario -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Insertar nuevo usuario</h5>
+                <h5 class="text-center mb-4">Insertar nuevo trabajador</h5>
 
-                    <form id="formInsertarPersona" class="mx-auto">
-                        <div class="row mb-3">
-                            <!-- ID Bombero -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">ID Bombero</label>
-                                <input type="text" name="id_bombero" class="form-control form-control-sm" required>
-                            </div>
+                <form id="formInsertarPersona" class="mx-auto">
+                    <div class="row mb-3">
 
-                            <!-- Nº Funcionario -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Nº Funcionario</label>
-                                <input type="text" name="n_funcionario" class="form-control form-control-sm" required>
-                            </div>
+                    <!-- ID Bombero -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">ID Bombero <span class="text-danger">*</span></label>
+                        <input type="text" name="id_bombero" maxlength="4"
+                            class="form-control form-control-sm" required>
+                    </div>
 
-                            <!-- DNI -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">DNI</label>
-                                <input type="text" name="dni" class="form-control form-control-sm" required>
-                            </div>
+                    <!-- Nº Funcionario -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Nº Funcionario <span class="text-danger">*</span></label>
+                        <input type="text" name="n_funcionario" maxlength="17"
+                            class="form-control form-control-sm" required>
+                    </div>
 
-                            <!-- Nombre -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Nombre</label>
-                                <input type="text" name="nombre" class="form-control form-control-sm" required>
-                            </div>
+                    <!-- DNI -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">DNI <span class="text-danger">*</span></label>
+                        <input type="text" name="dni" maxlength="15"
+                            class="form-control form-control-sm" required>
+                    </div>
 
-                            <!-- Apellidos -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Apellidos</label>
-                                <input type="text" name="apellidos" class="form-control form-control-sm" required>
-                            </div>
+                    <!-- Nombre -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre" maxlength="50"
+                            class="form-control form-control-sm" required>
+                    </div>
 
-                            <!-- Fecha Nacimiento -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Fecha Nacimiento</label>
-                                <input type="date" name="f_nacimiento" class="form-control form-control-sm" required>
-                            </div>
+                    <!-- Apellidos -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                        <input type="text" name="apellidos" maxlength="100"
+                            class="form-control form-control-sm" required>
+                    </div>
 
-                            <!-- Teléfono -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Teléfono</label>
-                                <input type="text" name="telefono" class="form-control form-control-sm">
-                            </div>
+                    <!-- Fecha Nacimiento -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Fecha Nacimiento <span class="text-danger">*</span></label>
+                        <input type="date" name="f_nacimiento"
+                            class="form-control form-control-sm" required>
+                    </div>
 
-                            <!-- Teléfono Emergencia -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Teléfono Emergencia</label>
-                                <input type="text" name="telefono_emergencia" class="form-control form-control-sm">
-                            </div>
+                    <!-- Correo -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Correo <span class="text-danger">*</span></label>
+                        <input type="email" name="correo" maxlength="100"
+                            class="form-control form-control-sm" required>
+                    </div>
 
-                            <!-- Correo -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Correo</label>
-                                <input type="email" name="correo" class="form-control form-control-sm" required>
-                            </div>
+                    <!-- Teléfono -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                        <input type="tel" name="telefono" maxlength="15"
+                            class="form-control form-control-sm" required>
+                    </div>
 
-                            <!-- Fecha ingreso -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Fecha Ingreso Diputación</label>
-                                <input type="date" name="f_ingreso_diputacion" class="form-control form-control-sm">
-                            </div>
+                    <!-- Teléfono Emergencia -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Teléfono Emergencia</label>
+                        <input type="tel" name="telefono_emergencia" maxlength="15"
+                            class="form-control form-control-sm">
+                    </div>
 
-                            <!-- Domicilio -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Domicilio</label>
-                                <input type="text" name="domicilio" class="form-control form-control-sm">
-                            </div>
+                    <!-- Fecha Ingreso Diputación -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Fecha Ingreso Diputación <span class="text-danger">*</span></label>
+                        <input type="date" name="f_ingreso_diputacion"
+                            class="form-control form-control-sm" required>
+                    </div>
 
-                            <!-- Localidad -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Localidad</label>
-                                <input type="text" name="localidad" class="form-control form-control-sm required">
-                            </div>
+                    <!-- Domicilio -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Domicilio</label>
+                        <input type="text" name="domicilio" maxlength="150"
+                            class="form-control form-control-sm">
+                    </div>
 
-                            <!-- Talla Superior -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Talla Superior</label>
-                                <input type="text" name="talla_superior" class="form-control form-control-sm">
-                            </div>
+                    <!-- Localidad -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Localidad</label>
+                        <input type="text" name="localidad" maxlength="100"
+                            class="form-control form-control-sm">
+                    </div>
 
-                            <!-- Talla Inferior -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Talla Inferior</label>
-                                <input type="text" name="talla_inferior" class="form-control form-control-sm">
-                            </div>
+                    <!-- Talla Superior -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Talla Superior</label>
+                        <input type="text" name="talla_superior" maxlength="10"
+                            class="form-control form-control-sm">
+                    </div>
 
-                            <!-- Talla Calzado -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Talla Calzado</label>
-                                <input type="number" name="talla_calzado" class="form-control form-control-sm">
-                            </div>
+                    <!-- Talla Inferior -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Talla Inferior</label>
+                        <input type="text" name="talla_inferior" maxlength="10"
+                            class="form-control form-control-sm">
+                    </div>
 
-                            <!-- Rol -->
-                            <div class="col-md-4 col-sm-6">
-                                <label for="rol" class="m-2">Rol</label>
-                                <select name="rol" id="rol" class="form-select form-select-sm" required>
-                                    <option value="">Seleccione rol...</option>
-                                </select>
-                            </div>
+                    <!-- Talla Calzado -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Talla Calzado</label>
+                        <input type="text" name="talla_calzado" maxlength="10"
+                            class="form-control form-control-sm">
+                    </div>
 
-                            <!-- Activo -->
-                            <div class="col-md-4 col-sm-6 d-flex align-items-center mt-4">
-                                <input type="checkbox" name="activo" class="form-check-input me-2">
-                                <label class="form-check-label">Activo</label>
-                            </div>
+                    <!-- Rol -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label for="id_rol" class="form-label">Rol <span class="text-danger">*</span></label>
+                        <!-- name="id_rol" para que f.get('id_rol') funcione -->
+                        <select name="id_rol" id="rol" class="form-select form-select-sm" required>
+                        <option value="">Seleccione rol...</option>
+                        </select>
+                    </div>
 
-                            <!-- Usuario -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Nombre Usuario</label>
-                                <input type="text" name="nombre_usuario" class="form-control form-control-sm" required>
-                            </div>
+                    <!-- Nombre Usuario -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Nombre Usuario <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre_usuario" maxlength="20"
+                            class="form-control form-control-sm" required>
+                    </div>
 
-                            <!-- Contraseña -->
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2">Contraseña</label>
-                                <input type="password" name="contrasenia" class="form-control form-control-sm" required>
-                            </div>
+                    <!-- Contraseña -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Contraseña <span class="text-danger">*</span></label>
+                        <input type="password" name="contrasenia" maxlength="255"
+                            class="form-control form-control-sm" required>
+                    </div>
 
-                        </div>
+                    </div><!-- /row -->
 
-                        <div class="d-flex justify-content-center gap-2">
-                            <button type="reset" class="btn btn-secondary">Limpiar</button>
-                            <button type="submit" class="btn btn-primary">Insertar</button>
-                        </div>
-                    </form>
+                    <div class="d-flex justify-content-center gap-2">
+                    <button type="reset"  class="btn btn-secondary">Limpiar</button>
+                    <button type="submit" class="btn btn-primary">Insertar</button>
+                    </div>
+                </form>
                 </div>
 
             </main>
