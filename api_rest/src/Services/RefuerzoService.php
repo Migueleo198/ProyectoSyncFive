@@ -35,14 +35,14 @@ class RefuerzoService
     /**
      * Obtener un refuerzo por su ID (string)
      */
-    public function getRefuerzoById(string $ID_Refuerzo): array
+    public function getRefuerzoById(string $id_turno_refuerzo): array
     {
-        Validator::validate(['ID_Refuerzo' => $ID_Refuerzo], [
-            'ID_Refuerzo' => 'required|string'
+        Validator::validate(['id_turno_refuerzo' => $id_turno_refuerzo], [
+            'id_turno_refuerzo' => 'required|string'
         ]);
 
         try {
-            $refuerzo = $this->model->find($ID_Refuerzo);
+            $refuerzo = $this->model->find($id_turno_refuerzo);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -63,43 +63,41 @@ class RefuerzoService
     public function createRefuerzo(array $input): array
     {
         $data = Validator::validate($input, [
-            'ID_Refuerzo'     => 'required|string',
-            'Fecha'        => 'required|date',
-            'H_inicio'          => 'required|int',
-            'H_fin'          => 'required|int',
-            'horas'      => 'int'
+            'f_inicio' => 'required|string',
+            'f_fin'    => 'required|string',
+            'horas'    => 'int'
         ]);
 
         try {
             $id = $this->model->create($data);
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
         if (!$id) {
             throw new \Exception("No se pudo crear el refuerzo");
         }
 
-        return ['ID_Refuerzo' => $data['ID_Refuerzo']];
+        return [
+            'id_turno_refuerzo' => $id,
+            'f_inicio' => $data['f_inicio'],
+            'f_fin'    => $data['f_fin'],
+            'horas'    => $data['horas'] ?? null
+        ];
     }
 
     /**
      * Actualizar refuerzo
      */
-    public function updateRefuerzo(string $ID_Refuerzo, array $input): array
+    public function updateRefuerzo(string $id_turno_refuerzo, array $input): array
     {
-        Validator::validate(['ID_Refuerzo' => $ID_Refuerzo], [
-            'ID_Refuerzo' => 'required|string'
+        Validator::validate(['id_turno_refuerzo' => $id_turno_refuerzo], [
+            'id_turno_refuerzo' => 'required|string'
         ]);
 
         $data = Validator::validate($input, [
-            'ID_Refuerzo'     => 'required|string',
-            'Fecha'        => 'required|date',
-            'H_inicio'          => 'required|int',
-            'H_fin'          => 'required|int',
+            'f_inicio'   => 'required|string',
+            'f_fin'      => 'required|string',
             'horas'      => 'int'
         ]);
 
@@ -110,7 +108,7 @@ class RefuerzoService
         }
 
         try {
-            $result = $this->model->update($ID_Refuerzo, $data);
+            $result = $this->model->update($id_turno_refuerzo, $data);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -119,7 +117,7 @@ class RefuerzoService
         }
 
         if ($result === 0) {
-            $exists = $this->model->find($ID_Refuerzo);
+            $exists = $this->model->find($id_turno_refuerzo);
 
             if (!$exists) {
                 throw new \Exception("Refuerzo no encontrado", 404);
@@ -147,14 +145,14 @@ class RefuerzoService
     /**
      * Eliminar un refuerzo
      */
-    public function deleteRefuerzo(string $ID_Refuerzo): void
+    public function deleteRefuerzo(string $id_turno_refuerzo): void
     {
-        Validator::validate(['ID_Refuerzo' => $ID_Refuerzo], [
-            'ID_Refuerzo' => 'required|string'
+        Validator::validate(['id_turno_refuerzo' => $id_turno_refuerzo], [
+            'id_turno_refuerzo' => 'required|string'
         ]);
 
         try {
-            $result = $this->model->delete($ID_Refuerzo);
+            $result = $this->model->delete($id_turno_refuerzo);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -179,22 +177,17 @@ class RefuerzoService
 public function assignRefuerzoToPerson(array $input): array
 {
     $data = Validator::validate($input, [
-        'n_funcionario' => 'required|string',
-        'ID_Refuerzo'   => 'required|string',
-        'cargo'         => 'required|string',
+        'id_bombero'        => 'required|string',
+        'id_turno_refuerzo'          => 'required|string',  // coincide con lo que envía el frontend
     ]);
 
     try {
         $success = $this->model->assignToPerson(
-            $data['n_funcionario'],
-            $data['ID_Refuerzo'],
-            $data['cargo']
+            $data['id_bombero'],
+            $data['id_turno_refuerzo']
         );
     } catch (Throwable $e) {
-        throw new \Exception(
-            "Error interno al asignar refuerzo: " . $e->getMessage(),
-            500
-        );
+        throw new \Exception("Error interno al asignar refuerzo: " . $e->getMessage(), 500);
     }
 
     if (!$success) {
@@ -202,28 +195,28 @@ public function assignRefuerzoToPerson(array $input): array
     }
 
     return [
-        'status' => 'assigned',
-        'message' => 'Refuerzo asignado correctamente',
-        'n_funcionario' => $data['n_funcionario'],
-        'ID_Refuerzo' => $data['ID_Refuerzo']
+        'status'   => 'assigned',
+        'message'  => 'Refuerzo asignado correctamente',
+        'id_bombero' => $data['id_bombero'],
+        'id_turno_refuerzo'   => $data['id_turno_refuerzo']
     ];
 }
 
     /**
      * Desasignar un refuerzo de una persona
      */
-    public function unassignRefuerzoFromPerson(string $n_funcionario, string $ID_Refuerzo): array
+    public function unassignRefuerzoFromPerson(string $id_bombero, string $id_turno_refuerzo): array
     {
         Validator::validate([
-            'n_funcionario' => $n_funcionario,
-            'ID_Refuerzo'   => $ID_Refuerzo
+            'id_bombero' => $id_bombero,
+            'id_turno_refuerzo'   => $id_turno_refuerzo
         ], [
-            'n_funcionario' => 'required|string',
-            'ID_Refuerzo'   => 'required|string'
+            'id_bombero' => 'required|string',
+            'id_turno_refuerzo'   => 'required|string'
         ]);
 
         try {
-            $affected = $this->model->unassignFromPerson($n_funcionario, $ID_Refuerzo);
+            $affected = $this->model->unassignFromPerson($id_bombero, $id_turno_refuerzo);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno al desasignar refuerzo: " . $e->getMessage(),
@@ -238,27 +231,10 @@ public function assignRefuerzoToPerson(array $input): array
         return [
             'status' => 'unassigned',
             'message' => 'Refuerzo desasignado correctamente',
-            'n_funcionario' => $n_funcionario,
-            'ID_Refuerzo' => $ID_Refuerzo
+            'id_bombero' => $id_bombero,
+            'id_turno_refuerzo' => $id_turno_refuerzo
         ];
     }
 
-    /**
-     * Obtener turno de refuerzo por fecha
-     */
-    public function getTurnoRefuerzoByFecha(string $fecha): ?array
-    {
-        Validator::validate(['fecha' => $fecha], [
-            'fecha' => 'required|date'
-        ]);
-        try {
-            return $this->model->getTurnoRefuerzoByFecha($fecha);
-        } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno al obtener turno de refuerzo: " . $e->getMessage(),
-                500
-            );
-        }
-    }
 }
 ?>
