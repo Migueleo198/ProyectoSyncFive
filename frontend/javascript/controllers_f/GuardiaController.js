@@ -211,7 +211,8 @@ document.addEventListener('click', async (e) => {
             modalBody.appendChild(p);
         });
     }
-
+    
+    // Modal EDITAR
     const btnEditar = e.target.closest('.btn-editar');
     if (btnEditar) {
         const id = btnEditar.dataset.id;
