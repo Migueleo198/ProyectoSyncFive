@@ -19,7 +19,7 @@ const GuardiaApi = {
 
   // GuardiaApi.js
   assignToPerson(data) {
-      return ApiClient.post('/guardias/assign', {
+      return ApiClient.post('/personas/{id_bombero}/guardias', {
           id_bombero: data.id_bombero,
           id_guardia: data.id_guardia,
           cargo: data.cargo
