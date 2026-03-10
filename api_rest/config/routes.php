@@ -279,4 +279,10 @@ $router->protectedSession('GET',    '/infraestructuras-agua/{id}', 'Controllers\
 $router->protectedSession('POST',   '/infraestructuras-agua',      'Controllers\\InfraestructuraAguaController@store',   [3,4,5]);
 $router->protectedSession('PUT',    '/infraestructuras-agua/{id}', 'Controllers\\InfraestructuraAguaController@update',  [4,5]);
 $router->protectedSession('DELETE', '/infraestructuras-agua/{id}', 'Controllers\\InfraestructuraAguaController@destroy', [5]);
+
+// +++++++++++++++++ CUADRANTE +++++++++++++++++
+$router->protectedSession('GET', '/cuadrante/{id_bombero}/guardias',  'Controllers\\CuadranteController@guardias',  [1,2,3,4,5]);
+$router->protectedSession('GET', '/cuadrante/{id_bombero}/refuerzos', 'Controllers\\CuadranteController@refuerzos', [1,2,3,4,5]);
+$router->protectedSession('GET', '/cuadrante/guardias',  'Controllers\\CuadranteController@todasGuardias',  [1,2,3,4,5]);
+$router->protectedSession('GET', '/cuadrante/refuerzos', 'Controllers\\CuadranteController@todosRefuerzos', [1,2,3,4,5]);
 ?>

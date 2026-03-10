@@ -1,23 +1,20 @@
-import GuardiaApi from '../api_f/GuardiaApi.js';
-import PermisoApi from '../api_f/PermisoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
-import RefuerzoApi from '../api_f/RefuerzoApi.js';
+import PermisoApi from '../api_f/PermisoApi.js';
+import ApiClient  from '../api_f/ApiClient.js';
 
-// CONSTANTES
 const MONTH_NAMES = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
 ];
 
 const TIPOS = {
-    guardia:          { color: 'success', label: 'Guardia',            bgClass: 'bg-success' },
-    refuerzo:         { color: 'purple',  label: 'Turno de refuerzo',  bgClass: 'bg-info'  },
-    permiso_aceptado: { color: 'primary', label: 'Permiso aceptado',   bgClass: 'bg-primary' },
-    permiso_revision: { color: 'warning', label: 'Permiso en revisión',bgClass: 'bg-warning' },
-    permiso_denegado: { color: 'danger',  label: 'Permiso denegado',   bgClass: 'bg-danger'  },
+    guardia:          { label: 'Guardia',             bgClass: 'bg-success' },
+    refuerzo:         { label: 'Turno de refuerzo',   bgClass: 'bg-info'    },
+    permiso_aceptado: { label: 'Permiso aceptado',    bgClass: 'bg-primary' },
+    permiso_revision: { label: 'Permiso en revisión', bgClass: 'bg-warning' },
+    permiso_denegado: { label: 'Permiso denegado',    bgClass: 'bg-danger'  },
 };
 
-// VARIABLES GLOBALES
 let year            = new Date().getFullYear();
 let modoVista       = 'individual';
 let idBomberoActual = null;
@@ -26,16 +23,57 @@ let guardias        = [];
 let permisos        = [];
 let refuerzos       = [];
 
-// INIT
 document.addEventListener('DOMContentLoaded', async () => {
-    construirControlesBase();
+    construirControles();
     construirLeyenda();
     await cargarDatosIniciales();
     renderCalendario();
 });
 
-// CONSTRUIR CONTROLES BASE
-function construirControlesBase() {
+async function cargarDatosIniciales() {
+    try {
+        detectarBomberoLogueado();
+        await cargarPersonas();
+        configurarEventosVista();
+        configurarBotones();
+        await cargarDatosCuadrante();
+    } catch (e) {
+        mostrarError('Error al cargar los datos iniciales');
+    }
+}
+
+function detectarBomberoLogueado() {
+    try {
+        const sesion = JSON.parse(sessionStorage.getItem('user') || 'null');
+        idBomberoActual = sesion?.id_bombero || null;
+    } catch {
+        idBomberoActual = null;
+    }
+}
+
+async function cargarPersonas() {
+    try {
+        const res = await PersonaApi.getAll();
+        personas = res.data || res || [];
+        if (personas.length > 0) poblarSelectBomberos();
+    } catch {
+        personas = [];
+    }
+}
+
+function poblarSelectBomberos() {
+    const select = document.getElementById('selectBombero');
+    if (!select) return;
+    select.innerHTML = '<option value="">Seleccione un bombero...</option>';
+    personas.forEach(p => {
+        const o = document.createElement('option');
+        o.value = p.id_bombero;
+        o.textContent = `${p.nombre} ${p.apellidos || ''} (${p.id_bombero})`.trim();
+        select.appendChild(o);
+    });
+}
+
+function construirControles() {
     const placeholder = document.getElementById('year_elems_placeholder');
     if (!placeholder) return;
 
@@ -50,147 +88,22 @@ function construirControlesBase() {
                     <i class="bi bi-chevron-right"></i>
                 </button>
             </div>
-
-            <div class="btn-group ms-2" role="group" aria-label="Modo de vista">
+            <div class="btn-group ms-2" role="group">
                 <input type="radio" class="btn-check" name="modoVista" id="modoIndividual" value="individual" autocomplete="off" checked>
                 <label class="btn btn-outline-primary" for="modoIndividual">Mi cuadrante</label>
-
                 <input type="radio" class="btn-check" name="modoVista" id="modoGlobal" value="global" autocomplete="off">
                 <label class="btn btn-outline-primary" for="modoGlobal">Global</label>
             </div>
-
             <select class="form-select form-select-sm w-auto" id="selectBombero" style="display:none;min-width:200px">
                 <option value="">Seleccione un bombero...</option>
             </select>
         </div>
     `;
-
-    document.getElementById('btnPrevYear')?.addEventListener('click', () => cambiarAnio(-1));
-    document.getElementById('btnNextYear')?.addEventListener('click', () => cambiarAnio(1));
 }
 
-// CARGAR DATOS INICIALES
-async function cargarDatosIniciales() {
-    try {
-        await cargarPersonas();
-        detectarBomberoLogueado();
-        configurarEventosVista();
-        await cargarDatosCuadrante();
-    } catch (e) {
-        console.error('Error en carga inicial:', e);
-        mostrarError('Error al cargar los datos iniciales');
-    }
-}
-
-// CARGAR PERSONAS
-async function cargarPersonas() {
-    try {
-        const res = await PersonaApi.getAll();
-        personas = res.data || res || [];
-        if (personas.length > 0) poblarSelectBomberos();
-    } catch (e) {
-        mostrarError('Error cargando personas');
-        personas = [];
-    }
-}
-
-// POBLAR SELECT DE BOMBEROS
-function poblarSelectBomberos() {
-    const select = document.getElementById('selectBombero');
-    if (!select) return;
-
-    select.innerHTML = '<option value="">Seleccione un bombero...</option>';
-    personas.forEach(p => {
-        const option = document.createElement('option');
-        option.value = p.id_bombero;
-        option.textContent = `${p.nombre} ${p.apellidos || ''} (${p.id_bombero})`.trim();
-        select.appendChild(option);
-    });
-}
-
-// DETECTAR BOMBERO LOGUEADO
-function detectarBomberoLogueado() {
-    try {
-        const sesion = JSON.parse(sessionStorage.getItem('usuario') || localStorage.getItem('usuario') || 'null');
-        idBomberoActual = sesion?.id_bombero || sesion?.id || null;
-    } catch {
-        idBomberoActual = null;
-    }
-}
-
-// CONFIGURAR EVENTOS DE VISTA
-function configurarEventosVista() {
-    document.querySelectorAll('input[name="modoVista"]').forEach(r => {
-        r.addEventListener('change', async (e) => {
-            modoVista = e.target.value;
-            const sel = document.getElementById('selectBombero');
-            if (sel) {
-                sel.style.display = modoVista === 'global' ? 'block' : 'none';
-                if (modoVista === 'global') sel.classList.add('ms-2');
-            }
-            await cargarDatosCuadrante();
-            renderCalendario();
-        });
-    });
-
-    document.getElementById('selectBombero')?.addEventListener('change', async (e) => {
-        await cargarDatosCuadrante(e.target.value || null);
-        renderCalendario();
-    });
-}
-
-// CARGAR DATOS DEL CUADRANTE
-async function cargarDatosCuadrante(idBomberoFiltro = null) {
-    const idFiltro = idBomberoFiltro || (modoVista === 'individual' ? idBomberoActual : null);
-
-    let guardiasData  = [];
-    let permisosData  = [];
-    let refuerzosData = [];
-
-    try {
-        const res = await GuardiaApi.getAll();
-        guardiasData = res.data || res || [];
-    } catch (e) {
-        mostrarError('Error cargando guardias');
-    }
-
-    try {
-        const res = await PermisoApi.getAll();
-        permisosData = res.data || res || [];
-    } catch (e) {
-        mostrarError('Error cargando permisos');
-    }
-
-    // Refuerzos: si hay filtro por bombero usamos getByPersona (ya filtrado),
-    // si es vista global traemos todos
-    try {
-        const res = idFiltro
-            ? await RefuerzoApi.getByPersona(idFiltro)
-            : await RefuerzoApi.getAll();
-        refuerzosData = res.data || res || [];
-    } catch (e) {
-        mostrarError('Error cargando refuerzos');
-        refuerzosData = [];
-    }
-
-    if (idFiltro) {
-        guardias  = guardiasData.filter(g =>
-            g.id_bombero == idFiltro || (g.bomberos && g.bomberos.includes(idFiltro))
-        );
-        permisos  = permisosData.filter(p => p.id_bombero == idFiltro);
-        refuerzos = refuerzosData; // getByPersona ya devuelve solo los del bombero
-    } else {
-        guardias  = guardiasData;
-        permisos  = permisosData;
-        refuerzos = refuerzosData;
-    }
-}
-
-// CONSTRUIR LEYENDA
 function construirLeyenda() {
     const box = document.querySelector('.leyenda-box');
     if (!box) return;
-
     box.innerHTML = `
         <div class="d-flex flex-wrap gap-3 align-items-center p-2 bg-light rounded">
             ${Object.values(TIPOS).map(t => `
@@ -203,7 +116,84 @@ function construirLeyenda() {
     `;
 }
 
-// RENDER CALENDARIO
+function configurarBotones() {
+    document.getElementById('btnPrevYear')?.addEventListener('click', () => cambiarAnio(-1));
+    document.getElementById('btnNextYear')?.addEventListener('click', () => cambiarAnio(1));
+}
+
+function configurarEventosVista() {
+    document.querySelectorAll('input[name="modoVista"]').forEach(r => {
+        r.addEventListener('change', async (e) => {
+            modoVista = e.target.value;
+            const sel = document.getElementById('selectBombero');
+            if (sel) sel.style.display = modoVista === 'global' ? 'block' : 'none';
+            await cargarDatosCuadrante();
+            renderCalendario();
+        });
+    });
+
+    document.getElementById('selectBombero')?.addEventListener('change', async (e) => {
+        await cargarDatosCuadrante(e.target.value || null);
+        renderCalendario();
+    });
+}
+
+async function cargarDatosCuadrante(idBomberoFiltro = null) {
+    const idFiltro = idBomberoFiltro || (modoVista === 'individual' ? idBomberoActual : null);
+
+    if (idFiltro) {
+        try {
+            const res = await ApiClient.get(`/cuadrante/${idFiltro}/guardias`);
+            guardias = res.data || res || [];
+        } catch {
+            mostrarError('Error cargando guardias');
+            guardias = [];
+        }
+
+        try {
+            const res = await PermisoApi.getAll();
+            const todos = res.data || res || [];
+            permisos = todos.filter(p => p.id_bombero == idFiltro);
+        } catch {
+            mostrarError('Error cargando permisos');
+            permisos = [];
+        }
+
+        try {
+            const res = await ApiClient.get(`/cuadrante/${idFiltro}/refuerzos`);
+            refuerzos = res.data || res || [];
+        } catch {
+            mostrarError('Error cargando refuerzos');
+            refuerzos = [];
+        }
+
+    } else {
+        try {
+            const res = await ApiClient.get('/cuadrante/guardias');
+            guardias = res.data || res || [];
+        } catch {
+            mostrarError('Error cargando guardias');
+            guardias = [];
+        }
+
+        try {
+            const res = await PermisoApi.getAll();
+            permisos = res.data || res || [];
+        } catch {
+            mostrarError('Error cargando permisos');
+            permisos = [];
+        }
+
+        try {
+            const res = await ApiClient.get('/cuadrante/refuerzos');
+            refuerzos = res.data || res || [];
+        } catch {
+            mostrarError('Error cargando refuerzos');
+            refuerzos = [];
+        }
+    }
+}
+
 function renderCalendario() {
     const container = document.getElementById('calendar');
     if (!container) return;
@@ -226,7 +216,6 @@ function renderCalendario() {
     actualizarTablaDetalles();
 }
 
-// CONSTRUIR MAPA DE DÍAS
 function construirMapaDias() {
     const mapa = {};
 
@@ -238,27 +227,20 @@ function construirMapaDias() {
     };
 
     guardias.forEach(g => add(g.fecha, 'guardia'));
-
     permisos.forEach(p => {
         const tipo = p.estado === 'ACEPTADO' ? 'permiso_aceptado'
                    : p.estado === 'REVISION' ? 'permiso_revision'
                    : 'permiso_denegado';
         add(p.fecha, tipo);
     });
-
-    // f_inicio es TIMESTAMP → extraer solo la parte de fecha (YYYY-MM-DD)
-    refuerzos.forEach(r => {
-        const fecha = r.f_inicio ? r.f_inicio.substring(0, 10) : null;
-        add(fecha, 'refuerzo');
-    });
+    refuerzos.forEach(r => add(r.f_inicio ? r.f_inicio.substring(0, 10) : null, 'refuerzo'));
 
     return mapa;
 }
 
-// GENERAR MES
 function generarMes(month, y, mapa) {
-    const FIRST_DAY    = new Date(y, month, 1).getDay() || 7;
-    const DAYS_IN_MONTH = new Date(y, month + 1, 0).getDate();
+    const firstDay     = new Date(y, month, 1).getDay() || 7;
+    const daysInMonth  = new Date(y, month + 1, 0).getDate();
 
     let html = `
         <div class="col-xl-4 col-md-6">
@@ -282,29 +264,27 @@ function generarMes(month, y, mapa) {
     for (let row = 0; row < 6; row++) {
         html += '<tr>';
         for (let col = 1; col <= 7; col++) {
-            if ((row === 0 && col < FIRST_DAY) || day > DAYS_IN_MONTH) {
+            if ((row === 0 && col < firstDay) || day > daysInMonth) {
                 html += '<td class="p-2 bg-light"></td>';
             } else {
-                const mm   = String(month + 1).padStart(2, '0');
-                const dd   = String(day).padStart(2, '0');
-                const key  = `${y}-${mm}-${dd}`;
-                const tipos     = new Set(mapa[key] || []);
-                const tipoClass = getTipoClass(tipos);
-                html += `<td data-fecha="${key}" class="p-2 ${tipoClass} dia-celda" style="cursor:${tipos.size ? 'pointer' : 'default'}">${day}</td>`;
+                const mm    = String(month + 1).padStart(2, '0');
+                const dd    = String(day).padStart(2, '0');
+                const key   = `${y}-${mm}-${dd}`;
+                const tipos = new Set(mapa[key] || []);
+                const clase = getClaseTipo(tipos);
+                html += `<td data-fecha="${key}" class="p-2 ${clase} dia-celda" style="cursor:${tipos.size ? 'pointer' : 'default'}">${day}</td>`;
                 day++;
             }
         }
         html += '</tr>';
-        if (day > DAYS_IN_MONTH) break;
+        if (day > daysInMonth) break;
     }
 
     html += '</tbody></table></div></div></div>';
     return html;
 }
 
-// OBTENER CLASE PARA EL TIPO DE DÍA
-// Orden de prioridad: guardia > refuerzo > permisos
-function getTipoClass(tipos) {
+function getClaseTipo(tipos) {
     if (tipos.has('guardia'))          return 'bg-success text-white';
     if (tipos.has('refuerzo'))         return 'bg-info text-white';
     if (tipos.has('permiso_aceptado')) return 'bg-primary text-white';
@@ -313,7 +293,6 @@ function getTipoClass(tipos) {
     return '';
 }
 
-// MOSTRAR DETALLE DEL DÍA
 function mostrarDetalleDia(td) {
     const fecha = td.dataset.fecha;
     if (!fecha) return;
@@ -325,7 +304,7 @@ function mostrarDetalleDia(td) {
     const toastContainer = document.getElementById('toastContainer') || crearToastContainer();
     const toastId = 'toast-' + Date.now();
 
-    const toastHtml = `
+    toastContainer.insertAdjacentHTML('beforeend', `
         <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="8000">
             <div class="toast-header bg-primary text-white">
                 <strong class="me-auto">Detalles del día</strong>
@@ -336,25 +315,22 @@ function mostrarDetalleDia(td) {
                 ${generarContenidoDetalle(guardiasDelDia, permisosDelDia, refuerzosDelDia)}
             </div>
         </div>
-    `;
+    `);
 
-    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
     const toastElement = document.getElementById(toastId);
     new bootstrap.Toast(toastElement).show();
     toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
 }
 
-// CREAR CONTENEDOR DE TOASTS
 function crearToastContainer() {
-    const container = document.createElement('div');
-    container.id        = 'toastContainer';
-    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-    container.style.zIndex = '2000';
-    document.body.appendChild(container);
-    return container;
+    const c = document.createElement('div');
+    c.id           = 'toastContainer';
+    c.className    = 'toast-container position-fixed bottom-0 end-0 p-3';
+    c.style.zIndex = '2000';
+    document.body.appendChild(c);
+    return c;
 }
 
-// GENERAR CONTENIDO DEL DETALLE
 function generarContenidoDetalle(guardiasD, permisosD, refuerzosD) {
     if (!guardiasD.length && !permisosD.length && !refuerzosD.length) {
         return '<p class="text-muted mb-0">Sin eventos para este día</p>';
@@ -367,8 +343,8 @@ function generarContenidoDetalle(guardiasD, permisosD, refuerzosD) {
             <div class="mb-2 pb-2 border-bottom">
                 <span class="badge bg-success me-2">Guardia</span>
                 <span>${g.h_inicio || '??:??'} - ${g.h_fin || '??:??'}</span>
-            </div>
-        `;
+                ${g.notas ? `<div class="text-muted small mt-1">${g.notas}</div>` : ''}
+            </div>`;
     });
 
     refuerzosD.forEach(r => {
@@ -379,42 +355,39 @@ function generarContenidoDetalle(guardiasD, permisosD, refuerzosD) {
                 <span class="badge bg-info me-2">Turno de refuerzo</span>
                 <span>${hi} - ${hf}</span>
                 ${r.horas ? `<small class="text-muted ms-2">(${r.horas}h)</small>` : ''}
-            </div>
-        `;
+            </div>`;
     });
 
     permisosD.forEach(p => {
-        const badgeClass = p.estado === 'ACEPTADO' ? 'bg-primary'
-                         : p.estado === 'REVISION'  ? 'bg-warning text-dark'
-                         : 'bg-danger';
+        const badge = p.estado === 'ACEPTADO' ? 'bg-primary'
+                    : p.estado === 'REVISION'  ? 'bg-warning text-dark'
+                    : 'bg-danger';
         html += `
             <div class="mb-2 pb-2 border-bottom">
-                <span class="badge ${badgeClass} me-2">Permiso</span>
+                <span class="badge ${badge} me-2">Permiso</span>
                 <span>${p.estado}</span>
-            </div>
-        `;
+                ${p.descripcion ? `<div class="text-muted small mt-1">${p.descripcion}</div>` : ''}
+            </div>`;
     });
 
     return html;
 }
 
-// ACTUALIZAR TABLA DE DETALLES
 function actualizarTablaDetalles() {
     const tbody = document.querySelector('.detalles-table tbody');
     if (!tbody) return;
 
     let horasGuardia = 0;
     guardias.forEach(g => {
-        if (g.h_inicio && g.h_fin) {
-            const [hi, mi] = g.h_inicio.split(':').map(Number);
-            const [hf, mf] = g.h_fin.split(':').map(Number);
-            let diff = (hf * 60 + mf) - (hi * 60 + mi);
-            if (diff < 0) diff += 24 * 60;
-            horasGuardia += diff / 60;
-        }
+        if (!g.h_inicio || !g.h_fin) return;
+        const [hi, mi] = g.h_inicio.split(':').map(Number);
+        const [hf, mf] = g.h_fin.split(':').map(Number);
+        let diff = (hf * 60 + mf) - (hi * 60 + mi);
+        if (diff < 0) diff += 24 * 60;
+        horasGuardia += diff / 60;
     });
 
-    const horasRefuerzo = refuerzos.reduce((acc, r) => acc + (r.horas || 0), 0);
+    const horasRefuerzo = refuerzos.reduce((acc, r) => acc + (Number(r.horas) || 0), 0);
 
     tbody.innerHTML = `
         <tr>
@@ -425,60 +398,44 @@ function actualizarTablaDetalles() {
         </tr>
         <tr class="table-light">
             <td colspan="5" class="text-muted small px-3 py-2">
-                <i class="bi bi-calendar3 me-1"></i> Año ${year}
-                ${modoVista === 'individual' && idBomberoActual
-                    ? ` · <i class="bi bi-person me-1"></i>ID: ${idBomberoActual}`
-                    : ' · Vista global'}
+                Año ${year}
+                ${modoVista === 'individual' && idBomberoActual ? ` · ID: ${idBomberoActual}` : ' · Vista global'}
             </td>
         </tr>
     `;
 }
 
-// CAMBIAR AÑO
 async function cambiarAnio(delta) {
     year += delta;
-    const selectBombero  = document.getElementById('selectBombero');
+    const selectBombero   = document.getElementById('selectBombero');
     const idBomberoFiltro = modoVista === 'global' ? (selectBombero?.value || null) : idBomberoActual;
     await cargarDatosCuadrante(idBomberoFiltro);
     renderCalendario();
-    mostrarExito(`Año cambiado a ${year}`);
 }
 
-// ALERTAS
-function mostrarError(msg)  { mostrarAlerta(msg, 'danger');  }
-function mostrarExito(msg)  { mostrarAlerta(msg, 'success'); }
+function mostrarError(msg) { mostrarAlerta(msg, 'danger');  }
+function mostrarExito(msg) { mostrarAlerta(msg, 'success'); }
 
 function mostrarAlerta(msg, tipo) {
     const container = document.getElementById('alert-container');
     if (!container) return;
 
-    const alertId  = 'alert-' + Date.now();
-    const alertHtml = `
+    const alertId = 'alert-' + Date.now();
+    container.insertAdjacentHTML('beforeend', `
         <div id="${alertId}" class="alert alert-${tipo} alert-dismissible fade show shadow" role="alert">
-            <i class="bi bi-${tipo === 'danger' ? 'exclamation-triangle' : 'check-circle'} me-2"></i>
             <strong>${tipo === 'danger' ? 'Error:' : 'Éxito:'}</strong> ${msg}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-    `;
-
-    container.insertAdjacentHTML('beforeend', alertHtml);
+    `);
 
     setTimeout(() => {
-        const alert = document.getElementById(alertId);
-        if (alert) {
-            alert.classList.remove('show');
-            setTimeout(() => alert.remove(), 150);
-        }
+        const a = document.getElementById(alertId);
+        if (a) { a.classList.remove('show'); setTimeout(() => a.remove(), 150); }
     }, 5000);
 }
 
-// REFRESCAR CUADRANTE
 window.refrescarCuadrante = async function () {
     await cargarDatosIniciales();
     renderCalendario();
     mostrarExito('Cuadrante actualizado correctamente');
 };
-
-const styleSheet = document.createElement('style');
-styleSheet.textContent = styles;
-document.head.appendChild(styleSheet);
