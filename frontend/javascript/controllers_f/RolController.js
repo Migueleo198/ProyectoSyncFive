@@ -64,12 +64,17 @@ function renderTablaRoles(lista) {
 
   lista.forEach(r => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_rol}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${r.id_rol}"><i class="bi bi-pencil text-primary"></i></button>
          <button class="btn p-0 btn-eliminar" data-id="${r.id_rol}"><i class="bi bi-trash3 text-danger"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_rol}"><i class="bi bi-eye"></i></button>`;
-    tr.innerHTML = `<td class="d-none d-md-table-cell">${r.id_rol}</td><td>${r.nombre??''}</td><td class="d-none d-md-table-cell">${truncar(r.descripcion,80)}</td><td class="d-flex justify-content-around">${botones}</td>`;
+    tr.innerHTML = `<td class="d-none d-md-table-cell">${r.id_rol}</td><td>${r.nombre??''}</td><td class="d-none d-md-table-cell">${truncar(r.descripcion,80)}</td>
+    <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>`;
     tbody.appendChild(tr);
   });
 

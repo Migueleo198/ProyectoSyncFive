@@ -75,7 +75,11 @@ function renderTablaEdiciones(lista) {
       <td>${formatearFecha(e.f_inicio)}</td>
       <td>${formatearFecha(e.f_fin)}</td>
       <td>${e.horas}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>
     `;
     tbody.appendChild(tr);
   });

@@ -162,7 +162,11 @@ async function renderTablaEmergencias(lista) {
       <td class="d-none d-md-table-cell">${e.direccion ?? ''}</td>
       <td>${e.nombre_tipo ?? ''}</td>
       <td class="d-none d-md-table-cell">${textoVehiculos}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>
     `;
     tbody.appendChild(tr);
   }

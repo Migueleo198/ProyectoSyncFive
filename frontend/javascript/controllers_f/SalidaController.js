@@ -38,7 +38,7 @@ function renderTablaSalidas(lista) {
 
   lista.forEach(s => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${s.id_registro}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${s.id_registro}"><i class="bi bi-pencil"></i></button>
          <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${s.id_registro}"><i class="bi bi-trash3"></i></button>`
@@ -48,7 +48,11 @@ function renderTablaSalidas(lista) {
       <td>${s.matricula}</td><td class="d-none d-md-table-cell">${s.id_bombero??''}</td>
       <td>${formatearFechaHora(s.f_salida)??''}</td><td>${formatearFechaHora(s.f_regreso)??''}</td>
       <td class="d-none d-md-table-cell">${s.km_inicio??''}</td><td class="d-none d-md-table-cell">${s.km_fin??''}</td>
-      <td class="d-flex justify-content-around">${botones}</td>`;
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>`;
     tbody.appendChild(tr);
   });
 }

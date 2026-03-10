@@ -95,7 +95,7 @@ function renderTabla(lista) {
 
   lista.forEach(m => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.cod_mantenimiento}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.cod_mantenimiento}"><i class="bi bi-pencil"></i></button>
          <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.cod_mantenimiento}"><i class="bi bi-trash3"></i></button>`
@@ -106,7 +106,11 @@ function renderTabla(lista) {
       <td>${m.recurso||'-'}</td><td class="d-none d-md-table-cell">${m.estado??''}</td>
       <td class="d-none d-lg-table-cell">${m.descripcion||'-'}</td>
       <td class="d-none d-md-table-cell">${m.f_inicio||'-'}</td><td class="d-none d-md-table-cell">${m.f_fin||'-'}</td>
-      <td class="d-flex justify-content-around">${botones}</td>`;
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>`;
     tbody.appendChild(tr);
   });
 }

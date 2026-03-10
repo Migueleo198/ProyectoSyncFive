@@ -103,7 +103,7 @@ function renderTablaVehiculos(lista) {
     const tr = document.createElement('tr');
     tr.dataset.matricula = v.matricula;
 
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button type="button" class="btn p-0 btn-ver" 
                 data-bs-toggle="modal" data-bs-target="#modalVer"
                 data-matricula="${v.matricula}"><i class="bi bi-eye"></i></button>
@@ -124,7 +124,11 @@ function renderTablaVehiculos(lista) {
       <td>${v.disponibilidad == 1 ? 'Disponible' : 'No disponible'}</td>
       <td class="d-none d-md-table-cell">${v.nombre_instalacion ?? 'Sin asignar'}</td>
       <td class="d-none d-md-table-cell">${v.marca ?? ''} ${v.modelo ?? ''}</td>
-      <td class="d-flex justify-content-around">${botones}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>
     `;
 
     tbody.appendChild(tr);

@@ -50,7 +50,7 @@ function renderTablaPersonas(lista) {
 
   lista.forEach(p => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${p.id_bombero}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${p.id_bombero}"><i class="bi bi-pencil"></i></button>
          <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${p.id_bombero}"><i class="bi bi-trash3"></i></button>`
@@ -62,7 +62,11 @@ function renderTablaPersonas(lista) {
       <td>${p.nombre}</td><td>${p.apellidos}</td>
       <td class="d-none d-md-table-cell">${p.localidad}</td>
       <td>${p.nombre_usuario}</td>
-      <td class="d-flex justify-content-around">${botones}</td>`;
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>`;
     tbody.appendChild(tr);
   });
 }

@@ -99,7 +99,7 @@ function renderTablaRefuerzos(lista) {
     lista.forEach(r => {
         const tr = document.createElement('tr');
 
-        const botones = puedeEscribir
+        const botonesAccion = puedeEscribir
             ? `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_turno_refuerzo}"><i class="bi bi-eye"></i></button>
                <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${r.id_turno_refuerzo}"><i class="bi bi-pencil"></i></button>`
             : `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_turno_refuerzo}"><i class="bi bi-eye"></i></button>`;
@@ -109,7 +109,11 @@ function renderTablaRefuerzos(lista) {
             <td>${r.f_inicio}</td>
             <td>${r.f_fin}</td>
             <td>${r.horas || ''}</td>
-            <td class="d-flex justify-content-around">${botones}</td>
+            <td>
+                <div  class="d-flex justify-content-around">
+                ${botonesAccion}
+                </div>  
+            </td>
         `;
         tbody.appendChild(tr);
     });
