@@ -54,8 +54,7 @@
                     <table class="table table-bordered table-striped" id="tabla">
                         <thead class="table-dark">
                             <tr> <!-- Cabecera de la tabla -->
-                                <th>Id</th>
-                                <th class="d-none d-md-table-cell">Nombre</th>
+                                <th>Nombre</th>
                                 <th class="d-none d-md-table-cell">Direccion</th>
                                 <th class="d-none d-md-table-cell">Telefono</th>
                                 <th class="d-none d-md-table-cell">Correo</th>
@@ -90,7 +89,14 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="insertLocalidad" class="form-label">Localidad</label>
-                                <input type="text" class="form-control" id="insertLocalidad" name="localidad" required>
+                                <select class="form-control" id="insertLocalidad" name="localidad" required>
+                                    <option value="">Selecciona una localidad</option>
+                                    <option>Alcañiz</option>
+                                    <option>Almería</option>
+                                    <option>Calamocha</option>
+                                    <option>Montalbán</option>
+                                    <option>Teruel</option>
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label for="insertCorreo" class="form-label">Correo</label>

@@ -1,45 +1,46 @@
 import GuardiaApi from '../api_f/GuardiaApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
-import { authGuard } from '../helpers/authGuard.js';
-import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
+import { mostrarError, mostrarExito, formatearFecha } from '../helpers/utils.js';
 
-let guardias = [];
-let sesionActual = null;
+let guardias = []; // almacenar guardias globalmente
 
 // ================================
 // CONSTANTES
 // ================================
 const cargos = [
-    "BOMBERO1", "BOMBERO2", "BOMBERO3", "BOMBERO4", "BOMBERO5",
-    "BOMBERO6", "BOMBERO7", "BOMBERO8", "BOMBERO9", "BOMBERO10",
-    "OFICIAL1", "OFICIAL2", "CONDUCTOR1", "CONDUCTOR2"
+    "BOMBERO1",
+    "BOMBERO2",
+    "BOMBERO3",
+    "BOMBERO4",
+    "BOMBERO5",
+    "BOMBERO6",
+    "BOMBERO7",
+    "BOMBERO8",
+    "BOMBERO9",
+    "BOMBERO10",
+    "OFICIAL1",
+    "OFICIAL2",
+    "CONDUCTOR1",
+    "CONDUCTOR2"
 ];
 
 const nombresCampos = ['Fecha', 'Hora Inicio', 'Hora Fin', 'Notas'];
-const camposBd      = ['fecha', 'h_inicio', 'h_fin', 'notas'];
+const camposBd = ['fecha', 'h_inicio', 'h_fin', 'notas'];
 
 // ================================
 // INICIALIZACIÓN
 // ================================
-document.addEventListener('DOMContentLoaded', async () => {
-    sesionActual = await authGuard('guardias');
-    if (!sesionActual) return;
-
+document.addEventListener('DOMContentLoaded', () => {
     cargarGuardias();
     cargarSelectGuardias(null, 'seleccionarGuardia');
     cargarSelectPersonas(null, 'n_funcionario');
     cargarSelectCargos();
-    bindModalVer();
-    bindModalEditar();
-
-    if (sesionActual.puedeEscribir) {
-        bindCrearGuardia();
-        bindAsignarGuardia();
-    }
+    bindCrearGuardia();
+    bindAsignarGuardia();
 });
 
 // ================================
-// CARGAR GUARDIAS
+// FUNCIONES DE CARGA
 // ================================
 async function cargarGuardias() {
     try {
@@ -51,9 +52,6 @@ async function cargarGuardias() {
     }
 }
 
-// ================================
-// POBLAR SELECT GUARDIAS
-// ================================
 async function cargarSelectGuardias(seleccionado, id_select) {
     const select = document.getElementById(id_select);
     if (!select) return;
@@ -61,6 +59,7 @@ async function cargarSelectGuardias(seleccionado, id_select) {
     try {
         const res = await GuardiaApi.getAll();
         select.innerHTML = '<option value="">Seleccione guardia...</option>';
+
         res.data.forEach(g => {
             const option = document.createElement('option');
             option.value = g.id_guardia;
@@ -73,9 +72,6 @@ async function cargarSelectGuardias(seleccionado, id_select) {
     }
 }
 
-// ================================
-// POBLAR SELECT PERSONAS
-// ================================
 async function cargarSelectPersonas(seleccionado, id_select) {
     const select = document.getElementById(id_select);
     if (!select) return;
@@ -83,6 +79,7 @@ async function cargarSelectPersonas(seleccionado, id_select) {
     try {
         const res = await PersonaApi.getAll();
         select.innerHTML = '<option value="">Seleccione persona...</option>';
+
         res.data.forEach(p => {
             const option = document.createElement('option');
             option.value = p.id_bombero;
@@ -95,13 +92,11 @@ async function cargarSelectPersonas(seleccionado, id_select) {
     }
 }
 
-// ================================
-// POBLAR SELECT CARGOS
-// ================================
 function cargarSelectCargos() {
     const select = document.getElementById('cargo');
     if (!select) return;
     select.innerHTML = '<option value="">Seleccione cargo...</option>';
+
     cargos.forEach(c => {
         const option = document.createElement('option');
         option.value = c;
@@ -113,34 +108,32 @@ function cargarSelectCargos() {
 // ================================
 // RENDER TABLA
 // ================================
-function renderTablaGuardias(lista) {
+function renderTablaGuardias(guardias) {
     const tbody = document.querySelector('#tabla tbody');
     tbody.innerHTML = '';
-
-    const puedeEscribir = sesionActual?.puedeEscribir ?? false;
-
-    lista.forEach(g => {
+    guardias.forEach(g => {
         const tr = document.createElement('tr');
-
-        const botones = puedeEscribir
-            ? `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${g.id_guardia}"><i class="bi bi-eye"></i></button>
-               <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${g.id_guardia}"><i class="bi bi-pencil"></i></button>`
-            : `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${g.id_guardia}"><i class="bi bi-eye"></i></button>`;
-
         tr.innerHTML = `
             <td class="d-none d-md-table-cell">${g.id_guardia}</td>
             <td>${g.fecha}</td>
             <td>${g.h_inicio}</td>
             <td>${g.h_fin}</td>
             <td class="d-none d-md-table-cell">${g.notas || ''}</td>
-            <td class="d-flex justify-content-around">${botones}</td>
+            <td class="d-flex justify-content-around">                     
+                <button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${g.id_guardia}">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${g.id_guardia}">
+                    <i class="bi bi-pencil"></i>
+                </button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
 // ================================
-// CREAR GUARDIA
+// FORMULARIOS
 // ================================
 function bindCrearGuardia() {
     const form = document.getElementById('formInsertarGuardia');
@@ -149,12 +142,14 @@ function bindCrearGuardia() {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const f = new FormData(form);
+
         const data = {
-            fecha:    f.get('fecha'),
+            fecha: f.get('fecha'),
             h_inicio: f.get('h_inicio'),
-            h_fin:    f.get('h_fin'),
-            notas:    f.get('notas') || ''
+            h_fin: f.get('h_fin'),
+            notas: f.get('notas') || ''
         };
+
         try {
             await GuardiaApi.create(data);
             await cargarGuardias();
@@ -166,9 +161,6 @@ function bindCrearGuardia() {
     });
 }
 
-// ================================
-// ASIGNAR PERSONA A GUARDIA
-// ================================
 function bindAsignarGuardia() {
     const form = document.getElementById('formAsignarGuardia');
     if (!form) return;
@@ -176,15 +168,18 @@ function bindAsignarGuardia() {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const f = new FormData(form);
+
         const data = {
             id_bombero: f.get('n_funcionario'),
             id_guardia: f.get('id_guardia'),
-            cargo:      f.get('cargo')
+            cargo: f.get('cargo')
         };
+
         if (!data.id_bombero || !data.id_guardia || !data.cargo) {
             mostrarError('Seleccione guardia, persona y cargo');
             return;
         }
+
         try {
             await GuardiaApi.assignToPerson(data);
             mostrarExito('Persona asignada a la guardia correctamente');
@@ -197,14 +192,13 @@ function bindAsignarGuardia() {
 }
 
 // ================================
-// MODAL VER
+// MODALES
 // ================================
-function bindModalVer() {
-    document.addEventListener('click', function (e) {
-        const btnVer = e.target.closest('.btn-ver');
-        if (!btnVer) return;
-
-        const guardia = guardias.find(g => g.id_guardia == btnVer.dataset.id);
+document.addEventListener('click', async (e) => {
+    const btnVer = e.target.closest('.btn-ver');
+    if (btnVer) {
+        const id = btnVer.dataset.id;
+        const guardia = guardias.find(g => g.id_guardia == id);
         if (!guardia) return;
 
         const modalBody = document.getElementById('modalVerBody');
@@ -217,17 +211,11 @@ function bindModalVer() {
             p.appendChild(document.createTextNode(guardia[camposBd[i]] || ''));
             modalBody.appendChild(p);
         });
-    });
-}
-
-// ================================
-// MODAL EDITAR
-// ================================
-function bindModalEditar() {
-    document.addEventListener('click', async function (e) {
-        const btnEditar = e.target.closest('.btn-editar');
-        if (!btnEditar) return;
-
+    }
+    
+    // Modal EDITAR
+    const btnEditar = e.target.closest('.btn-editar');
+    if (btnEditar) {
         const id = btnEditar.dataset.id;
         const response = await GuardiaApi.getById(id);
         const guardia = response.data;
@@ -264,10 +252,33 @@ function bindModalEditar() {
                 const input = form.querySelector(`[name="${c}"]`);
                 if (input) data[c] = input.value;
             });
+
             await GuardiaApi.update(id, data);
             await cargarGuardias();
             bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
         });
-    });
+    }
+});
+
+// ================================
+// ALERTAS
+// ================================
+function mostrarError(msg) {
+    const container = document.getElementById('alert-container');
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `<div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+        <strong>Error:</strong> ${msg}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>`;
+    container.append(wrapper);
 }
 
+function mostrarExito(msg) {
+    const container = document.getElementById('alert-container');
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `<div class="alert alert-success alert-dismissible fade show shadow" role="alert">
+        <strong>OK:</strong> ${msg}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>`;
+    container.append(wrapper);
+}

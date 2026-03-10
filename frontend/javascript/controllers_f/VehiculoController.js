@@ -1,7 +1,7 @@
 import VehiculoApi from '../api_f/VehiculoApi.js';
 import InstalacionApi from '../api_f/InstalacionApi.js';
 import { authGuard } from '../helpers/authGuard.js';
-import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
 
 let vehiculos = [];
 let instalaciones = [];
@@ -118,8 +118,8 @@ function renderTablaVehiculos(lista) {
                 data-matricula="${v.matricula}"><i class="bi bi-eye"></i></button>`;
 
     tr.innerHTML = `
-      <td>${v.matricula}</td>
-      <td>${v.nombre ?? ''}</td>
+      <td">${v.matricula}</td>
+      <td class="d-none d-md-table-cell">${v.nombre ?? ''}</td>
       <td class="d-none d-md-table-cell">${v.tipo ?? ''}</td>
       <td>${v.disponibilidad == 1 ? 'Disponible' : 'No disponible'}</td>
       <td class="d-none d-md-table-cell">${v.nombre_instalacion ?? 'Sin asignar'}</td>
