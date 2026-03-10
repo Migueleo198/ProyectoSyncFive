@@ -95,7 +95,11 @@ function renderTablaCarnets(lista) {
       <td>${c.nombre}</td>
       <td>${c.categoria}</td>
       <td>${c.duracion_meses}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>
     `;
     tbody.appendChild(tr);
   });

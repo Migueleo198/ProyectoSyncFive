@@ -40,12 +40,18 @@ function renderTablaTiposEmergencia(lista) {
 
   lista.forEach(e => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${e.codigo_tipo}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${e.codigo_tipo}"><i class="bi bi-pencil"></i></button>
          <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${e.codigo_tipo}"><i class="bi bi-trash3"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${e.codigo_tipo}"><i class="bi bi-eye"></i></button>`;
-    tr.innerHTML = `<td>${e.codigo_tipo}</td><td>${e.nombre}</td><td>${e.grupo??''}</td><td class="d-flex justify-content-around">${botones}</td>`;
+    tr.innerHTML = `<td>${e.codigo_tipo}</td><td>${e.nombre}</td><td>${e.grupo??''}</td>
+    
+    <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>`;
     tbody.appendChild(tr);
   });
 }

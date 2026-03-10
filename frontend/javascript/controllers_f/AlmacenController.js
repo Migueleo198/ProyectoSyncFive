@@ -135,7 +135,11 @@ function renderTablaAlmacenes(lista) {
       <td>${a.nombre || ''}</td>
       <td>${a.nombre_instalacion || 'Desconocida'}</td>
       <td class="d-none d-md-table-cell">${a.planta || ''}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>
     `;
     tbody.appendChild(tr);
   });

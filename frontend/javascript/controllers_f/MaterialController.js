@@ -152,7 +152,7 @@ function renderTablaMateriales(lista) {
         const tr = document.createElement('tr');
         tr.dataset.id = m.id_material;
 
-        const botones = puedeEscribir
+        const botonesAccion = puedeEscribir
             ? `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_material}"><i class="bi bi-eye"></i></button>
                <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.id_material}"><i class="bi bi-pencil"></i></button>
                <button type="button" class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.id_material}" data-nombre="${m.nombre}"><i class="bi bi-trash3"></i></button>`
@@ -164,7 +164,11 @@ function renderTablaMateriales(lista) {
             <td class="d-none d-md-table-cell">${m.descripcion ?? ''}</td>
             <td><span class="badge ${m.estado === 'ALTA' ? 'bg-success' : 'bg-danger'}">${m.estado ?? ''}</span></td>
             <td class="d-none d-md-table-cell">${m.categoria_nombre ?? ''}</td>
-            <td class="d-flex justify-content-around">${botones}</td>
+            <td>
+                <div  class="d-flex justify-content-around">
+                    ${botonesAccion}
+                </div>  
+            </td>
         `;
         tbody.appendChild(tr);
     });
