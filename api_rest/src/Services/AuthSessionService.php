@@ -94,7 +94,7 @@ class AuthSessionService
     {
         Validator::validate(compact('token', 'password'), [
             'token'    => 'required|string',
-            'password' => 'required|string|min:6|max:100'
+            'password' => 'required|string|password'
         ]);
 
         $user = $this->model->findByPasswordResetToken($token);
@@ -118,7 +118,7 @@ class AuthSessionService
     {
         Validator::validate(compact('login', 'password'), [
             'login'    => 'required|string|min:3|max:30',
-            'password' => 'required|string|min:6|max:100'
+            'password' => 'required|string|password'
         ]);
     }
 }

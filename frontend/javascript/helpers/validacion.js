@@ -48,7 +48,7 @@ export function validarTelefono(telefono) {
 // CONTRASEÑA
 export function validarPassword(password) {
     if (!password) return false;
-    const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,100}$/;
     return PASSWORD_REGEX.test(password);
 }
 

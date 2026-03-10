@@ -72,7 +72,7 @@ class PersonaService
             'apellidos'     => 'required|string|max:100',
             'correo'        => 'required|email|max:100',
             'nombre_usuario'=> 'required|string|max:30',
-            'contrasenia'   => 'required|string|min:6|max:100',
+            'contrasenia'   => 'required|string|password',
         ]);
 
         // Hash de la contraseña
