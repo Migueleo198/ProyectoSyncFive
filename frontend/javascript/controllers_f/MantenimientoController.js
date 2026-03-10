@@ -1,4 +1,5 @@
 import { authGuard } from '../helpers/authGuard.js';
+import { mostrarError,mostrarExito } from '../helpers/utils.js';
 
 let mantenimientos = [];
 let personas = [];
@@ -272,15 +273,5 @@ function bindModalesEscritura() {
   });
 }
 
-function mostrarError(msg) {
-  const a = document.createElement('div'); a.className='alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3'; a.style.zIndex='9999';
-  a.innerHTML=`<strong>Error:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-  document.body.appendChild(a); setTimeout(()=>a.remove(),5000);
-}
-function mostrarExito(msg) {
-  const a = document.createElement('div'); a.className='alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3'; a.style.zIndex='9999';
-  a.innerHTML=`<strong>Éxito:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-  document.body.appendChild(a); setTimeout(()=>a.remove(),3000);
-}
 
 window.MantenimientoController = { cargarMantenimientos, aplicarFiltros };

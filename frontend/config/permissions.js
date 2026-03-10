@@ -33,6 +33,14 @@ export const PERMISOS = {
   },
 
   // ── PERSONAL ─────────────────────────────────────────────────
+  cuadrantes: {
+    rolesLectura:[1,2,3,4,5],
+    rolesEscritura: [],
+  },
+  dashboard: {
+    rolesLectura:[1,2,3,4,5],
+    rolesEscritura: [],
+  },
   personas: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
@@ -105,6 +113,10 @@ export const PERMISOS = {
   },
 
   // ── GESTIÓN ──────────────────────────────────────────────────
+  areaPersonal: {
+    rolesLectura: [1,2,3,4,5],
+    rolesEscritura: [1,2,3,4,5],
+  },
   usuarios: {
     rolesLectura:   [4, 5],
     rolesEscritura: [5],

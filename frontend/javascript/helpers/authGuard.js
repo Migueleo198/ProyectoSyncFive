@@ -33,9 +33,6 @@ const API_ME_URL   = `${API_BASE_PATH}/auth/me`;
  * @returns {Promise<{usuario: object, rol: number, puedeEscribir: boolean} | null>}
  */
 export async function authGuard(clavePagina) {
-  console.log('PERMISOS cargados:', PERMISOS);
-  console.log('Clave buscada:', clavePagina);
-  console.log('Permiso encontrado:', PERMISOS[clavePagina]);
   // ── 1. Verificar sesión activa ──────────────────────────────
   let usuario;
   try {
