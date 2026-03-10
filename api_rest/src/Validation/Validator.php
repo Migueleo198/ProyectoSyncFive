@@ -144,7 +144,17 @@ class Validator
                             }
                         }
                         break;
+                    case 'password':
+                        if ($value !== null) {
 
+                            $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,100}$/';
+
+                            if (!preg_match($pattern, $value)) {
+                                $errors[$field][] =
+                                    "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y símbolos.";
+                            }
+                        }
+                        break;
                 }
             }
 
