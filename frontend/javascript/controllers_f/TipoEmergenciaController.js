@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!sesionActual) return;
 
   cargarTiposEmergencia();
+  bindFiltros();
   bindModalVer();
 
   if (sesionActual.puedeEscribir) {
@@ -22,17 +23,32 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-// ================================
-// CARGAR TIPOS DE EMERGENCIA
-// ================================
 async function cargarTiposEmergencia() {
-  try { const r = await TipoEmergenciaApi.getAll(); tiposEmergencia = r.data; renderTablaTiposEmergencia(tiposEmergencia); }
-  catch (e) { mostrarError(e.message || 'Error cargando tipos de emergencia'); }
+  try {
+    const r = await TipoEmergenciaApi.getAll();
+    tiposEmergencia = r.data;
+    renderTablaTiposEmergencia(tiposEmergencia);
+    poblarFiltroGrupo(tiposEmergencia); // ← AÑADIR
+  } catch (e) {
+    mostrarError(e.message || 'Error cargando tipos de emergencia');
+  }
 }
 
-// ================================
-// RENDER TABLA
-// ================================
+function poblarFiltroGrupo(lista) {
+  const select = document.getElementById('grupo');
+  if (!select) return;
+  const valorActual = select.value;
+  select.innerHTML = '<option value="">Todos</option>';
+  const gruposUnicos = [...new Set(lista.map(t => t.grupo).filter(Boolean))].sort();
+  gruposUnicos.forEach(grupo => {
+    const opt = document.createElement('option');
+    opt.value = grupo;
+    opt.textContent = grupo;
+    select.appendChild(opt);
+  });
+  select.value = valorActual;
+}
+
 function renderTablaTiposEmergencia(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
@@ -51,8 +67,24 @@ function renderTablaTiposEmergencia(lista) {
 }
 
 // ================================
-// CREAR TIPO DE EMERGENCIA
+// FILTROS
 // ================================
+function bindFiltros() {
+  document.getElementById('nombre')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('grupo')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  const filtroNombre = document.getElementById('nombre')?.value.toLowerCase().trim() ?? '';
+  const filtroGrupo  = document.getElementById('grupo')?.value ?? '';
+
+  renderTablaTiposEmergencia(tiposEmergencia.filter(t => {
+    const cumpleNombre = !filtroNombre || t.nombre?.toLowerCase().includes(filtroNombre);
+    const cumpleGrupo  = !filtroGrupo  || t.grupo === filtroGrupo;
+    return cumpleNombre && cumpleGrupo;
+  }));
+}
+
 function bindCrearTipoEmergencia() {
   const form = document.getElementById('formInsertar'); if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -60,15 +92,16 @@ function bindCrearTipoEmergencia() {
     const f = new FormData(form);
     const data = { nombre: f.get('nombre')?.trim(), grupo: f.get('grupo')?.trim() };
     if (!data.nombre) { mostrarError('El nombre es obligatorio'); return; }
-    if (!data.grupo) { mostrarError('El grupo es obligatorio'); return; }
-    try { await TipoEmergenciaApi.create(data); await cargarTiposEmergencia(); form.reset(); mostrarExito('Tipo de emergencia creado correctamente'); }
-    catch (err) { mostrarError(err.message || 'Error creando tipo de emergencia'); }
+    if (!data.grupo)  { mostrarError('El grupo es obligatorio'); return; }
+    try {
+      await TipoEmergenciaApi.create(data);
+      await cargarTiposEmergencia();
+      form.reset();
+      mostrarExito('Tipo de emergencia creado correctamente');
+    } catch (err) { mostrarError(err.message || 'Error creando tipo de emergencia'); }
   });
 }
 
-// ================================
-// MODAL VER
-// ================================
 function bindModalVer() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-ver'); if (!btn) return;
@@ -76,14 +109,13 @@ function bindModalVer() {
     const modalBody = document.getElementById('modalVerBody');
     modalBody.innerHTML = '';
     nombresCampos.forEach((nombre, idx) => {
-      const p = document.createElement('p'); p.innerHTML = `<strong>${nombre}:</strong> ${tipo[camposBd[idx]]??''}`; modalBody.appendChild(p);
+      const p = document.createElement('p');
+      p.innerHTML = `<strong>${nombre}:</strong> ${tipo[camposBd[idx]]??''}`;
+      modalBody.appendChild(p);
     });
   });
 }
 
-// ================================
-// MODAL EDITAR
-// ================================
 function bindModalEditar() {
   document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-editar'); if (!btn) return;
@@ -101,16 +133,18 @@ function bindModalEditar() {
               <option value="Accidentes" ${tipo.grupo==='Accidentes'?'selected':''}>Accidentes</option>
               <option value="Emergencias médicas" ${tipo.grupo==='Emergencias médicas'?'selected':''}>Emergencias médicas</option>
               <option value="Rescates" ${tipo.grupo==='Rescates'?'selected':''}>Rescates</option>
-            </select></div>
+            </select>
+          </div>
         </div>
         <div class="text-center"><button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button></div>`;
       document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
         const data = {};
         camposBd.forEach(campo => { const input = form.querySelector(`[name="${campo}"]`); if (input) data[campo] = input.value; });
         if (!data.nombre) { mostrarError('El nombre es obligatorio'); return; }
-        if (!data.grupo) { mostrarError('El grupo es obligatorio'); return; }
+        if (!data.grupo)  { mostrarError('El grupo es obligatorio'); return; }
         try {
-          await TipoEmergenciaApi.update(id, data); await cargarTiposEmergencia();
+          await TipoEmergenciaApi.update(id, data);
+          await cargarTiposEmergencia();
           bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
           mostrarExito('Tipo de emergencia actualizado correctamente');
         } catch (err) { mostrarError(err.message || 'Error actualizando'); }
@@ -119,9 +153,6 @@ function bindModalEditar() {
   });
 }
 
-// ================================
-// MODAL ELIMINAR
-// ================================
 function bindModalEliminar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar'); if (!btn) return;
@@ -130,8 +161,9 @@ function bindModalEliminar() {
   document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
     const id = this.dataset.id; if (!id) return;
     try {
-      await TipoEmergenciaApi.delete(id); await cargarTiposEmergencia();
+      await TipoEmergenciaApi.delete(id);
+      await cargarTiposEmergencia();
       bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
     } catch (err) { mostrarError('Este tipo de emergencia no se puede eliminar porque tiene emergencias asociadas'); }
   });
-} 
+}
