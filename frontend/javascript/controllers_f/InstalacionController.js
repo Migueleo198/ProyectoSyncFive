@@ -94,7 +94,9 @@ function renderTablaInstalaciones(lista) {
       <td class="d-none d-md-table-cell">${i.telefono ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.correo ?? ''}</td>
       <td>${i.localidad ?? ''}</td>
-      <td class="d-flex justify-content-around">
+      <td>
+        <div  class="d-flex justify-content-around">
+          
         <button type="button" class="btn p-0 btn-ver"
                 data-bs-toggle="modal"
                 data-bs-target="#modalVer"
@@ -114,6 +116,7 @@ function renderTablaInstalaciones(lista) {
                 data-id="${i.id_instalacion}">
           <i class="bi bi-trash3"></i>
         </button>` : ''}
+        </div>  
       </td>
     `;
 
