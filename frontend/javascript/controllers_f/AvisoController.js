@@ -6,13 +6,12 @@ import { formatearFecha, truncar, mostrarExito, mostrarError } from '../helpers/
 let avisos = [];
 let personas = [];
 let sesionActual = null;
-let usuarioActual = null; // se carga DESPUÉS del authGuard para tener datos frescos del servidor
+let usuarioActual = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('avisos');
   if (!sesionActual) return;
 
-  // Leer usuario desde sessionStorage (ya refrescado por authGuard)
   usuarioActual = sesionActual.usuario;
 
   cargarPersonas();
@@ -131,13 +130,37 @@ function renderTablaAvisos(lista) {
       <td class="d-none d-md-table-cell">${formatearFecha(a.fecha)}</td>
       <td class="d-none d-md-table-cell">${a.remitente ?? '—'}</td>
       <td>
-        <div  class="d-flex justify-content-around">
+        <div class="d-flex justify-content-around">
           ${botonesAccion}
-        </div>  
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+// ================================
+// VALIDAR AVISO
+// Según DDL Aviso:
+//   asunto  VARCHAR(150) NOT NULL
+//   mensaje TEXT         NOT NULL
+// ================================
+function validarAviso(asunto, mensaje) {
+  if (!asunto) {
+    mostrarError('El asunto es obligatorio.');
+    return false;
+  }
+  if (asunto.length > 150) {
+    mostrarError('El asunto no puede superar los 150 caracteres.');
+    return false;
+  }
+
+  if (!mensaje) {
+    mostrarError('El mensaje es obligatorio.');
+    return false;
+  }
+
+  return true;
 }
 
 // ================================
@@ -152,6 +175,9 @@ function bindCrearAviso() {
 
     const asunto  = document.getElementById('insertAsunto').value.trim();
     const mensaje = document.getElementById('insertMensaje').value.trim();
+
+    // ── Validación ──
+    if (!validarAviso(asunto, mensaje)) return;
 
     const selectDest = document.getElementById('insertDestinatarios');
     const destinatarios = selectDest
@@ -220,8 +246,8 @@ function bindModalVer() {
     });
 
     try {
-      const res      = await AvisoApi.getDestinatarios(id);
-      const destList  = res.data ?? [];
+      const res     = await AvisoApi.getDestinatarios(id);
+      const destList = res.data ?? [];
 
       modalBody.appendChild(document.createElement('hr'));
       const titulo = document.createElement('p');
@@ -270,7 +296,7 @@ function bindModalEliminar() {
       }
 
       try {
-        const resRem  = await AvisoApi.getRemitente(id);
+        const resRem   = await AvisoApi.getRemitente(id);
         const remitente = resRem.data;
         if (remitente?.id_bombero) {
           await AvisoApi.deleteRemitente(id, remitente.id_bombero);

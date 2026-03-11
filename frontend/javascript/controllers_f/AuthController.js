@@ -30,31 +30,33 @@ function bindLogin() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const login = document.getElementById('username').value.trim();
+    const login    = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
 
-    // Validaciones básicas
-    if (!login || !password) {
-        mostrarError('Usuario y contraseña son obligatorios');
+    // ── Validaciones ──
+    if (!login) {
+        mostrarError('El nombre de usuario es obligatorio.');
+        return;
+    }
+    // nombre_usuario VARCHAR(20) en BD
+    if (login.length > 20) {
+        mostrarError('El nombre de usuario no puede superar los 20 caracteres.');
+        return;
+    }
+    if (!password) {
+        mostrarError('La contraseña es obligatoria.');
         return;
     }
 
     try {
-      const response = await AuthApi.login({
-        login: login,
-        password: password
-      });
-
+      const response = await AuthApi.login({ login, password });
       const user = response.data.user;
 
-      // Guardamos usuario en sessionStorage
       sessionStorage.setItem('user', JSON.stringify(user));
-
-      // Redirigir a home
       window.location.href = '/frontend/pages/home.html';
 
     } catch (error) {
-      mostrarError(error.message || 'Error al iniciar sesión');
+      mostrarError(error.message || 'Usuario o contraseña incorrectos.');
     }
   });
 }
@@ -70,24 +72,34 @@ function bindRecoverPassword() {
         const emailInput = document.getElementById('recoverEmail');
         const errorDiv   = document.getElementById('recover-error');
 
-        // Limpiar error previo
         errorDiv.classList.add('d-none');
         errorDiv.textContent = '';
 
-        // Validación email
-        if (!Validaciones.validarEmail(emailInput.value.trim())) {
-            errorDiv.textContent = 'Introduce un correo válido.';
+        const correo = emailInput.value.trim();
+
+        // ── Validaciones ──
+        if (!correo) {
+            errorDiv.textContent = 'El correo electrónico es obligatorio.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+        if (!Validaciones.validarEmail(correo)) {
+            errorDiv.textContent = 'Introduce un correo electrónico válido.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+        // correo VARCHAR(100) en BD
+        if (correo.length > 100) {
+            errorDiv.textContent = 'El correo no puede superar los 100 caracteres.';
             errorDiv.classList.remove('d-none');
             return;
         }
 
-        // Mostrar spinner
         setRecoverLoading(true);
 
         try {
-            await AuthApi.recoverPassword({ correo: emailInput.value.trim() });
+            await AuthApi.recoverPassword({ correo });
 
-            // Mostrar estado de éxito (independientemente de si el correo existe)
             document.getElementById('recover-form-state').classList.add('d-none');
             document.getElementById('recover-success-state').classList.remove('d-none');
             document.getElementById('recover-footer').classList.add('d-none');
@@ -100,7 +112,6 @@ function bindRecoverPassword() {
         }
     });
 
-    // Limpiar estado del modal al cerrarlo
     const modal = document.getElementById('modalRecuperarPassword');
     modal.addEventListener('hidden.bs.modal', () => {
         document.getElementById('recoverEmail').value = '';
@@ -126,11 +137,9 @@ function setRecoverLoading(loading) {
 // CAMBIAR CONTRASEÑA (desde email)
 // ================================
 function bindChangePassword() {
-    // Leer el token de la URL: ?token=xxxx
     const params = new URLSearchParams(window.location.search);
     const token  = params.get('token');
 
-    // Si no hay token, mostrar error directamente
     if (!token) {
         document.getElementById('change-form-state').classList.add('d-none');
         document.getElementById('token-error-state').classList.remove('d-none');
@@ -146,19 +155,22 @@ function bindChangePassword() {
         const confirmPassword = document.getElementById('confirmPassword').value.trim();
         const errorDiv        = document.getElementById('change-error');
 
-        // Limpiar error previo
         errorDiv.classList.add('d-none');
         errorDiv.textContent = '';
 
-        // Validaciones
-        if (newPassword !== confirmPassword) {
-            errorDiv.textContent = 'Las contraseñas no coinciden.';
+        // ── Validaciones ──
+        if (!newPassword) {
+            errorDiv.textContent = 'La contraseña es obligatoria.';
             errorDiv.classList.remove('d-none');
             return;
         }
-
         if (!Validaciones.validarPassword(newPassword)) {
-            errorDiv.textContent = 'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número.';
+            errorDiv.textContent = 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            errorDiv.textContent = 'Las contraseñas no coinciden.';
             errorDiv.classList.remove('d-none');
             return;
         }
@@ -168,7 +180,6 @@ function bindChangePassword() {
         try {
             await AuthApi.changePassword({ token, password: newPassword });
 
-            // Mostrar éxito
             document.getElementById('change-form-state').classList.add('d-none');
             document.getElementById('change-success-state').classList.remove('d-none');
 
@@ -205,7 +216,6 @@ async function bindActivateAccount() {
     const params = new URLSearchParams(window.location.search);
     const token  = params.get('token');
 
-    // Sin token → error inmediato
     if (!token) {
         showActivationState('error', 'No se encontró ningún token de activación en el enlace.');
         return;
@@ -216,7 +226,6 @@ async function bindActivateAccount() {
         showActivationState('success');
 
     } catch (error) {
-        // ApiClient lanza el objeto JSON crudo, leemos lo que venga
         const code = error.code || error.status || 0;
         const msg  = (code === 404)
             ? 'El enlace de activación no existe o ya fue utilizado.'
@@ -229,7 +238,6 @@ async function bindActivateAccount() {
 }
 
 function showActivationState(state, errorMsg = null) {
-    // Ocultar todos los estados
     document.getElementById('activation-loading-state').classList.add('d-none');
     document.getElementById('activation-success-state').classList.add('d-none');
     document.getElementById('activation-error-state').classList.add('d-none');
@@ -249,23 +257,18 @@ function showActivationState(state, errorMsg = null) {
 // ================================
 export function mostrarNombreUsuario() {
   const userData = sessionStorage.getItem('user');
-  if (!userData) return; // el authGuard ya se encarga de redirigir
+  if (!userData) return;
 
   const user = JSON.parse(userData);
   document.querySelectorAll('.header-user span').forEach(span => {
     span.textContent = user.nombre_usuario || user.login || 'Usuario';
   });
 
-    // Foto de perfil en el header (si existe)
-    if (user.foto_perfil) {
-        cargarFotoHeader(user.foto_perfil);
-    }
+  if (user.foto_perfil) {
+    cargarFotoHeader(user.foto_perfil);
+  }
 }
 
-/**
- * Carga la foto de perfil en el icono del header mediante fetch autenticado.
- * Se llama desde mostrarNombreUsuario y desde header_footer.js tras cargar el header.
- */
 async function cargarFotoHeader(fotoPerfil) {
     try {
         const { API_BASE_PATH } = await import('../../config/apiConfig.js');
@@ -286,16 +289,14 @@ async function cargarFotoHeader(fotoPerfil) {
             iconEl.replaceWith(img);
         }
     } catch (_) {
-        // Silencioso: si falla queda el icono por defecto
+        // Silencioso
     }
 }
-
 
 // ================================
 // BIND LOGOUT BUTTONS
 // ================================
 export function bindLogoutButtons() {
-    // Seleccionar todos los enlaces/botones de logout
     document.querySelectorAll('.logout-link').forEach(link => {
         link.addEventListener('click', async (e) => {
             e.preventDefault();
@@ -309,12 +310,10 @@ export function bindLogoutButtons() {
 // ================================
 export async function cerrarSesion() {
     try {
-        // Llamada al backend
         await AuthApi.logout();
     } catch (error) {
         console.error("Error al cerrar sesión:", error);
     } finally {
-        // Aunque falle el backend, limpiamos la sesión local
         sessionStorage.removeItem('user');
         window.location.href = '/frontend/pages/Login/login.html';
     }

@@ -1,32 +1,26 @@
-/**
- * EmergenciaController.js  —  con authGuard integrado
- *
- * Ejemplo de cómo integrar el guard en un controlador existente.
- * Los cambios respecto a la versión original están marcados con //
- */
-
 import EmergenciaApi      from '../api_f/EmergenciaApi.js';
 import TipoEmergenciaApi  from '../api_f/TipoEmergenciaApi.js';
 import VehiculoApi        from '../api_f/VehiculoApi.js';
 import PersonaApi         from '../api_f/PersonaApi.js';
-import { authGuard }      from '../helpers/authGuard.js';          
+import { authGuard }      from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
+import { validarTelefono, validarIdBombero } from '../helpers/validacion.js';
+
+// CORRECCIÓN: estados del DDL — ENUM('ACTIVA','CERRADA')
+const ESTADOS_EMERGENCIA_VALIDOS = ['ACTIVA', 'CERRADA'];
 
 let modalEquipoDesdeInsertar = false;
 let emergencias = [];
 let vehiculosEnModal = [];
 let todasLasPersonas = [];
-let sesionActual = null;   //: guardamos la sesión para usarla en renderTabla
+let sesionActual = null;
 
 // ================================
 // DOM CONTENT LOADED
 // ================================
 document.addEventListener('DOMContentLoaded', async () => {
-
-  // ── GUARD ── primero verificamos sesión y permisos ──────────  //
   sesionActual = await authGuard('emergencias');
-  if (!sesionActual) return; // redirigido automáticamente
-  // ────────────────────────────────────────────────────────────
+  if (!sesionActual) return;
 
   cargarEmergencias();
   cargarTiposEmergencia(0, 'filtroTipoEmergencia');
@@ -35,7 +29,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   cargarPersonas();
   bindModalEquipo();
 
-  // Solo vinculamos el form de insertar si puede escribir             //
   if (sesionActual.puedeEscribir) {
     bindCrearEmergencia();
   }
@@ -114,13 +107,39 @@ async function cargarPersonas() {
 }
 
 // ================================
+// VALIDAR DATOS DE EMERGENCIA
+// CORRECCIÓN: validar estado, teléfono e id_bombero
+// ================================
+function validarDatosEmergencia(data) {
+  if (!data.fecha) {
+    mostrarError('La fecha es obligatoria'); return false;
+  }
+  if (!data.estado || !ESTADOS_EMERGENCIA_VALIDOS.includes(data.estado.toUpperCase())) {
+    mostrarError('El estado no es válido (debe ser ACTIVA o CERRADA)'); return false;
+  }
+  if (!data.codigo_tipo) {
+    mostrarError('El tipo de emergencia es obligatorio'); return false;
+  }
+  if (data.tlf_solicitante && !validarTelefono(data.tlf_solicitante)) {
+    mostrarError('El teléfono del solicitante no tiene un formato válido'); return false;
+  }
+  if (data.id_bombero && !validarIdBombero(data.id_bombero)) {
+    mostrarError('El ID del bombero no tiene un formato válido (ej: B001)'); return false;
+  }
+  if (data.descripcion && data.descripcion.length > 500) {
+    mostrarError('La descripción no puede superar los 500 caracteres'); return false;
+  }
+  return true;
+}
+
+// ================================
 // RENDER TABLA
 // ================================
 async function renderTablaEmergencias(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
 
-  const puedeEscribir = sesionActual?.puedeEscribir ?? false;  
+  const puedeEscribir = sesionActual?.puedeEscribir ?? false;
   for (const e of lista) {
     const tr = document.createElement('tr');
 
@@ -133,7 +152,6 @@ async function renderTablaEmergencias(lista) {
       }
     } catch { /* dejamos — */ }
 
-    // ── Botones de acción según permiso ──────────────────────  
     const botonesAccion = puedeEscribir
       ? `
         <button type="button" class="btn p-0 btn-ver"
@@ -152,7 +170,6 @@ async function renderTablaEmergencias(lista) {
                 data-id="${e.id_emergencia}">
           <i class="bi bi-eye"></i>
         </button>`;
-    // ────────────────────────────────────────────────────────
 
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${e.id_emergencia}</td>
@@ -219,6 +236,14 @@ function bindModalEquipo() {
     const fechSalida  = document.getElementById('fechSalida').value;
     const fechLlegada = document.getElementById('fechLlegada').value;
     const fechRegreso = document.getElementById('fechRegreso').value;
+
+    // CORRECCIÓN: validar que f_llegada >= f_salida si ambas están presentes
+    if (fechSalida && fechLlegada && new Date(fechLlegada) < new Date(fechSalida)) {
+      mostrarError('La fecha de llegada no puede ser anterior a la de salida'); return;
+    }
+    if (fechLlegada && fechRegreso && new Date(fechRegreso) < new Date(fechLlegada)) {
+      mostrarError('La fecha de regreso no puede ser anterior a la de llegada'); return;
+    }
 
     vehiculosEnModal = vehiculosEnModal.map(v => ({
       ...v,
@@ -354,14 +379,18 @@ function bindCrearEmergencia() {
 
     const data = {
       fecha:              f.get('fecha'),
-      estado:             f.get('estado'),
+      // CORRECCIÓN: forzar mayúsculas para comparar con ENUM del DDL
+      estado:             (f.get('estado') || '').toUpperCase(),
       direccion:          f.get('direccion'),
       codigo_tipo:        Number(f.get('codigo_tipo')),
-      id_bombero:         f.get('id_bombero'),
+      id_bombero:         f.get('id_bombero') || null,
       nombre_solicitante: f.get('nombre_solicitante'),
-      tlf_solicitante:    f.get('tlf_solicitante'),
+      tlf_solicitante:    f.get('tlf_solicitante') || null,
       descripcion:        f.get('descripcion'),
     };
+
+    // CORRECCIÓN: validar antes de enviar
+    if (!validarDatosEmergencia(data)) return;
 
     try {
       const nuevaEmergencia = await EmergenciaApi.create(data);
@@ -398,10 +427,9 @@ function bindCrearEmergencia() {
 }
 
 // ================================
-// MODAL EDITAR  (solo se vincula si puedeEscribir, gracias al CSS guard)
+// MODAL EDITAR
 // ================================
 document.addEventListener('click', async function (e) {
-  // Abrir modal vehículos desde modal editar
   const btnEditarVehiculos = e.target.closest('.btn-editar-vehiculos');
   if (btnEditarVehiculos) {
     const modalEditarEl = document.getElementById('modalEditar');
@@ -415,7 +443,6 @@ document.addEventListener('click', async function (e) {
     return;
   }
 
-  // Abrir modal editar
   const btnEditar = e.target.closest('.btn-editar');
   if (!btnEditar) return;
 
@@ -455,6 +482,7 @@ document.addEventListener('click', async function (e) {
     const vehiculosOriginales = vehiculosEnModal.map(v => v.matricula);
 
     const form = document.getElementById('formEditar');
+    // CORRECCIÓN: opciones del select usan valores del DDL ('ACTIVA','CERRADA')
     form.innerHTML = `
       <div class="row mb-3">
         <div class="col-lg-4">
@@ -525,6 +553,10 @@ document.addEventListener('click', async function (e) {
         const input = form.querySelector(`[name="${campo}"]`);
         if (input) data[campo] = input.value;
       });
+
+      // CORRECCIÓN: normalizar estado y validar antes de guardar
+      if (data.estado) data.estado = data.estado.toUpperCase();
+      if (!validarDatosEmergencia(data)) return;
 
       await EmergenciaApi.update(id, data);
 

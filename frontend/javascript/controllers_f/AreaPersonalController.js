@@ -1,13 +1,7 @@
-/**
- * AreaPersonalController.js
- * Controlador frontend para la vista Área Personal.
- * Carga todos los datos desde el endpoint /personas/{id}/stats
- * y los inyecta en la vista.
- */
-
 import AreaPersonalApi from '../api_f/AreaPersonalApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito, formatearFecha } from '../helpers/utils.js';
+import { validarEmail, validarTelefono } from '../helpers/validacion.js';
 
 // ================================
 // ESTADO LOCAL
@@ -22,7 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sesion = await authGuard('areaPersonal');
     if (!sesion) return;
 
-    // Obtener el id del usuario logueado desde sessionStorage (igual que el original)
     const user = JSON.parse(sessionStorage.getItem('user') || 'null');
     if (!user || !user.id_bombero) {
         mostrarError('No se pudo identificar al usuario. Por favor, inicia sesión de nuevo.');
@@ -277,6 +270,92 @@ function renderDatosPersonales(p) {
 }
 
 // ================================
+// VALIDAR DATOS PERSONALES EDITABLES
+// Según DDL Persona:
+//   correo          VARCHAR(100) NOT NULL
+//   telefono        VARCHAR(15)  NOT NULL
+//   telefono_emergencia VARCHAR(15) (nullable)
+//   nombre_usuario  VARCHAR(20)  UNIQUE NOT NULL
+//   talla_superior  VARCHAR(10)  (nullable)
+//   talla_inferior  VARCHAR(10)  (nullable)
+//   talla_calzado   VARCHAR(10)  (nullable)
+//   domicilio       VARCHAR(150) (nullable)
+//   localidad       VARCHAR(100) (nullable, FK)
+// ================================
+function validarDatosPersonales(data) {
+    if ('correo' in data) {
+        if (!data.correo || !validarEmail(data.correo)) {
+            mostrarError('El correo electrónico no es válido.');
+            return false;
+        }
+        if (data.correo.length > 100) {
+            mostrarError('El correo no puede superar los 100 caracteres.');
+            return false;
+        }
+    }
+
+    if ('telefono' in data) {
+        if (!data.telefono || !validarTelefono(data.telefono)) {
+            mostrarError('El teléfono no es válido (9 dígitos, empieza por 6, 7, 8 o 9).');
+            return false;
+        }
+        if (data.telefono.length > 15) {
+            mostrarError('El teléfono no puede superar los 15 caracteres.');
+            return false;
+        }
+    }
+
+    if ('telefono_emergencia' in data && data.telefono_emergencia) {
+        if (!validarTelefono(data.telefono_emergencia)) {
+            mostrarError('El teléfono de emergencia no es válido (9 dígitos, empieza por 6, 7, 8 o 9).');
+            return false;
+        }
+        if (data.telefono_emergencia.length > 15) {
+            mostrarError('El teléfono de emergencia no puede superar los 15 caracteres.');
+            return false;
+        }
+    }
+
+    if ('nombre_usuario' in data) {
+        if (!data.nombre_usuario || data.nombre_usuario.trim() === '') {
+            mostrarError('El nombre de usuario es obligatorio.');
+            return false;
+        }
+        if (data.nombre_usuario.length > 20) {
+            mostrarError('El nombre de usuario no puede superar los 20 caracteres.');
+            return false;
+        }
+    }
+
+    if ('talla_superior' in data && data.talla_superior && data.talla_superior.length > 10) {
+        mostrarError('La talla superior no puede superar los 10 caracteres.');
+        return false;
+    }
+
+    if ('talla_inferior' in data && data.talla_inferior && data.talla_inferior.length > 10) {
+        mostrarError('La talla inferior no puede superar los 10 caracteres.');
+        return false;
+    }
+
+    if ('talla_calzado' in data && data.talla_calzado && String(data.talla_calzado).length > 10) {
+        mostrarError('La talla de calzado no puede superar los 10 caracteres.');
+        return false;
+    }
+
+    if ('domicilio' in data && data.domicilio && data.domicilio.length > 150) {
+        mostrarError('El domicilio no puede superar los 150 caracteres.');
+        return false;
+    }
+
+    if ('localidad' in data && data.localidad && data.localidad.length > 100) {
+        mostrarError('La localidad no puede superar los 100 caracteres.');
+        return false;
+    }
+
+    return true;
+}
+
+// ================================
 // FORMULARIO DATOS PERSONALES
 // ================================
 function bindFormDatosPersonales() {
@@ -285,7 +364,12 @@ function bindFormDatosPersonales() {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!idBomberoActual) return;
-        const camposEditables = ['correo','telefono','telefono_emergencia','talla_superior','talla_inferior','talla_calzado','domicilio','localidad','nombre_usuario'];
+
+        const camposEditables = [
+            'correo', 'telefono', 'telefono_emergencia',
+            'talla_superior', 'talla_inferior', 'talla_calzado',
+            'domicilio', 'localidad', 'nombre_usuario'
+        ];
         const data = {};
         camposEditables.forEach(campo => {
             const el = document.getElementById(`dp-${campo.replace(/_/g, '-')}`);
@@ -294,7 +378,15 @@ function bindFormDatosPersonales() {
             if (val === '') return;
             data[campo] = (campo === 'talla_calzado') ? Number(val) || val : val;
         });
-        if (Object.keys(data).length === 0) { mostrarError('No hay cambios para guardar'); return; }
+
+        if (Object.keys(data).length === 0) {
+            mostrarError('No hay cambios para guardar.');
+            return;
+        }
+
+        // ── Validación de campos editables ──
+        if (!validarDatosPersonales(data)) return;
+
         try {
             await AreaPersonalApi.updateDatosPersonales(idBomberoActual, data);
             mostrarExito('Datos personales actualizados correctamente');
