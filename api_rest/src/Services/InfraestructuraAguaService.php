@@ -31,12 +31,12 @@ class InfraestructuraAguaService
         }
     }
 
-    public function getInfraestructuraById(int $id): array
+    public function getInfraestructuraById(string $codigo): array
     {
-        Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
+        Validator::validate(['codigo' => $codigo], ['codigo' => 'required|string|min:1']);
 
         try {
-            $item = $this->model->find($id);
+            $item = $this->model->find($codigo);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -67,21 +67,22 @@ class InfraestructuraAguaService
         ]);
 
         try {
-            $id = $this->model->create($data);
+            $codigo = $this->model->create($data);
+                    error_log("codigo obtenido: " . var_export($codigo, true)); // <- añade esto
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
-        if (!$id) {
+        if (!$codigo) {
             throw new \Exception("No se pudo crear la infraestructura");
         }
 
-        return ['id' => $id];
+        return ['codigo' => $codigo];
     }
 
-    public function updateInfraestructura(int $id, array $input): array
+    public function updateInfraestructura(string $codigo, array $input): array
     {
-        Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
+        Validator::validate(['codigo' => $codigo], ['codigo' => 'required|string|min:1']);
 
         $data = Validator::validate($input, [
             'codigo'       => 'required|string|max:50',
@@ -95,13 +96,13 @@ class InfraestructuraAguaService
         ]);
 
         try {
-            $result = $this->model->update($id, $data);
+            $result = $this->model->update($codigo, $data);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
         if ($result === 0) {
-            $exists = $this->model->find($id);
+            $exists = $this->model->find($codigo);
             if (!$exists) throw new \Exception("Infraestructura no encontrada", 404);
 
             return ['status' => 'no_changes', 'message' => 'No hubo cambios en la infraestructura'];
@@ -110,12 +111,12 @@ class InfraestructuraAguaService
         return ['status' => 'updated', 'message' => 'Infraestructura actualizada correctamente'];
     }
 
-    public function deleteInfraestructura(int $id): void
+    public function deleteInfraestructura(string $codigo): void
     {
-        Validator::validate(['id' => $id], ['id' => 'required|int|min:1']);
+        Validator::validate(['codigo' => $codigo], ['codigo' => 'required|string|min:1']);
 
         try {
-            $result = $this->model->delete($id);
+            $result = $this->model->delete($codigo);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
