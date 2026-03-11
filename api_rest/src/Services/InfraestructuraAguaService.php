@@ -67,17 +67,12 @@ class InfraestructuraAguaService
         ]);
 
         try {
-            $codigo = $this->model->create($data);
-                    error_log("codigo obtenido: " . var_export($codigo, true)); // <- añade esto
+            $this->model->create($data);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
-        if (!$codigo) {
-            throw new \Exception("No se pudo crear la infraestructura");
-        }
-
-        return ['codigo' => $codigo];
+        return ['codigo' => $data['codigo']];
     }
 
     public function updateInfraestructura(string $codigo, array $input): array

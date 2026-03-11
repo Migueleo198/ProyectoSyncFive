@@ -77,7 +77,7 @@ class InfraestructuraAguaModel
     // ESCRITURA
     // ============================================================
 
-    public function create(array $data): int
+    public function create(array $data): void
     {
         $this->db->query("
             INSERT INTO Infraestructuras_Agua
@@ -94,10 +94,7 @@ class InfraestructuraAguaModel
         ->bind(":longitud",     $data['longitud'])
         ->bind(":estado",       $data['estado'] ?? 'ACTIVO')
         ->execute();
-
-        return (int) $this->db->lastId();
     }
-
     public function update(string $codigo, array $data): int
     {
         $this->db->query("
