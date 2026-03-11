@@ -130,7 +130,11 @@ function renderTablaAvisos(lista) {
       <td>${truncar(a.mensaje, 60)}</td>
       <td class="d-none d-md-table-cell">${formatearFecha(a.fecha)}</td>
       <td class="d-none d-md-table-cell">${a.remitente ?? '—'}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>
     `;
     tbody.appendChild(tr);
   });
