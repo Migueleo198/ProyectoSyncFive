@@ -45,7 +45,7 @@ class InfraestructuraAguaModel
             $params[':estado']  = $filtros['estado'];
         }
 
-        $sql = "SELECT * FROM infraestructuras_agua";
+        $sql = "SELECT * FROM Infraestructuras_Agua";
 
         if (!empty($where)) {
             $sql .= " WHERE " . implode(' AND ', $where);
@@ -62,11 +62,11 @@ class InfraestructuraAguaModel
         return $stmt->fetchAll();
     }
 
-    public function find(int $id): ?array
+    public function find(string $codigo): ?array
     {
         $result = $this->db
-            ->query("SELECT * FROM infraestructuras_agua WHERE id = :id")
-            ->bind(":id", $id)
+            ->query("SELECT * FROM Infraestructuras_Agua WHERE codigo = :codigo")
+            ->bind(":codigo", $codigo)
             ->fetch();
 
         return $result ?: null;
@@ -77,10 +77,10 @@ class InfraestructuraAguaModel
     // ESCRITURA
     // ============================================================
 
-    public function create(array $data): int
+    public function create(array $data): void
     {
         $this->db->query("
-            INSERT INTO infraestructuras_agua
+            INSERT INTO Infraestructuras_Agua
                 (codigo, tipo, denominacion, municipio, provincia, latitud, longitud, estado)
             VALUES
                 (:codigo, :tipo, :denominacion, :municipio, :provincia, :latitud, :longitud, :estado)
@@ -94,15 +94,12 @@ class InfraestructuraAguaModel
         ->bind(":longitud",     $data['longitud'])
         ->bind(":estado",       $data['estado'] ?? 'ACTIVO')
         ->execute();
-
-        return (int) $this->db->lastId();
     }
-
-    public function update(int $id, array $data): int
+    public function update(string $codigo, array $data): int
     {
         $this->db->query("
-            UPDATE infraestructuras_agua SET
-                codigo       = :codigo,
+            UPDATE Infraestructuras_Agua SET
+                codigo       = :nuevoCodigo,
                 tipo         = :tipo,
                 denominacion = :denominacion,
                 municipio    = :municipio,
@@ -110,17 +107,17 @@ class InfraestructuraAguaModel
                 latitud      = :latitud,
                 longitud     = :longitud,
                 estado       = :estado
-            WHERE id = :id
+            WHERE codigo = :codigoActual
         ")
-        ->bind(":id",          $id)
-        ->bind(":codigo",      $data['codigo'])
-        ->bind(":tipo",        $data['tipo'])
-        ->bind(":denominacion",$data['denominacion'] ?? null)
-        ->bind(":municipio",   $data['municipio'])
-        ->bind(":provincia",   $data['provincia'])
-        ->bind(":latitud",     $data['latitud'])
-        ->bind(":longitud",    $data['longitud'])
-        ->bind(":estado",      $data['estado'])
+        ->bind(":codigoActual",  $codigo)
+        ->bind(":nuevoCodigo",   $data['codigo'])
+        ->bind(":tipo",          $data['tipo'])
+        ->bind(":denominacion",  $data['denominacion'] ?? null)
+        ->bind(":municipio",     $data['municipio'])
+        ->bind(":provincia",     $data['provincia'])
+        ->bind(":latitud",       $data['latitud'])
+        ->bind(":longitud",      $data['longitud'])
+        ->bind(":estado",        $data['estado'])
         ->execute();
 
         return (int) $this->db
@@ -128,10 +125,10 @@ class InfraestructuraAguaModel
             ->fetch()['affected'];
     }
 
-    public function delete(int $id): int
+    public function delete(string $codigo): int
     {
-        $this->db->query("DELETE FROM infraestructuras_agua WHERE id = :id")
-            ->bind(":id", $id)
+        $this->db->query("DELETE FROM Infraestructuras_Agua WHERE codigo = :codigo")
+            ->bind(":codigo", $codigo)
             ->execute();
 
         return (int) $this->db

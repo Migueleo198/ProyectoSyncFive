@@ -13,6 +13,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // ============================================================
+// MAPA
+// ============================================================
+
+let mapa = null;
+let marcadores = [];
+
+function renderMapa(lista) {
+  if (!mapa) {
+    mapa = L.map('mapaInfraestructuras').setView([41.65, -0.87], 8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(mapa);
+  }
+
+  marcadores.forEach(m => mapa.removeLayer(m));
+marcadores = [];
+
+const coordsVistas = new Set();
+
+lista.forEach(item => {
+  if (!item.latitud || !item.longitud) return;
+
+  const clave = `${item.latitud},${item.longitud}`;
+  if (coordsVistas.has(clave)) return;
+  coordsVistas.add(clave);
+
+    const icono = item.tipo === 'HIDRANTE' ? '💧' : '🌿';
+    const popup = `
+      <strong>${icono} ${item.codigo}</strong><br>
+      ${item.denominacion ?? '—'}<br>
+      ${item.municipio} (${item.provincia})<br>
+      Estado: <strong>${item.estado}</strong>
+    `;
+
+    const marcador = L.marker([item.latitud, item.longitud])
+      .bindPopup(popup)
+      .addTo(mapa);
+
+    marcadores.push(marcador);
+  });
+}
+  
+
+// ============================================================
 // CARGA Y RENDER DE TABLA
 // ============================================================
 
@@ -22,6 +66,7 @@ async function cargarInfraestructuras(filtros = {}) {
     todasLasInfraestructuras = response.data;
     renderTabla(todasLasInfraestructuras);
     actualizarContadores(todasLasInfraestructuras);
+    renderMapa(todasLasInfraestructuras); 
   } catch (e) {
     mostrarError(e.message || 'Error cargando infraestructuras de agua');
   }
@@ -44,7 +89,7 @@ function renderTabla(lista) {
   lista.forEach(item => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="d-none d-md-table-cell">${item.id}</td>
+      <td class="d-none d-md-table-cell">${item.codigo}</td>
       <td>
         <span class="badge ${item.tipo === 'HIDRANTE' ? 'bg-primary' : 'bg-purple'}">
           ${item.tipo === 'HIDRANTE' ? '💧 Hidrante' : '🌿 Boca de riego'}
@@ -64,20 +109,20 @@ function renderTabla(lista) {
                 class="btn p-0 btn-ver"
                 data-bs-toggle="modal"
                 data-bs-target="#modalVer"
-                data-id="${item.id}">
+                data-codigo="${item.codigo}">
           <i class="bi bi-eye"></i>
         </button>
         <button type="button"
                 class="btn p-0 btn-editar"
                 data-bs-toggle="modal"
                 data-bs-target="#modalEditar"
-                data-id="${item.id}">
+                data-codigo="${item.codigo}">
           <i class="bi bi-pencil"></i>
         </button>
         <button type="button"
-                class="btn p-0 btn-eliminar"
-                data-id="${item.id}"
-                data-codigo="${item.codigo}">
+          class="btn p-0 btn-eliminar"
+          data-id="${item.codigo}"
+          data-codigo="${item.codigo}">
           <i class="bi bi-trash"></i>
         </button>
       </td>
@@ -102,7 +147,7 @@ function actualizarContadores(lista) {
   const bocas    = lista.filter(i => i.tipo === 'BOCA_RIEGO').length;
   const activos  = lista.filter(i => i.estado === 'ACTIVO').length;
 
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const set = (codigo, val) => { const el = document.getElementById(codigo); if (el) el.textContent = val; };
   set('cntTotal',    total);
   set('cntHidrante', hidrant);
   set('cntBoca',     bocas);
@@ -127,8 +172,8 @@ function bindFiltros() {
 
   if (btnLimpiar) {
     btnLimpiar.addEventListener('click', () => {
-      ['filtroTipo', 'filtroProvincia', 'filtroMunicipio', 'filtroEstado'].forEach(id => {
-        const el = document.getElementById(id);
+      ['filtroTipo', 'filtroProvincia', 'filtroMunicipio', 'filtroEstado'].forEach(codigo => {
+        const el = document.getElementById(codigo);
         if (el) el.value = '';
       });
       cargarInfraestructuras();
@@ -170,14 +215,13 @@ document.addEventListener('click', async function (e) {
   const btn = e.target.closest('.btn-ver');
   if (!btn) return;
 
-  const id   = btn.dataset.id;
-  const item = todasLasInfraestructuras.find(i => i.id == id);
+  const codigo   = btn.dataset.codigo;
+  const item = todasLasInfraestructuras.find(i => i.codigo == codigo);
   if (!item) return;
 
   const body = document.getElementById('modalVerBody');
   body.innerHTML = `
     <table class="table table-sm table-bordered mb-0">
-      <tr><th class="table-secondary w-40">ID</th><td>${item.id}</td></tr>
       <tr><th class="table-secondary">Código</th><td>${item.codigo}</td></tr>
       <tr><th class="table-secondary">Tipo</th>
           <td>
@@ -207,8 +251,8 @@ document.addEventListener('click', async function (e) {
   const btn = e.target.closest('.btn-editar');
   if (!btn) return;
 
-  const id   = btn.dataset.id;
-  const item = todasLasInfraestructuras.find(i => i.id == id);
+  const codigo   = btn.dataset.codigo;
+  const item = todasLasInfraestructuras.find(i => i.codigo == codigo);
   if (!item) return;
 
   const form = document.getElementById('formEditar');
@@ -282,7 +326,7 @@ document.addEventListener('click', async function (e) {
       });
 
     try {
-      await InfraestructuraAguaApi.update(id, data);
+      await InfraestructuraAguaApi.update(item.codigo, data);
       mostrarExito('Infraestructura actualizada correctamente');
       await cargarInfraestructuras();
 
@@ -303,13 +347,12 @@ document.addEventListener('click', async function (e) {
   const btn = e.target.closest('.btn-eliminar');
   if (!btn) return;
 
-  const id     = btn.dataset.id;
   const codigo = btn.dataset.codigo;
 
   if (!confirm(`¿Eliminar la infraestructura "${codigo}"?`)) return;
 
   try {
-    await InfraestructuraAguaApi.delete(id);
+    await InfraestructuraAguaApi.delete(codigo);
     mostrarExito('Infraestructura eliminada correctamente');
     await cargarInfraestructuras();
   } catch (err) {
