@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 let mapa = null;
 let marcadores = [];
 
-function renderMapa(lista) {
+function renderMapa(lista, vehiculos = []) {
   if (!mapa) {
     mapa = L.map('mapaInfraestructuras').setView([41.65, -0.87], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -45,30 +45,63 @@ function renderMapa(lista) {
   }
 
   marcadores.forEach(m => mapa.removeLayer(m));
-marcadores = [];
+  marcadores = [];
 
-const coordsVistas = new Set();
+  const coordsVistas = new Set();
 
-lista.forEach(item => {
-  if (!item.latitud || !item.longitud) return;
+  // — Infraestructuras —
+  lista.forEach(item => {
+    if (!item.latitud || !item.longitud) return;
+    const clave = `${item.latitud},${item.longitud}`;
+    if (coordsVistas.has(clave)) return;
+    coordsVistas.add(clave);
 
-  const clave = `${item.latitud},${item.longitud}`;
-  if (coordsVistas.has(clave)) return;
-  coordsVistas.add(clave);
+    const emojiInfra = item.tipo === 'HIDRANTE' ? '💧' : '🚰';
 
-    const icono = item.tipo === 'HIDRANTE' ? '💧' : '🌿';
+    const iconoInfra = L.divIcon({
+      html: `<span style="font-size:22px">${emojiInfra}</span>`,
+      className: '',
+    iconSize: [30, 30],
+    iconAnchor: [18, 18],
+    });
+
     const popup = `
-      <strong>${icono} ${item.codigo}</strong><br>
+      <strong>${emojiInfra} ${item.codigo}</strong><br>
       ${item.denominacion ?? '—'}<br>
       ${item.municipio} (${item.provincia})<br>
       Estado: <strong>${item.estado}</strong>
     `;
 
-    const marcador = L.marker([item.latitud, item.longitud])
-      .bindPopup(popup)
-      .addTo(mapa);
+    marcadores.push(
+      L.marker([item.latitud, item.longitud], { icon: iconoInfra })
+        .bindPopup(popup)
+        .addTo(mapa)
+    );
+  });
 
-    marcadores.push(marcador);
+  // — Vehículos —
+  const iconoVehiculo = L.divIcon({
+    html: '<span style="font-size:22px">🚒</span>',
+    className: '',
+    iconSize: [30, 30],
+    iconAnchor: [18, 18],
+  });
+
+  vehiculos.forEach(v => {
+    if (!v.ult_latitud || !v.ult_longitud) return;
+    const disponible = v.disponibilidad ? '✅ Disponible' : '🔴 No disponible';
+    const popup = `
+      <strong>🚒 ${v.nombre}</strong><br>
+      Matrícula: <strong>${v.matricula}</strong><br>
+      ${v.marca} ${v.modelo}<br>
+      Tipo: ${v.tipo}<br>
+      ${disponible}
+    `;
+    marcadores.push(
+      L.marker([v.ult_latitud, v.ult_longitud], { icon: iconoVehiculo })
+        .bindPopup(popup)
+        .addTo(mapa)
+    );
   });
 }
   
@@ -79,13 +112,17 @@ lista.forEach(item => {
 
 async function cargarInfraestructuras(filtros = {}) {
   try {
-    const response = await InfraestructuraAguaApi.getAll(filtros);
-    todasLasInfraestructuras = response.data;
+    const [respInfra, respVehiculos] = await Promise.all([
+      InfraestructuraAguaApi.getAll(filtros),
+      InfraestructuraAguaApi.getVehiculos(),
+    ]);
+
+    todasLasInfraestructuras = respInfra.data;
     renderTabla(todasLasInfraestructuras);
-    actualizarContadores(todasLasInfraestructuras);
-    renderMapa(todasLasInfraestructuras); 
+    actualizarContadores(todasLasInfraestructuras, respVehiculos.data);    
+    renderMapa(todasLasInfraestructuras, respVehiculos.data);
   } catch (e) {
-    mostrarError(e.message || 'Error cargando infraestructuras de agua');
+    mostrarError(e.message || 'Error cargando datos');
   }
 }
 
@@ -108,8 +145,8 @@ function renderTabla(lista) {
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${item.codigo}</td>
       <td>
-        <span class="badge ${item.tipo === 'HIDRANTE' ? 'bg-primary' : 'bg-purple'}">
-          ${item.tipo === 'HIDRANTE' ? '💧 Hidrante' : '🌿 Boca de riego'}
+        <span class="badge ${item.tipo === 'HIDRANTE' ? 'bg-primary' : 'bg-primary bg-opacity-50'}">
+          ${item.tipo === 'HIDRANTE' ? '💧 Hidrante' : '🚰 Boca de riego'}
         </span>
       </td>
       <td>${item.codigo}</td>
@@ -159,16 +196,16 @@ function estadoBadge(estado) {
   }
 }
 
-function actualizarContadores(lista) {
-  const total   = lista.length;
-  const hidrant = lista.filter(i => i.tipo === 'HIDRANTE').length;
-  const bocas   = lista.filter(i => i.tipo === 'BOCA_RIEGO').length;
-  const activos = lista.filter(i => i.estado === 'ACTIVO').length;
+function actualizarContadores(lista, vehiculos = []) {
+  const total    = lista.length;
+  const hidrant  = lista.filter(i => i.tipo === 'HIDRANTE').length;
+  const bocas    = lista.filter(i => i.tipo === 'BOCA_RIEGO').length;
+  const activos  = lista.filter(i => i.estado === 'ACTIVO').length;
 
-  const set = (codigo, val) => { const el = document.getElementById(codigo); if (el) el.textContent = val; };
-  set('cntTotal',    total);
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set('cntHidrante', hidrant);
   set('cntBoca',     bocas);
+  set('cntVehiculo', vehiculos.length);
   set('cntActivos',  activos);
 }
 
@@ -315,7 +352,7 @@ document.addEventListener('click', async function (e) {
       <tr><th class="table-secondary">Tipo</th>
           <td>
             <span class="badge ${item.tipo === 'HIDRANTE' ? 'bg-primary' : 'bg-purple'}">
-              ${item.tipo === 'HIDRANTE' ? '💧 Hidrante' : '🌿 Boca de riego'}
+              ${item.tipo === 'HIDRANTE' ? '💧 Hidrante' : '🚰 Boca de riego'}
             </span>
           </td>
       </tr>
@@ -355,7 +392,7 @@ document.addEventListener('click', async function (e) {
         <label class="form-label">Tipo *</label>
         <select class="form-select" name="tipo">
           <option value="HIDRANTE"   ${item.tipo === 'HIDRANTE'   ? 'selected' : ''}>💧 Hidrante</option>
-          <option value="BOCA_RIEGO" ${item.tipo === 'BOCA_RIEGO' ? 'selected' : ''}>🌿 Boca de riego</option>
+          <option value="BOCA_RIEGO" ${item.tipo === 'BOCA_RIEGO' ? 'selected' : ''}>🚰 Boca de riego</option>
         </select>
       </div>
       <div class="col-md-4">

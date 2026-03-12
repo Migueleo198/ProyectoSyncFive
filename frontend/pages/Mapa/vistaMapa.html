@@ -40,14 +40,6 @@
       <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm h-100">
           <div class="card-body py-3">
-            <div class="fs-3 fw-bold text-primary" id="cntTotal">—</div>
-            <div class="small text-muted">Total</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm h-100">
-          <div class="card-body py-3">
             <div class="fs-3 fw-bold text-info" id="cntHidrante">—</div>
             <div class="small text-muted">💧 Hidrantes</div>
           </div>
@@ -57,7 +49,15 @@
         <div class="card text-center border-0 shadow-sm h-100">
           <div class="card-body py-3">
             <div class="fs-3 fw-bold" style="color:#8e44ad" id="cntBoca">—</div>
-            <div class="small text-muted">🌿 Bocas de riego</div>
+            <div class="small text-muted">🚰 Bocas de riego</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card text-center border-0 shadow-sm h-100">
+          <div class="card-body py-3">
+            <div class="fs-3 fw-bold" style="color:#ad4444" id="cntVehiculo">—</div>
+            <div class="small text-muted">🚒 Vehiculos</div>
           </div>
         </div>
       </div>
@@ -80,7 +80,7 @@
             <select class="form-select form-select-sm" id="filtroTipo">
               <option value="">Todos</option>
               <option value="HIDRANTE">💧 Hidrante</option>
-              <option value="BOCA_RIEGO">🌿 Boca de riego</option>
+              <option value="BOCA_RIEGO">🚰 Boca de riego</option>
             </select>
           </div>
           <div class="col-6 col-md-3">
@@ -128,8 +128,8 @@
       </div>
     </div>
     <!-- Tabla -->
-
     <div class="table-responsive">
+      <h1>Registro de las infraestructuras</h1>
       <table class="table table-bordered table-striped" id="tablaInfraestructuras">
         <thead class="table-dark">
           <tr>
@@ -230,7 +230,7 @@
               <select class="form-select" name="tipo" required>
                 <option value="">Seleccione…</option>
                 <option value="HIDRANTE">💧 Hidrante</option>
-                <option value="BOCA_RIEGO">🌿 Boca de riego</option>
+                <option value="BOCA_RIEGO">🚰 Boca de riego</option>
               </select>
             </div>
             <div class="col-md-4">
