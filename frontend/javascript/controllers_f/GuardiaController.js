@@ -1,34 +1,17 @@
 import GuardiaApi from '../api_f/GuardiaApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 
-let guardias = []; // almacenar guardias globalmente
+let guardias = [];
 
-// ================================
-// CONSTANTES
-// ================================
 const cargos = [
-    "BOMBERO1",
-    "BOMBERO2",
-    "BOMBERO3",
-    "BOMBERO4",
-    "BOMBERO5",
-    "BOMBERO6",
-    "BOMBERO7",
-    "BOMBERO8",
-    "BOMBERO9",
-    "BOMBERO10",
-    "OFICIAL1",
-    "OFICIAL2",
-    "CONDUCTOR1",
-    "CONDUCTOR2"
+    "BOMBERO1","BOMBERO2","BOMBERO3","BOMBERO4","BOMBERO5",
+    "BOMBERO6","BOMBERO7","BOMBERO8","BOMBERO9","BOMBERO10",
+    "OFICIAL1","OFICIAL2","CONDUCTOR1","CONDUCTOR2"
 ];
 
 const nombresCampos = ['Fecha', 'Hora Inicio', 'Hora Fin', 'Notas'];
 const camposBd = ['fecha', 'h_inicio', 'h_fin', 'notas'];
 
-// ================================
-// INICIALIZACIÓN
-// ================================
 document.addEventListener('DOMContentLoaded', () => {
     cargarGuardias();
     cargarSelectGuardias(null, 'seleccionarGuardia');
@@ -36,10 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarSelectCargos();
     bindCrearGuardia();
     bindAsignarGuardia();
+    bindFiltros();
 });
 
 // ================================
-// FUNCIONES DE CARGA
+// CARGAR GUARDIAS
 // ================================
 async function cargarGuardias() {
     try {
@@ -51,14 +35,34 @@ async function cargarGuardias() {
     }
 }
 
+// ================================
+// FILTROS
+// ================================
+function bindFiltros() {
+    document.getElementById('filtroFecha')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroNotas')?.addEventListener('input', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+    const filtroFecha = document.getElementById('filtroFecha')?.value ?? '';
+    const filtroNotas = document.getElementById('filtroNotas')?.value.toLowerCase().trim() ?? '';
+
+    renderTablaGuardias(guardias.filter(g => {
+        const cumpleFecha = !filtroFecha || g.fecha === filtroFecha;
+        const cumpleNotas = !filtroNotas || g.notas?.toLowerCase().includes(filtroNotas);
+        return cumpleFecha && cumpleNotas;
+    }));
+}
+
+// ================================
+// CARGAR SELECTS
+// ================================
 async function cargarSelectGuardias(seleccionado, id_select) {
     const select = document.getElementById(id_select);
     if (!select) return;
-
     try {
         const res = await GuardiaApi.getAll();
         select.innerHTML = '<option value="">Seleccione guardia...</option>';
-
         res.data.forEach(g => {
             const option = document.createElement('option');
             option.value = g.id_guardia;
@@ -74,11 +78,9 @@ async function cargarSelectGuardias(seleccionado, id_select) {
 async function cargarSelectPersonas(seleccionado, id_select) {
     const select = document.getElementById(id_select);
     if (!select) return;
-
     try {
         const res = await PersonaApi.getAll();
         select.innerHTML = '<option value="">Seleccione persona...</option>';
-
         res.data.forEach(p => {
             const option = document.createElement('option');
             option.value = p.id_bombero;
@@ -95,7 +97,6 @@ function cargarSelectCargos() {
     const select = document.getElementById('cargo');
     if (!select) return;
     select.innerHTML = '<option value="">Seleccione cargo...</option>';
-
     cargos.forEach(c => {
         const option = document.createElement('option');
         option.value = c;
@@ -107,10 +108,10 @@ function cargarSelectCargos() {
 // ================================
 // RENDER TABLA
 // ================================
-function renderTablaGuardias(guardias) {
+function renderTablaGuardias(lista) {
     const tbody = document.querySelector('#tabla tbody');
     tbody.innerHTML = '';
-    guardias.forEach(g => {
+    lista.forEach(g => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="d-none d-md-table-cell">${g.id_guardia}</td>
@@ -118,37 +119,33 @@ function renderTablaGuardias(guardias) {
             <td>${g.h_inicio}</td>
             <td>${g.h_fin}</td>
             <td class="d-none d-md-table-cell">${g.notas || ''}</td>
-            <td class="d-flex justify-content-around">                     
+            <td class="d-flex justify-content-around">
                 <button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${g.id_guardia}">
                     <i class="bi bi-eye"></i>
                 </button>
                 <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${g.id_guardia}">
                     <i class="bi bi-pencil"></i>
                 </button>
-            </td>
-        `;
+            </td>`;
         tbody.appendChild(tr);
     });
 }
 
 // ================================
-// FORMULARIOS
+// CREAR GUARDIA
 // ================================
 function bindCrearGuardia() {
     const form = document.getElementById('formInsertarGuardia');
     if (!form) return;
-
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const f = new FormData(form);
-
         const data = {
-            fecha: f.get('fecha'),
+            fecha:    f.get('fecha'),
             h_inicio: f.get('h_inicio'),
-            h_fin: f.get('h_fin'),
-            notas: f.get('notas') || ''
+            h_fin:    f.get('h_fin'),
+            notas:    f.get('notas') || ''
         };
-
         try {
             await GuardiaApi.create(data);
             await cargarGuardias();
@@ -160,25 +157,24 @@ function bindCrearGuardia() {
     });
 }
 
+// ================================
+// ASIGNAR GUARDIA
+// ================================
 function bindAsignarGuardia() {
     const form = document.getElementById('formAsignarGuardia');
     if (!form) return;
-
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const f = new FormData(form);
-
         const data = {
             id_bombero: f.get('n_funcionario'),
             id_guardia: f.get('id_guardia'),
-            cargo: f.get('cargo')
+            cargo:      f.get('cargo')
         };
-
         if (!data.id_bombero || !data.id_guardia || !data.cargo) {
             mostrarError('Seleccione guardia, persona y cargo');
             return;
         }
-
         try {
             await GuardiaApi.assignToPerson(data);
             mostrarExito('Persona asignada a la guardia correctamente');
@@ -199,7 +195,6 @@ document.addEventListener('click', async (e) => {
         const id = btnVer.dataset.id;
         const guardia = guardias.find(g => g.id_guardia == id);
         if (!guardia) return;
-
         const modalBody = document.getElementById('modalVerBody');
         modalBody.innerHTML = '';
         nombresCampos.forEach((nombre, i) => {
@@ -211,15 +206,13 @@ document.addEventListener('click', async (e) => {
             modalBody.appendChild(p);
         });
     }
-    
-    // Modal EDITAR
+
     const btnEditar = e.target.closest('.btn-editar');
     if (btnEditar) {
         const id = btnEditar.dataset.id;
         const response = await GuardiaApi.getById(id);
         const guardia = response.data;
         if (!guardia) return;
-
         const form = document.getElementById('formEditar');
         form.innerHTML = `
             <div class="row mb-3">
@@ -242,16 +235,13 @@ document.addEventListener('click', async (e) => {
             </div>
             <div class="text-center">
                 <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
-            </div>
-        `;
-
+            </div>`;
         document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
             const data = {};
             camposBd.forEach(c => {
                 const input = form.querySelector(`[name="${c}"]`);
                 if (input) data[c] = input.value;
             });
-
             await GuardiaApi.update(id, data);
             await cargarGuardias();
             bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
@@ -267,7 +257,7 @@ function mostrarError(msg) {
     const wrapper = document.createElement('div');
     wrapper.innerHTML = `<div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
         <strong>Error:</strong> ${msg}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>`;
     container.append(wrapper);
 }
@@ -277,7 +267,7 @@ function mostrarExito(msg) {
     const wrapper = document.createElement('div');
     wrapper.innerHTML = `<div class="alert alert-success alert-dismissible fade show shadow" role="alert">
         <strong>OK:</strong> ${msg}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>`;
     container.append(wrapper);
 }

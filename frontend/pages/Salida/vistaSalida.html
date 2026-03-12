@@ -34,19 +34,26 @@
 
                 <!-- Contenedor tabla con filtro-->
                 <div class="container mt-4 p-0"> 
-                    <div id="filtroTabla" class="m-0 row d-flex justify-content-around"> <!-- Filtro -->
-                        <div class="col-md-3 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
-                            <label class="m-2" for="n_funcionario">n_Funcionario:</label>
-                            <input placeholder="n_Funcionario" id="n_funcionario" type="text" class="form-control form-control-sm mt-1 filtro" data-col="1">
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-around">
+                        <div class="col-lg-5 col-md-5 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap" for="filtroMatricula">Matrícula:</label>
+                            <select class="form-select form-select-sm" id="filtroMatricula">
+                                <option value="">Todas</option>
+                            </select>
                         </div>
-                        <div class="col-md-3 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
-                            <label class="m-2" for="matricula">Matricula:</label>
-                            <input placeholder="Matricula" id="matricula" type="text" class="form-control form-control-sm mt-1 filtro" data-col="0">
+                        <div class="col-lg-5 col-md-5 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap" for="filtroBombero">ID Bombero:</label>
+                            <select class="form-select form-select-sm" id="filtroBombero">
+                                <option value="">Todos</option>
+                            </select>
                         </div>
-                        <div class="col-md-4 m-1 d-lg-flex gap-2">
-                            <label class="m-2" >Fecha:</label>
-                            <input type="datetime-local" class="form-control form-control-sm" id="f_ini" title="F_Ini" data-col="2">
-                            <input type="datetime-local" class="form-control form-control-sm" id="f_fin" title="F_Fin" data-col="3">
+                        <div class="col-lg-5 col-md-5 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap">Desde:</label>
+                            <input type="date" class="form-control form-control-sm" id="filtroDesde">
+                        </div>
+                        <div class="col-lg-5 col-md-5 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap">Hasta:</label>
+                            <input type="date" class="form-control form-control-sm" id="filtroHasta">
                         </div>
                     </div>
                     <table class="table table-bordered table-striped" id="tabla">

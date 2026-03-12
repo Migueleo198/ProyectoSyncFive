@@ -37,11 +37,15 @@
                     
                     <h2 class="d-flex align-items-center">Lista de Carnets</h2>
 
-                    <div id="filtroTabla" class="m-0 row d-flex justify-content-end"> <!-- Filtro -->
-                        <div class="col-md-5 d-flex align-items-center m-1">
-                        <label class="m-2" for="grupo">Nombre:</label>
-                            <select class="form-select m-1"  id="filtroNombreCarnet">
-                                <option value="">Seleccione...</option>
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-center g-2">
+                        <div class="col-lg-3 col-md-4 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap" for="filtroNombre">Nombre:</label>
+                            <input type="text" class="form-control form-control-sm" id="filtroNombre" placeholder="Buscar nombre...">
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap" for="filtroCategoria">Categoría:</label>
+                            <select class="form-select form-select-sm" id="filtroCategoria">
+                                <option value="">Todas</option>
                             </select>
                         </div>
                     </div>

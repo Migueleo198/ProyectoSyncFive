@@ -33,14 +33,18 @@
 
                 <!-- Contenedor tabla con filtro-->
                 <div class="container mt-4 p-0"> 
-                    <div id="filtroTabla" class="m-0 row d-flex justify-content-around"> <!-- Filtro -->
-                        <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-center align-items-center">
+                        <div class="col-lg-3 col-md-8 col-sm-12 d-flex align-items-center m-1">
                             <label class="m-2" for="nombre">Nombre:</label>
-                            <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="0">
+                            <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm">
                         </div>
-                        <div class="col-md-3 m-1 d-flex gap-2">
-                            <label class="m-2" >Fecha:</label>
-                            <input type="date" class="form-control form-control-sm" id="f_ini" title="F_Ini" data-col="2">
+                        <div class="col-lg-3 col-md-4 col-sm-12 d-flex align-items-center m-1">
+                            <label class="m-2">Desde:</label>
+                            <input type="date" class="form-control form-control-sm" id="filtroDesde">
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-12 d-flex align-items-center m-1  ">
+                            <label class="m-2">Hasta:</label>
+                            <input type="date" class="form-control form-control-sm" id="filtroHasta">
                         </div>
                     </div>
                     <table class="table table-bordered table-striped" id="tabla">

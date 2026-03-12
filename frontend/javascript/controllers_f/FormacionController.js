@@ -28,6 +28,7 @@ async function cargarFormaciones() {
     const response = await FormacionApi.getAll();
     formaciones = response.data;
     renderTablaFormaciones(formaciones);
+    bindFiltros();
   } catch (e) {
     mostrarError(e.message || 'Error cargando formaciones');
   }
@@ -67,6 +68,20 @@ function renderTablaFormaciones(lista) {
     `;
     tbody.appendChild(tr);
   });
+}
+
+// ================================
+// FILTROS
+// ================================
+function bindFiltros() {
+  document.getElementById('filtroNombre')?.addEventListener('input', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  const filtroNombre = document.getElementById('filtroNombre')?.value.toLowerCase().trim() ?? '';
+  renderTablaFormaciones(formaciones.filter(f =>
+    !filtroNombre || f.nombre?.toLowerCase().includes(filtroNombre)
+  ));
 }
 
 // ================================

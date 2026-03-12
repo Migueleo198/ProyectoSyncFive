@@ -24,8 +24,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 // CARGAR PERSONAS
 // ================================
 async function cargarPersonas() {
-  try { const r = await PersonaApiApi.getAll(); personas = r.data; renderTablaPersonas(personas); }
-  catch (e) { mostrarError(e.message || 'Error cargando personas'); }
+  try {
+    const r = await PersonaApiApi.getAll();
+    personas = r.data;
+    renderTablaPersonas(personas);
+    poblarFiltroLocalidad(personas);
+    bindFiltros();
+  } catch (e) { mostrarError(e.message || 'Error cargando personas'); }
+}
+
+// ================================
+// FILTROS
+// ================================
+function poblarFiltroLocalidad(lista) {
+  const select = document.getElementById('filtroLocalidad');
+  if (!select) return;
+  const valorActual = select.value;
+  select.innerHTML = '<option value="">Todas</option>';
+  const unicas = [...new Set(lista.map(p => p.localidad).filter(Boolean))].sort();
+  unicas.forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l;
+    opt.textContent = l;
+    select.appendChild(opt);
+  });
+  select.value = valorActual;
+}
+
+function bindFiltros() {
+  document.getElementById('filtroIDBombero')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('filtroLocalidad')?.addEventListener('change', aplicarFiltros);
+  document.getElementById('filtroActivo')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  const filtroIDBombero = document.getElementById('filtroIDBombero')?.value.toLowerCase().trim() ?? '';
+  const filtroLocalidad = document.getElementById('filtroLocalidad')?.value ?? '';
+  const filtroActivo    = document.getElementById('filtroActivo')?.value ?? '';
+
+  renderTablaPersonas(personas.filter(p => {
+    const cumpleID        = !filtroIDBombero || String(p.id_bombero).toLowerCase().includes(filtroIDBombero);
+    const cumpleLocalidad = !filtroLocalidad || p.localidad === filtroLocalidad;
+    const cumpleActivo    = filtroActivo === '' || String(p.activo) === String(filtroActivo);
+    return cumpleID && cumpleLocalidad && cumpleActivo;
+  }));
 }
 
 // ================================
@@ -36,7 +78,12 @@ async function cargarSelectRoles() {
   try {
     const res = await RolApi.getAll();
     select.innerHTML = '<option value="">Seleccione rol...</option>';
-    res.data.forEach(r => { const o = document.createElement('option'); o.value = r.id_rol; o.textContent = r.nombre; select.appendChild(o); });
+    res.data.forEach(r => {
+      const o = document.createElement('option');
+      o.value = r.id_rol;
+      o.textContent = r.nombre;
+      select.appendChild(o);
+    });
   } catch (e) { mostrarError(e.message || 'Error cargando roles'); }
 }
 
@@ -58,8 +105,10 @@ function renderTablaPersonas(lista) {
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${p.id_bombero}</td>
       <td class="d-none d-md-table-cell">${p.n_funcionario}</td>
-      <td>${p.correo}</td><td>${p.telefono}</td>
-      <td>${p.nombre}</td><td>${p.apellidos}</td>
+      <td>${p.correo}</td>
+      <td>${p.telefono}</td>
+      <td>${p.nombre}</td>
+      <td>${p.apellidos}</td>
       <td class="d-none d-md-table-cell">${p.localidad}</td>
       <td>${p.nombre_usuario}</td>
       <td class="d-flex justify-content-around">${botones}</td>`;
@@ -68,7 +117,7 @@ function renderTablaPersonas(lista) {
 }
 
 const nombresCampos = ['correo','telefono','f_ingreso_diputacion','talla_superior','talla_inferior','talla_calzado','nombre','apellidos','f_nacimiento','telefono_emergencia','domicilio','localidad','id_rol','activo','nombre_usuario'];
-const camposBd = ['correo','telefono','f_ingreso_diputacion','talla_superior','talla_inferior','talla_calzado','nombre','apellidos','f_nacimiento','telefono_emergencia','domicilio','localidad','id_rol','activo','nombre_usuario'];
+const camposBd      = ['correo','telefono','f_ingreso_diputacion','talla_superior','talla_inferior','talla_calzado','nombre','apellidos','f_nacimiento','telefono_emergencia','domicilio','localidad','id_rol','activo','nombre_usuario'];
 
 // ================================
 // MODAL VER
@@ -97,7 +146,6 @@ function bindCrearPersona() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-
     const data = {
       id_bombero:           f.get('id_bombero')?.trim(),
       n_funcionario:        f.get('n_funcionario')?.trim(),
@@ -114,7 +162,7 @@ function bindCrearPersona() {
       talla_superior:       f.get('talla_superior')?.trim() || null,
       talla_inferior:       f.get('talla_inferior')?.trim() || null,
       talla_calzado:        f.get('talla_calzado')?.trim() || null,
-      id_rol:               f.get('id_rol') || null,   // ← nombre corregido
+      id_rol:               f.get('id_rol') || null,
       nombre_usuario:       f.get('nombre_usuario')?.trim(),
       contrasenia:          f.get('contrasenia'),
     };
@@ -168,10 +216,13 @@ function bindModalEditar() {
             <select class="form-select" name="activo">
               <option value="1" ${persona.activo==1?'selected':''}>Sí</option>
               <option value="0" ${persona.activo==0?'selected':''}>No</option>
-            </select></div>
+            </select>
+          </div>
           <div class="col-lg-4"><label class="form-label">Nombre Usuario</label><input type="text" class="form-control" name="nombre_usuario" value="${persona.nombre_usuario||''}"></div>
         </div>
-        <div class="text-center"><button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button></div>`;
+        <div class="text-center">
+          <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
+        </div>`;
       document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
         const data = {};
         camposBd.forEach(campo => {
@@ -182,7 +233,8 @@ function bindModalEditar() {
           if (value !== '' && value !== null && value !== undefined) data[campo] = value;
         });
         try {
-          await PersonaApiApi.update(id, data); await cargarPersonas();
+          await PersonaApiApi.update(id, data);
+          await cargarPersonas();
           bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
           mostrarExito('Persona actualizada correctamente');
         } catch (err) { mostrarError('Error al editar persona: ' + err.message); }
@@ -202,18 +254,23 @@ function bindModalEliminar() {
   document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
     const id = this.dataset.id; if (!id) return;
     try {
-      await PersonaApiApi.remove(id); await cargarPersonas();
+      await PersonaApiApi.remove(id);
+      await cargarPersonas();
       bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
     } catch (err) { mostrarError('Error al eliminar persona: ' + err.message); }
   });
 }
 
+// ================================
+// ALERTAS
+// ================================
 function mostrarError(msg) {
   const container = document.getElementById('alert-container');
   const wrapper = document.createElement('div');
   wrapper.innerHTML = `<div class="alert alert-danger alert-dismissible fade show shadow" role="alert"><strong>Error:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
   container.append(wrapper);
 }
+
 function mostrarExito(msg) {
   const container = document.getElementById('alert-container');
   const wrapper = document.createElement('div');

@@ -36,21 +36,23 @@
 
                     <h2 class="d-flex">Trabajadores</h2>
 
-                    <div id="filtroTabla" class="m-0 row d-flex justify-content-between"> <!-- Filtro -->
-                        <div class="col-md-5 d-flex align-items-center m-1">
-                            <label class="m-2" for="buscar">Estado:</label>
-                            <select class="form-select form-select-sm mt-1 filtro" id="buscar" data-col="2">
-                                <option value="">Estado</option>
-                                <option>Incendio urbano</option>
-                                <option>Incendio forestal</option>
-                                <option>Accidente de tráfico</option>
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-around">
+                        <div class="col-lg-3 col-md-5 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap" for="filtroIDBombero">ID Bombero:</label>
+                            <input type="text" class="form-control form-control-sm" id="filtroIDBombero" placeholder="Buscar ID...">
+                        </div>
+                        <div class="col-lg-3 col-md-5 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap" for="filtroLocalidad">Localidad:</label>
+                            <select class="form-select form-select-sm" id="filtroLocalidad">
+                                <option value="">Todas</option>
                             </select>
-                            <label class="m-2" for="buscar">Buscar:</label>
-                            <select class="form-select form-select-sm mt-1 filtro" id="buscar" data-col="2">
-                                <option value="">ID_Carnet</option>
-                                <option>Incendio urbano</option>
-                                <option>Incendio forestal</option>
-                                <option>Accidente de tráfico</option>
+                        </div>
+                        <div class="col-lg-3 col-md-5 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap" for="filtroActivo">Estado:</label>
+                            <select class="form-select form-select-sm" id="filtroActivo">
+                                <option value="">Todos</option>
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
                             </select>
                         </div>
                     </div>
