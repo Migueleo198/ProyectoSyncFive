@@ -103,11 +103,6 @@ function aplicarFiltros() {
     const cumpleFecha  = !filtroFecha  || p.fecha?.startsWith(filtroFecha);
     return cumpleMotivo && cumpleEstado && cumpleFecha;
   }));
-    // CORRECCIÓN: normalizar estado al cargar para comparaciones seguras
-    permisos = (r.data || []).map(p => ({ ...p, estado: normalizarEstado(p.estado) }));
-    renderTablaPermisos(permisos);
-  }
-  catch (e) { mostrarError(e.message || 'Error cargando permisos'); }
 }
 
 // ================================
