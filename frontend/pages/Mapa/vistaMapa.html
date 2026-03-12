@@ -2,8 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  
   <script src="/frontend/config/config.js"></script>
   <script>loadHead("Infraestructuras de Agua")</script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body class="bg-white text-dark d-flex flex-column">
 
@@ -15,14 +18,23 @@
     <!-- Cabecera -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="mb-0">Infraestructuras de Agua</h1>
-      <button class="btn btn-primary"
-              data-bs-toggle="modal"
-              data-bs-target="#modalCrear">
-        <i class="bi bi-plus-lg me-1"></i> Nueva
-      </button>
-    </div>
-    <div id="breadcrumb-placeholder"></div>
 
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#modalCrear">
+          <i class="bi bi-plus-lg"></i> Nueva
+        </button>
+        <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
+          class="text-dark" title="Abrir ayuda en Notion">
+            <i class="bi bi-question-circle fs-3"></i>
+        </a>
+
+
+      </div>
+    </div>
+
+    <div id="breadcrumb-placeholder"></div>
     <!-- Contadores -->
     <div class="row g-3 mb-4">
       <div class="col-6 col-md-3">
@@ -108,37 +120,39 @@
         </div>
       </div>
     </div>
-
-    <!-- Tabla -->
-    <div class="card border-0 shadow-sm">
+  
+    <!-- MAPA -->
+    <div class="card border-0 shadow-sm mb-4">
       <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0" id="tablaInfraestructuras">
-            <thead class="table-light">
-              <tr>
-                <th class="d-none d-md-table-cell">ID</th>
-                <th>Tipo</th>
-                <th>Código</th>
-                <th class="d-none d-md-table-cell">Denominación</th>
-                <th>Municipio</th>
-                <th class="d-none d-lg-table-cell">Provincia</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colspan="8" class="text-center text-muted py-4">
-                  <div class="spinner-border spinner-border-sm me-2"></div>
-                  Cargando…
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <div id="mapaInfraestructuras" style="height: 450px; border-radius: 8px;"></div>
       </div>
     </div>
+    <!-- Tabla -->
 
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped" id="tablaInfraestructuras">
+        <thead class="table-dark">
+          <tr>
+            <th class="d-none d-md-table-cell">ID</th>
+            <th>Tipo</th>
+            <th>Código</th>
+            <th class="d-none d-md-table-cell">Denominación</th>
+            <th>Municipio</th>
+            <th class="d-none d-lg-table-cell">Provincia</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">
+              <div class="spinner-border spinner-border-sm me-2"></div>
+              Cargando…
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </main>
 </div>
 <div id="footer-placeholder" class="mt-auto"></div>
