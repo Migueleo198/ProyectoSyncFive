@@ -18,6 +18,8 @@ const TIPOS = {
    permiso_denegado: { label: 'Permiso denegado',    bgClass: 'bg-danger'  },
 };
 
+// CORRECCIÓN: estados del DDL — 'ACTIVA' (no 'ABIERTA'), 'REVISION' (sin tilde)
+const ESTADOS_PERMISO_VALIDOS = ['ACEPTADO', 'REVISION', 'DENEGADO'];
 
 let year            = new Date().getFullYear();
 let modoVista       = 'individual';
@@ -170,7 +172,13 @@ async function cargarDatosCuadrante(idBomberoFiltro = null) {
        try {
            const res = await PermisoApi.getAll();
            const todos = res.data || res || [];
-           permisos = todos.filter(p => p.id_bombero == idFiltro);
+           // CORRECCIÓN: filtrar y normalizar estado antes de mapear
+           permisos = todos
+               .filter(p => p.id_bombero == idFiltro)
+               .map(p => ({
+                   ...p,
+                   estado: normalizarEstadoPermiso(p.estado)
+               }));
        } catch {
            mostrarError('Error cargando permisos');
            permisos = [];
@@ -195,7 +203,12 @@ async function cargarDatosCuadrante(idBomberoFiltro = null) {
 
        try {
            const res = await PermisoApi.getAll();
-           permisos = res.data || res || [];
+           const todos = res.data || res || [];
+           // CORRECCIÓN: normalizar estados al cargar
+           permisos = (todos).map(p => ({
+               ...p,
+               estado: normalizarEstadoPermiso(p.estado)
+           }));
        } catch {
            mostrarError('Error cargando permisos');
            permisos = [];
@@ -209,6 +222,20 @@ async function cargarDatosCuadrante(idBomberoFiltro = null) {
            refuerzos = [];
        }
    }
+}
+
+/**
+ * CORRECCIÓN: normaliza el estado de un permiso al formato del DDL.
+ * Elimina tildes y convierte a mayúsculas para comparar contra
+ * ENUM('ACEPTADO','REVISION','DENEGADO').
+ */
+function normalizarEstadoPermiso(estado) {
+   if (!estado) return '';
+   const normalizado = String(estado)
+       .toUpperCase()
+       .normalize('NFD')
+       .replace(/[\u0300-\u036f]/g, '');
+   return ESTADOS_PERMISO_VALIDOS.includes(normalizado) ? normalizado : estado.toUpperCase();
 }
 
 
@@ -247,6 +274,7 @@ function construirMapaDias() {
 
    guardias.forEach(g => add(g.fecha, 'guardia'));
    permisos.forEach(p => {
+       // CORRECCIÓN: comparar contra valores del DDL (ya normalizados)
        const tipo = p.estado === 'ACEPTADO' ? 'permiso_aceptado'
                   : p.estado === 'REVISION' ? 'permiso_revision'
                   : 'permiso_denegado';
@@ -383,6 +411,7 @@ function generarContenidoDetalle(guardiasD, permisosD, refuerzosD) {
    });
 
    permisosD.forEach(p => {
+       // CORRECCIÓN: comparar contra valores del DDL (ya normalizados)
        const badge = p.estado === 'ACEPTADO' ? 'bg-primary'
                    : p.estado === 'REVISION'  ? 'bg-warning text-dark'
                    : 'bg-danger';

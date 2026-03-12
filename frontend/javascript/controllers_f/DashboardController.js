@@ -63,6 +63,7 @@ function showTableError(tbodyId, cols, msg = 'Error al cargar los datos') {
 
 // ================================
 // STAT: EMERGENCIAS ACTIVAS
+// CORRECCIÓN: comparar contra 'ACTIVA' (valor del DDL), no 'ABIERTA'
 // ================================
 async function loadEmergenciasActivas() {
     try {
@@ -89,7 +90,6 @@ async function loadPersonalGuardia() {
         const ultimaGuardia = guardias.reduce((max, g) =>
             (g.id_guardia ?? 0) > (max.id_guardia ?? 0) ? g : max
         );
-        console.log(ultimaGuardia);
         const res2 = await GuardiaApi.getPersonsGuardia(ultimaGuardia.id_guardia);
         const personas = extractData(res2);
         document.getElementById('stat-personal').textContent = Array.isArray(personas) ? personas.length : '0';
@@ -101,6 +101,7 @@ async function loadPersonalGuardia() {
 
 // ================================
 // STAT: VEHÍCULOS OPERATIVOS
+// CORRECCIÓN: disponibilidad es TINYINT(1) — comparar con == 1
 // ================================
 async function loadVehiculosStat() {
     try {

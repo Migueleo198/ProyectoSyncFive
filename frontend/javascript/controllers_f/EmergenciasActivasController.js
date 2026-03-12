@@ -1,6 +1,7 @@
 import EmergenciaApi from '../api_f/EmergenciaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
+import { validarTelefono, validarIdBombero } from '../helpers/validacion.js';
 
 let emergencias = [];
 let sesionActual = null;
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // =================================
 // CARGAR EMERGENCIAS ACTIVAS
+// CORRECCIÓN: filtrar por 'ACTIVA' (valor del DDL), no 'ABIERTA'
 // =================================
 async function cargarEmergenciasActivas() {
   const contenedor = document.getElementById('contenedor-emergencias');
@@ -163,10 +165,21 @@ function bindEventos() {
       const response = await EmergenciaApi.getById(id);
       const emergencia = response.data;
 
+      // CORRECCIÓN: validar teléfono e id_bombero antes de actualizar
+      if (emergencia.tlf_solicitante && !validarTelefono(emergencia.tlf_solicitante)) {
+        mostrarError('El teléfono del solicitante registrado no es válido');
+        return;
+      }
+      if (emergencia.id_bombero && !validarIdBombero(emergencia.id_bombero)) {
+        mostrarError('El ID del bombero registrado no es válido');
+        return;
+      }
+
       const data = {
         fecha:             emergencia.fecha,
         descripcion:       emergencia.descripcion,
         direccion:         emergencia.direccion,
+        // CORRECCIÓN: usar 'CERRADA' (valor del DDL)
         estado:            'CERRADA',
         codigo_tipo:       emergencia.codigo_tipo,
         id_bombero:        emergencia.id_bombero,
@@ -192,6 +205,7 @@ function bindEventos() {
 
 // =================================
 // MOSTRAR CONTADOR EN HEADER
+// CORRECCIÓN: filtrar por 'ACTIVA' (valor del DDL)
 // =================================
 export async function mostrarEmergenciasHeader() {
   try {

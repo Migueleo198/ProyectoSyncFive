@@ -55,13 +55,38 @@ function renderTablaCategorias(lista) {
       <td>${c.nombre}</td>
       <td>${Number(c.inventariable) === 1 ? 'Sí' : 'No'}</td>
       <td>
-        <div  class="d-flex justify-content-around">
+        <div class="d-flex justify-content-around">
           ${botonesAccion}
-        </div>  
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+// ================================
+// VALIDAR CATEGORÍA
+// Según DDL Categoria:
+//   nombre        VARCHAR(100) NOT NULL
+//   inventariable BOOLEAN      NOT NULL  (se envía como 0 o 1)
+// ================================
+function validarCategoria(nombre, inventariable) {
+  if (!nombre || !nombre.trim()) {
+    mostrarError('El nombre de la categoría es obligatorio.');
+    return false;
+  }
+  if (nombre.trim().length > 100) {
+    mostrarError('El nombre no puede superar los 100 caracteres.');
+    return false;
+  }
+
+  // inventariable debe ser 0 o 1 (el parseInt de un select vacío da NaN)
+  if (isNaN(inventariable) || (inventariable !== 0 && inventariable !== 1)) {
+    mostrarError('El campo "Inventariable" es obligatorio y debe ser Sí o No.');
+    return false;
+  }
+
+  return true;
 }
 
 // ================================
@@ -73,14 +98,16 @@ function bindCrearCategoria() {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const f = new FormData(form);
-    const data = {
-      nombre:        f.get('nombre'),
-      inventariable: parseInt(f.get('inventariable'))
-    };
+
+    const f            = new FormData(form);
+    const nombre       = f.get('nombre');
+    const inventariable = parseInt(f.get('inventariable'));
+
+    // ── Validación ──
+    if (!validarCategoria(nombre, inventariable)) return;
 
     try {
-      await CategoriaApi.create(data);
+      await CategoriaApi.create({ nombre: nombre.trim(), inventariable });
       await cargarCategorias();
       form.reset();
       mostrarExito('Categoría creada correctamente');
