@@ -2,34 +2,21 @@ import RefuerzoApi from '../api_f/RefuerzoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
 
 let refuerzos = [];
 let sesionActual = null;
 
-// ================================
-// CONSTANTES
-// ================================
 const nombresCampos = ['ID Turno', 'Fecha Inicio', 'Fecha Fin', 'Horas'];
-const camposBd      = ['id_turno_refuerzo', 'f_inicio', 'f_fin', 'horas'];
+const camposBd = ['id_turno_refuerzo', 'f_inicio', 'f_fin', 'horas'];
 
-// ================================
-// INICIALIZACIÓN
-// ================================
-document.addEventListener('DOMContentLoaded', async () => {
-    sesionActual = await authGuard('turnoRefuerzos');
-    if (!sesionActual) return;
-
+document.addEventListener('DOMContentLoaded', () => {
     cargarRefuerzos();
     cargarSelectRefuerzos(null, 'ID_Turno_Refuerzo');
     cargarSelectPersonas(null, 'ID_persona');
-    bindModalVer();
-    bindModalEditar();
-
-    if (sesionActual.puedeEscribir) {
-        bindCrearRefuerzo();
-        bindAsignarRefuerzo();
-        bindModalEliminar();
-    }
+    bindCrearRefuerzo();
+    bindAsignarRefuerzo();
+    bindFiltros();
 });
 
 // ================================
@@ -46,7 +33,26 @@ async function cargarRefuerzos() {
 }
 
 // ================================
-// POBLAR SELECT REFUERZOS
+// FILTROS
+// ================================
+function bindFiltros() {
+    document.getElementById('filtroFecha')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroHoras')?.addEventListener('input', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+    const filtroFecha = document.getElementById('filtroFecha')?.value ?? '';
+    const filtroHoras = document.getElementById('filtroHoras')?.value.trim() ?? '';
+
+    renderTablaRefuerzos(refuerzos.filter(r => {
+        const cumpleFecha = !filtroFecha || r.f_inicio?.startsWith(filtroFecha);
+        const cumpleHoras = !filtroHoras || String(r.horas) === String(filtroHoras);
+        return cumpleFecha && cumpleHoras;
+    }));
+}
+
+// ================================
+// CARGAR SELECTS
 // ================================
 async function cargarSelectRefuerzos(seleccionado, id_select) {
     const select = document.getElementById(id_select);
@@ -105,18 +111,47 @@ function renderTablaRefuerzos(lista) {
             : `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_turno_refuerzo}"><i class="bi bi-eye"></i></button>`;
 
         tr.innerHTML = `
-            <td>${r.id_turno_refuerzo}</td>
+            <td class="d-none d-md-table-cell">${r.id_turno_refuerzo}</td>
             <td>${r.f_inicio}</td>
             <td>${r.f_fin}</td>
             <td>${r.horas || ''}</td>
             <td>
-                <div  class="d-flex justify-content-around">
+                <div class="d-flex justify-content-around">
                 ${botonesAccion}
-                </div>  
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
     });
+}
+
+// ================================
+// VALIDAR TURNO DE REFUERZO
+// Según DDL Turno_refuerzo:
+//   f_inicio TIMESTAMP NOT NULL
+//   f_fin    TIMESTAMP NOT NULL  CHECK (f_fin >= f_inicio)
+//   horas    INT       NOT NULL  CHECK (horas > 0)
+// ================================
+function validarRefuerzo(f_inicio, f_fin, horas) {
+    if (!f_inicio) {
+        mostrarError('La fecha de inicio es obligatoria.');
+        return false;
+    }
+    if (!f_fin) {
+        mostrarError('La fecha de fin es obligatoria.');
+        return false;
+    }
+    // CHECK (f_fin >= f_inicio)
+    if (!validarRangoFechas(f_inicio, f_fin)) {
+        mostrarError('La fecha de fin debe ser igual o posterior a la fecha de inicio.');
+        return false;
+    }
+    // horas INT NOT NULL CHECK (horas > 0)
+    if (!validarNumero(horas)) {
+        mostrarError('Las horas deben ser un número entero positivo.');
+        return false;
+    }
+    return true;
 }
 
 // ================================
@@ -128,13 +163,15 @@ function bindCrearRefuerzo() {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const f = new FormData(form);
-        const data = {
-            f_inicio: f.get('f_inicio'),
-            f_fin:    f.get('f_fin'),
-            horas:    f.get('horas') || null
-        };
+        const f_inicio = f.get('f_inicio');
+        const f_fin    = f.get('f_fin');
+        const horas    = f.get('horas');
+
+        // ── Validación ──
+        if (!validarRefuerzo(f_inicio, f_fin, horas)) return;
+
         try {
-            await RefuerzoApi.create(data);
+            await RefuerzoApi.create({ f_inicio, f_fin, horas: Number(horas) });
             await cargarRefuerzos();
             await cargarSelectRefuerzos(null, 'ID_Turno_Refuerzo');
             form.reset();
@@ -156,10 +193,10 @@ function bindAsignarRefuerzo() {
         const f = new FormData(form);
         const id_bombero        = f.get('ID_persona');
         const id_turno_refuerzo = f.get('ID_Turno_Refuerzo');
-        if (!id_bombero || !id_turno_refuerzo) {
-            mostrarError('Seleccione turno de refuerzo y persona');
-            return;
-        }
+
+        if (!id_bombero)        { mostrarError('Seleccione una persona.'); return; }
+        if (!id_turno_refuerzo) { mostrarError('Seleccione un turno de refuerzo.'); return; }
+
         try {
             await RefuerzoApi.assignToPerson(id_bombero, id_turno_refuerzo);
             mostrarExito('Persona asignada al turno de refuerzo correctamente');
@@ -227,13 +264,15 @@ function bindModalEditar() {
         `;
 
         document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-            const data = {
-                f_inicio: form.querySelector('[name="f_inicio"]').value,
-                f_fin:    form.querySelector('[name="f_fin"]').value,
-                horas:    form.querySelector('[name="horas"]').value || null
-            };
+            const f_inicio = form.querySelector('[name="f_inicio"]').value;
+            const f_fin    = form.querySelector('[name="f_fin"]').value;
+            const horas    = form.querySelector('[name="horas"]').value;
+
+            // ── Validación ──
+            if (!validarRefuerzo(f_inicio, f_fin, horas)) return;
+
             try {
-                await RefuerzoApi.update(id, data);
+                await RefuerzoApi.update(id, { f_inicio, f_fin, horas: Number(horas) });
                 await cargarRefuerzos();
                 bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
                 mostrarExito('Turno de refuerzo actualizado correctamente');

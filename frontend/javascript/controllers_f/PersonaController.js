@@ -1,6 +1,14 @@
 import PersonaApiApi from '../api_f/PersonaApi.js';
 import RolApi from '../api_f/RolApi.js';
 import { authGuard } from '../helpers/authGuard.js';
+import {
+  validarDNI,
+  validarEmail,
+  validarTelefono,
+  validarPassword,
+  validarIdBombero,
+  validarNumeroFuncionario
+} from '../helpers/validacion.js';
 
 let personas = [];
 let sesionActual = null;
@@ -24,8 +32,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 // CARGAR PERSONAS
 // ================================
 async function cargarPersonas() {
-  try { const r = await PersonaApiApi.getAll(); personas = r.data; renderTablaPersonas(personas); }
-  catch (e) { mostrarError(e.message || 'Error cargando personas'); }
+  try {
+    const r = await PersonaApiApi.getAll();
+    personas = r.data;
+    renderTablaPersonas(personas);
+    poblarFiltroLocalidad(personas);
+    bindFiltros();
+  } catch (e) { mostrarError(e.message || 'Error cargando personas'); }
+}
+
+// ================================
+// FILTROS
+// ================================
+function poblarFiltroLocalidad(lista) {
+  const select = document.getElementById('filtroLocalidad');
+  if (!select) return;
+  const valorActual = select.value;
+  select.innerHTML = '<option value="">Todas</option>';
+  const unicas = [...new Set(lista.map(p => p.localidad).filter(Boolean))].sort();
+  unicas.forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l;
+    opt.textContent = l;
+    select.appendChild(opt);
+  });
+  select.value = valorActual;
+}
+
+function bindFiltros() {
+  document.getElementById('filtroIDBombero')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('filtroLocalidad')?.addEventListener('change', aplicarFiltros);
+  document.getElementById('filtroActivo')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  const filtroIDBombero = document.getElementById('filtroIDBombero')?.value.toLowerCase().trim() ?? '';
+  const filtroLocalidad = document.getElementById('filtroLocalidad')?.value ?? '';
+  const filtroActivo    = document.getElementById('filtroActivo')?.value ?? '';
+
+  renderTablaPersonas(personas.filter(p => {
+    const cumpleID        = !filtroIDBombero || String(p.id_bombero).toLowerCase().includes(filtroIDBombero);
+    const cumpleLocalidad = !filtroLocalidad || p.localidad === filtroLocalidad;
+    const cumpleActivo    = filtroActivo === '' || String(p.activo) === String(filtroActivo);
+    return cumpleID && cumpleLocalidad && cumpleActivo;
+  }));
 }
 
 // ================================
@@ -36,7 +86,12 @@ async function cargarSelectRoles() {
   try {
     const res = await RolApi.getAll();
     select.innerHTML = '<option value="">Seleccione rol...</option>';
-    res.data.forEach(r => { const o = document.createElement('option'); o.value = r.id_rol; o.textContent = r.nombre; select.appendChild(o); });
+    res.data.forEach(r => {
+      const o = document.createElement('option');
+      o.value = r.id_rol;
+      o.textContent = r.nombre;
+      select.appendChild(o);
+    });
   } catch (e) { mostrarError(e.message || 'Error cargando roles'); }
 }
 
@@ -58,8 +113,10 @@ function renderTablaPersonas(lista) {
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${p.id_bombero}</td>
       <td class="d-none d-md-table-cell">${p.n_funcionario}</td>
-      <td>${p.correo}</td><td>${p.telefono}</td>
-      <td>${p.nombre}</td><td>${p.apellidos}</td>
+      <td>${p.correo}</td>
+      <td>${p.telefono}</td>
+      <td>${p.nombre}</td>
+      <td>${p.apellidos}</td>
       <td class="d-none d-md-table-cell">${p.localidad}</td>
       <td>${p.nombre_usuario}</td>
       <td>
@@ -72,7 +129,7 @@ function renderTablaPersonas(lista) {
 }
 
 const nombresCampos = ['correo','telefono','f_ingreso_diputacion','talla_superior','talla_inferior','talla_calzado','nombre','apellidos','f_nacimiento','telefono_emergencia','domicilio','localidad','id_rol','activo','nombre_usuario'];
-const camposBd = ['correo','telefono','f_ingreso_diputacion','talla_superior','talla_inferior','talla_calzado','nombre','apellidos','f_nacimiento','telefono_emergencia','domicilio','localidad','id_rol','activo','nombre_usuario'];
+const camposBd      = ['correo','telefono','f_ingreso_diputacion','talla_superior','talla_inferior','talla_calzado','nombre','apellidos','f_nacimiento','telefono_emergencia','domicilio','localidad','id_rol','activo','nombre_usuario'];
 
 // ================================
 // MODAL VER
@@ -92,6 +149,87 @@ function bindModalVer() {
 }
 
 // ================================
+// VALIDAR DATOS DE PERSONA (CREAR)
+// ================================
+function validarDatosPersonaCrear(data) {
+  // CORRECCIÓN: validar id_bombero con función de validacion.js
+  if (!data.id_bombero) {
+    mostrarError('El ID del bombero es obligatorio'); return false;
+  }
+  if (!validarIdBombero(data.id_bombero)) {
+    mostrarError('El ID del bombero no tiene un formato válido (ej: B001)'); return false;
+  }
+  // CORRECCIÓN: validar n_funcionario con función de validacion.js
+  if (!data.n_funcionario) {
+    mostrarError('El número de funcionario es obligatorio'); return false;
+  }
+  if (!validarNumeroFuncionario(data.n_funcionario)) {
+    mostrarError('El número de funcionario no tiene un formato válido (ej: DGA-2024-0001)'); return false;
+  }
+  // CORRECCIÓN: validar DNI con función de validacion.js
+  if (!data.DNI) {
+    mostrarError('El DNI es obligatorio'); return false;
+  }
+  if (!validarDNI(data.DNI)) {
+    mostrarError('El DNI no es válido'); return false;
+  }
+  if (!data.nombre?.trim()) {
+    mostrarError('El nombre es obligatorio'); return false;
+  }
+  if (!data.apellidos?.trim()) {
+    mostrarError('Los apellidos son obligatorios'); return false;
+  }
+  // CORRECCIÓN: validar correo con función de validacion.js
+  if (!data.correo) {
+    mostrarError('El correo es obligatorio'); return false;
+  }
+  if (!validarEmail(data.correo)) {
+    mostrarError('El correo no tiene un formato válido'); return false;
+  }
+  // CORRECCIÓN: validar teléfono principal con función de validacion.js
+  if (!data.telefono) {
+    mostrarError('El teléfono es obligatorio'); return false;
+  }
+  if (!validarTelefono(data.telefono)) {
+    mostrarError('El teléfono no tiene un formato válido'); return false;
+  }
+  // CORRECCIÓN: validar teléfono de emergencia si se proporciona
+  if (data.telefono_emergencia && !validarTelefono(data.telefono_emergencia)) {
+    mostrarError('El teléfono de emergencia no tiene un formato válido'); return false;
+  }
+  // CORRECCIÓN: validar contraseña con función de validacion.js
+  if (!data.contrasenia) {
+    mostrarError('La contraseña es obligatoria'); return false;
+  }
+  if (!validarPassword(data.contrasenia)) {
+    mostrarError('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un dígito y un símbolo'); return false;
+  }
+  if (!data.f_nacimiento) {
+    mostrarError('La fecha de nacimiento es obligatoria'); return false;
+  }
+  if (!data.nombre_usuario?.trim()) {
+    mostrarError('El nombre de usuario es obligatorio'); return false;
+  }
+  return true;
+}
+
+// ================================
+// VALIDAR DATOS DE PERSONA (EDITAR)
+// ================================
+function validarDatosPersonaEditar(data) {
+  if (data.correo && !validarEmail(data.correo)) {
+    mostrarError('El correo no tiene un formato válido'); return false;
+  }
+  if (data.telefono && !validarTelefono(String(data.telefono))) {
+    mostrarError('El teléfono no tiene un formato válido'); return false;
+  }
+  if (data.telefono_emergencia && !validarTelefono(String(data.telefono_emergencia))) {
+    mostrarError('El teléfono de emergencia no tiene un formato válido'); return false;
+  }
+  return true;
+}
+
+// ================================
 // CREAR PERSONA
 // ================================
 function bindCrearPersona() {
@@ -101,7 +239,6 @@ function bindCrearPersona() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-
     const data = {
       id_bombero:           f.get('id_bombero')?.trim(),
       n_funcionario:        f.get('n_funcionario')?.trim(),
@@ -118,10 +255,13 @@ function bindCrearPersona() {
       talla_superior:       f.get('talla_superior')?.trim() || null,
       talla_inferior:       f.get('talla_inferior')?.trim() || null,
       talla_calzado:        f.get('talla_calzado')?.trim() || null,
-      id_rol:               f.get('id_rol') || null,   // ← nombre corregido
+      id_rol:               f.get('id_rol') || null,
       nombre_usuario:       f.get('nombre_usuario')?.trim(),
       contrasenia:          f.get('contrasenia'),
     };
+
+    // CORRECCIÓN: validar todos los campos antes de enviar
+    if (!validarDatosPersonaCrear(data)) return;
 
     try {
       await PersonaApiApi.create(data);
@@ -152,7 +292,7 @@ function bindModalEditar() {
           <div class="col-lg-4"><label class="form-label">Correo</label><input type="email" class="form-control" name="correo" value="${persona.correo||''}"></div>
         </div>
         <div class="row mb-3">
-          <div class="col-lg-4"><label class="form-label">Teléfono</label><input type="number" class="form-control" name="telefono" value="${persona.telefono||''}"></div>
+          <div class="col-lg-4"><label class="form-label">Teléfono</label><input type="text" class="form-control" name="telefono" value="${persona.telefono||''}"></div>
           <div class="col-lg-4"><label class="form-label">Fecha Ingreso Diputación</label><input type="date" class="form-control" name="f_ingreso_diputacion" value="${persona.f_ingreso_diputacion||''}"></div>
           <div class="col-lg-4"><label class="form-label">Talla Superior</label><input type="text" class="form-control" name="talla_superior" value="${persona.talla_superior||''}"></div>
         </div>
@@ -162,7 +302,7 @@ function bindModalEditar() {
           <div class="col-lg-4"><label class="form-label">Fecha Nacimiento</label><input type="date" class="form-control" name="f_nacimiento" value="${persona.f_nacimiento||''}"></div>
         </div>
         <div class="row mb-3">
-          <div class="col-lg-4"><label class="form-label">Tel. Emergencia</label><input type="number" class="form-control" name="telefono_emergencia" value="${persona.telefono_emergencia||''}"></div>
+          <div class="col-lg-4"><label class="form-label">Tel. Emergencia</label><input type="text" class="form-control" name="telefono_emergencia" value="${persona.telefono_emergencia||''}"></div>
           <div class="col-lg-4"><label class="form-label">Domicilio</label><input type="text" class="form-control" name="domicilio" value="${persona.domicilio||''}"></div>
           <div class="col-lg-4"><label class="form-label">Localidad</label><input type="text" class="form-control" name="localidad" value="${persona.localidad||''}"></div>
         </div>
@@ -172,10 +312,13 @@ function bindModalEditar() {
             <select class="form-select" name="activo">
               <option value="1" ${persona.activo==1?'selected':''}>Sí</option>
               <option value="0" ${persona.activo==0?'selected':''}>No</option>
-            </select></div>
+            </select>
+          </div>
           <div class="col-lg-4"><label class="form-label">Nombre Usuario</label><input type="text" class="form-control" name="nombre_usuario" value="${persona.nombre_usuario||''}"></div>
         </div>
-        <div class="text-center"><button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button></div>`;
+        <div class="text-center">
+          <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
+        </div>`;
       document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
         const data = {};
         camposBd.forEach(campo => {
@@ -185,8 +328,11 @@ function bindModalEditar() {
           if (campo === 'talla_calzado' && value !== '') value = Number(value);
           if (value !== '' && value !== null && value !== undefined) data[campo] = value;
         });
+        // CORRECCIÓN: validar correo y teléfonos en editar
+        if (!validarDatosPersonaEditar(data)) return;
         try {
-          await PersonaApiApi.update(id, data); await cargarPersonas();
+          await PersonaApiApi.update(id, data);
+          await cargarPersonas();
           bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
           mostrarExito('Persona actualizada correctamente');
         } catch (err) { mostrarError('Error al editar persona: ' + err.message); }
@@ -206,21 +352,37 @@ function bindModalEliminar() {
   document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
     const id = this.dataset.id; if (!id) return;
     try {
-      await PersonaApiApi.remove(id); await cargarPersonas();
+      await PersonaApiApi.remove(id);
+      await cargarPersonas();
       bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+      mostrarExito('Persona eliminada correctamente');
     } catch (err) { mostrarError('Error al eliminar persona: ' + err.message); }
   });
 }
 
+// ================================
+// ALERTAS
+// ================================
 function mostrarError(msg) {
   const container = document.getElementById('alert-container');
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = `<div class="alert alert-danger alert-dismissible fade show shadow" role="alert"><strong>Error:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-  container.append(wrapper);
+  if (!container) return;
+  const alertId = 'alert-' + Date.now();
+  container.insertAdjacentHTML('beforeend', `
+    <div id="${alertId}" class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+      <strong>Error:</strong> ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>`);
+  setTimeout(() => { const a = document.getElementById(alertId); if (a) { a.classList.remove('show'); setTimeout(() => a.remove(), 150); } }, 5000);
 }
+
 function mostrarExito(msg) {
   const container = document.getElementById('alert-container');
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = `<div class="alert alert-success alert-dismissible fade show shadow" role="alert"><strong>OK:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-  container.append(wrapper);
+  if (!container) return;
+  const alertId = 'alert-' + Date.now();
+  container.insertAdjacentHTML('beforeend', `
+    <div id="${alertId}" class="alert alert-success alert-dismissible fade show shadow" role="alert">
+      <strong>Éxito:</strong> ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>`);
+  setTimeout(() => { const a = document.getElementById(alertId); if (a) { a.classList.remove('show'); setTimeout(() => a.remove(), 150); } }, 5000);
 }

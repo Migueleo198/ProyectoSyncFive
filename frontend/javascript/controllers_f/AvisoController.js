@@ -6,17 +6,18 @@ import { formatearFecha, truncar, mostrarExito, mostrarError } from '../helpers/
 let avisos = [];
 let personas = [];
 let sesionActual = null;
-let usuarioActual = null; // se carga DESPUÉS del authGuard para tener datos frescos del servidor
+let usuarioActual = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('avisos');
   if (!sesionActual) return;
 
-  // Leer usuario desde sessionStorage (ya refrescado por authGuard)
   usuarioActual = sesionActual.usuario;
 
-  cargarPersonas();
-  cargarAvisos();
+  await cargarPersonas();
+  await cargarAvisos();
+
+  bindFiltros();
 
   if (sesionActual.puedeEscribir) {
     bindCrearAviso();
@@ -34,6 +35,7 @@ async function cargarPersonas() {
     const response = await PersonaApi.getAll();
     personas = response.data;
     poblarSelectDestinatarios(personas);
+    poblarSelectFiltroRemitente(personas);
   } catch (e) {
     console.error('Error cargando personas:', e.message);
   }
@@ -44,9 +46,32 @@ function poblarSelectDestinatarios(lista) {
   if (!select) return;
 
   select.innerHTML = '';
-  lista.forEach(p => {
+
+  const personasOrdenadas = [...lista].sort((a, b) =>
+    `${a.nombre} ${a.apellidos}`.localeCompare(`${b.nombre} ${b.apellidos}`)
+  );
+
+  personasOrdenadas.forEach(p => {
     if (usuarioActual && p.id_bombero === usuarioActual.id_bombero) return;
 
+    const option = document.createElement('option');
+    option.value = p.id_bombero;
+    option.textContent = `${p.nombre} ${p.apellidos} (${p.nombre_usuario})`;
+    select.appendChild(option);
+  });
+}
+
+function poblarSelectFiltroRemitente(lista) {
+  const select = document.getElementById('remitente');
+  if (!select) return;
+
+  select.innerHTML = '<option value="">Todos</option>';
+
+  const personasOrdenadas = [...lista].sort((a, b) =>
+    `${a.nombre} ${a.apellidos}`.localeCompare(`${b.nombre} ${b.apellidos}`)
+  );
+
+  personasOrdenadas.forEach(p => {
     const option = document.createElement('option');
     option.value = p.id_bombero;
     option.textContent = `${p.nombre} ${p.apellidos} (${p.nombre_usuario})`;
@@ -107,6 +132,11 @@ function renderTablaAvisos(lista) {
   lista.forEach(a => {
     const tr = document.createElement('tr');
 
+    const remitentePersona = personas.find(p => String(p.id_bombero) === String(a.remitente));
+    const nombreRemitente = remitentePersona
+      ? `${remitentePersona.nombre} ${remitentePersona.apellidos}`
+      : (a.remitente || '—');
+
     const botonesAccion = puedeEscribir
       ? `<button type="button" class="btn p-0 btn-ver"
               data-bs-toggle="modal" data-bs-target="#modalVer"
@@ -131,13 +161,55 @@ function renderTablaAvisos(lista) {
       <td class="d-none d-md-table-cell">${formatearFecha(a.fecha)}</td>
       <td class="d-none d-md-table-cell">${a.remitente ?? '—'}</td>
       <td>
-        <div  class="d-flex justify-content-around">
+        <div class="d-flex justify-content-around">
           ${botonesAccion}
-        </div>  
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+// ================================
+// FILTROS
+// ================================
+function bindFiltros() {
+  document.getElementById('asunto')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('remitente')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  const filtroAsunto    = document.getElementById('asunto')?.value.toLowerCase().trim() ?? '';
+  const filtroRemitente = document.getElementById('remitente')?.value ?? '';
+
+  renderTablaAvisos(avisos.filter(a => {
+    const cumpleAsunto    = !filtroAsunto    || (a.asunto?.toLowerCase().includes(filtroAsunto));
+    const cumpleRemitente = !filtroRemitente || String(a.remitente) === String(filtroRemitente);
+    return cumpleAsunto && cumpleRemitente;
+  }));
+  
+// ================================
+// VALIDAR AVISO
+// Según DDL Aviso:
+//   asunto  VARCHAR(150) NOT NULL
+//   mensaje TEXT         NOT NULL
+// ================================
+function validarAviso(asunto, mensaje) {
+  if (!asunto) {
+    mostrarError('El asunto es obligatorio.');
+    return false;
+  }
+  if (asunto.length > 150) {
+    mostrarError('El asunto no puede superar los 150 caracteres.');
+    return false;
+  }
+
+  if (!mensaje) {
+    mostrarError('El mensaje es obligatorio.');
+    return false;
+  }
+
+  return true;
 }
 
 // ================================
@@ -152,6 +224,9 @@ function bindCrearAviso() {
 
     const asunto  = document.getElementById('insertAsunto').value.trim();
     const mensaje = document.getElementById('insertMensaje').value.trim();
+
+    // ── Validación ──
+    if (!validarAviso(asunto, mensaje)) return;
 
     const selectDest = document.getElementById('insertDestinatarios');
     const destinatarios = selectDest
@@ -204,12 +279,17 @@ function bindModalVer() {
     const modalBody = document.getElementById('modalVerBody');
     modalBody.innerHTML = '<p class="text-muted text-center">Cargando...</p>';
 
+    const remitentePersona = personas.find(p => String(p.id_bombero) === String(aviso.remitente));
+    const nombreRemitente = remitentePersona
+      ? `${remitentePersona.nombre} ${remitentePersona.apellidos} (${remitentePersona.nombre_usuario})`
+      : (aviso.remitente || '—');
+
     const campos = [
       { label: 'ID',        valor: aviso.id_aviso },
       { label: 'Asunto',    valor: aviso.asunto },
       { label: 'Mensaje',   valor: aviso.mensaje },
       { label: 'Fecha',     valor: formatearFecha(aviso.fecha) },
-      { label: 'Remitente', valor: aviso.remitente ?? '—' },
+      { label: 'Remitente', valor: nombreRemitente },
     ];
 
     modalBody.innerHTML = '';
@@ -220,8 +300,8 @@ function bindModalVer() {
     });
 
     try {
-      const res      = await AvisoApi.getDestinatarios(id);
-      const destList  = res.data ?? [];
+      const res     = await AvisoApi.getDestinatarios(id);
+      const destList = res.data ?? [];
 
       modalBody.appendChild(document.createElement('hr'));
       const titulo = document.createElement('p');
@@ -270,7 +350,7 @@ function bindModalEliminar() {
       }
 
       try {
-        const resRem  = await AvisoApi.getRemitente(id);
+        const resRem   = await AvisoApi.getRemitente(id);
         const remitente = resRem.data;
         if (remitente?.id_bombero) {
           await AvisoApi.deleteRemitente(id, remitente.id_bombero);

@@ -2,6 +2,7 @@ import CarnetApiApi from '../api_f/CarnetApi.js';
 import PersonaApiApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
 
 let carnets = [];
 let sesionActual = null;
@@ -33,9 +34,42 @@ async function cargarCarnets() {
     const response = await CarnetApiApi.getAll();
     carnets = response.data;
     renderTablaCarnets(carnets);
+    poblarFiltroCategoria(carnets);
+    bindFiltros();
   } catch (e) {
     mostrarError(e.message || 'Error cargando carnets');
   }
+}
+
+function poblarFiltroCategoria(lista) {
+  const select = document.getElementById('filtroCategoria');
+  if (!select) return;
+  const valorActual = select.value;
+  select.innerHTML = '<option value="">Todas</option>';
+  const categoriasUnicas = [...new Set(lista.map(c => c.categoria).filter(Boolean))].sort();
+  categoriasUnicas.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    select.appendChild(opt);
+  });
+  select.value = valorActual;
+}
+
+function bindFiltros() {
+  document.getElementById('filtroNombre')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('filtroCategoria')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  const filtroNombre    = document.getElementById('filtroNombre')?.value.toLowerCase().trim() ?? '';
+  const filtroCategoria = document.getElementById('filtroCategoria')?.value ?? '';
+
+  renderTablaCarnets(carnets.filter(c => {
+    const cumpleNombre    = !filtroNombre    || c.nombre?.toLowerCase().includes(filtroNombre);
+    const cumpleCategoria = !filtroCategoria || c.categoria === filtroCategoria;
+    return cumpleNombre && cumpleCategoria;
+  }));
 }
 
 // ================================
@@ -96,13 +130,84 @@ function renderTablaCarnets(lista) {
       <td>${c.categoria}</td>
       <td>${c.duracion_meses}</td>
       <td>
-        <div  class="d-flex justify-content-around">
+        <div class="d-flex justify-content-around">
           ${botonesAccion}
-        </div>  
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+// ================================
+// VALIDAR CARNET (tipo)
+// Según DDL Carnet:
+//   nombre          VARCHAR(50) NOT NULL
+//   categoria       VARCHAR(20) NOT NULL
+//   duracion_meses  INT NOT NULL  CHECK (duracion_meses > 0)
+// ================================
+function validarCarnet(nombre, categoria, duracion_meses) {
+  if (!nombre || !nombre.trim()) {
+    mostrarError('El nombre del carnet es obligatorio.');
+    return false;
+  }
+  if (nombre.trim().length > 50) {
+    mostrarError('El nombre del carnet no puede superar los 50 caracteres.');
+    return false;
+  }
+
+  if (!categoria || !categoria.trim()) {
+    mostrarError('La categoría es obligatoria.');
+    return false;
+  }
+  if (categoria.trim().length > 20) {
+    mostrarError('La categoría no puede superar los 20 caracteres.');
+    return false;
+  }
+
+  // CHECK (duracion_meses > 0)
+  if (!validarNumero(duracion_meses)) {
+    mostrarError('La duración en meses debe ser un número entero positivo.');
+    return false;
+  }
+
+  return true;
+}
+
+// ================================
+// VALIDAR ASIGNACIÓN DE CARNET A PERSONA
+// Según DDL Carnet_Persona:
+//   f_obtencion   DATE NOT NULL
+//   f_vencimiento DATE NOT NULL  CHECK (f_vencimiento > f_obtencion)
+// ================================
+function validarAsignacionCarnet(id_bombero, id_carnet, f_obtencion, f_vencimiento) {
+  if (!id_bombero) {
+    mostrarError('Debe seleccionar un bombero.');
+    return false;
+  }
+
+  if (!id_carnet) {
+    mostrarError('Debe seleccionar un carnet.');
+    return false;
+  }
+
+  if (!f_obtencion) {
+    mostrarError('La fecha de obtención es obligatoria.');
+    return false;
+  }
+
+  if (!f_vencimiento) {
+    mostrarError('La fecha de vencimiento es obligatoria.');
+    return false;
+  }
+
+  // CHECK (f_vencimiento > f_obtencion)
+  if (!validarRangoFechas(f_obtencion, f_vencimiento)) {
+    mostrarError('La fecha de vencimiento debe ser posterior a la fecha de obtención.');
+    return false;
+  }
+
+  return true;
 }
 
 // ================================
@@ -115,14 +220,19 @@ function bindCrearCarnet() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-    const data = {
-      nombre:         f.get('nombre'),
-      categoria:      f.get('categoria'),
-      duracion_meses: f.get('duracion_meses')
-    };
+    const nombre         = f.get('nombre');
+    const categoria      = f.get('categoria');
+    const duracion_meses = f.get('duracion_meses');
+
+    // ── Validación ──
+    if (!validarCarnet(nombre, categoria, duracion_meses)) return;
 
     try {
-      await CarnetApiApi.create(data);
+      await CarnetApiApi.create({
+        nombre:         nombre.trim(),
+        categoria:      categoria.trim(),
+        duracion_meses: Number(duracion_meses)
+      });
       await cargarCarnets();
       form.reset();
       mostrarExito('Carnet creado correctamente');
@@ -150,6 +260,7 @@ function bindModalEliminar() {
       await CarnetApiApi.remove(id);
       await cargarCarnets();
       bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+      mostrarExito('Carnet eliminado correctamente');
     } catch (error) {
       mostrarError('Error al eliminar carnet: ' + error.message);
     }
@@ -182,15 +293,15 @@ function bindModalEditar() {
         <div class="row mb-3">
           <div class="col-lg-4">
             <label class="form-label">Nombre</label>
-            <input type="text" class="form-control" name="nombre" value="${carnet.nombre || ''}">
+            <input type="text" class="form-control" name="nombre" maxlength="50" value="${carnet.nombre || ''}">
           </div>
           <div class="col-lg-4">
             <label class="form-label">Categoría</label>
-            <input type="text" class="form-control" name="categoria" value="${carnet.categoria || ''}">
+            <input type="text" class="form-control" name="categoria" maxlength="20" value="${carnet.categoria || ''}">
           </div>
           <div class="col-lg-4">
             <label class="form-label">Duración (meses)</label>
-            <input type="text" class="form-control" name="duracion_meses" value="${carnet.duracion_meses || ''}">
+            <input type="number" min="1" step="1" class="form-control" name="duracion_meses" value="${carnet.duracion_meses || ''}">
           </div>
         </div>
         <div class="text-center">
@@ -205,7 +316,14 @@ function bindModalEditar() {
           if (input) data[campo] = input.value;
         });
 
-        await CarnetApiApi.update(id, data);
+        // ── Validación ──
+        if (!validarCarnet(data.nombre, data.categoria, data.duracion_meses)) return;
+
+        await CarnetApiApi.update(id, {
+          nombre:         data.nombre.trim(),
+          categoria:      data.categoria.trim(),
+          duracion_meses: Number(data.duracion_meses)
+        });
         await cargarCarnets();
         bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
         mostrarExito('Carnet actualizado correctamente');
@@ -298,15 +416,21 @@ function bindAsignarCarnet() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-    const data = {
-      id_bombero:    f.get('id_bombero'),
-      ID_Carnet:     f.get('seleccionarCarnet'),
-      f_obtencion:   f.get('f_obtencion'),
-      f_vencimiento: f.get('f_vencimiento')
-    };
+    const id_bombero    = f.get('id_bombero');
+    const id_carnet     = f.get('seleccionarCarnet');
+    const f_obtencion   = f.get('f_obtencion');
+    const f_vencimiento = f.get('f_vencimiento');
+
+    // ── Validación ──
+    if (!validarAsignacionCarnet(id_bombero, id_carnet, f_obtencion, f_vencimiento)) return;
 
     try {
-      await CarnetApiApi.assignToPerson(data);
+      await CarnetApiApi.assignToPerson({
+        id_bombero,
+        ID_Carnet:  id_carnet,
+        f_obtencion,
+        f_vencimiento
+      });
       await cargarCarnets();
       form.reset();
       mostrarExito('Carnet asignado correctamente');
@@ -314,4 +438,4 @@ function bindAsignarCarnet() {
       mostrarError(err.message || 'Error asignando carnet');
     }
   });
-}
+}a

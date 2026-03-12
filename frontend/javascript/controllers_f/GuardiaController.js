@@ -2,13 +2,11 @@ import GuardiaApi from '../api_f/GuardiaApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarRangoFechas } from '../helpers/validacion.js';
 
 let guardias = [];
 let sesionActual = null;
 
-// ================================
-// CONSTANTES
-// ================================
 const cargos = [
     "BOMBERO1", "BOMBERO2", "BOMBERO3", "BOMBERO4", "BOMBERO5",
     "BOMBERO6", "BOMBERO7", "BOMBERO8", "BOMBERO9", "BOMBERO10",
@@ -29,6 +27,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     cargarSelectGuardias(null, 'seleccionarGuardia');
     cargarSelectPersonas(null, 'n_funcionario');
     cargarSelectCargos();
+    bindCrearGuardia();
+    bindAsignarGuardia();
+    bindFiltros();
     bindModalVer();
     bindModalEditar();
 
@@ -52,7 +53,26 @@ async function cargarGuardias() {
 }
 
 // ================================
-// POBLAR SELECT GUARDIAS
+// FILTROS
+// ================================
+function bindFiltros() {
+    document.getElementById('filtroFecha')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroNotas')?.addEventListener('input', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+    const filtroFecha = document.getElementById('filtroFecha')?.value ?? '';
+    const filtroNotas = document.getElementById('filtroNotas')?.value.toLowerCase().trim() ?? '';
+
+    renderTablaGuardias(guardias.filter(g => {
+        const cumpleFecha = !filtroFecha || g.fecha === filtroFecha;
+        const cumpleNotas = !filtroNotas || g.notas?.toLowerCase().includes(filtroNotas);
+        return cumpleFecha && cumpleNotas;
+    }));
+}
+
+// ================================
+// CARGAR SELECTS
 // ================================
 async function cargarSelectGuardias(seleccionado, id_select) {
     const select = document.getElementById(id_select);
@@ -142,6 +162,37 @@ function renderTablaGuardias(lista) {
 }
 
 // ================================
+// VALIDAR DATOS DE GUARDIA
+// ================================
+function validarDatosGuardia(data) {
+    if (!data.fecha) {
+        mostrarError('La fecha es obligatoria'); return false;
+    }
+    // CORRECCIÓN: validar formato de fecha
+    if (isNaN(Date.parse(data.fecha))) {
+        mostrarError('La fecha no tiene un formato válido'); return false;
+    }
+    if (!data.h_inicio) {
+        mostrarError('La hora de inicio es obligatoria'); return false;
+    }
+    if (!data.h_fin) {
+        mostrarError('La hora de fin es obligatoria'); return false;
+    }
+    // CORRECCIÓN: validar formato HH:MM para horas
+    const horaRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!horaRegex.test(data.h_inicio)) {
+        mostrarError('La hora de inicio no tiene un formato válido (HH:MM)'); return false;
+    }
+    if (!horaRegex.test(data.h_fin)) {
+        mostrarError('La hora de fin no tiene un formato válido (HH:MM)'); return false;
+    }
+    if (data.notas && data.notas.length > 500) {
+        mostrarError('Las notas no pueden superar los 500 caracteres'); return false;
+    }
+    return true;
+}
+
+// ================================
 // CREAR GUARDIA
 // ================================
 function bindCrearGuardia() {
@@ -156,6 +207,8 @@ function bindCrearGuardia() {
             h_fin:    f.get('h_fin'),
             notas:    f.get('notas') || ''
         };
+        // CORRECCIÓN: validar antes de enviar
+        if (!validarDatosGuardia(data)) return;
         try {
             await GuardiaApi.create(data);
             await cargarGuardias();
@@ -183,6 +236,11 @@ function bindAsignarGuardia() {
         };
         if (!data.id_bombero || !data.id_guardia || !data.cargo) {
             mostrarError('Seleccione guardia, persona y cargo');
+            return;
+        }
+        // CORRECCIÓN: validar que el cargo sea uno de los valores permitidos
+        if (!cargos.includes(data.cargo)) {
+            mostrarError('El cargo seleccionado no es válido');
             return;
         }
         try {
@@ -229,7 +287,6 @@ function bindModalEditar() {
         const response = await GuardiaApi.getById(id);
         const guardia = response.data;
         if (!guardia) return;
-
         const form = document.getElementById('formEditar');
         form.innerHTML = `
             <div class="row mb-3">
@@ -252,18 +309,19 @@ function bindModalEditar() {
             </div>
             <div class="text-center">
                 <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
-            </div>
-        `;
-
+            </div>`;
         document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
             const data = {};
             camposBd.forEach(c => {
                 const input = form.querySelector(`[name="${c}"]`);
                 if (input) data[c] = input.value;
             });
+            // CORRECCIÓN: validar antes de guardar
+            if (!validarDatosGuardia(data)) return;
             await GuardiaApi.update(id, data);
             await cargarGuardias();
             bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+            mostrarExito('Guardia actualizada correctamente');
         });
     });
 }
