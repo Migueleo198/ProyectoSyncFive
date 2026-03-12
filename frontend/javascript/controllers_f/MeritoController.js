@@ -77,10 +77,32 @@ function renderTablaMeritos(lista) {
       <td>
         <div  class="d-flex justify-content-around">
           ${botonesAccion}
-        </div>  
+        </div>
       </td>`;
     tbody.appendChild(tr);
   });
+}
+
+// ================================
+// VALIDAR MÉRITO
+// Según DDL Merito:
+//   nombre      VARCHAR(100) NOT NULL
+//   descripcion TEXT         NOT NULL
+// ================================
+function validarMerito(nombre, descripcion) {
+  if (!nombre || !nombre.trim()) {
+    mostrarError('El nombre es obligatorio.');
+    return false;
+  }
+  if (nombre.trim().length > 100) {
+    mostrarError('El nombre no puede superar los 100 caracteres.');
+    return false;
+  }
+  if (!descripcion || !descripcion.trim()) {
+    mostrarError('La descripción es obligatoria.');
+    return false;
+  }
+  return true;
 }
 
 // ================================
@@ -90,13 +112,17 @@ function bindCrearMerito() {
   const form = document.getElementById('formMerito'); if (!form) return;
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const nombre = document.getElementById('nombreMerito').value.trim();
+    const nombre      = document.getElementById('nombreMerito').value.trim();
     const descripcion = document.getElementById('descripcionMerito').value.trim();
-    if (!nombre) { mostrarError('El nombre es obligatorio'); return; }
-    if (!descripcion) { mostrarError('La descripción es obligatoria'); return; }
+
+    // ── Validación ──
+    if (!validarMerito(nombre, descripcion)) return;
+
     try {
       await MeritosApi.create({ nombre, descripcion });
-      await cargarMeritos(); form.reset(); mostrarExito('Mérito creado correctamente');
+      await cargarMeritos();
+      form.reset();
+      mostrarExito('Mérito creado correctamente');
     } catch (err) { mostrarError(err.message || 'Error creando mérito'); }
   });
 }
@@ -110,7 +136,8 @@ function bindAsignarMerito() {
     e.preventDefault();
     const f = new FormData(form);
     const data = { id_bombero: f.get('n_funcionario'), id_merito: f.get('merito') };
-    if (!data.id_bombero || !data.id_merito) { mostrarError('Seleccione persona y mérito'); return; }
+    if (!data.id_bombero) { mostrarError('Seleccione una persona.'); return; }
+    if (!data.id_merito)  { mostrarError('Seleccione un mérito.'); return; }
     try { await MeritosApi.assignToPerson(data); mostrarExito('Mérito asignado correctamente'); form.reset(); }
     catch (err) { mostrarError(err.message || 'Error asignando mérito'); }
   });
@@ -125,7 +152,8 @@ function bindDesasignarMerito() {
     e.preventDefault();
     const f = new FormData(form);
     const data = { id_bombero: f.get('n_funcionario'), id_merito: f.get('merito') };
-    if (!data.id_bombero || !data.id_merito) { mostrarError('Seleccione persona y mérito'); return; }
+    if (!data.id_bombero) { mostrarError('Seleccione una persona.'); return; }
+    if (!data.id_merito)  { mostrarError('Seleccione un mérito.'); return; }
     try { await MeritosApi.unassignFromPerson(data); mostrarExito('Mérito desasignado correctamente'); form.reset(); }
     catch (err) { mostrarError(err.message || 'Error desasignando mérito'); }
   });
