@@ -11,7 +11,7 @@ const RefuerzoApi = {
     getByFecha(fecha)     { return ApiClient.get(`/refuerzos/fecha/${fecha}`); },
 
     assignToPerson(id_bombero, id_turno_refuerzo) {
-        return ApiClient.post(`/personas/{id_bombero}/turnos`, { id_bombero, id_turno_refuerzo });
+        return ApiClient.post(`/personas/${id_bombero}/turnos`, { id_bombero, id_turno_refuerzo });
     },
     unassignFromPerson(id_bombero, id_turno_refuerzo) {
         return ApiClient.delete(`/personas/${id_bombero}/turnos`, { id_bombero, id_turno_refuerzo });

@@ -100,20 +100,21 @@ function renderTablaSalidas(lista) {
 
   lista.forEach(s => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${s.id_registro}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${s.id_registro}"><i class="bi bi-pencil"></i></button>
          <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${s.id_registro}"><i class="bi bi-trash3"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${s.id_registro}"><i class="bi bi-eye"></i></button>`;
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${s.id_registro}</td>
-      <td>${s.matricula}</td>
-      <td class="d-none d-md-table-cell">${s.id_bombero??''}</td>
-      <td>${formatearFechaHora(s.f_salida)??''}</td>
-      <td>${formatearFechaHora(s.f_regreso)??''}</td>
-      <td class="d-none d-md-table-cell">${s.km_inicio??''}</td>
-      <td class="d-none d-md-table-cell">${s.km_fin??''}</td>
-      <td class="d-flex justify-content-around">${botones}</td>`;
+      <td>${s.matricula}</td><td class="d-none d-md-table-cell">${s.id_bombero??''}</td>
+      <td>${formatearFechaHora(s.f_salida)??''}</td><td>${formatearFechaHora(s.f_regreso)??''}</td>
+      <td class="d-none d-md-table-cell">${s.km_inicio??''}</td><td class="d-none d-md-table-cell">${s.km_fin??''}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>`;
     tbody.appendChild(tr);
   });
 }
@@ -148,15 +149,25 @@ function validarDatosSalida(data) {
   if (!data.matricula?.trim()) { mostrarError('La matrícula es obligatoria'); return false; }
   if (!data.id_bombero?.trim()) { mostrarError('El ID del bombero es obligatorio'); return false; }
   if (!data.f_salida) { mostrarError('La fecha de salida es obligatoria'); return false; }
-  if (!data.f_regreso) { mostrarError('La fecha de regreso es obligatoria'); return false; }
   if (!data.km_inicio) { mostrarError('El KM de inicio es obligatorio'); return false; }
   if (!data.km_fin) { mostrarError('El KM final es obligatorio'); return false; }
+
   if (!validarMatriculaEspanola(data.matricula)) { mostrarError('Matrícula no válida (ej: 1234BCD)'); return false; }
-  if (!validarIdBombero(data.id_bombero)) { mostrarError('ID bombero inválido (ej: A123)'); return false; }
-  if (!validarNumero(data.km_inicio)) { mostrarError('KM inicio debe ser número positivo'); return false; }
-  if (!validarNumero(data.km_fin)) { mostrarError('KM fin debe ser número positivo'); return false; }
+
+  // CORRECCIÓN: validarIdBombero espera formato A000, forzar mayúsculas
+  if (!validarIdBombero(data.id_bombero.toUpperCase())) {
+    mostrarError('ID bombero inválido (ej: B001)'); return false;
+  }
+
+  // CORRECCIÓN: validarNumero valida enteros positivos — correcto para km
+  if (!validarNumero(data.km_inicio)) { mostrarError('KM inicio debe ser número entero positivo'); return false; }
+  if (!validarNumero(data.km_fin)) { mostrarError('KM fin debe ser número entero positivo'); return false; }
   if (Number(data.km_fin) < Number(data.km_inicio)) { mostrarError('KM final no puede ser menor que KM inicial'); return false; }
-  if (!validarRangoFechas(data.f_salida, data.f_regreso)) { mostrarError('La fecha de regreso debe ser posterior a la de salida'); return false; }
+
+  // CORRECCIÓN: f_regreso es opcional (vehículo puede estar en curso)
+  if (data.f_regreso && !validarRangoFechas(data.f_salida, data.f_regreso)) {
+    mostrarError('La fecha de regreso debe ser posterior a la de salida'); return false;
+  }
   return true;
 }
 
@@ -169,12 +180,12 @@ function bindCrearSalida() {
     e.preventDefault();
     const f = new FormData(form);
     const data = {
-      matricula:  f.get('matricula'),
-      f_regreso:  f.get('f_regreso'),
-      f_salida:   f.get('f_salida'),
-      km_inicio:  f.get('km_inicio'),
-      km_fin:     f.get('km_fin'),
-      id_bombero: f.get('id_bombero')
+      matricula:   f.get('matricula'),
+      f_regreso:   f.get('f_regreso') || null,
+      f_salida:    f.get('f_salida'),
+      km_inicio:   f.get('km_inicio'),
+      km_fin:      f.get('km_fin'),
+      id_bombero:  f.get('id_bombero')
     };
     if (!validarDatosSalida(data)) return;
     try {
@@ -215,7 +226,7 @@ function bindModalEditar() {
         const data = {
           id_bombero: form.querySelector('[name="id_bombero"]').value,
           f_salida:   form.querySelector('[name="f_salida"]').value,
-          f_regreso:  form.querySelector('[name="f_regreso"]').value,
+          f_regreso:  form.querySelector('[name="f_regreso"]').value || null,
           matricula:  form.querySelector('[name="matricula"]').value.trim(),
           km_inicio:  form.querySelector('[name="km_inicio"]').value,
           km_fin:     form.querySelector('[name="km_fin"]').value

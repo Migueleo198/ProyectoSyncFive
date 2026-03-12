@@ -1,5 +1,22 @@
 import InfraestructuraAguaApi from '../api_f/InfraestructuraAguaApi.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarCheck } from '../helpers/validacion.js';
+
+// ================================
+// CONSTANTES
+// Según DDL Infraestructuras_Agua:
+//   codigo       VARCHAR(10)  PK
+//   tipo         ENUM('HIDRANTE','BOCA_RIEGO') NOT NULL
+//   municipio    VARCHAR(100) NOT NULL
+//   provincia    ENUM('HUESCA','ZARAGOZA','TERUEL') NOT NULL
+//   latitud      DECIMAL(9,6) NOT NULL  — rango válido: -90 a 90
+//   longitud     DECIMAL(9,6) NOT NULL  — rango válido: -180 a 180
+//   estado       ENUM('ACTIVO','AVERIA','SECO','FUERA_SERVICIO','RETIRADO') NOT NULL
+//   denominacion VARCHAR(150) nullable
+// ================================
+const TIPOS_VALIDOS     = ['HIDRANTE', 'BOCA_RIEGO'];
+const PROVINCIAS_VALIDAS = ['HUESCA', 'ZARAGOZA', 'TERUEL'];
+const ESTADOS_VALIDOS   = ['ACTIVO', 'AVERIA', 'SECO', 'FUERA_SERVICIO', 'RETIRADO'];
 
 // ─── Estado ────────────────────────────────────────────────────────────────
 let todasLasInfraestructuras = [];
@@ -13,6 +30,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // ============================================================
+// MAPA
+// ============================================================
+
+let mapa = null;
+let marcadores = [];
+
+function renderMapa(lista) {
+  if (!mapa) {
+    mapa = L.map('mapaInfraestructuras').setView([41.65, -0.87], 8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(mapa);
+  }
+
+  marcadores.forEach(m => mapa.removeLayer(m));
+marcadores = [];
+
+const coordsVistas = new Set();
+
+lista.forEach(item => {
+  if (!item.latitud || !item.longitud) return;
+
+  const clave = `${item.latitud},${item.longitud}`;
+  if (coordsVistas.has(clave)) return;
+  coordsVistas.add(clave);
+
+    const icono = item.tipo === 'HIDRANTE' ? '💧' : '🌿';
+    const popup = `
+      <strong>${icono} ${item.codigo}</strong><br>
+      ${item.denominacion ?? '—'}<br>
+      ${item.municipio} (${item.provincia})<br>
+      Estado: <strong>${item.estado}</strong>
+    `;
+
+    const marcador = L.marker([item.latitud, item.longitud])
+      .bindPopup(popup)
+      .addTo(mapa);
+
+    marcadores.push(marcador);
+  });
+}
+  
+
+// ============================================================
 // CARGA Y RENDER DE TABLA
 // ============================================================
 
@@ -22,6 +83,7 @@ async function cargarInfraestructuras(filtros = {}) {
     todasLasInfraestructuras = response.data;
     renderTabla(todasLasInfraestructuras);
     actualizarContadores(todasLasInfraestructuras);
+    renderMapa(todasLasInfraestructuras); 
   } catch (e) {
     mostrarError(e.message || 'Error cargando infraestructuras de agua');
   }
@@ -44,7 +106,7 @@ function renderTabla(lista) {
   lista.forEach(item => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="d-none d-md-table-cell">${item.id}</td>
+      <td class="d-none d-md-table-cell">${item.codigo}</td>
       <td>
         <span class="badge ${item.tipo === 'HIDRANTE' ? 'bg-primary' : 'bg-purple'}">
           ${item.tipo === 'HIDRANTE' ? '💧 Hidrante' : '🌿 Boca de riego'}
@@ -64,20 +126,20 @@ function renderTabla(lista) {
                 class="btn p-0 btn-ver"
                 data-bs-toggle="modal"
                 data-bs-target="#modalVer"
-                data-id="${item.id}">
+                data-codigo="${item.codigo}">
           <i class="bi bi-eye"></i>
         </button>
         <button type="button"
                 class="btn p-0 btn-editar"
                 data-bs-toggle="modal"
                 data-bs-target="#modalEditar"
-                data-id="${item.id}">
+                data-codigo="${item.codigo}">
           <i class="bi bi-pencil"></i>
         </button>
         <button type="button"
-                class="btn p-0 btn-eliminar"
-                data-id="${item.id}"
-                data-codigo="${item.codigo}">
+          class="btn p-0 btn-eliminar"
+          data-id="${item.codigo}"
+          data-codigo="${item.codigo}">
           <i class="bi bi-trash"></i>
         </button>
       </td>
@@ -88,21 +150,22 @@ function renderTabla(lista) {
 
 function estadoBadge(estado) {
   switch (estado) {
-    case 'ACTIVO':        return 'bg-success';
-    case 'AVERIA':        return 'bg-warning text-dark';
-    case 'FUERA_SERVICIO':return 'bg-secondary';
-    case 'RETIRADO':      return 'bg-danger';
-    default:              return 'bg-secondary';
+    case 'ACTIVO':         return 'bg-success';
+    case 'AVERIA':         return 'bg-warning text-dark';
+    case 'SECO':           return 'bg-info text-dark';
+    case 'FUERA_SERVICIO': return 'bg-secondary';
+    case 'RETIRADO':       return 'bg-danger';
+    default:               return 'bg-secondary';
   }
 }
 
 function actualizarContadores(lista) {
-  const total    = lista.length;
-  const hidrant  = lista.filter(i => i.tipo === 'HIDRANTE').length;
-  const bocas    = lista.filter(i => i.tipo === 'BOCA_RIEGO').length;
-  const activos  = lista.filter(i => i.estado === 'ACTIVO').length;
+  const total   = lista.length;
+  const hidrant = lista.filter(i => i.tipo === 'HIDRANTE').length;
+  const bocas   = lista.filter(i => i.tipo === 'BOCA_RIEGO').length;
+  const activos = lista.filter(i => i.estado === 'ACTIVO').length;
 
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const set = (codigo, val) => { const el = document.getElementById(codigo); if (el) el.textContent = val; };
   set('cntTotal',    total);
   set('cntHidrante', hidrant);
   set('cntBoca',     bocas);
@@ -127,8 +190,8 @@ function bindFiltros() {
 
   if (btnLimpiar) {
     btnLimpiar.addEventListener('click', () => {
-      ['filtroTipo', 'filtroProvincia', 'filtroMunicipio', 'filtroEstado'].forEach(id => {
-        const el = document.getElementById(id);
+      ['filtroTipo', 'filtroProvincia', 'filtroMunicipio', 'filtroEstado'].forEach(codigo => {
+        const el = document.getElementById(codigo);
         if (el) el.value = '';
       });
       cargarInfraestructuras();
@@ -140,14 +203,8 @@ function bindFiltros() {
   if (filtroMun) {
     filtroMun.addEventListener('input', () => {
       const texto = filtroMun.value.toLowerCase().trim();
-      if (texto.length === 0) {
-        renderTabla(todasLasInfraestructuras);
-        return;
-      }
-      const filtradas = todasLasInfraestructuras.filter(
-        i => i.municipio.toLowerCase().includes(texto)
-      );
-      renderTabla(filtradas);
+      if (texto.length === 0) { renderTabla(todasLasInfraestructuras); return; }
+      renderTabla(todasLasInfraestructuras.filter(i => i.municipio.toLowerCase().includes(texto)));
     });
   }
 }
@@ -163,6 +220,84 @@ function leerFiltros() {
 
 
 // ============================================================
+// VALIDAR INFRAESTRUCTURA
+// Según DDL Infraestructuras_Agua:
+//   codigo       VARCHAR(10)  NOT NULL PK
+//   tipo         ENUM('HIDRANTE','BOCA_RIEGO') NOT NULL
+//   municipio    VARCHAR(100) NOT NULL
+//   provincia    ENUM('HUESCA','ZARAGOZA','TERUEL') NOT NULL
+//   latitud      DECIMAL(9,6) NOT NULL  rango [-90, 90]
+//   longitud     DECIMAL(9,6) NOT NULL  rango [-180, 180]
+//   estado       ENUM('ACTIVO','AVERIA','SECO','FUERA_SERVICIO','RETIRADO') NOT NULL
+//   denominacion VARCHAR(150) nullable
+// ============================================================
+function validarInfraestructura(data) {
+  if (!data.codigo || !data.codigo.trim()) {
+    mostrarError('El código es obligatorio.');
+    return false;
+  }
+  if (data.codigo.trim().length > 10) {
+    mostrarError('El código no puede superar los 10 caracteres.');
+    return false;
+  }
+
+  if (!validarCheck(data.tipo, TIPOS_VALIDOS)) {
+    mostrarError('El tipo no es válido. Debe ser HIDRANTE o BOCA_RIEGO.');
+    return false;
+  }
+
+  if (!data.municipio || !data.municipio.trim()) {
+    mostrarError('El municipio es obligatorio.');
+    return false;
+  }
+  if (data.municipio.trim().length > 100) {
+    mostrarError('El municipio no puede superar los 100 caracteres.');
+    return false;
+  }
+
+  if (!validarCheck(data.provincia, PROVINCIAS_VALIDAS)) {
+    mostrarError('La provincia no es válida. Debe ser HUESCA, ZARAGOZA o TERUEL.');
+    return false;
+  }
+
+  // Latitud: DECIMAL(9,6) NOT NULL — rango geográfico [-90, 90]
+  const lat = parseFloat(data.latitud);
+  if (isNaN(lat)) {
+    mostrarError('La latitud es obligatoria y debe ser un número.');
+    return false;
+  }
+  if (lat < -90 || lat > 90) {
+    mostrarError('La latitud debe estar entre -90 y 90.');
+    return false;
+  }
+
+  // Longitud: DECIMAL(9,6) NOT NULL — rango geográfico [-180, 180]
+  const lon = parseFloat(data.longitud);
+  if (isNaN(lon)) {
+    mostrarError('La longitud es obligatoria y debe ser un número.');
+    return false;
+  }
+  if (lon < -180 || lon > 180) {
+    mostrarError('La longitud debe estar entre -180 y 180.');
+    return false;
+  }
+
+  if (!validarCheck(data.estado, ESTADOS_VALIDOS)) {
+    mostrarError('El estado no es válido. Opciones: ACTIVO, AVERIA, SECO, FUERA_SERVICIO, RETIRADO.');
+    return false;
+  }
+
+  // denominacion VARCHAR(150) nullable
+  if (data.denominacion && data.denominacion.length > 150) {
+    mostrarError('La denominación no puede superar los 150 caracteres.');
+    return false;
+  }
+
+  return true;
+}
+
+
+// ============================================================
 // MODAL VER
 // ============================================================
 
@@ -170,14 +305,12 @@ document.addEventListener('click', async function (e) {
   const btn = e.target.closest('.btn-ver');
   if (!btn) return;
 
-  const id   = btn.dataset.id;
-  const item = todasLasInfraestructuras.find(i => i.id == id);
+  const item = todasLasInfraestructuras.find(i => i.id == btn.dataset.id);
   if (!item) return;
 
   const body = document.getElementById('modalVerBody');
   body.innerHTML = `
     <table class="table table-sm table-bordered mb-0">
-      <tr><th class="table-secondary w-40">ID</th><td>${item.id}</td></tr>
       <tr><th class="table-secondary">Código</th><td>${item.codigo}</td></tr>
       <tr><th class="table-secondary">Tipo</th>
           <td>
@@ -207,16 +340,16 @@ document.addEventListener('click', async function (e) {
   const btn = e.target.closest('.btn-editar');
   if (!btn) return;
 
-  const id   = btn.dataset.id;
-  const item = todasLasInfraestructuras.find(i => i.id == id);
+  const item = todasLasInfraestructuras.find(i => i.id == btn.dataset.id);
   if (!item) return;
 
+  const id   = btn.dataset.id;
   const form = document.getElementById('formEditar');
   form.innerHTML = `
     <div class="row mb-3">
       <div class="col-md-4">
         <label class="form-label">Código *</label>
-        <input type="text" class="form-control" name="codigo" value="${item.codigo}" required>
+        <input type="text" class="form-control" name="codigo" maxlength="10" value="${item.codigo}" required>
       </div>
       <div class="col-md-4">
         <label class="form-label">Tipo *</label>
@@ -230,6 +363,7 @@ document.addEventListener('click', async function (e) {
         <select class="form-select" name="estado">
           <option value="ACTIVO"         ${item.estado === 'ACTIVO'         ? 'selected' : ''}>Activo</option>
           <option value="AVERIA"         ${item.estado === 'AVERIA'         ? 'selected' : ''}>Avería</option>
+          <option value="SECO"           ${item.estado === 'SECO'           ? 'selected' : ''}>Seco</option>
           <option value="FUERA_SERVICIO" ${item.estado === 'FUERA_SERVICIO' ? 'selected' : ''}>Fuera de servicio</option>
           <option value="RETIRADO"       ${item.estado === 'RETIRADO'       ? 'selected' : ''}>Retirado</option>
         </select>
@@ -239,14 +373,14 @@ document.addEventListener('click', async function (e) {
     <div class="row mb-3">
       <div class="col-md-6">
         <label class="form-label">Municipio *</label>
-        <input type="text" class="form-control" name="municipio" value="${item.municipio}" required>
+        <input type="text" class="form-control" name="municipio" maxlength="100" value="${item.municipio}" required>
       </div>
       <div class="col-md-6">
         <label class="form-label">Provincia *</label>
         <select class="form-select" name="provincia">
-          <option value="TERUEL"   ${item.provincia === 'TERUEL'   ? 'selected' : ''}>Teruel</option>
-          <option value="ZARAGOZA" ${item.provincia === 'ZARAGOZA' ? 'selected' : ''}>Zaragoza</option>
           <option value="HUESCA"   ${item.provincia === 'HUESCA'   ? 'selected' : ''}>Huesca</option>
+          <option value="ZARAGOZA" ${item.provincia === 'ZARAGOZA' ? 'selected' : ''}>Zaragoza</option>
+          <option value="TERUEL"   ${item.provincia === 'TERUEL'   ? 'selected' : ''}>Teruel</option>
         </select>
       </div>
     </div>
@@ -254,15 +388,15 @@ document.addEventListener('click', async function (e) {
     <div class="row mb-3">
       <div class="col-md-6">
         <label class="form-label">Denominación</label>
-        <input type="text" class="form-control" name="denominacion" value="${item.denominacion ?? ''}">
+        <input type="text" class="form-control" name="denominacion" maxlength="150" value="${item.denominacion ?? ''}">
       </div>
       <div class="col-md-3">
         <label class="form-label">Latitud *</label>
-        <input type="number" step="0.000001" class="form-control" name="latitud" value="${item.latitud}" required>
+        <input type="number" step="0.000001" min="-90" max="90" class="form-control" name="latitud" value="${item.latitud}" required>
       </div>
       <div class="col-md-3">
         <label class="form-label">Longitud *</label>
-        <input type="number" step="0.000001" class="form-control" name="longitud" value="${item.longitud}" required>
+        <input type="number" step="0.000001" min="-180" max="180" class="form-control" name="longitud" value="${item.longitud}" required>
       </div>
     </div>
 
@@ -278,16 +412,22 @@ document.addEventListener('click', async function (e) {
     ['codigo', 'tipo', 'estado', 'municipio', 'provincia', 'denominacion', 'latitud', 'longitud']
       .forEach(campo => {
         const el = form.querySelector(`[name="${campo}"]`);
-        if (el) data[campo] = el.value;
+        if (el) data[campo] = el.value.trim !== undefined ? el.value.trim() : el.value;
       });
 
+    // ── Validación ──
+    if (!validarInfraestructura(data)) return;
+
     try {
-      await InfraestructuraAguaApi.update(id, data);
+      await InfraestructuraAguaApi.update(id, {
+        ...data,
+        latitud:      parseFloat(data.latitud),
+        longitud:     parseFloat(data.longitud),
+        denominacion: data.denominacion || null,
+      });
       mostrarExito('Infraestructura actualizada correctamente');
       await cargarInfraestructuras();
-
-      const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
-      modal.hide();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
     } catch (err) {
       mostrarError(err.message || 'Error al actualizar');
     }
@@ -303,13 +443,12 @@ document.addEventListener('click', async function (e) {
   const btn = e.target.closest('.btn-eliminar');
   if (!btn) return;
 
-  const id     = btn.dataset.id;
   const codigo = btn.dataset.codigo;
 
   if (!confirm(`¿Eliminar la infraestructura "${codigo}"?`)) return;
 
   try {
-    await InfraestructuraAguaApi.delete(id);
+    await InfraestructuraAguaApi.delete(codigo);
     mostrarExito('Infraestructura eliminada correctamente');
     await cargarInfraestructuras();
   } catch (err) {
@@ -329,24 +468,30 @@ function bindCrear() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const f    = new FormData(form);
+    const f = new FormData(form);
     const data = {
-      codigo:       f.get('codigo'),
+      codigo:       f.get('codigo')?.trim(),
       tipo:         f.get('tipo'),
-      denominacion: f.get('denominacion') || null,
-      municipio:    f.get('municipio'),
+      denominacion: f.get('denominacion')?.trim() || null,
+      municipio:    f.get('municipio')?.trim(),
       provincia:    f.get('provincia'),
       latitud:      f.get('latitud'),
       longitud:     f.get('longitud'),
       estado:       f.get('estado') || 'ACTIVO',
     };
 
+    // ── Validación ──
+    if (!validarInfraestructura(data)) return;
+
     try {
-      await InfraestructuraAguaApi.create(data);
+      await InfraestructuraAguaApi.create({
+        ...data,
+        latitud:  parseFloat(data.latitud),
+        longitud: parseFloat(data.longitud),
+      });
       mostrarExito('Infraestructura creada correctamente');
       form.reset();
       await cargarInfraestructuras();
-
       const modal = bootstrap.Modal.getInstance(document.getElementById('modalCrear'));
       if (modal) modal.hide();
     } catch (err) {

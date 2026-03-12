@@ -193,7 +193,7 @@ public function createGuardia(array $input): array
             $exists = $this->model->getPersonsByGuardia($id_guardia);
 
             if (!$exists) {
-                throw new \Exception("Guardia no encontrada", 404);
+                throw new \Exception("Guardia sin personas asignadas.", 404);
             }
 
             return $this->model->getPersonsByGuardia($id_guardia);

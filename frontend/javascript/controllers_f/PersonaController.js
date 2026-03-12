@@ -1,6 +1,14 @@
 import PersonaApiApi from '../api_f/PersonaApi.js';
 import RolApi from '../api_f/RolApi.js';
 import { authGuard } from '../helpers/authGuard.js';
+import {
+  validarDNI,
+  validarEmail,
+  validarTelefono,
+  validarPassword,
+  validarIdBombero,
+  validarNumeroFuncionario
+} from '../helpers/validacion.js';
 
 let personas = [];
 let sesionActual = null;
@@ -97,7 +105,7 @@ function renderTablaPersonas(lista) {
 
   lista.forEach(p => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${p.id_bombero}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${p.id_bombero}"><i class="bi bi-pencil"></i></button>
          <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${p.id_bombero}"><i class="bi bi-trash3"></i></button>`
@@ -111,7 +119,11 @@ function renderTablaPersonas(lista) {
       <td>${p.apellidos}</td>
       <td class="d-none d-md-table-cell">${p.localidad}</td>
       <td>${p.nombre_usuario}</td>
-      <td class="d-flex justify-content-around">${botones}</td>`;
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>`;
     tbody.appendChild(tr);
   });
 }
@@ -134,6 +146,87 @@ function bindModalVer() {
       modalBody.appendChild(p);
     });
   });
+}
+
+// ================================
+// VALIDAR DATOS DE PERSONA (CREAR)
+// ================================
+function validarDatosPersonaCrear(data) {
+  // CORRECCIÓN: validar id_bombero con función de validacion.js
+  if (!data.id_bombero) {
+    mostrarError('El ID del bombero es obligatorio'); return false;
+  }
+  if (!validarIdBombero(data.id_bombero)) {
+    mostrarError('El ID del bombero no tiene un formato válido (ej: B001)'); return false;
+  }
+  // CORRECCIÓN: validar n_funcionario con función de validacion.js
+  if (!data.n_funcionario) {
+    mostrarError('El número de funcionario es obligatorio'); return false;
+  }
+  if (!validarNumeroFuncionario(data.n_funcionario)) {
+    mostrarError('El número de funcionario no tiene un formato válido (ej: DGA-2024-0001)'); return false;
+  }
+  // CORRECCIÓN: validar DNI con función de validacion.js
+  if (!data.DNI) {
+    mostrarError('El DNI es obligatorio'); return false;
+  }
+  if (!validarDNI(data.DNI)) {
+    mostrarError('El DNI no es válido'); return false;
+  }
+  if (!data.nombre?.trim()) {
+    mostrarError('El nombre es obligatorio'); return false;
+  }
+  if (!data.apellidos?.trim()) {
+    mostrarError('Los apellidos son obligatorios'); return false;
+  }
+  // CORRECCIÓN: validar correo con función de validacion.js
+  if (!data.correo) {
+    mostrarError('El correo es obligatorio'); return false;
+  }
+  if (!validarEmail(data.correo)) {
+    mostrarError('El correo no tiene un formato válido'); return false;
+  }
+  // CORRECCIÓN: validar teléfono principal con función de validacion.js
+  if (!data.telefono) {
+    mostrarError('El teléfono es obligatorio'); return false;
+  }
+  if (!validarTelefono(data.telefono)) {
+    mostrarError('El teléfono no tiene un formato válido'); return false;
+  }
+  // CORRECCIÓN: validar teléfono de emergencia si se proporciona
+  if (data.telefono_emergencia && !validarTelefono(data.telefono_emergencia)) {
+    mostrarError('El teléfono de emergencia no tiene un formato válido'); return false;
+  }
+  // CORRECCIÓN: validar contraseña con función de validacion.js
+  if (!data.contrasenia) {
+    mostrarError('La contraseña es obligatoria'); return false;
+  }
+  if (!validarPassword(data.contrasenia)) {
+    mostrarError('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un dígito y un símbolo'); return false;
+  }
+  if (!data.f_nacimiento) {
+    mostrarError('La fecha de nacimiento es obligatoria'); return false;
+  }
+  if (!data.nombre_usuario?.trim()) {
+    mostrarError('El nombre de usuario es obligatorio'); return false;
+  }
+  return true;
+}
+
+// ================================
+// VALIDAR DATOS DE PERSONA (EDITAR)
+// ================================
+function validarDatosPersonaEditar(data) {
+  if (data.correo && !validarEmail(data.correo)) {
+    mostrarError('El correo no tiene un formato válido'); return false;
+  }
+  if (data.telefono && !validarTelefono(String(data.telefono))) {
+    mostrarError('El teléfono no tiene un formato válido'); return false;
+  }
+  if (data.telefono_emergencia && !validarTelefono(String(data.telefono_emergencia))) {
+    mostrarError('El teléfono de emergencia no tiene un formato válido'); return false;
+  }
+  return true;
 }
 
 // ================================
@@ -167,6 +260,9 @@ function bindCrearPersona() {
       contrasenia:          f.get('contrasenia'),
     };
 
+    // CORRECCIÓN: validar todos los campos antes de enviar
+    if (!validarDatosPersonaCrear(data)) return;
+
     try {
       await PersonaApiApi.create(data);
       await cargarPersonas();
@@ -196,7 +292,7 @@ function bindModalEditar() {
           <div class="col-lg-4"><label class="form-label">Correo</label><input type="email" class="form-control" name="correo" value="${persona.correo||''}"></div>
         </div>
         <div class="row mb-3">
-          <div class="col-lg-4"><label class="form-label">Teléfono</label><input type="number" class="form-control" name="telefono" value="${persona.telefono||''}"></div>
+          <div class="col-lg-4"><label class="form-label">Teléfono</label><input type="text" class="form-control" name="telefono" value="${persona.telefono||''}"></div>
           <div class="col-lg-4"><label class="form-label">Fecha Ingreso Diputación</label><input type="date" class="form-control" name="f_ingreso_diputacion" value="${persona.f_ingreso_diputacion||''}"></div>
           <div class="col-lg-4"><label class="form-label">Talla Superior</label><input type="text" class="form-control" name="talla_superior" value="${persona.talla_superior||''}"></div>
         </div>
@@ -206,7 +302,7 @@ function bindModalEditar() {
           <div class="col-lg-4"><label class="form-label">Fecha Nacimiento</label><input type="date" class="form-control" name="f_nacimiento" value="${persona.f_nacimiento||''}"></div>
         </div>
         <div class="row mb-3">
-          <div class="col-lg-4"><label class="form-label">Tel. Emergencia</label><input type="number" class="form-control" name="telefono_emergencia" value="${persona.telefono_emergencia||''}"></div>
+          <div class="col-lg-4"><label class="form-label">Tel. Emergencia</label><input type="text" class="form-control" name="telefono_emergencia" value="${persona.telefono_emergencia||''}"></div>
           <div class="col-lg-4"><label class="form-label">Domicilio</label><input type="text" class="form-control" name="domicilio" value="${persona.domicilio||''}"></div>
           <div class="col-lg-4"><label class="form-label">Localidad</label><input type="text" class="form-control" name="localidad" value="${persona.localidad||''}"></div>
         </div>
@@ -232,6 +328,8 @@ function bindModalEditar() {
           if (campo === 'talla_calzado' && value !== '') value = Number(value);
           if (value !== '' && value !== null && value !== undefined) data[campo] = value;
         });
+        // CORRECCIÓN: validar correo y teléfonos en editar
+        if (!validarDatosPersonaEditar(data)) return;
         try {
           await PersonaApiApi.update(id, data);
           await cargarPersonas();
@@ -257,6 +355,7 @@ function bindModalEliminar() {
       await PersonaApiApi.remove(id);
       await cargarPersonas();
       bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+      mostrarExito('Persona eliminada correctamente');
     } catch (err) { mostrarError('Error al eliminar persona: ' + err.message); }
   });
 }
@@ -266,14 +365,24 @@ function bindModalEliminar() {
 // ================================
 function mostrarError(msg) {
   const container = document.getElementById('alert-container');
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = `<div class="alert alert-danger alert-dismissible fade show shadow" role="alert"><strong>Error:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-  container.append(wrapper);
+  if (!container) return;
+  const alertId = 'alert-' + Date.now();
+  container.insertAdjacentHTML('beforeend', `
+    <div id="${alertId}" class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+      <strong>Error:</strong> ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>`);
+  setTimeout(() => { const a = document.getElementById(alertId); if (a) { a.classList.remove('show'); setTimeout(() => a.remove(), 150); } }, 5000);
 }
 
 function mostrarExito(msg) {
   const container = document.getElementById('alert-container');
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = `<div class="alert alert-success alert-dismissible fade show shadow" role="alert"><strong>OK:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-  container.append(wrapper);
+  if (!container) return;
+  const alertId = 'alert-' + Date.now();
+  container.insertAdjacentHTML('beforeend', `
+    <div id="${alertId}" class="alert alert-success alert-dismissible fade show shadow" role="alert">
+      <strong>Éxito:</strong> ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>`);
+  setTimeout(() => { const a = document.getElementById(alertId); if (a) { a.classList.remove('show'); setTimeout(() => a.remove(), 150); } }, 5000);
 }

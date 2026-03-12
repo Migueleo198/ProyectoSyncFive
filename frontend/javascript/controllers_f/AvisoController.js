@@ -159,8 +159,12 @@ function renderTablaAvisos(lista) {
       <td>${a.asunto ?? ''}</td>
       <td>${truncar(a.mensaje, 60)}</td>
       <td class="d-none d-md-table-cell">${formatearFecha(a.fecha)}</td>
-      <td class="d-none d-md-table-cell">${nombreRemitente}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
+      <td class="d-none d-md-table-cell">${a.remitente ?? '—'}</td>
+      <td>
+        <div class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -183,6 +187,29 @@ function aplicarFiltros() {
     const cumpleRemitente = !filtroRemitente || String(a.remitente) === String(filtroRemitente);
     return cumpleAsunto && cumpleRemitente;
   }));
+  
+// ================================
+// VALIDAR AVISO
+// Según DDL Aviso:
+//   asunto  VARCHAR(150) NOT NULL
+//   mensaje TEXT         NOT NULL
+// ================================
+function validarAviso(asunto, mensaje) {
+  if (!asunto) {
+    mostrarError('El asunto es obligatorio.');
+    return false;
+  }
+  if (asunto.length > 150) {
+    mostrarError('El asunto no puede superar los 150 caracteres.');
+    return false;
+  }
+
+  if (!mensaje) {
+    mostrarError('El mensaje es obligatorio.');
+    return false;
+  }
+
+  return true;
 }
 
 // ================================
@@ -197,6 +224,9 @@ function bindCrearAviso() {
 
     const asunto  = document.getElementById('insertAsunto').value.trim();
     const mensaje = document.getElementById('insertMensaje').value.trim();
+
+    // ── Validación ──
+    if (!validarAviso(asunto, mensaje)) return;
 
     const selectDest = document.getElementById('insertDestinatarios');
     const destinatarios = selectDest
@@ -270,8 +300,8 @@ function bindModalVer() {
     });
 
     try {
-      const res      = await AvisoApi.getDestinatarios(id);
-      const destList  = res.data ?? [];
+      const res     = await AvisoApi.getDestinatarios(id);
+      const destList = res.data ?? [];
 
       modalBody.appendChild(document.createElement('hr'));
       const titulo = document.createElement('p');
@@ -320,7 +350,7 @@ function bindModalEliminar() {
       }
 
       try {
-        const resRem  = await AvisoApi.getRemitente(id);
+        const resRem   = await AvisoApi.getRemitente(id);
         const remitente = resRem.data;
         if (remitente?.id_bombero) {
           await AvisoApi.deleteRemitente(id, remitente.id_bombero);

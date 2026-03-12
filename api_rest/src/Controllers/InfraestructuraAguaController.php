@@ -25,32 +25,30 @@ class InfraestructuraAguaController
      * GET /infraestructuras-agua
      * Parámetros opcionales: tipo, provincia, municipio, estado
      */
-    public function index(Request $req, Response $res): void
-    {
-        try {
-            $filtros = [
-                'tipo'      => $req->query('tipo')      ?? null,
-                'provincia' => $req->query('provincia') ?? null,
-                'municipio' => $req->query('municipio') ?? null,
-                'estado'    => $req->query('estado')    ?? null,
-            ];
-
-            $infraestructuras = $this->service->getAllInfraestructuras($filtros);
-            $res->status(200)->json($infraestructuras);
-
-        } catch (Throwable $e) {
-            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
-        }
+public function index(Request $req, Response $res): void
+{
+    try {
+        $filtros = [
+            'tipo'      => $_GET['tipo']      ?? null,
+            'provincia' => $_GET['provincia'] ?? null,
+            'municipio' => $_GET['municipio'] ?? null,
+            'estado'    => $_GET['estado']    ?? null,
+        ];
+        $infraestructuras = $this->service->getAllInfraestructuras($filtros);
+        $res->status(200)->json($infraestructuras);
+    } catch (Throwable $e) {
+        $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
     }
+}
 
 
     /**
-     * GET /infraestructuras-agua/{id}
+     * GET /infraestructuras-agua/{codigo}
      */
-    public function show(Request $req, Response $res, string $id): void
+    public function show(Request $req, Response $res, string $codigo): void
     {
         try {
-            $infraestructura = $this->service->getInfraestructuraById((int) $id);
+            $infraestructura = $this->service->getInfraestructuraById((int) $codigo);
             $res->status(200)->json($infraestructura);
 
         } catch (ValidationException $e) {
@@ -72,7 +70,7 @@ class InfraestructuraAguaController
             $result = $this->service->createInfraestructura($req->json());
 
             $res->status(201)->json(
-                ['id' => $result['id']],
+                ['codigo' => $result['codigo']],
                 "Infraestructura de agua creada correctamente"
             );
 
@@ -93,10 +91,11 @@ class InfraestructuraAguaController
     /**
      * PUT /infraestructuras-agua/{id}
      */
-    public function update(Request $req, Response $res, string $id): void
+    public function update(Request $req, Response $res, string $codigo): void
     {
         try {
-            $result = $this->service->updateInfraestructura((int) $id, $req->json());
+
+            $result = $this->service->updateInfraestructura($codigo, $req->json());
 
             if ($result['status'] === 'no_changes') {
                 $res->status(200)->json([], $result['message']);
@@ -115,12 +114,12 @@ class InfraestructuraAguaController
 
 
     /**
-     * DELETE /infraestructuras-agua/{id}
+     * DELETE /infraestructuras-agua/{codigo}
      */
-    public function destroy(Request $req, Response $res, string $id): void
+    public function destroy(Request $req, Response $res, string $codigo): void
     {
         try {
-            $this->service->deleteInfraestructura((int) $id);
+            $this->service->deleteInfraestructura($codigo);
             $res->status(200)->json([], "Infraestructura eliminada correctamente");
 
         } catch (ValidationException $e) {

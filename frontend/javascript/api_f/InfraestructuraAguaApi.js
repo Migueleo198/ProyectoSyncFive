@@ -17,20 +17,20 @@ const InfraestructuraAguaApi = {
     return ApiClient.get(`/infraestructuras-agua${query ? '?' + query : ''}`);
   },
 
-  getById(id) {
-    return ApiClient.get(`/infraestructuras-agua/${id}`);
+  getById(codigo) {
+    return ApiClient.get(`/infraestructuras-agua/${codigo}`);
   },
 
   create(data) {
     return ApiClient.post('/infraestructuras-agua', data);
   },
 
-  update(id, data) {
-    return ApiClient.put(`/infraestructuras-agua/${id}`, data);
+  update(codigo, data) {
+    return ApiClient.put(`/infraestructuras-agua/${codigo}`, data);
   },
 
-  delete(id) {
-    return ApiClient.delete(`/infraestructuras-agua/${id}`);
+  delete(codigo) {
+    return ApiClient.delete(`/infraestructuras-agua/${codigo}`);
   },
 
 };

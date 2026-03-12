@@ -135,7 +135,11 @@ function renderTablaAlmacenes(lista) {
       <td>${a.nombre || ''}</td>
       <td>${a.nombre_instalacion || 'Desconocida'}</td>
       <td class="d-none d-md-table-cell">${a.planta || ''}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -169,6 +173,38 @@ function aplicarFiltros() {
 }
 
 // ================================
+// VALIDAR CAMPOS DE ALMACÉN
+// Según DDL: nombre VARCHAR(100) NOT NULL, planta INT NOT NULL
+// ================================
+function validarCamposAlmacen(id_instalacion, nombre, planta) {
+  if (!id_instalacion) {
+    mostrarError('Debe seleccionar una instalación.');
+    return false;
+  }
+
+  if (!nombre?.trim()) {
+    mostrarError('El nombre es obligatorio.');
+    return false;
+  }
+  if (nombre.trim().length > 100) {
+    mostrarError('El nombre no puede superar los 100 caracteres.');
+    return false;
+  }
+
+  if (planta === '' || planta === null || planta === undefined) {
+    mostrarError('La planta es obligatoria.');
+    return false;
+  }
+  // planta INT: debe ser un entero (puede ser 0, -1, etc.)
+  if (!Number.isInteger(Number(planta)) || isNaN(Number(planta))) {
+    mostrarError('La planta debe ser un número entero.');
+    return false;
+  }
+
+  return true;
+}
+
+// ================================
 // CREAR ALMACÉN
 // ================================
 function bindCrearAlmacen() {
@@ -180,18 +216,16 @@ function bindCrearAlmacen() {
 
     const f = new FormData(form);
     const id_instalacion = f.get('id_instalacion');
-    const nombre = f.get('nombre');
-    const planta = f.get('planta');
+    const nombre         = f.get('nombre');
+    const planta         = f.get('planta');
 
-    if (!id_instalacion) { mostrarError('Debe seleccionar una instalación'); return; }
-    if (!nombre?.trim()) { mostrarError('El nombre es obligatorio'); return; }
-    if (!planta?.trim()) { mostrarError('La planta es obligatoria'); return; }
+    if (!validarCamposAlmacen(id_instalacion, nombre, planta)) return;
 
     try {
       const response = await fetch(`/api/instalaciones/${id_instalacion}/almacenes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: nombre.trim(), planta: planta.trim() })
+        body: JSON.stringify({ nombre: nombre.trim(), planta: Number(planta) })
       });
 
       const result = await response.json();
@@ -243,11 +277,11 @@ function bindModales() {
       </div>
       <div class="mb-3">
         <label class="form-label">Nombre</label>
-        <input type="text" class="form-control" id="editNombre" value="${almacen.nombre}" required>
+        <input type="text" class="form-control" id="editNombre" value="${almacen.nombre}" maxlength="100" required>
       </div>
       <div class="mb-3">
         <label class="form-label">Planta</label>
-        <input type="text" class="form-control" id="editPlanta" value="${almacen.planta}" required>
+        <input type="number" step="1" class="form-control" id="editPlanta" value="${almacen.planta}" required>
       </div>
       <div class="mb-3">
         <label class="form-label">Instalación</label>
@@ -269,20 +303,18 @@ function bindModales() {
 
   // GUARDAR CAMBIOS
   document.getElementById('btnGuardarCambios')?.addEventListener('click', async function () {
-    const id = document.querySelector('#modalEditar .modal-body input[readonly]').value;
+    const id             = document.querySelector('#modalEditar .modal-body input[readonly]').value;
     const id_instalacion = document.getElementById('editInstalacion').value;
-    const nombre = document.getElementById('editNombre').value;
-    const planta = document.getElementById('editPlanta').value;
+    const nombre         = document.getElementById('editNombre').value;
+    const planta         = document.getElementById('editPlanta').value;
 
-    if (!id_instalacion) { mostrarError('Debe seleccionar una instalación'); return; }
-    if (!nombre?.trim()) { mostrarError('El nombre es obligatorio'); return; }
-    if (!planta?.trim()) { mostrarError('La planta es obligatoria'); return; }
+    if (!validarCamposAlmacen(id_instalacion, nombre, planta)) return;
 
     try {
       const response = await fetch(`/api/instalaciones/${id_instalacion}/almacenes/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: nombre.trim(), planta: planta.trim() })
+        body: JSON.stringify({ nombre: nombre.trim(), planta: Number(planta) })
       });
 
       const result = await response.json();

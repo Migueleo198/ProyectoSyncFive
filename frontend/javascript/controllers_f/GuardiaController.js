@@ -1,18 +1,28 @@
 import GuardiaApi from '../api_f/GuardiaApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
+import { authGuard } from '../helpers/authGuard.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarRangoFechas } from '../helpers/validacion.js';
 
 let guardias = [];
+let sesionActual = null;
 
 const cargos = [
-    "BOMBERO1","BOMBERO2","BOMBERO3","BOMBERO4","BOMBERO5",
-    "BOMBERO6","BOMBERO7","BOMBERO8","BOMBERO9","BOMBERO10",
-    "OFICIAL1","OFICIAL2","CONDUCTOR1","CONDUCTOR2"
+    "BOMBERO1", "BOMBERO2", "BOMBERO3", "BOMBERO4", "BOMBERO5",
+    "BOMBERO6", "BOMBERO7", "BOMBERO8", "BOMBERO9", "BOMBERO10",
+    "OFICIAL1", "OFICIAL2", "CONDUCTOR1", "CONDUCTOR2"
 ];
 
 const nombresCampos = ['Fecha', 'Hora Inicio', 'Hora Fin', 'Notas'];
-const camposBd = ['fecha', 'h_inicio', 'h_fin', 'notas'];
+const camposBd      = ['fecha', 'h_inicio', 'h_fin', 'notas'];
 
-document.addEventListener('DOMContentLoaded', () => {
+// ================================
+// INICIALIZACIÓN
+// ================================
+document.addEventListener('DOMContentLoaded', async () => {
+    sesionActual = await authGuard('guardias');
+    if (!sesionActual) return;
+
     cargarGuardias();
     cargarSelectGuardias(null, 'seleccionarGuardia');
     cargarSelectPersonas(null, 'n_funcionario');
@@ -20,6 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
     bindCrearGuardia();
     bindAsignarGuardia();
     bindFiltros();
+    bindModalVer();
+    bindModalEditar();
+
+    if (sesionActual.puedeEscribir) {
+        bindCrearGuardia();
+        bindAsignarGuardia();
+    }
 });
 
 // ================================
@@ -75,6 +92,9 @@ async function cargarSelectGuardias(seleccionado, id_select) {
     }
 }
 
+// ================================
+// POBLAR SELECT PERSONAS
+// ================================
 async function cargarSelectPersonas(seleccionado, id_select) {
     const select = document.getElementById(id_select);
     if (!select) return;
@@ -93,6 +113,9 @@ async function cargarSelectPersonas(seleccionado, id_select) {
     }
 }
 
+// ================================
+// POBLAR SELECT CARGOS
+// ================================
 function cargarSelectCargos() {
     const select = document.getElementById('cargo');
     if (!select) return;
@@ -111,24 +134,62 @@ function cargarSelectCargos() {
 function renderTablaGuardias(lista) {
     const tbody = document.querySelector('#tabla tbody');
     tbody.innerHTML = '';
+
+    const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+
     lista.forEach(g => {
         const tr = document.createElement('tr');
+
+        const botonesAccion = puedeEscribir
+            ? `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${g.id_guardia}"><i class="bi bi-eye"></i></button>
+               <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${g.id_guardia}"><i class="bi bi-pencil"></i></button>`
+            : `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${g.id_guardia}"><i class="bi bi-eye"></i></button>`;
+
         tr.innerHTML = `
             <td class="d-none d-md-table-cell">${g.id_guardia}</td>
             <td>${g.fecha}</td>
             <td>${g.h_inicio}</td>
             <td>${g.h_fin}</td>
             <td class="d-none d-md-table-cell">${g.notas || ''}</td>
-            <td class="d-flex justify-content-around">
-                <button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${g.id_guardia}">
-                    <i class="bi bi-eye"></i>
-                </button>
-                <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${g.id_guardia}">
-                    <i class="bi bi-pencil"></i>
-                </button>
-            </td>`;
+            <td>
+                <div  class="d-flex justify-content-around">
+                    ${botonesAccion}
+                </div>  
+            </td>
+        `;
         tbody.appendChild(tr);
     });
+}
+
+// ================================
+// VALIDAR DATOS DE GUARDIA
+// ================================
+function validarDatosGuardia(data) {
+    if (!data.fecha) {
+        mostrarError('La fecha es obligatoria'); return false;
+    }
+    // CORRECCIÓN: validar formato de fecha
+    if (isNaN(Date.parse(data.fecha))) {
+        mostrarError('La fecha no tiene un formato válido'); return false;
+    }
+    if (!data.h_inicio) {
+        mostrarError('La hora de inicio es obligatoria'); return false;
+    }
+    if (!data.h_fin) {
+        mostrarError('La hora de fin es obligatoria'); return false;
+    }
+    // CORRECCIÓN: validar formato HH:MM para horas
+    const horaRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!horaRegex.test(data.h_inicio)) {
+        mostrarError('La hora de inicio no tiene un formato válido (HH:MM)'); return false;
+    }
+    if (!horaRegex.test(data.h_fin)) {
+        mostrarError('La hora de fin no tiene un formato válido (HH:MM)'); return false;
+    }
+    if (data.notas && data.notas.length > 500) {
+        mostrarError('Las notas no pueden superar los 500 caracteres'); return false;
+    }
+    return true;
 }
 
 // ================================
@@ -146,6 +207,8 @@ function bindCrearGuardia() {
             h_fin:    f.get('h_fin'),
             notas:    f.get('notas') || ''
         };
+        // CORRECCIÓN: validar antes de enviar
+        if (!validarDatosGuardia(data)) return;
         try {
             await GuardiaApi.create(data);
             await cargarGuardias();
@@ -158,7 +221,7 @@ function bindCrearGuardia() {
 }
 
 // ================================
-// ASIGNAR GUARDIA
+// ASIGNAR PERSONA A GUARDIA
 // ================================
 function bindAsignarGuardia() {
     const form = document.getElementById('formAsignarGuardia');
@@ -175,6 +238,11 @@ function bindAsignarGuardia() {
             mostrarError('Seleccione guardia, persona y cargo');
             return;
         }
+        // CORRECCIÓN: validar que el cargo sea uno de los valores permitidos
+        if (!cargos.includes(data.cargo)) {
+            mostrarError('El cargo seleccionado no es válido');
+            return;
+        }
         try {
             await GuardiaApi.assignToPerson(data);
             mostrarExito('Persona asignada a la guardia correctamente');
@@ -187,13 +255,13 @@ function bindAsignarGuardia() {
 }
 
 // ================================
-// MODALES
+// MODAL VER
 // ================================
-document.addEventListener('click', async (e) => {
-    const btnVer = e.target.closest('.btn-ver');
-    if (btnVer) {
-        const id = btnVer.dataset.id;
-        const guardia = guardias.find(g => g.id_guardia == id);
+function bindModalVer() {
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-ver');
+        if (!btn) return;
+        const guardia = guardias.find(g => g.id_guardia == btn.dataset.id);
         if (!guardia) return;
         const modalBody = document.getElementById('modalVerBody');
         modalBody.innerHTML = '';
@@ -205,11 +273,17 @@ document.addEventListener('click', async (e) => {
             p.appendChild(document.createTextNode(guardia[camposBd[i]] || ''));
             modalBody.appendChild(p);
         });
-    }
+    });
+}
 
-    const btnEditar = e.target.closest('.btn-editar');
-    if (btnEditar) {
-        const id = btnEditar.dataset.id;
+// ================================
+// MODAL EDITAR
+// ================================
+function bindModalEditar() {
+    document.addEventListener('click', async function (e) {
+        const btn = e.target.closest('.btn-editar');
+        if (!btn) return;
+        const id = btn.dataset.id;
         const response = await GuardiaApi.getById(id);
         const guardia = response.data;
         if (!guardia) return;
@@ -228,7 +302,7 @@ document.addEventListener('click', async (e) => {
                     <label class="form-label">Hora fin</label>
                     <input type="time" class="form-control" name="h_fin" value="${guardia.h_fin || ''}">
                 </div>
-                <div class="col-lg-4">
+                <div class="col-lg-12">
                     <label class="form-label">Notas</label>
                     <input type="text" class="form-control" name="notas" value="${guardia.notas || ''}">
                 </div>
@@ -242,32 +316,12 @@ document.addEventListener('click', async (e) => {
                 const input = form.querySelector(`[name="${c}"]`);
                 if (input) data[c] = input.value;
             });
+            // CORRECCIÓN: validar antes de guardar
+            if (!validarDatosGuardia(data)) return;
             await GuardiaApi.update(id, data);
             await cargarGuardias();
             bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+            mostrarExito('Guardia actualizada correctamente');
         });
-    }
-});
-
-// ================================
-// ALERTAS
-// ================================
-function mostrarError(msg) {
-    const container = document.getElementById('alert-container');
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = `<div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-        <strong>Error:</strong> ${msg}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>`;
-    container.append(wrapper);
-}
-
-function mostrarExito(msg) {
-    const container = document.getElementById('alert-container');
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = `<div class="alert alert-success alert-dismissible fade show shadow" role="alert">
-        <strong>OK:</strong> ${msg}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>`;
-    container.append(wrapper);
+    });
 }

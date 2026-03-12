@@ -64,7 +64,11 @@ function renderTablaFormaciones(lista) {
       <td>${f.id_formacion}</td>
       <td>${f.nombre}</td>
       <td>${f.descripcion}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -82,6 +86,27 @@ function aplicarFiltros() {
   renderTablaFormaciones(formaciones.filter(f =>
     !filtroNombre || f.nombre?.toLowerCase().includes(filtroNombre)
   ));
+  
+// ================================
+// VALIDAR FORMACIÓN
+// Según DDL Formacion:
+//   nombre      VARCHAR(100) NOT NULL
+//   descripcion TEXT         NOT NULL
+// ================================
+function validarFormacion(nombre, descripcion) {
+  if (!nombre || !nombre.trim()) {
+    mostrarError('El nombre es obligatorio.');
+    return false;
+  }
+  if (nombre.trim().length > 100) {
+    mostrarError('El nombre no puede superar los 100 caracteres.');
+    return false;
+  }
+  if (!descripcion || !descripcion.trim()) {
+    mostrarError('La descripción es obligatoria.');
+    return false;
+  }
+  return true;
 }
 
 // ================================
@@ -94,13 +119,14 @@ function bindCrearFormacion() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-    const data = {
-      nombre:      f.get('nombre'),
-      descripcion: f.get('descripcion')
-    };
+    const nombre      = f.get('nombre');
+    const descripcion = f.get('descripcion');
+
+    // ── Validación ──
+    if (!validarFormacion(nombre, descripcion)) return;
 
     try {
-      await FormacionApi.create(data);
+      await FormacionApi.create({ nombre: nombre.trim(), descripcion: descripcion.trim() });
       await cargarFormaciones();
       form.reset();
       mostrarExito('Formación creada correctamente');
@@ -161,7 +187,7 @@ function bindModalEditar() {
         <div class="row mb-3 d-flex">
           <div class="col-12 justify-content-center">
             <label class="form-label">Nombre</label>
-            <input type="text" class="form-control" name="nombre" value="${formacion.nombre}" required>
+            <input type="text" class="form-control" name="nombre" maxlength="100" value="${formacion.nombre}" required>
           </div>
         </div>
         <div class="mb-4">
@@ -174,14 +200,14 @@ function bindModalEditar() {
       `;
 
       document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-        const data = {};
-        camposBd.forEach(campo => {
-          const input = form.querySelector(`[name="${campo}"]`);
-          if (input) data[campo] = input.value;
-        });
+        const nombre      = form.querySelector('[name="nombre"]').value;
+        const descripcion = form.querySelector('[name="descripcion"]').value;
+
+        // ── Validación ──
+        if (!validarFormacion(nombre, descripcion)) return;
 
         try {
-          await FormacionApi.update(id, data);
+          await FormacionApi.update(id, { nombre: nombre.trim(), descripcion: descripcion.trim() });
           await cargarFormaciones();
           bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
           mostrarExito('Formación actualizada correctamente');

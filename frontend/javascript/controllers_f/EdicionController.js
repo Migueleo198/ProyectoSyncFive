@@ -2,6 +2,7 @@ import EdicionApi from '../api_f/EdicionApi.js';
 import FormacionApi from '../api_f/FormacionApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { formatearFecha, mostrarExito, mostrarError } from '../helpers/utils.js';
+import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
 
 let ediciones = [];
 let sesionActual = null;
@@ -76,7 +77,11 @@ function renderTablaEdiciones(lista) {
       <td>${formatearFecha(e.f_inicio)}</td>
       <td>${formatearFecha(e.f_fin)}</td>
       <td>${e.horas}</td>
-      <td class="d-flex justify-content-around">${botonesAccion}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -133,6 +138,45 @@ async function cargarFormaciones(formacionSeleccionada, id_select) {
 }
 
 // ================================
+// VALIDAR EDICIÓN
+// Según DDL Edicion:
+//   f_inicio     DATE NOT NULL
+//   f_fin        DATE NOT NULL  CHECK (f_fin >= f_inicio)
+//   horas        INT  NOT NULL  CHECK (horas > 0)
+//   id_formacion FK  NOT NULL
+// ================================
+function validarEdicion(id_formacion, f_inicio, f_fin, horas) {
+  if (!id_formacion) {
+    mostrarError('Debe seleccionar una formación.');
+    return false;
+  }
+
+  if (!f_inicio) {
+    mostrarError('La fecha de inicio es obligatoria.');
+    return false;
+  }
+
+  if (!f_fin) {
+    mostrarError('La fecha de fin es obligatoria.');
+    return false;
+  }
+
+  // CHECK (f_fin >= f_inicio)
+  if (!validarRangoFechas(f_inicio, f_fin)) {
+    mostrarError('La fecha de fin debe ser igual o posterior a la fecha de inicio.');
+    return false;
+  }
+
+  // CHECK (horas > 0)
+  if (!validarNumero(horas)) {
+    mostrarError('Las horas deben ser un número entero positivo.');
+    return false;
+  }
+
+  return true;
+}
+
+// ================================
 // CREAR EDICION
 // ================================
 function bindCrearEdicion() {
@@ -142,15 +186,16 @@ function bindCrearEdicion() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-    const data = {
-      id_formacion: f.get('id_formacion'),
-      f_inicio:     f.get('f_inicio'),
-      f_fin:        f.get('f_fin'),
-      horas:        f.get('horas')
-    };
+    const id_formacion = f.get('id_formacion');
+    const f_inicio     = f.get('f_inicio');
+    const f_fin        = f.get('f_fin');
+    const horas        = f.get('horas');
+
+    // ── Validación ──
+    if (!validarEdicion(id_formacion, f_inicio, f_fin, horas)) return;
 
     try {
-      await EdicionApi.create(data.id_formacion, data);
+      await EdicionApi.create(id_formacion, { id_formacion, f_inicio, f_fin, horas: Number(horas) });
       await cargarEdiciones();
       form.reset();
       mostrarExito('Edición creada correctamente');
@@ -238,7 +283,7 @@ function bindModalEditar() {
           </div>
           <div class="col-mg-6 col-lg-4">
             <label class="form-label">Horas</label>
-            <input type="number" class="form-control" name="horas" value="${edicion.horas ?? ''}">
+            <input type="number" min="1" step="1" class="form-control" name="horas" value="${edicion.horas ?? ''}">
           </div>
         </div>
         <div class="row text-center">
@@ -252,14 +297,21 @@ function bindModalEditar() {
       modal.show();
 
       document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-        const data = {};
-        camposBd.forEach(campo => {
-          const input = form.querySelector(`[name="${campo}"]`);
-          if (input) data[campo] = input.value;
-        });
+        const new_id_formacion = form.querySelector('[name="id_formacion"]').value;
+        const f_inicio         = form.querySelector('[name="f_inicio"]').value;
+        const f_fin            = form.querySelector('[name="f_fin"]').value;
+        const horas            = form.querySelector('[name="horas"]').value;
+
+        // ── Validación ──
+        if (!validarEdicion(new_id_formacion, f_inicio, f_fin, horas)) return;
 
         try {
-          await EdicionApi.update(id_formacion, id_edicion, data);
+          await EdicionApi.update(id_formacion, id_edicion, {
+            id_formacion: new_id_formacion,
+            f_inicio,
+            f_fin,
+            horas: Number(horas)
+          });
           await cargarEdiciones();
           modal.hide();
           mostrarExito('Edición actualizada correctamente');
@@ -367,10 +419,8 @@ function bindInsertarPersona() {
     const id_formacion = f.get('id_formacion');
     const id_bombero   = f.get('id_bombero');
 
-    if (!id_formacion || !id_bombero) {
-      mostrarError('Selecciona una formación e introduce el ID del bombero');
-      return;
-    }
+    if (!id_formacion) { mostrarError('Selecciona una formación.'); return; }
+    if (!id_bombero)   { mostrarError('Introduce el ID del bombero.'); return; }
 
     try {
       const resEdiciones       = await EdicionApi.getAll();
@@ -379,14 +429,12 @@ function bindInsertarPersona() {
         .sort((a, b) => new Date(b.f_inicio) - new Date(a.f_inicio));
 
       if (edicionesFormacion.length === 0) {
-        mostrarError('No hay ediciones para la formación seleccionada');
+        mostrarError('No hay ediciones para la formación seleccionada.');
         return;
       }
 
       const ultimaEdicion = edicionesFormacion[0];
-      await EdicionApi.setPersonas(ultimaEdicion.id_formacion, ultimaEdicion.id_edicion, {
-        id_bombero
-      });
+      await EdicionApi.setPersonas(ultimaEdicion.id_formacion, ultimaEdicion.id_edicion, { id_bombero });
 
       await cargarPersonas();
       form.reset();

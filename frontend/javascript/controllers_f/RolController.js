@@ -5,6 +5,14 @@ import { authGuard } from '../helpers/authGuard.js';
 let roles = [];
 let sesionActual = null;
 
+// ================================
+// CONSTANTES
+// Según DDL Rol:
+//   nombre      ENUM('BOMBERO','OFICIAL','JEFE DE INTERVENCIÓN','JEFE DE MANDO','INSPECTOR') NOT NULL
+//   descripcion TEXT (nullable)
+// ================================
+const ROLES_VALIDOS = ['BOMBERO', 'OFICIAL', 'JEFE DE INTERVENCIÓN', 'JEFE DE MANDO', 'INSPECTOR'];
+
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('roles');
   if (!sesionActual) return;
@@ -64,16 +72,38 @@ function renderTablaRoles(lista) {
 
   lista.forEach(r => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_rol}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${r.id_rol}"><i class="bi bi-pencil text-primary"></i></button>
          <button class="btn p-0 btn-eliminar" data-id="${r.id_rol}"><i class="bi bi-trash3 text-danger"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_rol}"><i class="bi bi-eye"></i></button>`;
-    tr.innerHTML = `<td class="d-none d-md-table-cell">${r.id_rol}</td><td>${r.nombre??''}</td><td class="d-none d-md-table-cell">${truncar(r.descripcion,80)}</td><td class="d-flex justify-content-around">${botones}</td>`;
+    tr.innerHTML = `<td class="d-none d-md-table-cell">${r.id_rol}</td><td>${r.nombre??''}</td><td class="d-none d-md-table-cell">${truncar(r.descripcion,80)}</td>
+    <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>
+      </td>`;
     tbody.appendChild(tr);
   });
 
   if (puedeEscribir) bindEliminarRol();
+}
+
+// ================================
+// VALIDAR ROL
+// nombre: ENUM NOT NULL — debe ser uno de ROLES_VALIDOS
+// descripcion: TEXT nullable — sin restricción de longitud práctica mínima
+// ================================
+function validarRol(nombre, descripcion = null) {
+  if (!nombre || !nombre.trim()) {
+    mostrarAlerta('El nombre del rol es obligatorio.', 'danger');
+    return false;
+  }
+  if (!ROLES_VALIDOS.includes(nombre.trim())) {
+    mostrarAlerta(`El nombre del rol no es válido. Opciones: ${ROLES_VALIDOS.join(', ')}.`, 'danger');
+    return false;
+  }
+  return true;
 }
 
 // ================================
@@ -83,8 +113,12 @@ function bindCrearRol() {
   const form = document.getElementById('formRol'); if (!form) return;
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const nombre = document.getElementById('nombre').value.trim();
+    const nombre      = document.getElementById('nombre').value.trim();
     const descripcion = document.getElementById('descripcion').value.trim();
+
+    // ── Validación ──
+    if (!validarRol(nombre)) return;
+
     try {
       await RolesApi.create({ nombre, descripcion: descripcion || null });
       await cargarRoles(); form.reset(); mostrarAlerta('Rol creado correctamente', 'success');
@@ -101,7 +135,10 @@ function bindAsignarRol() {
     e.preventDefault();
     const f = new FormData(form);
     const data = { id_bombero: f.get('n_funcionario'), id_rol: f.get('rol') };
-    if (!data.id_bombero || !data.id_rol) { mostrarAlerta('Seleccione persona y rol', 'danger'); return; }
+
+    if (!data.id_bombero) { mostrarAlerta('Seleccione una persona.', 'danger'); return; }
+    if (!data.id_rol)     { mostrarAlerta('Seleccione un rol.', 'danger'); return; }
+
     try { await RolesApi.assignToPerson(data); mostrarAlerta('Rol asignado correctamente', 'success'); form.reset(); }
     catch (err) { mostrarAlerta(err.message || 'Error asignando rol', 'danger'); }
   });
@@ -124,6 +161,7 @@ function bindModalVer() {
 
 // ================================
 // MODAL EDITAR
+// Solo se puede editar la descripción (nombre es ENUM inmutable una vez creado)
 // ================================
 function bindModalEditar() {
   document.addEventListener('click', function (e) {
@@ -139,8 +177,10 @@ function bindModalEditar() {
         <button type="button" class="btn btn-primary" id="btnGuardarCambios">Guardar cambios</button>
       </div>`;
     document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-      const idRol = document.getElementById('editIdRol').value;
+      const idRol      = document.getElementById('editIdRol').value;
       const descripcion = document.getElementById('editDescripcion').value.trim();
+
+      // nombre es readonly, no puede cambiar; descripcion es TEXT nullable sin restricción de longitud
       try {
         await RolesApi.update(idRol, { nombre: rol.nombre, descripcion: descripcion || null });
         await cargarRoles();

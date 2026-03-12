@@ -3,12 +3,16 @@ import PersonaApi from '../api_f/PersonaApi.js';
 import MaterialApi from '../api_f/MaterialApi.js';
 import VehiculoApi from '../api_f/VehiculoApi.js';
 import { authGuard } from '../helpers/authGuard.js';
+import { validarMatriculaEspanola } from '../helpers/validacion.js';
 
 let incidencias = [];
 let personas = [];
 let materiales = [];
 let vehiculos = [];
 let sesionActual = null;
+
+// CORRECCIÓN: estados válidos según DDL — ENUM('ABIERTA','CERRADA')
+const ESTADOS_INCIDENCIA_VALIDOS = ['ABIERTA', 'CERRADA'];
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('incidencias');
@@ -134,7 +138,7 @@ function renderTablaIncidencias(lista) {
     const id = i.cod_incidencia || i.id;
     const tr = document.createElement('tr');
 
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${id}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${id}"><i class="bi bi-pencil"></i></button>
          <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${id}"><i class="bi bi-trash3"></i></button>`
@@ -147,7 +151,11 @@ function renderTablaIncidencias(lista) {
       <td>${i.estado ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.tipo ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.nombre_responsable ?? ''}</td>
-      <td class="d-flex justify-content-around">${botones}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -178,6 +186,33 @@ function aplicarFiltros() {
 
 const nombresCampos = ['ID','Fecha','Asunto','Estado','Tipo','Responsable','Material','Vehículo','Descripción'];
 const camposBd      = ['cod_incidencia','fecha','asunto','estado','tipo','id_bombero','id_material','matricula','descripcion'];
+
+// ================================
+// VALIDAR DATOS DE INCIDENCIA
+// ================================
+function validarDatosIncidencia(data) {
+  if (!data.fecha) {
+    mostrarError('La fecha es obligatoria'); return false;
+  }
+  if (isNaN(Date.parse(data.fecha))) {
+    mostrarError('La fecha no tiene un formato válido'); return false;
+  }
+  if (!data.asunto?.trim()) {
+    mostrarError('El asunto es obligatorio'); return false;
+  }
+  if (data.asunto.trim().length > 200) {
+    mostrarError('El asunto no puede superar los 200 caracteres'); return false;
+  }
+  // CORRECCIÓN: validar estado contra ENUM del DDL
+  if (!data.estado || !ESTADOS_INCIDENCIA_VALIDOS.includes(data.estado.toUpperCase())) {
+    mostrarError('El estado no es válido (debe ser ABIERTA o CERRADA)'); return false;
+  }
+  // CORRECCIÓN: validar matrícula si se proporciona
+  if (data.matricula && !validarMatriculaEspanola(data.matricula)) {
+    mostrarError('La matrícula no tiene un formato válido'); return false;
+  }
+  return true;
+}
 
 // ================================
 // MODAL VER
@@ -227,6 +262,7 @@ function bindModalEditar() {
     let vehiculosOpts = '<option value="">Seleccione un vehículo...</option>';
     vehiculos.forEach(v => { vehiculosOpts += `<option value="${v.matricula}" ${v.matricula == inc.matricula ? 'selected' : ''}>${v.nombre} (${v.matricula})</option>`; });
 
+    // CORRECCIÓN: opciones de estado usan los valores del DDL
     form.innerHTML = `
       <div class="row mb-3">
         <div class="col-lg-4"><label class="form-label">Fecha</label><input type="date" class="form-control" name="fecha" value="${inc.fecha || ''}"></div>
@@ -238,7 +274,7 @@ function bindModalEditar() {
         <div class="col-lg-4"><label class="form-label">Tipo</label><input type="text" class="form-control" name="tipo" value="${inc.tipo || ''}"></div>
       </div>
       <div class="row mb-3">
-        <div class="col-lg-6"><label class="form-label">Asunto</label><input type="text" class="form-control" name="asunto" value="${inc.asunto || ''}"></div>
+        <div class="col-lg-6"><label class="form-label">Asunto</label><input type="text" class="form-control" name="asunto" value="${inc.asunto || ''}" maxlength="200"></div>
         <div class="col-lg-6"><label class="form-label">Responsable</label><select class="form-select" name="id_bombero">${personasOpts}</select></div>
       </div>
       <div class="row mb-3">
@@ -256,10 +292,14 @@ function bindModalEditar() {
         const input = form.querySelector(`[name="${campo}"]`);
         if (input) data[campo] = campo === 'id_material' ? (input.value ? parseInt(input.value) : null) : input.value;
       });
+      // CORRECCIÓN: normalizar estado
+      if (data.estado) data.estado = data.estado.toUpperCase();
+      // CORRECCIÓN: validar antes de guardar
+      if (!validarDatosIncidencia(data)) return;
       try {
         await IncidenciaApi.update(id, data);
         await cargarIncidencias();
-      } catch (err) { console.error(err); }
+      } catch (err) { mostrarError(err.message || 'Error al guardar cambios'); }
       bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
     });
   });
@@ -278,7 +318,7 @@ function bindModalEliminar() {
   document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
     const id = this.dataset.id;
     if (!id) return;
-    try { await IncidenciaApi.delete(id); await cargarIncidencias(); } catch (e) { console.error(e); }
+    try { await IncidenciaApi.delete(id); await cargarIncidencias(); } catch (e) { mostrarError(e.message || 'Error al eliminar'); }
     bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
   });
 }
@@ -293,15 +333,49 @@ function bindCrearIncidencia() {
     e.preventDefault();
     const f = new FormData(form);
     const data = {
-      fecha: f.get('fecha'), asunto: f.get('asunto'), estado: f.get('estado'),
-      tipo: f.get('tipo'), id_bombero: f.get('id_bombero') || null,
+      fecha:       f.get('fecha'),
+      asunto:      f.get('asunto'),
+      // CORRECCIÓN: forzar mayúsculas para comparar con ENUM del DDL
+      estado:      (f.get('estado') || '').toUpperCase(),
+      tipo:        f.get('tipo'),
+      id_bombero:  f.get('id_bombero') || null,
       id_material: f.get('id_material') ? parseInt(f.get('id_material')) : null,
-      matricula: f.get('matricula') || null, descripcion: f.get('descripcion') || ''
+      matricula:   f.get('matricula') || null,
+      descripcion: f.get('descripcion') || ''
     };
+    // CORRECCIÓN: validar antes de enviar
+    if (!validarDatosIncidencia(data)) return;
     try {
       await IncidenciaApi.create(data);
       await cargarIncidencias();
       form.reset();
-    } catch (err) { console.error(err); }
+    } catch (err) { mostrarError(err.message || 'Error creando incidencia'); }
   });
+}
+
+// ================================
+// ALERTAS
+// ================================
+function mostrarError(msg) {
+  const container = document.getElementById('alert-container');
+  if (!container) return;
+  const alertId = 'alert-' + Date.now();
+  container.insertAdjacentHTML('beforeend', `
+    <div id="${alertId}" class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+      <strong>Error:</strong> ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>`);
+  setTimeout(() => { const a = document.getElementById(alertId); if (a) { a.classList.remove('show'); setTimeout(() => a.remove(), 150); } }, 5000);
+}
+
+function mostrarExito(msg) {
+  const container = document.getElementById('alert-container');
+  if (!container) return;
+  const alertId = 'alert-' + Date.now();
+  container.insertAdjacentHTML('beforeend', `
+    <div id="${alertId}" class="alert alert-success alert-dismissible fade show shadow" role="alert">
+      <strong>Éxito:</strong> ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>`);
+  setTimeout(() => { const a = document.getElementById(alertId); if (a) { a.classList.remove('show'); setTimeout(() => a.remove(), 150); } }, 5000);
 }

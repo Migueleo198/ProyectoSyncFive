@@ -1,6 +1,7 @@
 import MotivoApi from '../api_f/MotivoApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { truncar, mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarNumero } from '../helpers/validacion.js';
 
 let motivos = [];
 let sesionActual = null;
@@ -39,14 +40,41 @@ function renderTablaMotivos(lista) {
 
   lista.forEach(m => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.cod_motivo}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.cod_motivo}"><i class="bi bi-pencil text-primary"></i></button>
          <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.cod_motivo}"><i class="bi bi-trash3 text-danger"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.cod_motivo}"><i class="bi bi-eye"></i></button>`;
-    tr.innerHTML = `<td class="d-none d-md-table-cell">${m.cod_motivo}</td><td>${m.nombre??''}</td><td class="d-none d-md-table-cell">${m.dias??''}</td><td class="d-flex justify-content-around">${botones}</td>`;
+    tr.innerHTML = `<td class="d-none d-md-table-cell">${m.cod_motivo}</td><td>${m.nombre??''}</td><td class="d-none d-md-table-cell">${m.dias??''}</td>
+    <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>
+      </td>`;
     tbody.appendChild(tr);
   });
+}
+
+// ================================
+// VALIDAR MOTIVO
+// Según DDL Motivo:
+//   nombre VARCHAR(100) NOT NULL
+//   dias   INT          NOT NULL  (sin CHECK explícito, pero debe ser positivo por lógica)
+// ================================
+function validarMotivo(nombre, dias) {
+  if (!nombre || !nombre.trim()) {
+    mostrarError('El nombre es obligatorio.');
+    return false;
+  }
+  if (nombre.trim().length > 100) {
+    mostrarError('El nombre no puede superar los 100 caracteres.');
+    return false;
+  }
+  if (!validarNumero(dias)) {
+    mostrarError('Los días deben ser un número entero positivo.');
+    return false;
+  }
+  return true;
 }
 
 // ================================
@@ -57,10 +85,18 @@ function bindCrearMotivo() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-    const data = { nombre: f.get('nombre'), dias: f.get('dias') };
-    if (!data.nombre || !data.dias) { mostrarError('Nombre y días son obligatorios'); return; }
-    try { await MotivoApi.create(data); await cargarMotivos(); form.reset(); mostrarExito('Motivo creado correctamente'); }
-    catch (err) { mostrarError(err.message || 'Error creando motivo'); }
+    const nombre = f.get('nombre');
+    const dias   = f.get('dias');
+
+    // ── Validación ──
+    if (!validarMotivo(nombre, dias)) return;
+
+    try {
+      await MotivoApi.create({ nombre: nombre.trim(), dias: Number(dias) });
+      await cargarMotivos();
+      form.reset();
+      mostrarExito('Motivo creado correctamente');
+    } catch (err) { mostrarError(err.message || 'Error creando motivo'); }
   });
 }
 
@@ -89,18 +125,21 @@ function bindModalEditar() {
     const motivo = motivos.find(m => String(m.cod_motivo) === String(id)); if (!motivo) return;
     const form = document.getElementById('formEditar');
     form.innerHTML = `
-      <div class="mb-3"><label class="form-label">Nombre</label><input type="text" class="form-control" id="editNombre" value="${motivo.nombre}"></div>
-      <div class="mb-3"><label class="form-label">Días</label><input type="number" class="form-control" id="editDias" value="${motivo.dias}" min="1"></div>
+      <div class="mb-3"><label class="form-label">Nombre</label><input type="text" class="form-control" id="editNombre" maxlength="100" value="${motivo.nombre}"></div>
+      <div class="mb-3"><label class="form-label">Días</label><input type="number" min="1" step="1" class="form-control" id="editDias" value="${motivo.dias}"></div>
       <div class="d-flex justify-content-end gap-2">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-primary" id="btnGuardarCambios">Guardar cambios</button>
       </div>`;
     document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
       const nombre = document.getElementById('editNombre').value.trim();
-      const dias = document.getElementById('editDias').value;
-      if (!nombre || !dias) { mostrarError('Nombre y días son obligatorios'); return; }
+      const dias   = document.getElementById('editDias').value;
+
+      // ── Validación ──
+      if (!validarMotivo(nombre, dias)) return;
+
       try {
-        await MotivoApi.update(id, { nombre, dias });
+        await MotivoApi.update(id, { nombre, dias: Number(dias) });
         await cargarMotivos();
         bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
         mostrarExito('Motivo actualizado correctamente');

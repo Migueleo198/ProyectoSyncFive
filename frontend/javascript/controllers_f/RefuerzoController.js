@@ -1,7 +1,11 @@
 import RefuerzoApi from '../api_f/RefuerzoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
+import { authGuard } from '../helpers/authGuard.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
 
 let refuerzos = [];
+let sesionActual = null;
 
 const nombresCampos = ['ID Turno', 'Fecha Inicio', 'Fecha Fin', 'Horas'];
 const camposBd = ['id_turno_refuerzo', 'f_inicio', 'f_fin', 'horas'];
@@ -68,6 +72,9 @@ async function cargarSelectRefuerzos(seleccionado, id_select) {
     }
 }
 
+// ================================
+// POBLAR SELECT PERSONAS
+// ================================
 async function cargarSelectPersonas(seleccionado, id_select) {
     const select = document.getElementById(id_select);
     if (!select) return;
@@ -92,27 +99,63 @@ async function cargarSelectPersonas(seleccionado, id_select) {
 function renderTablaRefuerzos(lista) {
     const tbody = document.querySelector('#tabla tbody');
     tbody.innerHTML = '';
+
+    const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+
     lista.forEach(r => {
         const tr = document.createElement('tr');
+
+        const botonesAccion = puedeEscribir
+            ? `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_turno_refuerzo}"><i class="bi bi-eye"></i></button>
+               <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${r.id_turno_refuerzo}"><i class="bi bi-pencil"></i></button>`
+            : `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_turno_refuerzo}"><i class="bi bi-eye"></i></button>`;
+
         tr.innerHTML = `
             <td class="d-none d-md-table-cell">${r.id_turno_refuerzo}</td>
             <td>${r.f_inicio}</td>
             <td>${r.f_fin}</td>
             <td>${r.horas || ''}</td>
-            <td class="d-flex justify-content-around">
-                <button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_turno_refuerzo}">
-                    <i class="bi bi-eye"></i>
-                </button>
-                <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${r.id_turno_refuerzo}">
-                    <i class="bi bi-pencil"></i>
-                </button>
-            </td>`;
+            <td>
+                <div class="d-flex justify-content-around">
+                ${botonesAccion}
+                </div>
+            </td>
+        `;
         tbody.appendChild(tr);
     });
 }
 
 // ================================
-// CREAR REFUERZO
+// VALIDAR TURNO DE REFUERZO
+// Según DDL Turno_refuerzo:
+//   f_inicio TIMESTAMP NOT NULL
+//   f_fin    TIMESTAMP NOT NULL  CHECK (f_fin >= f_inicio)
+//   horas    INT       NOT NULL  CHECK (horas > 0)
+// ================================
+function validarRefuerzo(f_inicio, f_fin, horas) {
+    if (!f_inicio) {
+        mostrarError('La fecha de inicio es obligatoria.');
+        return false;
+    }
+    if (!f_fin) {
+        mostrarError('La fecha de fin es obligatoria.');
+        return false;
+    }
+    // CHECK (f_fin >= f_inicio)
+    if (!validarRangoFechas(f_inicio, f_fin)) {
+        mostrarError('La fecha de fin debe ser igual o posterior a la fecha de inicio.');
+        return false;
+    }
+    // horas INT NOT NULL CHECK (horas > 0)
+    if (!validarNumero(horas)) {
+        mostrarError('Las horas deben ser un número entero positivo.');
+        return false;
+    }
+    return true;
+}
+
+// ================================
+// CREAR TURNO DE REFUERZO
 // ================================
 function bindCrearRefuerzo() {
     const form = document.getElementById('formInsertarTurnoRefuerzo');
@@ -120,13 +163,15 @@ function bindCrearRefuerzo() {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const f = new FormData(form);
-        const data = {
-            f_inicio: f.get('f_inicio'),
-            f_fin:    f.get('f_fin'),
-            horas:    f.get('horas') || null
-        };
+        const f_inicio = f.get('f_inicio');
+        const f_fin    = f.get('f_fin');
+        const horas    = f.get('horas');
+
+        // ── Validación ──
+        if (!validarRefuerzo(f_inicio, f_fin, horas)) return;
+
         try {
-            await RefuerzoApi.create(data);
+            await RefuerzoApi.create({ f_inicio, f_fin, horas: Number(horas) });
             await cargarRefuerzos();
             await cargarSelectRefuerzos(null, 'ID_Turno_Refuerzo');
             form.reset();
@@ -138,7 +183,7 @@ function bindCrearRefuerzo() {
 }
 
 // ================================
-// ASIGNAR REFUERZO
+// ASIGNAR PERSONA A TURNO DE REFUERZO
 // ================================
 function bindAsignarRefuerzo() {
     const form = document.getElementById('formInsertarUsuario');
@@ -146,12 +191,12 @@ function bindAsignarRefuerzo() {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const f = new FormData(form);
-        const id_bombero = f.get('ID_persona');
+        const id_bombero        = f.get('ID_persona');
         const id_turno_refuerzo = f.get('ID_Turno_Refuerzo');
-        if (!id_bombero || !id_turno_refuerzo) {
-            mostrarError('Seleccione turno de refuerzo y persona');
-            return;
-        }
+
+        if (!id_bombero)        { mostrarError('Seleccione una persona.'); return; }
+        if (!id_turno_refuerzo) { mostrarError('Seleccione un turno de refuerzo.'); return; }
+
         try {
             await RefuerzoApi.assignToPerson(id_bombero, id_turno_refuerzo);
             mostrarExito('Persona asignada al turno de refuerzo correctamente');
@@ -164,13 +209,13 @@ function bindAsignarRefuerzo() {
 }
 
 // ================================
-// MODALES
+// MODAL VER
 // ================================
-document.addEventListener('click', async (e) => {
-    const btnVer = e.target.closest('.btn-ver');
-    if (btnVer) {
-        const id = btnVer.dataset.id;
-        const refuerzo = refuerzos.find(r => r.id_turno_refuerzo == id);
+function bindModalVer() {
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-ver');
+        if (!btn) return;
+        const refuerzo = refuerzos.find(r => r.id_turno_refuerzo == btn.dataset.id);
         if (!refuerzo) return;
         const modalBody = document.getElementById('modalVerBody');
         modalBody.innerHTML = '';
@@ -182,14 +227,21 @@ document.addEventListener('click', async (e) => {
             p.appendChild(document.createTextNode(refuerzo[camposBd[i]] || ''));
             modalBody.appendChild(p);
         });
-    }
+    });
+}
 
-    const btnEditar = e.target.closest('.btn-editar');
-    if (btnEditar) {
-        const id = btnEditar.dataset.id;
+// ================================
+// MODAL EDITAR
+// ================================
+function bindModalEditar() {
+    document.addEventListener('click', async function (e) {
+        const btn = e.target.closest('.btn-editar');
+        if (!btn) return;
+        const id = btn.dataset.id;
         const response = await RefuerzoApi.getById(id);
         const refuerzo = response.data;
         if (!refuerzo) return;
+
         const form = document.getElementById('formEditar');
         form.innerHTML = `
             <div class="row mb-3">
@@ -208,15 +260,19 @@ document.addEventListener('click', async (e) => {
             </div>
             <div class="text-center">
                 <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
-            </div>`;
+            </div>
+        `;
+
         document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-            const data = {
-                f_inicio: form.querySelector('[name="f_inicio"]').value,
-                f_fin:    form.querySelector('[name="f_fin"]').value,
-                horas:    form.querySelector('[name="horas"]').value || null
-            };
+            const f_inicio = form.querySelector('[name="f_inicio"]').value;
+            const f_fin    = form.querySelector('[name="f_fin"]').value;
+            const horas    = form.querySelector('[name="horas"]').value;
+
+            // ── Validación ──
+            if (!validarRefuerzo(f_inicio, f_fin, horas)) return;
+
             try {
-                await RefuerzoApi.update(id, data);
+                await RefuerzoApi.update(id, { f_inicio, f_fin, horas: Number(horas) });
                 await cargarRefuerzos();
                 bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
                 mostrarExito('Turno de refuerzo actualizado correctamente');
@@ -224,18 +280,23 @@ document.addEventListener('click', async (e) => {
                 mostrarError(err.message || 'Error actualizando turno de refuerzo');
             }
         });
-    }
+    });
+}
 
-    const btnEliminar = e.target.closest('.btn-eliminar');
-    if (btnEliminar) {
-        document.getElementById('btnConfirmarEliminar').dataset.id = btnEliminar.dataset.id;
-    }
+// ================================
+// MODAL ELIMINAR
+// ================================
+function bindModalEliminar() {
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-eliminar');
+        if (!btn) return;
+        document.getElementById('btnConfirmarEliminar').dataset.id = btn.dataset.id;
+    });
 
-    const btnConfirmar = e.target.closest('#btnConfirmarEliminar');
-    if (btnConfirmar) {
-        const id = btnConfirmar.dataset.id;
+    document.getElementById('btnConfirmarEliminar')?.addEventListener('click', async function () {
+        const id         = this.dataset.id;
+        const id_bombero = this.dataset.idBombero;
         try {
-            const id_bombero = btnConfirmar.dataset.idBombero;
             if (id_bombero) await RefuerzoApi.unassignFromPerson(id_bombero, id);
             await cargarRefuerzos();
             bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
@@ -243,28 +304,5 @@ document.addEventListener('click', async (e) => {
         } catch (err) {
             mostrarError(err.message || 'Error eliminando turno de refuerzo');
         }
-    }
-});
-
-// ================================
-// ALERTAS
-// ================================
-function mostrarError(msg) {
-    const container = document.getElementById('alert-container');
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = `<div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-        <strong>Error:</strong> ${msg}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>`;
-    container.append(wrapper);
-}
-
-function mostrarExito(msg) {
-    const container = document.getElementById('alert-container');
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = `<div class="alert alert-success alert-dismissible fade show shadow" role="alert">
-        <strong>OK:</strong> ${msg}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>`;
-    container.append(wrapper);
+    });
 }

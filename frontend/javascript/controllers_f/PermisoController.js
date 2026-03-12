@@ -6,6 +6,9 @@ import { truncar, mostrarError, mostrarExito } from '../helpers/utils.js';
 let permisos = [];
 let sesionActual = null;
 
+// CORRECCIÓN: estados del DDL — ENUM('ACEPTADO','REVISION','DENEGADO') — sin tilde en REVISION
+const ESTADOS_PERMISO_VALIDOS = ['ACEPTADO', 'REVISION', 'DENEGADO'];
+
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('permisos');
   if (!sesionActual) return;
@@ -22,6 +25,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     cargarSelectPermisos();
   }
 });
+
+// ================================
+// NORMALIZAR ESTADO (elimina tildes, mayúsculas)
+// ================================
+function normalizarEstado(estado) {
+  if (!estado) return '';
+  return String(estado)
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
 
 // ================================
 // CARGAR PERMISOS
@@ -89,6 +103,11 @@ function aplicarFiltros() {
     const cumpleFecha  = !filtroFecha  || p.fecha?.startsWith(filtroFecha);
     return cumpleMotivo && cumpleEstado && cumpleFecha;
   }));
+    // CORRECCIÓN: normalizar estado al cargar para comparaciones seguras
+    permisos = (r.data || []).map(p => ({ ...p, estado: normalizarEstado(p.estado) }));
+    renderTablaPermisos(permisos);
+  }
+  catch (e) { mostrarError(e.message || 'Error cargando permisos'); }
 }
 
 // ================================
@@ -128,11 +147,12 @@ async function cargarSelectMotivos(seleccionado, id_select) {
 
 // ================================
 // POBLAR SELECT ESTADOS
+// CORRECCIÓN: usar valores del DDL sin tildes
 // ================================
 function cargarSelectEstados() {
   const select = document.getElementById('estado'); if (!select) return;
   select.innerHTML = '<option value="">Seleccione el estado...</option>';
-  ['ACEPTADO','REVISION','DENEGADO'].forEach(e => {
+  ESTADOS_PERMISO_VALIDOS.forEach(e => {
     const o = document.createElement('option');
     o.value = e;
     o.textContent = e;
@@ -155,21 +175,45 @@ function renderTablaPermisos(lista) {
 
   lista.forEach(m => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_permiso}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.id_permiso}"><i class="bi bi-pencil text-primary"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_permiso}"><i class="bi bi-eye"></i></button>`;
-    tr.innerHTML = `
-      <td class="d-none d-md-table-cell">${m.id_permiso}</td>
-      <td>${m.cod_motivo??'—'}</td>
-      <td class="d-none d-md-table-cell">${m.fecha??'—'}</td>
-      <td>${m.h_inicio??'—'}</td>
-      <td>${m.h_fin??'—'}</td>
-      <td>${m.estado??'—'}</td>
-      <td class="d-none d-md-table-cell">${truncar(m.descripcion,80)}</td>
-      <td class="d-flex justify-content-around">${botones}</td>`;
+    tr.innerHTML = `<td class="d-none d-md-table-cell">${m.id_permiso}</td><td>${m.cod_motivo??'—'}</td><td class="d-none d-md-table-cell">${m.fecha??'—'}</td><td>${m.h_inicio??'—'}</td><td>${m.h_fin??'—'}</td><td>${m.estado??'—'}</td><td class="d-none d-md-table-cell">${truncar(m.descripcion,80)}</td>
+    <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>`;
     tbody.appendChild(tr);
   });
+}
+
+// ================================
+// VALIDAR DATOS DE PERMISO
+// ================================
+function validarDatosPermiso(data) {
+  if (!data.cod_motivo) {
+    mostrarError('El motivo es obligatorio'); return false;
+  }
+  // CORRECCIÓN: si se pasa estado, validar que sea uno del DDL
+  if (data.estado) {
+    const estadoNorm = normalizarEstado(data.estado);
+    if (!ESTADOS_PERMISO_VALIDOS.includes(estadoNorm)) {
+      mostrarError('El estado no es válido (debe ser ACEPTADO, REVISION o DENEGADO)'); return false;
+    }
+  }
+  // CORRECCIÓN: validar rango de horas si ambas presentes
+  if (data.h_inicio && data.h_fin) {
+    const horaRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!horaRegex.test(data.h_inicio)) {
+      mostrarError('La hora de inicio no tiene un formato válido (HH:MM)'); return false;
+    }
+    if (!horaRegex.test(data.h_fin)) {
+      mostrarError('La hora de fin no tiene un formato válido (HH:MM)'); return false;
+    }
+  }
+  return true;
 }
 
 // ================================
@@ -237,6 +281,7 @@ function bindModalVer() {
 
 // ================================
 // MODAL EDITAR
+// CORRECCIÓN: opciones del select usan valores del DDL sin tilde
 // ================================
 function bindModalEditar() {
   document.addEventListener('click', function (e) {
@@ -265,6 +310,18 @@ function bindModalEditar() {
         <button type="button" class="btn btn-primary" id="btnGuardarCambios">Guardar cambios</button>
       </div>`;
     document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
+      const estadoRaw = document.getElementById('editEstado').value;
+      // CORRECCIÓN: normalizar estado antes de validar y enviar
+      const estadoNorm = normalizarEstado(estadoRaw);
+      if (!ESTADOS_PERMISO_VALIDOS.includes(estadoNorm)) {
+        mostrarError('El estado no es válido'); return;
+      }
+      const dataEditar = {
+        h_inicio:    document.getElementById('editHInicio').value || null,
+        h_fin:       document.getElementById('editHFin').value || null,
+        estado:      estadoNorm,
+        descripcion: document.getElementById('editDescripcion').value.trim() || null
+      };
       try {
         await PermisoApi.update(id, {
           h_inicio:    document.getElementById('editHInicio').value || null,
@@ -282,14 +339,21 @@ function bindModalEditar() {
 
 // ================================
 // GESTIONAR ESTADO
+// CORRECCIÓN: normalizar estado antes de enviar
 // ================================
 function bindGestionarEstado() {
   const form = document.getElementById('formGestionarEstado'); if (!form) return;
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-    const data = { id_permiso: f.get('id_permiso'), estado: f.get('estado') };
-    if (!data.id_permiso || !data.estado) { mostrarError('Seleccione un permiso y un estado'); return; }
+    const id_permiso = f.get('id_permiso');
+    const estadoRaw  = f.get('estado') || '';
+    const estado     = normalizarEstado(estadoRaw);
+
+    if (!id_permiso) { mostrarError('Seleccione un permiso'); return; }
+    if (!estado || !ESTADOS_PERMISO_VALIDOS.includes(estado)) {
+      mostrarError('El estado no es válido (debe ser ACEPTADO, REVISION o DENEGADO)'); return;
+    }
     try {
       await PermisoApi.update(data.id_permiso, { estado: data.estado });
       await cargarPermisos();

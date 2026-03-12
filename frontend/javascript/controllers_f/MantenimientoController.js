@@ -1,4 +1,15 @@
 import { authGuard } from '../helpers/authGuard.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarCheck, validarRangoFechas } from '../helpers/validacion.js';
+
+// ================================
+// CONSTANTES
+// Según DDL Mantenimiento:
+//   estado  ENUM('ABIERTO','REALIZADO') NOT NULL
+//   f_inicio DATE NOT NULL
+//   f_fin    DATE nullable  CHECK (f_fin >= f_inicio) si no null
+// ================================
+const ESTADOS_MANTENIMIENTO = ['ABIERTO', 'REALIZADO'];
 
 let mantenimientos = [];
 let personas = [];
@@ -36,25 +47,13 @@ async function cargarDatosIniciales() {
   } catch (e) { console.error('Error cargando datos:', e); mostrarError('Error cargando datos'); }
 }
 
-// ================================
-// CARGAR VEHÍCULOS
-// ================================
-async function cargarVehiculos() { try { const r = await fetch('/api/vehiculos'); mantenimientos; vehiculos = (await r.json()).data || []; } catch(e) { console.error(e); } }
-// ================================
-// CARGAR MATERIALES
-// ================================
-async function cargarMateriales() { try { const r = await fetch('/api/materiales'); materiales = (await r.json()).data || []; } catch(e) { console.error(e); } }
-// ================================
-// CARGAR PERSONAS
-// ================================
-async function cargarPersonas() { try { const r = await fetch('/api/personas'); personas = (await r.json()).data || []; } catch(e) { console.error(e); } }
-// ================================
-// CARGAR MANTENIMIENTOS
-// ================================
+async function cargarVehiculos()      { try { const r = await fetch('/api/vehiculos');      vehiculos     = (await r.json()).data || []; } catch(e) { console.error(e); } }
+async function cargarMateriales()     { try { const r = await fetch('/api/materiales');     materiales    = (await r.json()).data || []; } catch(e) { console.error(e); } }
+async function cargarPersonas()       { try { const r = await fetch('/api/personas');       personas      = (await r.json()).data || []; } catch(e) { console.error(e); } }
 async function cargarMantenimientos() { try { const r = await fetch('/api/mantenimientos'); mantenimientos = (await r.json()).data || []; } catch(e) { mantenimientos = []; } }
 
 // ================================
-// POBLAR SELECT PERSONAS
+// POBLAR SELECTS
 // ================================
 function poblarSelectPersonas() {
   ['selectBomberoVeh','selectBomberoMat','editBombero'].forEach(id => {
@@ -64,17 +63,13 @@ function poblarSelectPersonas() {
     personas.forEach(p => { const o = document.createElement('option'); o.value = p.id_bombero; o.textContent = `${p.nombre} ${p.apellidos||''} (${p.n_funcionario||p.id_bombero})`; sel.appendChild(o); });
   });
 }
-// ================================
-// POBLAR SELECT VEHÍCULOS
-// ================================
+
 function poblarSelectVehiculos() {
   const sel = document.getElementById('selectVehiculoVeh'); if (!sel) return;
   sel.innerHTML = '<option value="">Seleccione un vehículo...</option>';
   vehiculos.forEach(v => { const o = document.createElement('option'); o.value = v.matricula; o.textContent = `${v.nombre||''} (${v.matricula})`; sel.appendChild(o); });
 }
-// ================================
-// POBLAR SELECT MATERIALES
-// ================================
+
 function poblarSelectMateriales() {
   const sel = document.getElementById('selectMaterialMat'); if (!sel) return;
   sel.innerHTML = '<option value="">Seleccione un material...</option>';
@@ -94,7 +89,7 @@ function renderTabla(lista) {
 
   lista.forEach(m => {
     const tr = document.createElement('tr');
-    const botones = puedeEscribir
+    const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.cod_mantenimiento}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.cod_mantenimiento}"><i class="bi bi-pencil"></i></button>
          <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.cod_mantenimiento}"><i class="bi bi-trash3"></i></button>`
@@ -105,7 +100,11 @@ function renderTabla(lista) {
       <td>${m.recurso||'-'}</td><td class="d-none d-md-table-cell">${m.estado??''}</td>
       <td class="d-none d-lg-table-cell">${m.descripcion||'-'}</td>
       <td class="d-none d-md-table-cell">${m.f_inicio||'-'}</td><td class="d-none d-md-table-cell">${m.f_fin||'-'}</td>
-      <td class="d-flex justify-content-around">${botones}</td>`;
+      <td>
+        <div class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>
+      </td>`;
     tbody.appendChild(tr);
   });
 }
@@ -119,9 +118,6 @@ function bindFiltros() {
   document.getElementById('filtroTipo')?.addEventListener('change', aplicarFiltros);
 }
 
-// ================================
-// APLICAR FILTROS
-// ================================
 function aplicarFiltros() {
   const fr = document.getElementById('filtroResponsable')?.value?.toLowerCase();
   const fe = document.getElementById('filtroEstado')?.value;
@@ -136,27 +132,68 @@ function aplicarFiltros() {
 }
 
 // ================================
+// VALIDAR MANTENIMIENTO
+// Según DDL Mantenimiento:
+//   id_bombero FK         NOT NULL
+//   estado     ENUM('ABIERTO','REALIZADO') NOT NULL
+//   f_inicio   DATE       NOT NULL
+//   f_fin      DATE       nullable  CHECK (f_fin >= f_inicio) si no null
+//   descripcion TEXT      nullable
+// ================================
+function validarMantenimiento(id_bombero, estado, f_inicio, f_fin = null) {
+  if (!id_bombero) {
+    mostrarError('Seleccione un responsable.');
+    return false;
+  }
+  if (!validarCheck(estado, ESTADOS_MANTENIMIENTO)) {
+    mostrarError('El estado no es válido. Debe ser ABIERTO o REALIZADO.');
+    return false;
+  }
+  if (!f_inicio) {
+    mostrarError('La fecha de inicio es obligatoria.');
+    return false;
+  }
+  // CHECK (f_fin >= f_inicio) solo si f_fin tiene valor
+  if (f_fin && !validarRangoFechas(f_inicio, f_fin)) {
+    mostrarError('La fecha de fin debe ser igual o posterior a la fecha de inicio.');
+    return false;
+  }
+  return true;
+}
+
+// ================================
 // CREAR MANTENIMIENTO
 // ================================
 async function crearMantenimiento(form, tipo) {
   const f = new FormData(form);
-  const id_bombero = f.get('id_bombero'), estado = f.get('estado'), f_inicio = f.get('f_inicio');
-  if (!id_bombero) { mostrarError('Seleccione un responsable'); return; }
-  if (!estado) { mostrarError('Seleccione un estado'); return; }
-  if (!f_inicio) { mostrarError('La fecha de inicio es obligatoria'); return; }
+  const id_bombero  = f.get('id_bombero');
+  const estado      = f.get('estado');
+  const f_inicio    = f.get('f_inicio');
+  const f_fin       = f.get('f_fin') || null;
+  const descripcion = f.get('descripcion')?.trim() || null;
+
+  // ── Validación ──
+  if (!validarMantenimiento(id_bombero, estado, f_inicio, f_fin)) return;
+
   try {
-    const r = await fetch('/api/mantenimientos', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id_bombero, estado, f_inicio, f_fin: f.get('f_fin')||null, descripcion: f.get('descripcion')?.trim()||null }) });
+    const r = await fetch('/api/mantenimientos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_bombero, estado, f_inicio, f_fin, descripcion })
+    });
     const result = await r.json();
-    if (!r.ok) throw new Error(result.message||'Error al crear');
+    if (!r.ok) throw new Error(result.message || 'Error al crear');
+
     const cod = result.data?.cod_mantenimiento;
     if (cod && tipo === 'vehiculo') {
       const mat = form.querySelector('[name="matricula"]')?.value;
-      if (mat) await fetch(`/api/mantenimientos/${cod}/vehiculos/${encodeURIComponent(mat)}`, { method:'POST', headers:{'Content-Type':'application/json'} });
+      if (mat) await fetch(`/api/mantenimientos/${cod}/vehiculos/${encodeURIComponent(mat)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
     }
     if (cod && tipo === 'material') {
       const mat = form.querySelector('[name="id_material"]')?.value;
-      if (mat) await fetch(`/api/mantenimientos/${cod}/materiales/${mat}`, { method:'POST', headers:{'Content-Type':'application/json'} });
+      if (mat) await fetch(`/api/mantenimientos/${cod}/materiales/${mat}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
     }
+
     await cargarMantenimientos();
     renderTabla(mantenimientos);
     form.reset();
@@ -164,18 +201,12 @@ async function crearMantenimiento(form, tipo) {
   } catch (err) { mostrarError(err.message); }
 }
 
-// ================================
-// FORM INSERTAR VEHÍCULO
-// ================================
 function bindCrearMantenimientoVehiculo() {
   const form = document.getElementById('formInsertarVehiculo');
   if (!form) return;
   form.addEventListener('submit', e => { e.preventDefault(); crearMantenimiento(form, 'vehiculo'); });
 }
 
-// ================================
-// FORM INSERTAR MATERIAL
-// ================================
 function bindCrearMantenimientoMaterial() {
   const form = document.getElementById('formInsertarMaterial');
   if (!form) return;
@@ -201,7 +232,7 @@ function bindModalVer() {
       <p><strong>Estado:</strong> ${mant.estado}</p>
       <p><strong>Fecha inicio:</strong> ${mant.f_inicio||'-'}</p>
       <p><strong>Fecha fin:</strong> ${mant.f_fin||'-'}</p>
-      <p><strong>Descripcion:</strong> ${mant.descripcion||'-'}</p>`;
+      <p><strong>Descripción:</strong> ${mant.descripcion||'-'}</p>`;
   });
 }
 
@@ -228,19 +259,24 @@ function bindModalesEscritura() {
   });
 
   document.getElementById('btnGuardarCambios')?.addEventListener('click', async function () {
-    const id = document.getElementById('editId').value;
-    const id_bombero = document.getElementById('editBombero').value;
-    const estado = document.getElementById('editEstado').value;
-    const f_inicio = document.getElementById('editFInicio').value;
-    const f_fin = document.getElementById('editFFin').value || null;
+    const id          = document.getElementById('editId').value;
+    const id_bombero  = document.getElementById('editBombero').value;
+    const estado      = document.getElementById('editEstado').value;
+    const f_inicio    = document.getElementById('editFInicio').value;
+    const f_fin       = document.getElementById('editFFin').value || null;
     const descripcion = document.getElementById('editDescripcion').value.trim() || null;
-    if (!id_bombero) { mostrarError('Seleccione un responsable'); return; }
-    if (!estado) { mostrarError('Seleccione un estado'); return; }
-    if (!f_inicio) { mostrarError('La fecha de inicio es obligatoria'); return; }
+
+    // ── Validación ──
+    if (!validarMantenimiento(id_bombero, estado, f_inicio, f_fin)) return;
+
     try {
-      const r = await fetch(`/api/mantenimientos/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id_bombero, estado, f_inicio, f_fin, descripcion }) });
+      const r = await fetch(`/api/mantenimientos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_bombero, estado, f_inicio, f_fin, descripcion })
+      });
       const result = await r.json();
-      if (!r.ok) throw new Error(result.message||'Error al actualizar');
+      if (!r.ok) throw new Error(result.message || 'Error al actualizar');
       await cargarMantenimientos();
       renderTabla(mantenimientos);
       bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
@@ -262,25 +298,14 @@ function bindModalesEscritura() {
     const id = this.dataset.id;
     if (!id) return;
     try {
-      const r = await fetch(`/api/mantenimientos/${id}`, { method:'DELETE' });
-      if (!r.ok) { const res = await r.json().catch(()=>({})); mostrarError(res.message||'Error al eliminar'); return; }
+      const r = await fetch(`/api/mantenimientos/${id}`, { method: 'DELETE' });
+      if (!r.ok) { const res = await r.json().catch(()=>({})); mostrarError(res.message || 'Error al eliminar'); return; }
       await cargarMantenimientos();
       renderTabla(mantenimientos);
       bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
       mostrarExito('Mantenimiento eliminado correctamente');
-    } catch (err) { mostrarError(err.message||'Error'); }
+    } catch (err) { mostrarError(err.message || 'Error'); }
   });
-}
-
-function mostrarError(msg) {
-  const a = document.createElement('div'); a.className='alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3'; a.style.zIndex='9999';
-  a.innerHTML=`<strong>Error:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-  document.body.appendChild(a); setTimeout(()=>a.remove(),5000);
-}
-function mostrarExito(msg) {
-  const a = document.createElement('div'); a.className='alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3'; a.style.zIndex='9999';
-  a.innerHTML=`<strong>Éxito:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-  document.body.appendChild(a); setTimeout(()=>a.remove(),3000);
 }
 
 window.MantenimientoController = { cargarMantenimientos, aplicarFiltros };
