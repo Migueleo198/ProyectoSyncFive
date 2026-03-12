@@ -49,11 +49,13 @@ function bindLogin() {
     }
 
     try {
-      const response = await AuthApi.login({ login, password });
-      const user = response.data.user;
+        const response = await AuthApi.login({ login, password });
+        const user = response.data.user;
 
-      sessionStorage.setItem('user', JSON.stringify(user));
-      window.location.href = '/frontend/pages/home.html';
+        // Guardamos usuario en sessionStorage
+        sessionStorage.setItem('user', JSON.stringify(user));
+        // Redirigir a home
+        window.location.href = '/frontend/pages/home.html';
 
     } catch (error) {
       mostrarError(error.message || 'Usuario o contraseña incorrectos.');
@@ -72,6 +74,7 @@ function bindRecoverPassword() {
         const emailInput = document.getElementById('recoverEmail');
         const errorDiv   = document.getElementById('recover-error');
 
+        // Limpiar error previo
         errorDiv.classList.add('d-none');
         errorDiv.textContent = '';
 
@@ -95,11 +98,13 @@ function bindRecoverPassword() {
             return;
         }
 
+        // Mostrar spinner
         setRecoverLoading(true);
 
         try {
             await AuthApi.recoverPassword({ correo });
 
+            // Mostrar estado de éxito (independientemente de si el correo existe)
             document.getElementById('recover-form-state').classList.add('d-none');
             document.getElementById('recover-success-state').classList.remove('d-none');
             document.getElementById('recover-footer').classList.add('d-none');
@@ -112,6 +117,7 @@ function bindRecoverPassword() {
         }
     });
 
+    // Limpiar estado del modal al cerrarlo
     const modal = document.getElementById('modalRecuperarPassword');
     modal.addEventListener('hidden.bs.modal', () => {
         document.getElementById('recoverEmail').value = '';
@@ -140,6 +146,7 @@ function bindChangePassword() {
     const params = new URLSearchParams(window.location.search);
     const token  = params.get('token');
 
+    // Si no hay token, mostrar error directamente
     if (!token) {
         document.getElementById('change-form-state').classList.add('d-none');
         document.getElementById('token-error-state').classList.remove('d-none');
@@ -155,6 +162,7 @@ function bindChangePassword() {
         const confirmPassword = document.getElementById('confirmPassword').value.trim();
         const errorDiv        = document.getElementById('change-error');
 
+        // Limpiar error previo
         errorDiv.classList.add('d-none');
         errorDiv.textContent = '';
 
@@ -263,12 +271,17 @@ export function mostrarNombreUsuario() {
   document.querySelectorAll('.header-user span').forEach(span => {
     span.textContent = user.nombre_usuario || user.login || 'Usuario';
   });
-
+    
+  // Foto de perfil en el header (si existe)
   if (user.foto_perfil) {
     cargarFotoHeader(user.foto_perfil);
   }
 }
 
+/**
+ * Carga la foto de perfil en el icono del header mediante fetch autenticado.
+ * Se llama desde mostrarNombreUsuario y desde header_footer.js tras cargar el header.
+ */
 async function cargarFotoHeader(fotoPerfil) {
     try {
         const { API_BASE_PATH } = await import('../../config/apiConfig.js');
@@ -297,6 +310,7 @@ async function cargarFotoHeader(fotoPerfil) {
 // BIND LOGOUT BUTTONS
 // ================================
 export function bindLogoutButtons() {
+    // Seleccionar todos los enlaces/botones de logout
     document.querySelectorAll('.logout-link').forEach(link => {
         link.addEventListener('click', async (e) => {
             e.preventDefault();
@@ -310,10 +324,12 @@ export function bindLogoutButtons() {
 // ================================
 export async function cerrarSesion() {
     try {
+        // Llamada al backend
         await AuthApi.logout();
     } catch (error) {
         console.error("Error al cerrar sesión:", error);
     } finally {
+        // Aunque falle el backend, limpiamos la sesión local
         sessionStorage.removeItem('user');
         window.location.href = '/frontend/pages/Login/login.html';
     }

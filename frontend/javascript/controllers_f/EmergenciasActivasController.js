@@ -144,12 +144,14 @@ function bindEventos() {
       });
     }
 
+    // ABRIR MODAL CERRAR (solo llega aquí si puedeEscribir, porque el botón no se renderiza si no)
     const btnCerrar = e.target.closest('.btn-cerrar');
     if (btnCerrar) {
       document.getElementById('cerrarEmergenciaId').value = btnCerrar.dataset.id;
     }
   });
 
+  // CONFIRMAR CIERRE
   if (!sesionActual?.puedeEscribir) return;
 
   const btnConfirmar = document.getElementById('btnConfirmarCerrarEmergencia');

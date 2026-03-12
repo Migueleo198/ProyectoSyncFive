@@ -43,7 +43,6 @@ function poblarSelectLocalidad() {
   )].sort();
 
   select.innerHTML = '<option value="">Selecciona una localidad</option>';
-
   localidades.forEach(loc => {
     const option = document.createElement('option');
     option.value = loc;
@@ -64,7 +63,6 @@ function poblarFiltroLocalidad() {
   )].sort();
 
   const valorActual = select.value;
-
   select.innerHTML = '<option value="">Todos</option>';
   localidades.forEach(loc => {
     const option = document.createElement('option');
@@ -87,7 +85,6 @@ function renderTablaInstalaciones(lista) {
 
   lista.forEach(i => {
     const tr = document.createElement('tr');
-
     tr.innerHTML = `
       <td>${i.nombre ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.direccion ?? ''}</td>
@@ -96,7 +93,6 @@ function renderTablaInstalaciones(lista) {
       <td>${i.localidad ?? ''}</td>
       <td>
         <div  class="d-flex justify-content-around">
-          
         <button type="button" class="btn p-0 btn-ver"
                 data-bs-toggle="modal"
                 data-bs-target="#modalVer"
@@ -116,10 +112,9 @@ function renderTablaInstalaciones(lista) {
                 data-id="${i.id_instalacion}">
           <i class="bi bi-trash3"></i>
         </button>` : ''}
-        </div>  
+        </div>
       </td>
     `;
-
     tbody.appendChild(tr);
   });
 }
@@ -146,6 +141,68 @@ function aplicarFiltros() {
 }
 
 // ================================
+// VALIDAR INSTALACIÓN
+// Según DDL Instalacion:
+//   nombre    VARCHAR(100) NOT NULL
+//   direccion VARCHAR(150) NOT NULL
+//   telefono  VARCHAR(15)  NOT NULL  (formato español)
+//   correo    VARCHAR(100) NOT NULL  (formato email)
+//   localidad FK          NOT NULL
+// ================================
+function validarInstalacion(data) {
+  if (!data.nombre || !data.nombre.trim()) {
+    mostrarError('El nombre es obligatorio.');
+    return false;
+  }
+  if (data.nombre.trim().length > 100) {
+    mostrarError('El nombre no puede superar los 100 caracteres.');
+    return false;
+  }
+
+  if (!data.direccion || !data.direccion.trim()) {
+    mostrarError('La dirección es obligatoria.');
+    return false;
+  }
+  if (data.direccion.trim().length > 150) {
+    mostrarError('La dirección no puede superar los 150 caracteres.');
+    return false;
+  }
+
+  if (!data.telefono || !data.telefono.trim()) {
+    mostrarError('El teléfono es obligatorio.');
+    return false;
+  }
+  if (!validarTelefono(data.telefono)) {
+    mostrarError('El teléfono no tiene un formato válido.');
+    return false;
+  }
+  if (data.telefono.trim().length > 15) {
+    mostrarError('El teléfono no puede superar los 15 caracteres.');
+    return false;
+  }
+
+  if (!data.correo || !data.correo.trim()) {
+    mostrarError('El correo es obligatorio.');
+    return false;
+  }
+  if (!validarEmail(data.correo)) {
+    mostrarError('El correo no tiene un formato válido.');
+    return false;
+  }
+  if (data.correo.trim().length > 100) {
+    mostrarError('El correo no puede superar los 100 caracteres.');
+    return false;
+  }
+
+  if (!data.localidad) {
+    mostrarError('La localidad es obligatoria.');
+    return false;
+  }
+
+  return true;
+}
+
+// ================================
 // CREAR INSTALACIÓN
 // ================================
 function bindCrearInstalacion() {
@@ -163,18 +220,8 @@ function bindCrearInstalacion() {
       localidad: f.get('localidad')
     };
 
-    if (!data.nombre || !data.direccion || !data.localidad) {
-      mostrarError('Nombre, dirección y localidad son obligatorios');
-      return;
-    }
-    if (!validarEmail(data.correo)) {
-      mostrarError('Correo no válido');
-      return;
-    }
-    if (!validarTelefono(data.telefono)) {
-      mostrarError('Teléfono no válido');
-      return;
-    }
+    // ── Validación ──
+    if (!validarInstalacion(data)) return;
 
     try {
       await InstalacionApi.create(data);
@@ -258,21 +305,21 @@ function bindModales() {
           </div>
           <div class="col-lg-4">
             <label class="form-label">Nombre</label>
-            <input type="text" class="form-control" name="nombre" value="${instalacion.nombre || ''}" required>
+            <input type="text" class="form-control" name="nombre" maxlength="100" value="${instalacion.nombre || ''}" required>
           </div>
           <div class="col-lg-4">
             <label class="form-label">Teléfono</label>
-            <input type="text" class="form-control" name="telefono" value="${instalacion.telefono || ''}" required>
+            <input type="text" class="form-control" name="telefono" maxlength="15" value="${instalacion.telefono || ''}" required>
           </div>
         </div>
         <div class="row mb-3">
           <div class="col-lg-6">
             <label class="form-label">Dirección</label>
-            <input type="text" class="form-control" name="direccion" value="${instalacion.direccion || ''}" required>
+            <input type="text" class="form-control" name="direccion" maxlength="150" value="${instalacion.direccion || ''}" required>
           </div>
           <div class="col-lg-6">
             <label class="form-label">Correo</label>
-            <input type="email" class="form-control" name="correo" value="${instalacion.correo || ''}" required>
+            <input type="email" class="form-control" name="correo" maxlength="100" value="${instalacion.correo || ''}" required>
           </div>
         </div>
         <div class="row mb-3">
@@ -291,7 +338,7 @@ function bindModales() {
       `;
 
       form.querySelector('.btn-guardar-instalacion').addEventListener('click', async () => {
-        const id = form.querySelector('input[name="id_instalacion"]').value;
+        const editId = form.querySelector('input[name="id_instalacion"]').value;
         const data = {
           nombre:    form.querySelector('input[name="nombre"]').value,
           direccion: form.querySelector('input[name="direccion"]').value,
@@ -300,8 +347,11 @@ function bindModales() {
           localidad: form.querySelector('select[name="localidad"]').value
         };
 
+        // ── Validación ──
+        if (!validarInstalacion(data)) return;
+
         try {
-          await InstalacionApi.update(id, data);
+          await InstalacionApi.update(editId, data);
           await cargarInstalaciones();
           bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
           mostrarExito('Instalación actualizada correctamente');

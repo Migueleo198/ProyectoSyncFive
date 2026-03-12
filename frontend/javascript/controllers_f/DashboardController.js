@@ -21,6 +21,7 @@ async function verificarSesion() {
         const data = await response.json();
         const usuario = data.data?.user ?? data.data ?? data;
 
+        // Mantener sessionStorage actualizado
         sessionStorage.setItem('user', JSON.stringify(usuario));
         return usuario;
     } catch (e) {

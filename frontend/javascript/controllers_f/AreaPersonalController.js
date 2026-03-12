@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sesion = await authGuard('areaPersonal');
     if (!sesion) return;
 
+    // Obtener el id del usuario logueado desde sessionStorage (igual que el original)
     const user = JSON.parse(sessionStorage.getItem('user') || 'null');
     if (!user || !user.id_bombero) {
         mostrarError('No se pudo identificar al usuario. Por favor, inicia sesión de nuevo.');

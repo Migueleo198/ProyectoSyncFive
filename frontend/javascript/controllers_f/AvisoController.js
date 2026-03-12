@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('avisos');
   if (!sesionActual) return;
 
+  // Leer usuario desde sessionStorage (ya refrescado por authGuard)
   usuarioActual = sesionActual.usuario;
 
   cargarPersonas();

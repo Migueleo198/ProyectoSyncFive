@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('btnInsertar').addEventListener('click', guardarAlineacion);
         document.getElementById('btnLimpiar').addEventListener('click', limpiarFormulario);
     } else {
+        // Ocultar controles de escritura si no tiene permisos
         document.getElementById('btnInsertar')?.classList.add('d-none');
         document.getElementById('btnLimpiar')?.classList.add('d-none');
         document.querySelectorAll('#gridAlineacion select[data-cargo]').forEach(s => s.disabled = true);

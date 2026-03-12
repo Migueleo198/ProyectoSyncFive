@@ -19,6 +19,7 @@ let sesionActual = null;
 // DOM CONTENT LOADED
 // ================================
 document.addEventListener('DOMContentLoaded', async () => {
+  // ── GUARD ── primero verificamos sesión y permisos ──────────  //
   sesionActual = await authGuard('emergencias');
   if (!sesionActual) return;
 
@@ -28,7 +29,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   cargarSelectVehiculos();
   cargarPersonas();
   bindModalEquipo();
-
+  
+  // Solo vinculamos el form de insertar si puede escribir
   if (sesionActual.puedeEscribir) {
     bindCrearEmergencia();
   }
@@ -152,6 +154,7 @@ async function renderTablaEmergencias(lista) {
       }
     } catch { /* dejamos — */ }
 
+    // Botones de acción según permiso
     const botonesAccion = puedeEscribir
       ? `
         <button type="button" class="btn p-0 btn-ver"
@@ -430,6 +433,7 @@ function bindCrearEmergencia() {
 // MODAL EDITAR
 // ================================
 document.addEventListener('click', async function (e) {
+  // Abrir modal vehículos desde modal editar
   const btnEditarVehiculos = e.target.closest('.btn-editar-vehiculos');
   if (btnEditarVehiculos) {
     const modalEditarEl = document.getElementById('modalEditar');
@@ -443,6 +447,7 @@ document.addEventListener('click', async function (e) {
     return;
   }
 
+  // Abrir modal editar
   const btnEditar = e.target.closest('.btn-editar');
   if (!btnEditar) return;
 
