@@ -789,3 +789,5 @@
 2026-03-10T10:09:34+01:00 - Exception: No autorizado
 2026-03-10T10:09:34+01:00 - Exception: No autorizado
 2026-03-10T10:22:19+01:00 - Exception: No autorizado
+2026-03-11T14:28:25+01:00 - Exception: Route not found for GET /turnos-refuerzo/fecha/2026-03-11
+2026-03-11T14:34:17+01:00 - Exception: Route not found for GET /turnos-refuerzo/fecha/2026-03-11
