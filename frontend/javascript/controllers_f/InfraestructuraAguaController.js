@@ -39,7 +39,7 @@ function renderMapa(lista, vehiculos = []) {
     if (coordsVistas.has(clave)) return;
     coordsVistas.add(clave);
 
-    const emojiInfra = item.tipo === 'HIDRANTE' ? '💧' : '🌿';
+    const emojiInfra = item.tipo === 'HIDRANTE' ? '💧' : '🚰';
 
     const iconoInfra = L.divIcon({
       html: `<span style="font-size:22px">${emojiInfra}</span>`,
@@ -102,7 +102,7 @@ async function cargarInfraestructuras(filtros = {}) {
 
     todasLasInfraestructuras = respInfra.data;
     renderTabla(todasLasInfraestructuras);
-    actualizarContadores(todasLasInfraestructuras);
+    actualizarContadores(todasLasInfraestructuras, respVehiculos.data);    
     renderMapa(todasLasInfraestructuras, respVehiculos.data);
   } catch (e) {
     mostrarError(e.message || 'Error cargando datos');
@@ -128,8 +128,8 @@ function renderTabla(lista) {
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${item.codigo}</td>
       <td>
-        <span class="badge ${item.tipo === 'HIDRANTE' ? 'bg-primary' : 'bg-purple'}">
-          ${item.tipo === 'HIDRANTE' ? '💧 Hidrante' : '🌿 Boca de riego'}
+        <span class="badge ${item.tipo === 'HIDRANTE' ? 'bg-primary' : 'bg-primary bg-opacity-50'}">
+          ${item.tipo === 'HIDRANTE' ? '💧 Hidrante' : '🚰 Boca de riego'}
         </span>
       </td>
       <td>${item.codigo}</td>
@@ -178,16 +178,16 @@ function estadoBadge(estado) {
   }
 }
 
-function actualizarContadores(lista) {
+function actualizarContadores(lista, vehiculos = []) {
   const total    = lista.length;
   const hidrant  = lista.filter(i => i.tipo === 'HIDRANTE').length;
   const bocas    = lista.filter(i => i.tipo === 'BOCA_RIEGO').length;
   const activos  = lista.filter(i => i.estado === 'ACTIVO').length;
 
-  const set = (codigo, val) => { const el = document.getElementById(codigo); if (el) el.textContent = val; };
-  set('cntTotal',    total);
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set('cntHidrante', hidrant);
   set('cntBoca',     bocas);
+  set('cntVehiculo', vehiculos.length);
   set('cntActivos',  activos);
 }
 
@@ -263,7 +263,7 @@ document.addEventListener('click', async function (e) {
       <tr><th class="table-secondary">Tipo</th>
           <td>
             <span class="badge ${item.tipo === 'HIDRANTE' ? 'bg-primary' : 'bg-purple'}">
-              ${item.tipo === 'HIDRANTE' ? '💧 Hidrante' : '🌿 Boca de riego'}
+              ${item.tipo === 'HIDRANTE' ? '💧 Hidrante' : '🚰 Boca de riego'}
             </span>
           </td>
       </tr>
@@ -303,7 +303,7 @@ document.addEventListener('click', async function (e) {
         <label class="form-label">Tipo *</label>
         <select class="form-select" name="tipo">
           <option value="HIDRANTE"   ${item.tipo === 'HIDRANTE'   ? 'selected' : ''}>💧 Hidrante</option>
-          <option value="BOCA_RIEGO" ${item.tipo === 'BOCA_RIEGO' ? 'selected' : ''}>🌿 Boca de riego</option>
+          <option value="BOCA_RIEGO" ${item.tipo === 'BOCA_RIEGO' ? 'selected' : ''}>🚰 Boca de riego</option>
         </select>
       </div>
       <div class="col-md-4">
