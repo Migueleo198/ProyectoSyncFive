@@ -7,9 +7,6 @@ import { validarRangoFechas } from '../helpers/validacion.js';
 let guardias = [];
 let sesionActual = null;
 
-// ================================
-// CONSTANTES
-// ================================
 const cargos = [
     "BOMBERO1", "BOMBERO2", "BOMBERO3", "BOMBERO4", "BOMBERO5",
     "BOMBERO6", "BOMBERO7", "BOMBERO8", "BOMBERO9", "BOMBERO10",
@@ -30,6 +27,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     cargarSelectGuardias(null, 'seleccionarGuardia');
     cargarSelectPersonas(null, 'n_funcionario');
     cargarSelectCargos();
+    bindCrearGuardia();
+    bindAsignarGuardia();
+    bindFiltros();
     bindModalVer();
     bindModalEditar();
 
@@ -53,7 +53,26 @@ async function cargarGuardias() {
 }
 
 // ================================
-// POBLAR SELECT GUARDIAS
+// FILTROS
+// ================================
+function bindFiltros() {
+    document.getElementById('filtroFecha')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroNotas')?.addEventListener('input', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+    const filtroFecha = document.getElementById('filtroFecha')?.value ?? '';
+    const filtroNotas = document.getElementById('filtroNotas')?.value.toLowerCase().trim() ?? '';
+
+    renderTablaGuardias(guardias.filter(g => {
+        const cumpleFecha = !filtroFecha || g.fecha === filtroFecha;
+        const cumpleNotas = !filtroNotas || g.notas?.toLowerCase().includes(filtroNotas);
+        return cumpleFecha && cumpleNotas;
+    }));
+}
+
+// ================================
+// CARGAR SELECTS
 // ================================
 async function cargarSelectGuardias(seleccionado, id_select) {
     const select = document.getElementById(id_select);
@@ -268,7 +287,6 @@ function bindModalEditar() {
         const response = await GuardiaApi.getById(id);
         const guardia = response.data;
         if (!guardia) return;
-
         const form = document.getElementById('formEditar');
         form.innerHTML = `
             <div class="row mb-3">
@@ -291,9 +309,7 @@ function bindModalEditar() {
             </div>
             <div class="text-center">
                 <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
-            </div>
-        `;
-
+            </div>`;
         document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
             const data = {};
             camposBd.forEach(c => {

@@ -142,6 +142,7 @@ async function renderTablaEmergencias(lista) {
   tbody.innerHTML = '';
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+
   for (const e of lista) {
     const tr = document.createElement('tr');
 
@@ -193,6 +194,25 @@ async function renderTablaEmergencias(lista) {
 }
 
 // ================================
+// FILTROS
+// ================================
+function bindFiltros() {
+  document.getElementById('filtroTipoEmergencia')?.addEventListener('change', aplicarFiltros);
+  document.getElementById('grupo')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  const filtroTipo   = document.getElementById('filtroTipoEmergencia')?.value ?? '';
+  const filtroEstado = document.getElementById('grupo')?.value.toLowerCase().trim() ?? '';
+
+  renderTablaEmergencias(emergencias.filter(e => {
+    const cumpleTipo   = !filtroTipo   || String(e.codigo_tipo) === String(filtroTipo);
+    const cumpleEstado = !filtroEstado || e.estado?.toLowerCase().includes(filtroEstado);
+    return cumpleTipo && cumpleEstado;
+  }));
+}
+
+// ================================
 // BIND MODAL EQUIPO
 // ================================
 function bindModalEquipo() {
@@ -217,7 +237,7 @@ function bindModalEquipo() {
     });
 
   document.getElementById('btnAnadirVehiculo').addEventListener('click', () => {
-    const select   = document.getElementById('selectVehiculo');
+    const select    = document.getElementById('selectVehiculo');
     const matricula = select.value;
     const label     = select.options[select.selectedIndex]?.text;
 
@@ -259,7 +279,7 @@ function bindModalEquipo() {
 
     const resumenEditar   = document.getElementById('resumenVehiculosEditar');
     const resumenInsertar = document.getElementById('resumenVehiculosInsertar');
-    if (resumenEditar)   resumenEditar.value       = resumenTexto;
+    if (resumenEditar)   resumenEditar.value        = resumenTexto;
     if (resumenInsertar) resumenInsertar.textContent = resumenTexto;
 
     mostrarExito(`${vehiculosEnModal.length} vehículo(s) listos para guardar`);
@@ -352,7 +372,7 @@ function renderVehiculosModal() {
 
   contenedor.querySelectorAll('.btn-añadir-persona').forEach(btn => {
     btn.addEventListener('click', () => {
-      const idx          = Number(btn.dataset.idx);
+      const idx           = Number(btn.dataset.idx);
       const selectPersona = contenedor.querySelector(`.select-persona[data-idx="${idx}"]`);
       const idPersona     = selectPersona.value;
       const nombrePersona = selectPersona.options[selectPersona.selectedIndex]?.text;
@@ -433,7 +453,6 @@ function bindCrearEmergencia() {
 // MODAL EDITAR
 // ================================
 document.addEventListener('click', async function (e) {
-  // Abrir modal vehículos desde modal editar
   const btnEditarVehiculos = e.target.closest('.btn-editar-vehiculos');
   if (btnEditarVehiculos) {
     const modalEditarEl = document.getElementById('modalEditar');
@@ -447,7 +466,6 @@ document.addEventListener('click', async function (e) {
     return;
   }
 
-  // Abrir modal editar
   const btnEditar = e.target.closest('.btn-editar');
   if (!btnEditar) return;
 
@@ -577,7 +595,7 @@ document.addEventListener('click', async function (e) {
         try {
           await EmergenciaApi.addVehiculo(id, {
             matricula: vehiculo.matricula,
-            f_salida: vehiculo.f_salida || null,
+            f_salida:  vehiculo.f_salida  || null,
             f_llegada: vehiculo.f_llegada || null,
             f_regreso: vehiculo.f_regreso || null,
           });
@@ -587,12 +605,12 @@ document.addEventListener('click', async function (e) {
         }
       }
       for (const vehiculo of vehiculosExistentes) {
-        const originales    = vehiculo.personasOriginales || [];
+        const originales     = vehiculo.personasOriginales || [];
         const personasNuevas = vehiculo.personas.filter(p => !originales.includes(p.id_bombero));
         for (const persona of personasNuevas) {
           try { await EmergenciaApi.setPersonal(id, vehiculo.matricula, { id_bombero: persona.id_bombero }); } catch {}
         }
-        const actuales          = vehiculo.personas.map(p => p.id_bombero);
+        const actuales           = vehiculo.personas.map(p => p.id_bombero);
         const personasEliminadas = originales.filter(idB => !actuales.includes(idB));
         for (const idBombero of personasEliminadas) {
           try { await EmergenciaApi.deletePersonal(id, vehiculo.matricula, idBombero); } catch {}
@@ -616,7 +634,7 @@ document.addEventListener('click', async function (e) {
   const btn = e.target.closest('.btn-ver');
   if (!btn) return;
 
-  const id        = btn.dataset.id;
+  const id         = btn.dataset.id;
   const emergencia = emergencias.find(em => em.id_emergencia == id);
   if (!emergencia) return;
 
@@ -644,7 +662,7 @@ document.addEventListener('click', async function (e) {
   html += '<h6 class="fw-bold mb-2">🚒 Vehículos y Personal</h6>';
 
   try {
-    const respV    = await EmergenciaApi.getVehiculosEmergencia(id);
+    const respV     = await EmergenciaApi.getVehiculosEmergencia(id);
     const vehiculos = respV.data || [];
 
     if (vehiculos.length === 0) {
@@ -655,13 +673,13 @@ document.addEventListener('click', async function (e) {
           <div class="border rounded p-3 mb-3">
             <div class="fw-bold mb-2">🚒 ${vehiculo.matricula}</div>
             <div class="row text-muted small mb-2">
-              <div class="col-md-4"><strong>Salida:</strong> ${vehiculo.f_salida  ? formatearFechaHora(vehiculo.f_salida)  : '—'}</div>
+              <div class="col-md-4"><strong>Salida:</strong> ${vehiculo.f_salida   ? formatearFechaHora(vehiculo.f_salida)  : '—'}</div>
               <div class="col-md-4"><strong>Llegada:</strong> ${vehiculo.f_llegada ? formatearFechaHora(vehiculo.f_llegada) : '—'}</div>
               <div class="col-md-4"><strong>Regreso:</strong> ${vehiculo.f_regreso ? formatearFechaHora(vehiculo.f_regreso) : '—'}</div>
             </div>`;
 
         try {
-          const respP   = await EmergenciaApi.getPersonal(id, vehiculo.matricula);
+          const respP    = await EmergenciaApi.getPersonal(id, vehiculo.matricula);
           const personal = respP.data || [];
           if (personal.length === 0) {
             html += '<p class="text-muted small mb-0">Sin personal asignado</p>';
