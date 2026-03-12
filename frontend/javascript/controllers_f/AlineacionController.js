@@ -149,6 +149,13 @@ function iniciales(nombre, apellidos) {
 async function guardarAlineacion() {
     if (!guardiaActual) { mostrarError('No hay guardia cargada para guardar.'); return; }
 
+    // ── Validación: notas (campo libre, TEXT en BD; límite práctico de 1000 caracteres) ──
+    const notas = document.getElementById('notasGuardia').value;
+    if (notas.length > 1000) {
+        mostrarError('Las notas no pueden superar los 1000 caracteres.');
+        return;
+    }
+
     const selects = document.querySelectorAll('#gridAlineacion select[data-cargo]');
     const operaciones = [];
     selects.forEach(select => {
@@ -173,7 +180,6 @@ async function guardarAlineacion() {
             await GuardiaApi.updateCargo(op.id_bombero, op.id_guardia, op.cargo);
         }
 
-        const notas = document.getElementById('notasGuardia').value;
         await GuardiaApi.updateNotas(guardiaActual.id_guardia, notas);
 
         mostrarExito('Alineación guardada correctamente.');
@@ -195,7 +201,7 @@ async function cargarTurnoRefuerzo(fecha) {
     try {
         const respuesta = await GuardiaApi.getTurnoRefuerzoByFecha(fecha);
         const datos = respuesta.data;
-        
+
         if (!datos || datos.length === 0) {
             contenedor.innerHTML = '<p class="text-muted small mb-0">Sin refuerzos para este día.</p>';
             return;

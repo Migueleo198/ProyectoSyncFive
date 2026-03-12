@@ -18,6 +18,8 @@ const TIPOS = {
    permiso_denegado: { label: 'Permiso denegado',    bgClass: 'bg-danger'  },
 };
 
+// CORRECCIÓN: estados del DDL — ENUM('ACEPTADO','REVISION','DENEGADO')
+const ESTADOS_PERMISO_VALIDOS = ['ACEPTADO', 'REVISION', 'DENEGADO'];
 
 let hoy               = new Date();
 let year              = hoy.getFullYear();
@@ -174,6 +176,21 @@ function configurarEventosVista() {
 }
 
 
+/**
+ * CORRECCIÓN: normaliza el estado de un permiso al formato del DDL.
+ * Elimina tildes y convierte a mayúsculas para comparar contra
+ * ENUM('ACEPTADO','REVISION','DENEGADO').
+ */
+function normalizarEstadoPermiso(estado) {
+   if (!estado) return '';
+   const normalizado = String(estado)
+       .toUpperCase()
+       .normalize('NFD')
+       .replace(/[\u0300-\u036f]/g, '');
+   return ESTADOS_PERMISO_VALIDOS.includes(normalizado) ? normalizado : estado.toUpperCase();
+}
+
+
 async function cargarDatosCuadrante() {
    const selectBombero   = document.getElementById('selectBombero');
    const idBomberoFiltro = modoVista === 'individual'
@@ -192,7 +209,10 @@ async function cargarDatosCuadrante() {
        try {
            const res = await PermisoApi.getAll();
            const todos = res.data || res || [];
-           permisos = todos.filter(p => p.id_bombero == idBomberoFiltro);
+           // CORRECCIÓN: filtrar por bombero y normalizar estado
+           permisos = todos
+               .filter(p => p.id_bombero == idBomberoFiltro)
+               .map(p => ({ ...p, estado: normalizarEstadoPermiso(p.estado) }));
        } catch {
            mostrarError('Error cargando permisos');
            permisos = [];
@@ -217,7 +237,9 @@ async function cargarDatosCuadrante() {
 
        try {
            const res = await PermisoApi.getAll();
-           permisos = res.data || res || [];
+           const todos = res.data || res || [];
+           // CORRECCIÓN: normalizar todos los estados
+           permisos = todos.map(p => ({ ...p, estado: normalizarEstadoPermiso(p.estado) }));
        } catch {
            mostrarError('Error cargando permisos');
            permisos = [];
@@ -356,7 +378,8 @@ function obtenerEventosDia(idBombero, fecha) {
    if (tieneBomberoRefuerzoEnFecha(idBombero, fecha)) eventos.push('turno');
    const permiso = getPermisoEnFecha(idBombero, fecha);
    if (permiso) {
-       const estado = (permiso.estado || '').toUpperCase();
+       // CORRECCIÓN: comparar contra valores del DDL (ya normalizados al cargar)
+       const estado = permiso.estado || '';
        if      (estado === 'ACEPTADO') eventos.push('permiso_aceptado');
        else if (estado === 'REVISION') eventos.push('permiso_revision');
        else                            eventos.push('permiso_denegado');
@@ -385,7 +408,7 @@ function tieneBomberoPermisoAceptadoEnFecha(idBombero, fecha) {
    return permisos.some(p =>
        (p.fecha || '').substring(0, 10) === fecha &&
        p.id_bombero == idBombero &&
-       (p.estado || '').toUpperCase() === 'ACEPTADO'
+       p.estado === 'ACEPTADO'  // CORRECCIÓN: ya normalizado, sin toUpperCase redundante
    );
 }
 
@@ -560,6 +583,7 @@ function generarContenidoDetalle(guardiasDelDia, permisosDelDia, refuerzosDelDia
    });
 
    permisosDelDia.forEach(p => {
+       // CORRECCIÓN: comparar contra valores del DDL (ya normalizados al cargar)
        const badge = p.estado === 'ACEPTADO' ? 'bg-primary'
                    : p.estado === 'REVISION'  ? 'bg-warning text-dark'
                    : 'bg-danger';
@@ -595,7 +619,7 @@ function mostrarAlerta(msg, tipo) {
    const alertId = 'alert-' + Date.now();
    container.insertAdjacentHTML('beforeend', `
        <div id="${alertId}" class="alert alert-${tipo} alert-dismissible fade show shadow" role="alert">
-           <strong>${tipo === 'danger' ? 'Error:' : 'Exito:'}</strong> ${msg}
+           <strong>${tipo === 'danger' ? 'Error:' : 'Éxito:'}</strong> ${msg}
            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
        </div>
    `);

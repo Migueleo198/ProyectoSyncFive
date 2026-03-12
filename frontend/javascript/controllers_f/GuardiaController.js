@@ -2,6 +2,7 @@ import GuardiaApi from '../api_f/GuardiaApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { validarRangoFechas } from '../helpers/validacion.js';
 
 let guardias = [];
 let sesionActual = null;
@@ -142,6 +143,37 @@ function renderTablaGuardias(lista) {
 }
 
 // ================================
+// VALIDAR DATOS DE GUARDIA
+// ================================
+function validarDatosGuardia(data) {
+    if (!data.fecha) {
+        mostrarError('La fecha es obligatoria'); return false;
+    }
+    // CORRECCIÓN: validar formato de fecha
+    if (isNaN(Date.parse(data.fecha))) {
+        mostrarError('La fecha no tiene un formato válido'); return false;
+    }
+    if (!data.h_inicio) {
+        mostrarError('La hora de inicio es obligatoria'); return false;
+    }
+    if (!data.h_fin) {
+        mostrarError('La hora de fin es obligatoria'); return false;
+    }
+    // CORRECCIÓN: validar formato HH:MM para horas
+    const horaRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!horaRegex.test(data.h_inicio)) {
+        mostrarError('La hora de inicio no tiene un formato válido (HH:MM)'); return false;
+    }
+    if (!horaRegex.test(data.h_fin)) {
+        mostrarError('La hora de fin no tiene un formato válido (HH:MM)'); return false;
+    }
+    if (data.notas && data.notas.length > 500) {
+        mostrarError('Las notas no pueden superar los 500 caracteres'); return false;
+    }
+    return true;
+}
+
+// ================================
 // CREAR GUARDIA
 // ================================
 function bindCrearGuardia() {
@@ -156,6 +188,8 @@ function bindCrearGuardia() {
             h_fin:    f.get('h_fin'),
             notas:    f.get('notas') || ''
         };
+        // CORRECCIÓN: validar antes de enviar
+        if (!validarDatosGuardia(data)) return;
         try {
             await GuardiaApi.create(data);
             await cargarGuardias();
@@ -183,6 +217,11 @@ function bindAsignarGuardia() {
         };
         if (!data.id_bombero || !data.id_guardia || !data.cargo) {
             mostrarError('Seleccione guardia, persona y cargo');
+            return;
+        }
+        // CORRECCIÓN: validar que el cargo sea uno de los valores permitidos
+        if (!cargos.includes(data.cargo)) {
+            mostrarError('El cargo seleccionado no es válido');
             return;
         }
         try {
@@ -261,9 +300,12 @@ function bindModalEditar() {
                 const input = form.querySelector(`[name="${c}"]`);
                 if (input) data[c] = input.value;
             });
+            // CORRECCIÓN: validar antes de guardar
+            if (!validarDatosGuardia(data)) return;
             await GuardiaApi.update(id, data);
             await cargarGuardias();
             bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+            mostrarExito('Guardia actualizada correctamente');
         });
     });
 }
