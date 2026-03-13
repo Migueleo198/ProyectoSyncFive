@@ -5,6 +5,7 @@ import PersonaApi         from '../api_f/PersonaApi.js';
 import { authGuard }      from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
 import { validarTelefono, validarIdBombero } from '../helpers/validacion.js';
+import { PaginationHelper } from '../helpers/PaginationHelper.js';
 
 // CORRECCIÓN: estados del DDL — ENUM('ACTIVA','CERRADA')
 const ESTADOS_EMERGENCIA_VALIDOS = ['ACTIVA', 'CERRADA'];
@@ -14,6 +15,7 @@ let emergencias = [];
 let vehiculosEnModal = [];
 let todasLasPersonas = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(10); // 10 items por página
 
 // ================================
 // DOM CONTENT LOADED
@@ -43,6 +45,12 @@ async function cargarEmergencias() {
   try {
     const response = await EmergenciaApi.getAll();
     emergencias = response.data;
+
+    // Configurar paginación y obtener items de la primera página
+    const itemsPagina = pagination.setData(emergencias, (page) => {
+      renderTablaEmergencias(emergencias);
+    });
+
     renderTablaEmergencias(emergencias);
   } catch (e) {
     mostrarError(e.message || 'Error cargando emergencias');
@@ -140,6 +148,19 @@ function validarDatosEmergencia(data) {
 async function renderTablaEmergencias(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
+
+  // Obtener solo los items de la página actual
+  const itemsPagina = pagination.getPageItems(lista);
+
+  if (!itemsPagina.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-muted py-4">
+          No hay emergencias para mostrar
+        </td>
+      </tr>`;
+    return;
+  }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
   for (const e of lista) {
