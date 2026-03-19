@@ -116,5 +116,20 @@ class PermisoController
             $res->errorJson($e->getMessage(), $code);
         }
     }
+
+    /**
+     * GET /Permiso/{id_permiso}/personas
+     * Obtiene las personas asociadas a un permiso
+     */
+    public function persons(Request $req, Response $res, string $id_permiso): void
+    {
+        try {
+            $personas = $this->service->getPersonsByPermiso($id_permiso);
+            $res->status(200)->json($personas, "Personas del permiso obtenidas correctamente");
+        } catch (Throwable $e) {
+            $code = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
 }
 ?>

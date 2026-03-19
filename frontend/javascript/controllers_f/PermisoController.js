@@ -103,11 +103,6 @@ function aplicarFiltros() {
     const cumpleFecha  = !filtroFecha  || p.fecha?.startsWith(filtroFecha);
     return cumpleMotivo && cumpleEstado && cumpleFecha;
   }));
-    // CORRECCIÓN: normalizar estado al cargar para comparaciones seguras
-    permisos = (r.data || []).map(p => ({ ...p, estado: normalizarEstado(p.estado) }));
-    renderTablaPermisos(permisos);
-  }
-  catch (e) { mostrarError(e.message || 'Error cargando permisos'); }
 }
 
 // ================================
@@ -248,33 +243,43 @@ function bindModalVer() {
     const btn = e.target.closest('.btn-ver'); if (!btn) return;
     const id = btn.dataset.id;
     const permiso = permisos.find(p => String(p.id_permiso) === String(id)); if (!permiso) return;
-    const detalles = document.getElementById('detallesPermiso');
-    detalles.innerHTML = '';
-    [
-      { label:'ID',          valor: permiso.id_permiso },
-      { label:'Nombre',      valor: permiso.nombre },
-      { label:'Descripción', valor: permiso.descripcion ?? '—' }
-    ].forEach(({label, valor}) => {
-      const p = document.createElement('p');
-      p.innerHTML = `<strong>${label}:</strong> ${valor}`;
-      detalles.appendChild(p);
-    });
-    const tbody = document.querySelector('#tablaPersonasPermiso tbody');
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando...</td></tr>';
+    
+    // Usar modalVerBody que es el elemento correcto en el HTML
+    const modalBody = document.getElementById('modalVerBody');
+    modalBody.innerHTML = `
+      <div class="mb-3">
+        <p><strong>ID:</strong> ${permiso.id_permiso ?? '—'}</p>
+        <p><strong>Motivo:</strong> ${permiso.cod_motivo ?? '—'}</p>
+        <p><strong>Fecha:</strong> ${permiso.fecha ?? '—'}</p>
+        <p><strong>Hora inicio:</strong> ${permiso.h_inicio ?? '—'}</p>
+        <p><strong>Hora fin:</strong> ${permiso.h_fin ?? '—'}</p>
+        <p><strong>Estado:</strong> ${permiso.estado ?? '—'}</p>
+        <p><strong>Descripción:</strong> ${permiso.descripcion ?? '—'}</p>
+      </div>
+      <hr>
+      <h6>Personas con este permiso:</h6>
+      <div id="personas-container">
+        <p class="text-muted">Cargando...</p>
+      </div>
+    `;
+    
+    // Cargar personas asynchronously
     try {
       const res = await PermisoApi.getPersonsByPermiso(id);
-      tbody.innerHTML = '';
-      if (!res.data.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No hay personas asignadas</td></tr>';
+      const container = document.getElementById('personas-container');
+      if (!res.data || !res.data.length) {
+        container.innerHTML = '<p class="text-muted">No hay personas asignadas</p>';
         return;
       }
+      let html = '<table class="table table-sm table-bordered mt-2"><thead><tr><th>ID</th><th>N° Funcionario</th><th>Nombre</th></tr></thead><tbody>';
       res.data.forEach(p => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${p.id_bombero}</td><td>${p.n_funcionario}</td><td>${p.nombre} ${p.apellidos}</td><td></td>`;
-        tbody.appendChild(tr);
+        html += `<tr><td>${p.id_bombero ?? '—'}</td><td>${p.n_funcionario ?? '—'}</td><td>${p.nombre ?? ''} ${p.apellidos ?? ''}</td></tr>`;
       });
+      html += '</tbody></table>';
+      container.innerHTML = html;
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">${err.message||'Error'}</td></tr>`;
+      document.getElementById('personas-container').innerHTML = 
+        `<p class="text-danger">${err.message || 'Error cargando personas'}</p>`;
     }
   });
 }
@@ -355,7 +360,7 @@ function bindGestionarEstado() {
       mostrarError('El estado no es válido (debe ser ACEPTADO, REVISION o DENEGADO)'); return;
     }
     try {
-      await PermisoApi.update(data.id_permiso, { estado: data.estado });
+      await PermisoApi.update(id_permiso, { estado: estado });
       await cargarPermisos();
       await cargarSelectPermisos();
       form.reset();
