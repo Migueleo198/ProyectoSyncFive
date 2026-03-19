@@ -17,21 +17,22 @@
 
     <!-- Cabecera -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="mb-0">Infraestructuras de Agua</h1>
+        <div>
+            <h1 class="mb-0 fw-bold">Infraestructuras de Agua</h1>
+            <small class="text-muted">Mapa de hydrantes y puntos de agua</small>
+        </div>
 
-      <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-primary"
-          data-bs-toggle="modal"
-          data-bs-target="#modalCrear">
-          <i class="bi bi-plus-lg"></i> Nueva
-        </button>
-        <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
-          class="text-dark" title="Abrir ayuda en Notion">
-            <i class="bi bi-question-circle fs-3"></i>
-        </a>
-
-
-      </div>
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#modalCrear">
+              <i class="bi bi-plus-lg"></i> Nueva
+            </button>
+            <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
+              class="text-muted" title="Ayuda">
+                <i class="bi bi-question-circle fs-4"></i>
+            </a>
+        </div>
     </div>
 
     <div id="breadcrumb-placeholder"></div>
@@ -129,7 +130,7 @@
     </div>
     <!-- Tabla -->
     <div class="table-responsive">
-      <h1>Registro de las infraestructuras</h1>
+      <h2>Registro de las infraestructuras</h2>
       <table class="table table-bordered table-striped" id="tablaInfraestructuras">
         <thead class="table-dark">
           <tr>
