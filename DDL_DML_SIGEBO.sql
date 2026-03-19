@@ -921,121 +921,121 @@ INSERT INTO Persona (
 -- INSPECTOR
 ('I001', 'DGA-2008-0001', '72345678Z', 'carlos.lopez.ruiz@aragon.es',      '976111222',
  '2008-03-01', 'L',  'L',  '43', 'Carlos',    'López Ruiz',         '1975-06-14',
- '629111222', 'Calle Goya, 12, 2ºA',        'Zaragoza', 5, 1, 'c.lopez.inspector',     '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '629111222', 'Calle Goya, 12, 2ºA',        'Zaragoza', 5, 1, 'c.lopez.inspector',     '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('I002', 'DGA-2010-0002', '33456789R', 'marta.garcia.sans@aragon.es',      '974222333',
  '2010-05-15', 'M',  'M',  '38', 'Marta',     'García Sans',        '1978-11-22',
- '636222333', 'Plaza Navarra, 5, 3ºB',      'Huesca',   5, 1, 'm.garcia.inspector',    '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '636222333', 'Plaza Navarra, 5, 3ºB',      'Huesca',   5, 1, 'm.garcia.inspector',    '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 -- JEFE DE MANDO
 ('M001', 'DGA-2005-0010', '22567890F', 'pedro.sanchez.vidal@aragon.es',    '976333444',
  '2005-09-01', 'XL', 'XL', '45', 'Pedro',     'Sánchez Vidal',      '1971-03-05',
- '651333444', 'Paseo de la Independencia, 8, 1ºC', 'Zaragoza', 4, 1, 'p.sanchez.mando', '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '651333444', 'Paseo de la Independencia, 8, 1ºC', 'Zaragoza', 4, 1, 'p.sanchez.mando', '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('M002', 'DGA-2007-0011', '44678901H', 'ana.fernandez.gil@aragon.es',      '978444555',
  '2007-01-10', 'M',  'M',  '39', 'Ana',       'Fernández Gil',      '1974-08-17',
- '662444555', 'Calle San Francisco, 3, 4ºD', 'Teruel',   4, 1, 'a.fernandez.mando',   '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '662444555', 'Calle San Francisco, 3, 4ºD', 'Teruel',   4, 1, 'a.fernandez.mando',   '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 -- JEFE DE INTERVENCION
 ('J001', 'DGA-2009-0020', '55789012B', 'luis.martinez.pardo@aragon.es',    '976555666',
  '2009-04-20', 'L',  'L',  '44', 'Luis',      'Martínez Pardo',     '1976-01-28',
- '671555666', 'Avenida Cesar Augusto, 15, 2ºA', 'Zaragoza', 3, 1, 'l.martinez.jinter', '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '671555666', 'Avenida Cesar Augusto, 15, 2ºA', 'Zaragoza', 3, 1, 'l.martinez.jinter', '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('J002', 'DGA-2011-0021', '66890123W', 'elena.romero.blasco@aragon.es',    '974666777',
  '2011-02-14', 'S',  'S',  '37', 'Elena',     'Romero Blasco',      '1980-04-09',
- '683666777', 'Calle Ramón y Cajal, 7, 1ºB', 'Huesca',   3, 1, 'e.romero.jinter',     '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '683666777', 'Calle Ramón y Cajal, 7, 1ºB', 'Huesca',   3, 1, 'e.romero.jinter',     '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('J003', 'DGA-2012-0022', '77901234K', 'roberto.jimenez.luna@aragon.es',   '978777888',
  '2012-06-01', 'L',  'L',  '43', 'Roberto',   'Jiménez Luna',       '1979-09-15',
- '690777888', 'Plaza del Torico, 2, 3ºC',   'Teruel',   3, 1, 'r.jimenez.jinter',     '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '690777888', 'Plaza del Torico, 2, 3ºC',   'Teruel',   3, 1, 'r.jimenez.jinter',     '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 -- OFICIALES
 ('O001', 'DGA-2013-0030', '88012345P', 'david.navarro.rico@aragon.es',     '976888999',
  '2013-03-11', 'L',  'L',  '44', 'David',     'Navarro Rico',       '1982-12-03',
- '605888999', 'Calle Miguel Servet, 22, 5ºA','Zaragoza', 2, 1, 'd.navarro.oficial',   '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '605888999', 'Calle Miguel Servet, 22, 5ºA','Zaragoza', 2, 1, 'd.navarro.oficial',   '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('O002', 'DGA-2014-0031', '99123456X', 'laura.torres.molina@aragon.es',    '974900111',
  '2014-07-07', 'M',  'M',  '38', 'Laura',     'Torres Molina',      '1984-05-20',
- '617900111', 'Calle Padre Huesca, 11, 2ºD','Huesca',   2, 1, 'l.torres.oficial',    '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '617900111', 'Calle Padre Huesca, 11, 2ºD','Huesca',   2, 1, 'l.torres.oficial',    '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('O003', 'DGA-2015-0032', '10234567Q', 'miguel.delgado.pons@aragon.es',    '978100200',
  '2015-01-19', 'XL', 'L',  '46', 'Miguel',    'Delgado Pons',       '1983-07-11',
- '629100200', 'Avenida Aragón, 33, 1ºB',   'Teruel',   2, 1, 'm.delgado.oficial',   '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '629100200', 'Avenida Aragón, 33, 1ºB',   'Teruel',   2, 1, 'm.delgado.oficial',   '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('O004', 'DGA-2016-0033', '20345678G', 'sofia.moreno.castillo@aragon.es',  '976200300',
  '2016-09-05', 'S',  'S',  '36', 'Sofía',     'Moreno Castillo',    '1986-02-28',
- '651200300', 'Plaza de España, 4, 4ºA',   'Zaragoza', 2, 1, 's.moreno.oficial',    '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '651200300', 'Plaza de España, 4, 4ºA',   'Zaragoza', 2, 1, 's.moreno.oficial',    '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 -- BOMBEROS
 ('B001', 'DGA-2015-0100', '30456789M', 'juan.perez.herrero@aragon.es',     '976300400',
  '2015-06-15', 'L',  'L',  '43', 'Juan',      'Pérez Herrero',      '1985-05-10',
- '660300400', 'Calle Las Armas, 5, 3ºC',   'Zaragoza', 1, 1, 'j.perez.bombero',     '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '660300400', 'Calle Las Armas, 5, 3ºC',   'Zaragoza', 1, 1, 'j.perez.bombero',     '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('B002', 'DGA-2016-0101', '40567890C', 'maria.ruiz.espinosa@aragon.es',    '976400500',
  '2016-03-01', 'M',  'M',  '39', 'María',     'Ruiz Espinosa',      '1987-08-22',
- '672400500', 'Calle Predicadores, 8, 1ºA','Zaragoza', 1, 1, 'm.ruiz.bombero',      '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '672400500', 'Calle Predicadores, 8, 1ºA','Zaragoza', 1, 1, 'm.ruiz.bombero',      '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('B003', 'DGA-2017-0102', '50678901D', 'alberto.gonzalez.vera@aragon.es',  '976500600',
  '2017-09-18', 'XL', 'XL', '45', 'Alberto',   'González Vera',      '1988-03-14',
- '681500600', 'Avenida Goya, 40, 2ºB',     'Zaragoza', 1, 1, 'a.gonzalez.bombero',  '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '681500600', 'Avenida Goya, 40, 2ºB',     'Zaragoza', 1, 1, 'a.gonzalez.bombero',  '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('B004', 'DGA-2018-0103', '60789012V', 'paula.lopez.sainz@aragon.es',      '976600700',
  '2018-01-08', 'S',  'S',  '37', 'Paula',     'López Sainz',        '1990-11-05',
- '696600700', 'Calle Alfonso I, 16, 3ºD',  'Zaragoza', 1, 1, 'p.lopez.bombero',     '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '696600700', 'Calle Alfonso I, 16, 3ºD',  'Zaragoza', 1, 1, 'p.lopez.bombero',     '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('B005', 'DGA-2019-0104', '70890123N', 'sergio.martin.bravo@aragon.es',    '976700800',
  '2019-04-29', 'L',  'L',  '44', 'Sergio',    'Martín Bravo',       '1991-07-18',
- '617700800', 'Plaza San Pedro Nolasco, 3, 1ºA','Zaragoza', 1, 1, 's.martin.bombero','$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '617700800', 'Plaza San Pedro Nolasco, 3, 1ºA','Zaragoza', 1, 1, 's.martin.bombero','$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('B006', 'DGA-2020-0105', '80901234J', 'carla.garcia.pla@aragon.es',       '974800900',
  '2020-02-17', 'M',  'M',  '38', 'Carla',     'García Pla',         '1992-01-30',
- '629800900', 'Calle Padre Huesca, 9, 2ºC','Huesca',   1, 1, 'c.garcia.bombero',    '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '629800900', 'Calle Padre Huesca, 9, 2ºC','Huesca',   1, 1, 'c.garcia.bombero',    '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('B007', 'DGA-2021-0106', '91012345S', 'andres.fernandez.mora@aragon.es',  '974900100',
  '2021-09-01', 'L',  'L',  '43', 'Andrés',    'Fernández Mora',     '1993-05-07',
- '651900100', 'Avenida Martínez de Velasco, 14, 4ºB','Huesca', 1, 1, 'a.fernandez.bombero','$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '651900100', 'Avenida Martínez de Velasco, 14, 4ºB','Huesca', 1, 1, 'a.fernandez.bombero','$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('B008', 'DGA-2022-0107', '01123456T', 'irene.torres.valls@aragon.es',     '978900200',
  '2022-03-14', 'M',  'S',  '38', 'Irene',     'Torres Valls',       '1994-09-21',
- '662900200', 'Calle San Francisco, 7, 3ºA','Teruel',  1, 1, 'i.torres.bombero',    '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '662900200', 'Calle San Francisco, 7, 3ºA','Teruel',  1, 1, 'i.torres.bombero',    '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('B009', 'DGA-2022-0108', '11234567Z', 'victor.sanchez.abad@aragon.es',    '978100300',
  '2022-06-20', 'L',  'L',  '42', 'Víctor',    'Sánchez Abad',       '1993-12-15',
- '671100300', 'Avenida Sagunto, 55, 2ºB',  'Teruel',  1, 1, 'v.sanchez.bombero',   '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '671100300', 'Avenida Sagunto, 55, 2ºB',  'Teruel',  1, 1, 'v.sanchez.bombero',   '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('B010', 'DGA-2023-0109', '21345678R', 'noelia.jimenez.lara@aragon.es',    '976200400',
  '2023-01-09', 'M',  'M',  '38', 'Noelia',    'Jiménez Lara',       '1995-03-28',
- '683200400', 'Calle Costa, 6, 1ºD',       'Zaragoza', 1, 1, 'n.jimenez.bombero',   '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '683200400', 'Calle Costa, 6, 1ºD',       'Zaragoza', 1, 1, 'n.jimenez.bombero',   '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('B011', 'DGA-2023-0110', '31456789F', 'oscar.morales.vera@aragon.es',     '976300500',
  '2023-05-22', 'XL', 'XL', '46', 'Óscar',     'Morales Vera',       '1994-06-11',
- '690300500', 'Paseo Echegaray y Caballero, 12, 5ºC','Zaragoza', 1, 1, 'o.morales.bombero','$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '690300500', 'Paseo Echegaray y Caballero, 12, 5ºC','Zaragoza', 1, 1, 'o.morales.bombero','$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 ('B012', 'DGA-2024-0111', '41567890H', 'diana.ruiz.gascon@aragon.es',      '974400600',
  '2024-02-01', 'S',  'S',  '36', 'Diana',     'Ruiz Gascón',        '1996-10-04',
- '605400600', 'Calle Coso Alto, 3, 2ºA',   'Huesca',   1, 1, 'd.ruiz.bombero',      '$2a$12$.uv2H69y9Key.ITSJqIaKuUF4gi/EoVpzSjqhswKtQuhmaiuvf6YO',
+ '605400600', 'Calle Coso Alto, 3, 2ºA',   'Huesca',   1, 1, 'd.ruiz.bombero',      '$2a$12$V1UFrIwiILivZXFKraTeYeEtZM294sMNYRUwVjxf/uR6ZIiJ9Wb7q',
  NULL),
 
 -- Bombero inactivo (baja)
