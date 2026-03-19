@@ -28,8 +28,8 @@ CREATE TABLE Edicion (
    ======================= */
 CREATE TABLE Turno_refuerzo (
     id_turno_refuerzo INT AUTO_INCREMENT PRIMARY KEY,
-    f_inicio TIMESTAMP NOT NULL,
-    f_fin TIMESTAMP NOT NULL,
+    f_inicio TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
+    f_fin TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
     horas INT NOT NULL,
     CHECK (horas > 0),
     CHECK (f_fin >= f_inicio)
@@ -182,11 +182,11 @@ CREATE TABLE Persona (
     nombre_usuario VARCHAR(20) UNIQUE NOT NULL,
     foto_perfil VARCHAR(255),
     contrasenia VARCHAR(255),
-    fecha_ult_inicio_sesion TIMESTAMP,
+    fecha_ult_inicio_sesion TIMESTAMP NULL DEFAULT NULL,
     token_activacion VARCHAR(64),
-    fecha_exp_token_activacion TIMESTAMP,
+    fecha_exp_token_activacion TIMESTAMP NULL DEFAULT NULL,
     token_cambio_contrasenia VARCHAR(64),
-    fecha_exp_cambio_contrasenia TIMESTAMP,
+    fecha_exp_cambio_contrasenia TIMESTAMP NULL DEFAULT NULL,
     CHECK (f_nacimiento < f_ingreso_diputacion),
     FOREIGN KEY (id_rol) REFERENCES Rol(id_rol)
         ON UPDATE CASCADE ON DELETE RESTRICT,
@@ -214,7 +214,7 @@ CREATE TABLE Persona_Material (
 CREATE TABLE Emergencia (
     id_emergencia INT AUTO_INCREMENT PRIMARY KEY,
     id_bombero VARCHAR(4),
-    fecha TIMESTAMP NOT NULL,
+    fecha TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
     descripcion TEXT NOT NULL,
     estado ENUM('ACTIVA','CERRADA') NOT NULL,
     direccion VARCHAR(150) NOT NULL,
@@ -233,9 +233,9 @@ CREATE TABLE Emergencia (
 CREATE TABLE Emergencia_Vehiculo (
     matricula VARCHAR(15),
     id_emergencia INT,
-    f_salida TIMESTAMP NOT NULL,
-    f_llegada TIMESTAMP,
-    f_regreso TIMESTAMP,
+    f_salida TIMESTAMP NOT NULL  DEFAULT '2000-01-01 00:00:00',
+    f_llegada TIMESTAMP NULL DEFAULT NULL,
+    f_regreso TIMESTAMP NULL DEFAULT NULL,
     PRIMARY KEY (matricula, id_emergencia),
     CHECK (f_llegada IS NULL OR f_llegada >= f_salida),
     CHECK (f_regreso IS NULL OR f_regreso >= f_llegada),
@@ -293,8 +293,8 @@ CREATE TABLE Salida (
     id_registro INT AUTO_INCREMENT PRIMARY KEY,
     matricula VARCHAR(15) NOT NULL,
     id_bombero VARCHAR(4) NOT NULL,
-    f_salida TIMESTAMP NOT NULL,
-    f_regreso TIMESTAMP NOT NULL,
+    f_salida TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
+    f_regreso TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
     km_inicio INT NOT NULL,
     km_fin INT NOT NULL,
     CHECK (km_fin > km_inicio),
@@ -339,7 +339,7 @@ CREATE TABLE Aviso (
     id_aviso INT AUTO_INCREMENT PRIMARY KEY,
     asunto VARCHAR(150) NOT NULL,
     mensaje TEXT NOT NULL,
-    fecha TIMESTAMP NOT NULL,
+    fecha TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
     remitente VARCHAR(4),
     FOREIGN KEY (remitente) REFERENCES Persona(id_bombero)
         ON UPDATE CASCADE ON DELETE RESTRICT
