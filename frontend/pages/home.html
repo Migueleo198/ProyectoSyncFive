@@ -4,31 +4,6 @@
     <meta charset="UTF-8">
     <script src="/frontend/config/config.js"></script>
     <script>loadHead("Dashboard - SIGEBO", { filtroTabla: false })</script>
-    <style>
-        body { overflow-x: hidden; }
-        .quick-access-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-            height: 100%;
-        }
-        .quick-access-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .stat-card { border-left: 4px solid; }
-        .stat-card.emergency  { border-color: #dc3545; }
-        .stat-card.personnel  { border-color: #0d6efd; }
-        .stat-card.vehicles   { border-color: #198754; }
-        .stat-card.materials  { border-color: #ffc107; }
-        .section-title {
-            font-weight: 600;
-            color: #212529;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e9ecef;
-        }
-        .main-container { min-height: calc(100vh - 120px); }
-    </style>
 </head>
 <body class="bg-white text-dark d-flex flex-column">
 
@@ -338,7 +313,7 @@
     <script type="module" src="/frontend/javascript/controllers_f/DashboardController.js"></script>
 
     <!-- ALERT -->
-    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
 
 </body>
 </html>

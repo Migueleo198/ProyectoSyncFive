@@ -100,6 +100,7 @@ function loadHead(title, options = {}) {
     if (cfg.layout) {
         loadCSS('header_footer.css');
         loadCSS('plantilla_css.css');
+        loadCSS('view-custom.css');
 
         const hf = document.createElement('script');
         hf.type = 'module';
