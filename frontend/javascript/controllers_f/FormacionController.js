@@ -86,7 +86,8 @@ function aplicarFiltros() {
   renderTablaFormaciones(formaciones.filter(f =>
     !filtroNombre || f.nombre?.toLowerCase().includes(filtroNombre)
   ));
-  
+}
+
 // ================================
 // VALIDAR FORMACIÓN
 // Según DDL Formacion:
