@@ -24,8 +24,70 @@ document.addEventListener('DOMContentLoaded', async () => {
 // CARGAR SALIDAS
 // ================================
 async function cargarSalidas() {
-  try { const r = await SalidaApi.getAll(); salidas = r.data; renderTablaSalidas(salidas); }
-  catch (e) { mostrarError(e.message || 'Error cargando salidas'); }
+  try {
+    const r = await SalidaApi.getAll();
+    salidas = r.data;
+    renderTablaSalidas(salidas);
+    poblarFiltroMatricula(salidas);
+    poblarFiltroBombero(salidas);
+    bindFiltros();
+  } catch (e) { mostrarError(e.message || 'Error cargando salidas'); }
+}
+
+// ================================
+// FILTROS
+// ================================
+function poblarFiltroMatricula(lista) {
+  const select = document.getElementById('filtroMatricula');
+  if (!select) return;
+  const valorActual = select.value;
+  select.innerHTML = '<option value="">Todas</option>';
+  const unicas = [...new Set(lista.map(s => s.matricula).filter(Boolean))].sort();
+  unicas.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = m;
+    select.appendChild(opt);
+  });
+  select.value = valorActual;
+}
+
+function poblarFiltroBombero(lista) {
+  const select = document.getElementById('filtroBombero');
+  if (!select) return;
+  const valorActual = select.value;
+  select.innerHTML = '<option value="">Todos</option>';
+  const unicos = [...new Set(lista.map(s => s.id_bombero).filter(Boolean))].sort();
+  unicos.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b;
+    opt.textContent = b;
+    select.appendChild(opt);
+  });
+  select.value = valorActual;
+}
+
+function bindFiltros() {
+  document.getElementById('filtroMatricula')?.addEventListener('change', aplicarFiltros);
+  document.getElementById('filtroBombero')?.addEventListener('change', aplicarFiltros);
+  document.getElementById('filtroDesde')?.addEventListener('change', aplicarFiltros);
+  document.getElementById('filtroHasta')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  const filtroMatricula = document.getElementById('filtroMatricula')?.value ?? '';
+  const filtroBombero   = document.getElementById('filtroBombero')?.value ?? '';
+  const filtroDesde     = document.getElementById('filtroDesde')?.value ?? '';
+  const filtroHasta     = document.getElementById('filtroHasta')?.value ?? '';
+
+  renderTablaSalidas(salidas.filter(s => {
+    const cumpleMatricula = !filtroMatricula || s.matricula === filtroMatricula;
+    const cumpleBombero   = !filtroBombero   || String(s.id_bombero) === String(filtroBombero);
+    const fSalida = s.f_salida?.slice(0, 10) ?? '';
+    const cumpleDesde = !filtroDesde || fSalida >= filtroDesde;
+    const cumpleHasta = !filtroHasta || fSalida <= filtroHasta;
+    return cumpleMatricula && cumpleBombero && cumpleDesde && cumpleHasta;
+  }));
 }
 
 // ================================
@@ -73,7 +135,9 @@ function bindModalVer() {
       const campo = camposBd[idx];
       let valor = salida[campo] ?? '';
       if (campo === 'f_salida' || campo === 'f_regreso') valor = formatearFechaHora(valor);
-      const p = document.createElement('p'); p.innerHTML = `<strong>${nombre}:</strong> ${valor}`; modalBody.appendChild(p);
+      const p = document.createElement('p');
+      p.innerHTML = `<strong>${nombre}:</strong> ${valor}`;
+      modalBody.appendChild(p);
     });
   });
 }
@@ -124,8 +188,12 @@ function bindCrearSalida() {
       id_bombero:  f.get('id_bombero')
     };
     if (!validarDatosSalida(data)) return;
-    try { await SalidaApi.create(data); await cargarSalidas(); form.reset(); mostrarExito('Salida creada correctamente'); }
-    catch (err) { mostrarError(err.message || 'Error creando salida'); }
+    try {
+      await SalidaApi.create(data);
+      await cargarSalidas();
+      form.reset();
+      mostrarExito('Salida creada correctamente');
+    } catch (err) { mostrarError(err.message || 'Error creando salida'); }
   });
 }
 
@@ -151,7 +219,9 @@ function bindModalEditar() {
           <div class="col-md-6 col-lg-4"><label class="form-label">KM inicio</label><input type="number" class="form-control" name="km_inicio" value="${salida.km_inicio??''}"></div>
           <div class="col-md-6 col-lg-4"><label class="form-label">KM fin</label><input type="number" class="form-control" name="km_fin" value="${salida.km_fin??''}"></div>
         </div>
-        <div class="d-flex justify-content-center gap-2"><button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar Registro</button></div>`;
+        <div class="d-flex justify-content-center gap-2">
+          <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar Registro</button>
+        </div>`;
       document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
         const data = {
           id_bombero: form.querySelector('[name="id_bombero"]').value,
@@ -162,7 +232,8 @@ function bindModalEditar() {
           km_fin:     form.querySelector('[name="km_fin"]').value
         };
         if (!validarDatosSalida(data)) return;
-        await SalidaApi.update(id, data); await cargarSalidas();
+        await SalidaApi.update(id, data);
+        await cargarSalidas();
         bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
         mostrarExito('Salida actualizada correctamente');
       });
@@ -181,7 +252,8 @@ function bindModalEliminar() {
   document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
     const id = this.dataset.id; if (!id) return;
     try {
-      await SalidaApi.delete(id); await cargarSalidas();
+      await SalidaApi.delete(id);
+      await cargarSalidas();
       bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
       mostrarExito('Salida eliminada correctamente');
     } catch (err) { mostrarError(err.message || 'Error al eliminar'); }

@@ -35,6 +35,7 @@ async function cargarEdiciones() {
     const response = await EdicionApi.getAll();
     ediciones = response.data;
     renderTablaEdiciones(ediciones);
+    bindFiltros();
   } catch (e) {
     mostrarError(e.message || 'Error cargando ediciones');
   }
@@ -84,6 +85,30 @@ function renderTablaEdiciones(lista) {
     `;
     tbody.appendChild(tr);
   });
+}
+
+// ================================
+// FILTROS
+// ================================
+function bindFiltros() {
+  document.getElementById('nombre')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('filtroDesde')?.addEventListener('change', aplicarFiltros);
+  document.getElementById('filtroHasta')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  const filtroNombre = document.getElementById('nombre')?.value.toLowerCase().trim() ?? '';
+  const filtroDesde  = document.getElementById('filtroDesde')?.value ?? '';
+  const filtroHasta  = document.getElementById('filtroHasta')?.value ?? '';
+
+  renderTablaEdiciones(ediciones.filter(e => {
+    const cumpleNombre = !filtroNombre || e.nombre_formacion?.toLowerCase().includes(filtroNombre);
+    const fInicio = e.f_inicio?.slice(0, 10) ?? '';
+    const fFin    = e.f_fin?.slice(0, 10) ?? '';
+    const cumpleDesde = !filtroDesde || fInicio >= filtroDesde;
+    const cumpleHasta = !filtroHasta || fFin    <= filtroHasta;
+    return cumpleNombre && cumpleDesde && cumpleHasta;
+  }));
 }
 
 // ================================
@@ -398,8 +423,8 @@ function bindInsertarPersona() {
     if (!id_bombero)   { mostrarError('Introduce el ID del bombero.'); return; }
 
     try {
-      const resEdiciones        = await EdicionApi.getAll();
-      const edicionesFormacion  = resEdiciones.data
+      const resEdiciones       = await EdicionApi.getAll();
+      const edicionesFormacion = resEdiciones.data
         .filter(e => Number(e.id_formacion) === Number(id_formacion))
         .sort((a, b) => new Date(b.f_inicio) - new Date(a.f_inicio));
 

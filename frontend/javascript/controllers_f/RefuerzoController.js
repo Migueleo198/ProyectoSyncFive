@@ -7,30 +7,16 @@ import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
 let refuerzos = [];
 let sesionActual = null;
 
-// ================================
-// CONSTANTES
-// ================================
 const nombresCampos = ['ID Turno', 'Fecha Inicio', 'Fecha Fin', 'Horas'];
-const camposBd      = ['id_turno_refuerzo', 'f_inicio', 'f_fin', 'horas'];
+const camposBd = ['id_turno_refuerzo', 'f_inicio', 'f_fin', 'horas'];
 
-// ================================
-// INICIALIZACIÓN
-// ================================
-document.addEventListener('DOMContentLoaded', async () => {
-    sesionActual = await authGuard('turnoRefuerzos');
-    if (!sesionActual) return;
-
+document.addEventListener('DOMContentLoaded', () => {
     cargarRefuerzos();
     cargarSelectRefuerzos(null, 'ID_Turno_Refuerzo');
     cargarSelectPersonas(null, 'ID_persona');
-    bindModalVer();
-    bindModalEditar();
-
-    if (sesionActual.puedeEscribir) {
-        bindCrearRefuerzo();
-        bindAsignarRefuerzo();
-        bindModalEliminar();
-    }
+    bindCrearRefuerzo();
+    bindAsignarRefuerzo();
+    bindFiltros();
 });
 
 // ================================
@@ -47,7 +33,26 @@ async function cargarRefuerzos() {
 }
 
 // ================================
-// POBLAR SELECT REFUERZOS
+// FILTROS
+// ================================
+function bindFiltros() {
+    document.getElementById('filtroFecha')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroHoras')?.addEventListener('input', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+    const filtroFecha = document.getElementById('filtroFecha')?.value ?? '';
+    const filtroHoras = document.getElementById('filtroHoras')?.value.trim() ?? '';
+
+    renderTablaRefuerzos(refuerzos.filter(r => {
+        const cumpleFecha = !filtroFecha || r.f_inicio?.startsWith(filtroFecha);
+        const cumpleHoras = !filtroHoras || String(r.horas) === String(filtroHoras);
+        return cumpleFecha && cumpleHoras;
+    }));
+}
+
+// ================================
+// CARGAR SELECTS
 // ================================
 async function cargarSelectRefuerzos(seleccionado, id_select) {
     const select = document.getElementById(id_select);
@@ -106,7 +111,7 @@ function renderTablaRefuerzos(lista) {
             : `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_turno_refuerzo}"><i class="bi bi-eye"></i></button>`;
 
         tr.innerHTML = `
-            <td>${r.id_turno_refuerzo}</td>
+            <td class="d-none d-md-table-cell">${r.id_turno_refuerzo}</td>
             <td>${r.f_inicio}</td>
             <td>${r.f_fin}</td>
             <td>${r.horas || ''}</td>
@@ -250,7 +255,7 @@ function bindModalEditar() {
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Horas</label>
-                    <input type="number" min="1" step="1" class="form-control" name="horas" value="${refuerzo.horas || ''}">
+                    <input type="number" class="form-control" name="horas" value="${refuerzo.horas || ''}">
                 </div>
             </div>
             <div class="text-center">

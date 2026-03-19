@@ -34,9 +34,42 @@ async function cargarCarnets() {
     const response = await CarnetApiApi.getAll();
     carnets = response.data;
     renderTablaCarnets(carnets);
+    poblarFiltroCategoria(carnets);
+    bindFiltros();
   } catch (e) {
     mostrarError(e.message || 'Error cargando carnets');
   }
+}
+
+function poblarFiltroCategoria(lista) {
+  const select = document.getElementById('filtroCategoria');
+  if (!select) return;
+  const valorActual = select.value;
+  select.innerHTML = '<option value="">Todas</option>';
+  const categoriasUnicas = [...new Set(lista.map(c => c.categoria).filter(Boolean))].sort();
+  categoriasUnicas.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    select.appendChild(opt);
+  });
+  select.value = valorActual;
+}
+
+function bindFiltros() {
+  document.getElementById('filtroNombre')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('filtroCategoria')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  const filtroNombre    = document.getElementById('filtroNombre')?.value.toLowerCase().trim() ?? '';
+  const filtroCategoria = document.getElementById('filtroCategoria')?.value ?? '';
+
+  renderTablaCarnets(carnets.filter(c => {
+    const cumpleNombre    = !filtroNombre    || c.nombre?.toLowerCase().includes(filtroNombre);
+    const cumpleCategoria = !filtroCategoria || c.categoria === filtroCategoria;
+    return cumpleNombre && cumpleCategoria;
+  }));
 }
 
 // ================================
@@ -405,4 +438,4 @@ function bindAsignarCarnet() {
       mostrarError(err.message || 'Error asignando carnet');
     }
   });
-}
+}a

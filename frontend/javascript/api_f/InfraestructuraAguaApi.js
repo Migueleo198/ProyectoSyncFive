@@ -32,7 +32,10 @@ const InfraestructuraAguaApi = {
   delete(codigo) {
     return ApiClient.delete(`/infraestructuras-agua/${codigo}`);
   },
-
+  // Materiales del vehículo
+  getVehiculos() {
+    return ApiClient.get('/vehiculos');
+  }
 };
 
 export default InfraestructuraAguaApi;
