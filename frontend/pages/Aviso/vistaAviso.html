@@ -76,12 +76,33 @@
                                 <input type="text" class="form-control" id="insertAsunto" name="asunto" required>
                             </div>
                             <div class="col-md-6">
-                            
-                                <label for="insertDestinatarios" class="form-label">Destinatario:</label>
-                                <select class="form-select" id="insertDestinatarios" multiple>
-                                    <option value="">Todos</option>
+                                <label class="form-label">Destinatarios</label>
+                                <div class="btn-group w-100 mb-2" role="group">
+                                    <input type="radio" class="btn-check" name="destinatarioMode" id="modeTodos" value="todos">
+                                    <label class="btn btn-outline-primary btn-sm" for="modeTodos">Todos</label>
+                                    
+                                    <input type="radio" class="btn-check" name="destinatarioMode" id="modeUno" value="uno" checked>
+                                    <label class="btn btn-outline-primary btn-sm" for="modeUno">Uno</label>
+                                    
+                                    <input type="radio" class="btn-check" name="destinatarioMode" id="modeVarios" value="varios">
+                                    <label class="btn btn-outline-primary btn-sm" for="modeVarios">Varios</label>
+                                </div>
+                                
+                                <!-- Single select - show when "uno" -->
+                                <select id="destinatarioSelect" class="form-select">
+                                    <option value="">Seleccione un destinatario</option>
                                     <!-- Se deberían cargar con datos reales -->
                                 </select>
+                                
+                                <!-- Multi select - show when "varios" -->
+                                <select id="destinatariosMultiSelect" class="form-select" multiple size="5" style="display:none">
+                                    <!-- Se deberían cargar con datos reales -->
+                                </select>
+                                
+                                <!-- Info text -->
+                                <small id="destinatarioInfo" class="form-text text-muted">
+                                    Seleccione un único destinatario
+                                </small>
                             </div>
                         </div>
                         <div class="row mb-3">
