@@ -20,11 +20,13 @@
             <!-- CONTENIDO PRINCIPAL -->
             <main class="col p-3 p-md-4 main-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 class="mb-0">Avisos</h1>
-                    <!-- Icono de ayuda que redirige a Notion -->
+                    <div>
+                        <h1 class="mb-0 fw-bold">Avisos</h1>
+                        <small class="text-muted">Comunicados y notificaciones del sistema</small>
+                    </div>
                     <a href="https://www.notion.so/10_Avisos-31b0bf35f60680b187b3f138d4e35b68" target="_blank" 
-                    class="text-dark" title="Abrir ayuda en Notion">
-                        <i class="bi bi-question-circle fs-3"></i>
+                    class="text-muted" title="Ayuda">
+                        <i class="bi bi-question-circle fs-4"></i>
                     </a>
                 </div>
 
@@ -74,12 +76,33 @@
                                 <input type="text" class="form-control" id="insertAsunto" name="asunto" required>
                             </div>
                             <div class="col-md-6">
-                            
-                                <label for="insertDestinatarios" class="form-label">Destinatario:</label>
-                                <select class="form-select" id="insertDestinatarios" multiple>
-                                    <option value="">Todos</option>
+                                <label class="form-label">Destinatarios</label>
+                                <div class="btn-group w-100 mb-2" role="group">
+                                    <input type="radio" class="btn-check" name="destinatarioMode" id="modeTodos" value="todos">
+                                    <label class="btn btn-outline-primary btn-sm" for="modeTodos">Todos</label>
+                                    
+                                    <input type="radio" class="btn-check" name="destinatarioMode" id="modeUno" value="uno" checked>
+                                    <label class="btn btn-outline-primary btn-sm" for="modeUno">Uno</label>
+                                    
+                                    <input type="radio" class="btn-check" name="destinatarioMode" id="modeVarios" value="varios">
+                                    <label class="btn btn-outline-primary btn-sm" for="modeVarios">Varios</label>
+                                </div>
+                                
+                                <!-- Single select - show when "uno" -->
+                                <select id="destinatarioSelect" class="form-select">
+                                    <option value="">Seleccione un destinatario</option>
                                     <!-- Se deberían cargar con datos reales -->
                                 </select>
+                                
+                                <!-- Multi select - show when "varios" -->
+                                <select id="destinatariosMultiSelect" class="form-select" multiple size="5" style="display:none">
+                                    <!-- Se deberían cargar con datos reales -->
+                                </select>
+                                
+                                <!-- Info text -->
+                                <small id="destinatarioInfo" class="form-text text-muted">
+                                    Seleccione un único destinatario
+                                </small>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -177,7 +200,7 @@
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalle del tipo</h5>
+                    <h5 class="modal-title">Detalle del aviso</h5>
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
@@ -197,7 +220,7 @@
     <!-- FOOTER -->
     <div id="footer-placeholder" class="mt-auto"></div>
     <!-- ALERT-->
-    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
 
 </body>
 

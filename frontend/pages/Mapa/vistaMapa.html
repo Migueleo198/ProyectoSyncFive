@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  
   <script src="/frontend/config/config.js"></script>
   <script>loadHead("Infraestructuras de Agua")</script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -12,26 +11,27 @@
 
 <div id="header-placeholder"></div>
 <div class="d-flex flex-grow-1">
-  <div id="sidebar-placeholder" class="sidebar-bg"></div>
+  <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
   <main class="p-3 w-100">
 
     <!-- Cabecera -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="mb-0">Infraestructuras de Agua</h1>
+        <div>
+            <h1 class="mb-0 fw-bold">Infraestructuras de Agua</h1>
+            <small class="text-muted">Mapa de hydrantes y puntos de agua</small>
+        </div>
 
-      <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-primary"
-          data-bs-toggle="modal"
-          data-bs-target="#modalCrear">
-          <i class="bi bi-plus-lg"></i> Nueva
-        </button>
-        <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
-          class="text-dark" title="Abrir ayuda en Notion">
-            <i class="bi bi-question-circle fs-3"></i>
-        </a>
-
-
-      </div>
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#modalCrear">
+              <i class="bi bi-plus-lg"></i> Nueva
+            </button>
+            <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
+              class="text-muted" title="Ayuda">
+                <i class="bi bi-question-circle fs-4"></i>
+            </a>
+        </div>
     </div>
 
     <div id="breadcrumb-placeholder"></div>
@@ -48,7 +48,7 @@
       <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm h-100">
           <div class="card-body py-3">
-            <div class="fs-3 fw-bold" style="color:#8e44ad" id="cntBoca">—</div>
+            <div class="fs-3 fw-bold text-purple" id="cntBoca">—</div>
             <div class="small text-muted">🚰 Bocas de riego</div>
           </div>
         </div>
@@ -56,7 +56,7 @@
       <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm h-100">
           <div class="card-body py-3">
-            <div class="fs-3 fw-bold" style="color:#ad4444" id="cntVehiculo">—</div>
+            <div class="fs-3 fw-bold text-danger" id="cntVehiculo">—</div>
             <div class="small text-muted">🚒 Vehiculos</div>
           </div>
         </div>
@@ -124,12 +124,12 @@
     <!-- MAPA -->
     <div class="card border-0 shadow-sm mb-4">
       <div class="card-body p-0">
-        <div id="mapaInfraestructuras" style="height: 450px; border-radius: 8px;"></div>
+        <div id="mapaInfraestructuras" class="h-450px rounded-8"></div>
       </div>
     </div>
     <!-- Tabla -->
     <div class="table-responsive">
-      <h1>Registro de las infraestructuras</h1>
+      <h2>Registro de las infraestructuras</h2>
       <table class="table table-bordered table-striped" id="tablaInfraestructuras">
         <thead class="table-dark">
           <tr>
@@ -156,7 +156,7 @@
   </main>
 </div>
 <div id="footer-placeholder" class="mt-auto"></div>
-<div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index:1080;"></div>
+<div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
 
 
 <!-- ══════════════════════════════════════════════════════════
