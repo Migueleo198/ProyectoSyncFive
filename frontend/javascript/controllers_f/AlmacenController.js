@@ -1,8 +1,16 @@
 import { authGuard } from '../helpers/authGuard.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
 
 let almacenes = [];
 let instalaciones = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 5);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('almacenes');
@@ -25,6 +33,10 @@ async function cargarDatosIniciales() {
     await Promise.all([cargarInstalaciones()]);
     await cargarTodosLosAlmacenes();
     poblarSelectInstalaciones();
+    pagination.setData(almacenes, () => {
+      renderTablaAlmacenes(almacenes);
+    });
+    pagination.render('pagination-almacen');
     renderTablaAlmacenes(almacenes);
   } catch (e) {
     console.error('Error cargando datos:', e);
@@ -51,27 +63,33 @@ async function cargarInstalaciones() {
 // ================================
 async function cargarTodosLosAlmacenes() {
   almacenes = [];
+  showTableLoading('#tabla tbody', 5);
 
-  for (const inst of instalaciones) {
-    try {
-      const response = await fetch(`/api/instalaciones/${inst.id_instalacion}/almacenes`);
-      const data = await response.json();
-      const almacenesInst = data.data || [];
+  try {
+    for (const inst of instalaciones) {
+      try {
+        const response = await fetch(`/api/instalaciones/${inst.id_instalacion}/almacenes`);
+        const data = await response.json();
+        const almacenesInst = data.data || [];
 
-      almacenesInst.forEach(a => {
-        if (!almacenes.some(alm => alm.id_almacen === a.id_almacen)) {
-          almacenes.push({
-            id_almacen: a.id_almacen,
-            nombre: a.nombre,
-            planta: a.planta,
-            id_instalacion: inst.id_instalacion,
-            nombre_instalacion: inst.nombre
-          });
-        }
-      });
-    } catch (e) {
-      console.error(`Error cargando almacenes de instalación ${inst.id_instalacion}:`, e);
+        almacenesInst.forEach(a => {
+          if (!almacenes.some(alm => alm.id_almacen === a.id_almacen)) {
+            almacenes.push({
+              id_almacen: a.id_almacen,
+              nombre: a.nombre,
+              planta: a.planta,
+              id_instalacion: inst.id_instalacion,
+              nombre_instalacion: inst.nombre
+            });
+          }
+        });
+      } catch (e) {
+        console.error(`Error cargando almacenes de instalación ${inst.id_instalacion}:`, e);
+      }
     }
+  } catch (e) {
+    console.error('Error cargando almacenes:', e);
+    renderTablaAlmacenes([]);
   }
 }
 
@@ -111,8 +129,9 @@ function renderTablaAlmacenes(lista) {
   }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(a => {
+  itemsPagina.forEach(a => {
     const tr = document.createElement('tr');
     tr.dataset.id = a.id_almacen;
 
@@ -159,6 +178,7 @@ function bindFiltros() {
 // APLICAR FILTROS
 // ================================
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroPlanta = document.getElementById('planta')?.value;
   const filtroNombre = document.getElementById('nombre')?.value?.toLowerCase();
 
@@ -169,6 +189,10 @@ function aplicarFiltros() {
     return cumple;
   });
 
+  pagination.setData(filtrados, () => {
+      renderTablaAlmacenes(filtrados);
+    });
+  pagination.render('pagination-almacen');
   renderTablaAlmacenes(filtrados);
 }
 
@@ -376,24 +400,7 @@ function bindModales() {
 }
 
 // ================================
-// ALERTAS
+// ALERTAS (importadas de utils.js)
 // ================================
-function mostrarError(msg) {
-  const alertDiv = document.createElement('div');
-  alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
-  alertDiv.style.zIndex = '9999';
-  alertDiv.innerHTML = `<strong>Error:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-  document.body.appendChild(alertDiv);
-  setTimeout(() => alertDiv.remove(), 5000);
-}
-
-function mostrarExito(msg) {
-  const alertDiv = document.createElement('div');
-  alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
-  alertDiv.style.zIndex = '9999';
-  alertDiv.innerHTML = `<strong>Éxito:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-  document.body.appendChild(alertDiv);
-  setTimeout(() => alertDiv.remove(), 3000);
-}
 
 window.AlmacenController = { cargarAlmacenes: cargarTodosLosAlmacenes, refrescarAlmacenes: cargarDatosIniciales, aplicarFiltros };

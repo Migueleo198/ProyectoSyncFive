@@ -5,6 +5,7 @@ import VehiculoApi from '../api_f/VehiculoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { validarCheck } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 // ================================
 // CONSTANTES
@@ -23,6 +24,12 @@ let vehiculos = [];
 let personas = [];
 let currentMaterialId = null;
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 6);
+    }
+});
 
 let datosCargados = false;
 let asignacionesCache = new Map();
@@ -101,15 +108,24 @@ async function cargarDatosIniciales() {
 // ================================
 async function cargarMateriales() {
     try {
+        showTableLoading('#tabla tbody', 6);
         const response = await MaterialApi.getAll();
         materiales = Array.isArray(response) ? response : (response.data || []);
         materiales.forEach(m => {
             const cat = categorias.find(c => c.id_categoria == m.id_categoria);
             m.categoria_nombre = cat ? cat.nombre : 'Sin categoría';
         });
+        pagination.setData(materiales, () => {
+      renderTablaMateriales(materiales);
+    });
+        pagination.render('pagination-material');
         renderTablaMateriales(materiales);
     } catch (e) {
         materiales = [];
+        pagination.setData([], () => {
+      renderTablaMateriales([]);
+    });
+        pagination.render('pagination-material');
         renderTablaMateriales([]);
     }
 }
@@ -143,8 +159,9 @@ function renderTablaMateriales(lista) {
     }
 
     const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+    const itemsPagina = pagination.getPageItems(lista);
 
-    lista.forEach(m => {
+    itemsPagina.forEach(m => {
         const tr = document.createElement('tr');
         tr.dataset.id = m.id_material;
 
@@ -179,9 +196,10 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+    pagination.goToPage(0);
     const filtroEstado = document.getElementById('estado')?.value;
     const filtroNombre = document.getElementById('nombre')?.value?.toLowerCase();
-    renderTablaMateriales(materiales.filter(m => {
+    const filtrados = materiales.filter(m => {
         let cumple = true;
         if (filtroEstado) cumple = cumple && m.estado === filtroEstado;
         if (filtroNombre) cumple = cumple && (
@@ -189,7 +207,12 @@ function aplicarFiltros() {
             m.descripcion?.toLowerCase().includes(filtroNombre)
         );
         return cumple;
-    }));
+    });
+    pagination.setData(filtrados, () => {
+      renderTablaMateriales(filtrados);
+    });
+    pagination.render('pagination-material');
+    renderTablaMateriales(filtrados);
 }
 
 // ================================

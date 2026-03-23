@@ -3,9 +3,16 @@ import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let refuerzos = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 5);
+    }
+});
 
 const nombresCampos = ['ID Turno', 'Fecha Inicio', 'Fecha Fin', 'Horas'];
 const camposBd = ['id_turno_refuerzo', 'f_inicio', 'f_fin', 'horas'];
@@ -24,11 +31,21 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================================
 async function cargarRefuerzos() {
     try {
-        const res = await RefuerzoApi.getAll();
-        refuerzos = res.data;
+    showTableLoading('#tabla tbody', 5);
+    const res = await RefuerzoApi.getAll();
+    refuerzos = res?.data || res || [];
+        pagination.setData(refuerzos, () => {
+        renderTablaRefuerzos(refuerzos);
+    });
+        pagination.render('pagination-refuerzo');
         renderTablaRefuerzos(refuerzos);
     } catch (e) {
-        mostrarError(e.message || 'Error cargando turnos de refuerzo');
+        refuerzos = [];
+        pagination.setData([], () => {
+        renderTablaRefuerzos([]);
+    });
+        pagination.render('pagination-refuerzo');
+        renderTablaRefuerzos([]);
     }
 }
 
@@ -41,14 +58,20 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+    pagination.goToPage(0);
     const filtroFecha = document.getElementById('filtroFecha')?.value ?? '';
     const filtroHoras = document.getElementById('filtroHoras')?.value.trim() ?? '';
 
-    renderTablaRefuerzos(refuerzos.filter(r => {
+    const filtrados = refuerzos.filter(r => {
         const cumpleFecha = !filtroFecha || r.f_inicio?.startsWith(filtroFecha);
         const cumpleHoras = !filtroHoras || String(r.horas) === String(filtroHoras);
         return cumpleFecha && cumpleHoras;
-    }));
+    });
+    pagination.setData(filtrados, () => {
+        renderTablaRefuerzos(filtrados);
+    });
+    pagination.render('pagination-refuerzo');
+    renderTablaRefuerzos(filtrados);
 }
 
 // ================================
@@ -58,9 +81,9 @@ async function cargarSelectRefuerzos(seleccionado, id_select) {
     const select = document.getElementById(id_select);
     if (!select) return;
     try {
-        const res = await RefuerzoApi.getAll();
-        select.innerHTML = '<option value="">Seleccione turno de refuerzo...</option>';
-        res.data.forEach(r => {
+    const res = await RefuerzoApi.getAll();
+    select.innerHTML = '<option value="">Seleccione turno de refuerzo...</option>';
+    (res?.data || res || []).forEach(r => {
             const option = document.createElement('option');
             option.value = r.id_turno_refuerzo;
             option.textContent = `${r.id_turno_refuerzo} - ${r.f_inicio} / ${r.f_fin}`;
@@ -79,9 +102,9 @@ async function cargarSelectPersonas(seleccionado, id_select) {
     const select = document.getElementById(id_select);
     if (!select) return;
     try {
-        const res = await PersonaApi.getAll();
-        select.innerHTML = '<option value="">Seleccione persona...</option>';
-        res.data.forEach(p => {
+    const res = await PersonaApi.getAll();
+    select.innerHTML = '<option value="">Seleccione persona...</option>';
+    (res?.data || res || []).forEach(p => {
             const option = document.createElement('option');
             option.value = p.id_bombero;
             option.textContent = `${p.n_funcionario} - ${p.nombre} ${p.apellidos}`;
@@ -101,8 +124,9 @@ function renderTablaRefuerzos(lista) {
     tbody.innerHTML = '';
 
     const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+    const itemsPagina = pagination.getPageItems(lista);
 
-    lista.forEach(r => {
+    itemsPagina.forEach(r => {
         const tr = document.createElement('tr');
 
         const botonesAccion = puedeEscribir
@@ -238,8 +262,8 @@ function bindModalEditar() {
         const btn = e.target.closest('.btn-editar');
         if (!btn) return;
         const id = btn.dataset.id;
-        const response = await RefuerzoApi.getById(id);
-        const refuerzo = response.data;
+    const response = await RefuerzoApi.getById(id);
+    const refuerzo = response?.data || response;
         if (!refuerzo) return;
 
         const form = document.getElementById('formEditar');

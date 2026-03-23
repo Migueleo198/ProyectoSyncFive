@@ -2,11 +2,18 @@ import AvisoApi from '../api_f/AvisoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { formatearFecha, truncar, mostrarExito, mostrarError } from '../helpers/utils.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let avisos = [];
 let personas = [];
 let sesionActual = null;
 let usuarioActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 6);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('avisos');
@@ -33,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function cargarPersonas() {
   try {
     const response = await PersonaApi.getAll();
-    personas = response.data;
+    personas = response?.data || response || [];
     poblarSelectDestinatarios(personas);
     poblarSelectFiltroRemitente(personas);
   } catch (e) {
@@ -84,13 +91,23 @@ function poblarSelectFiltroRemitente(lista) {
 // ================================
 async function cargarAvisos() {
   try {
+    showTableLoading('#tabla tbody', 6);
     const response = await AvisoApi.getAll();
-    const todosLosAvisos = response.data;
+    const todosLosAvisos = response?.data || response || [];
     const misAvisos = await filtrarAvisosDelUsuario(todosLosAvisos);
     avisos = misAvisos;
+    pagination.setData(avisos, () => {
+      renderTablaAvisos(avisos);
+    });
+    pagination.render('pagination-aviso');
     renderTablaAvisos(avisos);
   } catch (e) {
-    mostrarError(e.message || 'Error cargando avisos');
+    avisos = [];
+    pagination.setData([], () => {
+      renderTablaAvisos([]);
+    });
+    pagination.render('pagination-aviso');
+    renderTablaAvisos([]);
   }
 }
 
@@ -128,8 +145,9 @@ function renderTablaAvisos(lista) {
   }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(a => {
+  itemsPagina.forEach(a => {
     const tr = document.createElement('tr');
 
     const remitentePersona = personas.find(p => String(p.id_bombero) === String(a.remitente));
@@ -179,37 +197,20 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroAsunto    = document.getElementById('asunto')?.value.toLowerCase().trim() ?? '';
   const filtroRemitente = document.getElementById('remitente')?.value ?? '';
 
-  renderTablaAvisos(avisos.filter(a => {
+  const filtrados = avisos.filter(a => {
     const cumpleAsunto    = !filtroAsunto    || (a.asunto?.toLowerCase().includes(filtroAsunto));
     const cumpleRemitente = !filtroRemitente || String(a.remitente) === String(filtroRemitente);
     return cumpleAsunto && cumpleRemitente;
-  }));
-  
-// ================================
-// VALIDAR AVISO
-// Según DDL Aviso:
-//   asunto  VARCHAR(150) NOT NULL
-//   mensaje TEXT         NOT NULL
-// ================================
-function validarAviso(asunto, mensaje) {
-  if (!asunto) {
-    mostrarError('El asunto es obligatorio.');
-    return false;
-  }
-  if (asunto.length > 150) {
-    mostrarError('El asunto no puede superar los 150 caracteres.');
-    return false;
-  }
-
-  if (!mensaje) {
-    mostrarError('El mensaje es obligatorio.');
-    return false;
-  }
-
-  return true;
+  });
+  pagination.setData(filtrados, () => {
+      renderTablaAvisos(filtrados);
+    });
+  pagination.render('pagination-aviso');
+  renderTablaAvisos(filtrados);
 }
 
 // ================================

@@ -6,17 +6,40 @@ export class PaginationHelper {
         this.itemsPerPage = itemsPerPage;
         this.currentPage = 0;
         this.totalItems = 0;
-        this.onPageChange = null; // Callback cuando cambia la página
+        this.onPageChange = null;
+        this.containerId = null;
+        this.loadingCallback = null;
     }
 
     /**
      * Configura los datos y renderiza la primera página
      */
     setData(items, onPageChange) {
+        // Mostrar loading antes de procesar
+        if (this.loadingCallback) {
+            this.loadingCallback(true);
+        }
+        
         this.totalItems = items.length;
         this.currentPage = 0;
+        
+        // Guardar el callback original para goToPage
         this.onPageChange = onPageChange;
+        
         this.render();
+        
+        // Ejecutar el callback del usuario en el siguiente tick para que el loading sea visible
+        setTimeout(() => {
+            if (onPageChange) {
+                onPageChange();
+            }
+            
+            // Ocultar loading después de procesar
+            if (this.loadingCallback) {
+                this.loadingCallback(false);
+            }
+        }, 50); // Pequeño delay para que el spinner sea visible
+        
         return this.getPageItems(items);
     }
 
@@ -47,125 +70,137 @@ export class PaginationHelper {
         this.currentPage = page;
         this.render();
         
-        if (this.onPageChange) {
-            this.onPageChange(page);
+        // Mostrar loading
+        if (this.loadingCallback) {
+            this.loadingCallback(true);
         }
+        
+        // Ejecutar callback con delay para que el loading sea visible
+        setTimeout(() => {
+            if (this.onPageChange) {
+                this.onPageChange(page);
+            }
+            
+            // Ocultar loading después del callback
+            if (this.loadingCallback) {
+                this.loadingCallback(false);
+            }
+        }, 50);
+    }
+    
+    /**
+     * Método para ocultar el loading (llamar después de renderizar la tabla)
+     */
+    hideLoading() {
+        if (this.loadingCallback) {
+            this.loadingCallback(false);
+        }
+    }
+
+    /**
+     * Establece el callback de loading
+     */
+    setLoadingCallback(callback) {
+        this.loadingCallback = callback;
     }
 
     /**
      * Renderiza los controles de paginación
      */
-    render(containerId = 'pagination-container') {
-        const container = document.getElementById(containerId);
+    render(containerId) {
+        if (containerId) {
+            this.containerId = containerId;
+        }
+        
+        const container = document.getElementById(this.containerId);
         if (!container) return;
+
+        // No renderizar si no hay datos
+        if (this.totalItems <= 0) {
+            container.innerHTML = '';
+            return;
+        }
 
         const totalPages = this.getTotalPages();
 
+        // No renderizar si solo hay una página
         if (totalPages <= 1) {
             container.innerHTML = '';
             return;
         }
 
-        let html = `
-            <nav aria-label="Paginación">
-                <ul class="pagination justify-content-center mb-0">
-        `;
+        const currentPage = this.currentPage;
+        let navHtml = '';
 
         // Botón anterior
-        if (this.currentPage === 0) {
-            html += `
-                <li class="page-item disabled">
-                    <span class="page-link">«</span>
-                </li>
-            `;
+        if (currentPage === 0) {
+            navHtml += '<li class="page-item disabled"><span class="page-link">«</span></li>';
         } else {
-            html += `
-                <li class="page-item">
-                    <a class="page-link" href="#" data-page="${this.currentPage - 1}">«</a>
-                </li>
-            `;
+            navHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${currentPage - 1}">«</a></li>`;
         }
 
-        // Números de página (con ellipsis si hay muchas)
+        // Números de página
         const pageNumbers = this.getPageNumbers(totalPages);
         
         pageNumbers.forEach(page => {
             if (page === '...') {
-                html += `
-                    <li class="page-item disabled">
-                        <span class="page-link">...</span>
-                    </li>
-                `;
-            } else if (page === this.currentPage) {
-                html += `
-                    <li class="page-item active">
-                        <span class="page-link">${page + 1}</span>
-                    </li>
-                `;
+                navHtml += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            } else if (page === currentPage) {
+                navHtml += `<li class="page-item active"><span class="page-link">${page + 1}</span></li>`;
             } else {
-                html += `
-                    <li class="page-item">
-                        <a class="page-link" href="#" data-page="${page}">${page + 1}</a>
-                    </li>
-                `;
+                navHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${page}">${page + 1}</a></li>`;
             }
         });
 
         // Botón siguiente
-        if (this.currentPage === totalPages - 1) {
-            html += `
-                <li class="page-item disabled">
-                    <span class="page-link">»</span>
-                </li>
-            `;
+        if (currentPage === totalPages - 1) {
+            navHtml += '<li class="page-item disabled"><span class="page-link">»</span></li>';
         } else {
-            html += `
-                <li class="page-item">
-                    <a class="page-link" href="#" data-page="${this.currentPage + 1}">»</a>
-                </li>
-            `;
+            navHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${currentPage + 1}">»</a></li>`;
         }
 
-        html += `
-                </ul>
-            </nav>
-            <div class="text-center text-muted mt-2">
-                <small>
-                    Mostrando ${this.currentPage * this.itemsPerPage + 1} - 
-                    ${Math.min((this.currentPage + 1) * this.itemsPerPage, this.totalItems)} 
-                    de ${this.totalItems} registros
-                </small>
+        // Calcular rangos
+        const startItem = Math.min(currentPage * this.itemsPerPage + 1, this.totalItems);
+        const endItem = Math.min((currentPage + 1) * this.itemsPerPage, this.totalItems);
+
+        // Generar HTML
+        container.innerHTML = `
+            <div class="pagination-info-custom">
+                <i class="bi bi-collection"></i>
+                <span>Mostrando <strong>${startItem}</strong> - <strong>${endItem}</strong> de <strong>${this.totalItems}</strong></span>
             </div>
+            <ul class="pagination pagination-modern mb-0">
+                ${navHtml}
+            </ul>
         `;
 
-        container.innerHTML = html;
-
-        // Bind eventos de clic
-        container.querySelectorAll('a[data-page]').forEach(link => {
-            link.addEventListener('click', (e) => {
+        // Vincular eventos usando delegacion de eventos
+        const self = this;
+        container.onclick = function(e) {
+            const link = e.target.closest('a[data-page]');
+            if (link) {
                 e.preventDefault();
-                const page = parseInt(e.target.dataset.page);
-                this.goToPage(page);
-            });
-        });
+                const page = parseInt(link.getAttribute('data-page'), 10);
+                self.goToPage(page);
+            }
+        };
     }
 
     /**
      * Genera array de números de página con ellipsis
-     * Ejemplo: [0, 1, 2, '...', 8, 9, 10] para página actual = 1 y total = 11
      */
     getPageNumbers(totalPages) {
         const current = this.currentPage;
-        const delta = 2; // Páginas a mostrar alrededor de la actual
+        const delta = 2;
 
         const range = [];
         const rangeWithDots = [];
 
         for (let i = 0; i < totalPages; i++) {
             if (
-                i === 0 || // Primera página
-                i === totalPages - 1 || // Última página
-                (i >= current - delta && i <= current + delta) // Páginas cercanas a la actual
+                i === 0 ||
+                i === totalPages - 1 ||
+                (i >= current - delta && i <= current + delta)
             ) {
                 range.push(i);
             }
@@ -182,4 +217,35 @@ export class PaginationHelper {
 
         return rangeWithDots;
     }
+}
+
+/**
+ * Helper para mostrar/ocultar indicador de carga en tablas
+ */
+export function showTableLoading(tbodyId, colspan = 1, show = true) {
+    const tbody = document.querySelector(tbodyId);
+    if (tbody) {
+        if (show) {
+            tbody.innerHTML = `
+                <tr class="table-loading">
+                    <td colspan="${colspan}" class="text-center py-4">
+                        <div class="spinner-spinning" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <span class="ms-2 loading-text">Cargando datos...</span>
+                    </td>
+                </tr>
+            `;
+        } else {
+            // No hacemos nada aquí, el loading se reemplaza con los datos
+        }
+    }
+}
+
+/**
+ * Oculta el indicador de carga
+ */
+export function hideTableLoading(tbodyId) {
+    // El loading se oculta automáticamente cuando se renderizan los datos
+    // Esta función está vacía pero se mantiene por compatibilidad
 }

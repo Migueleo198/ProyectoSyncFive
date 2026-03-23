@@ -9,9 +9,16 @@ import {
   validarIdBombero,
   validarNumeroFuncionario
 } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let personas = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 9);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('personas');
@@ -33,12 +40,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ================================
 async function cargarPersonas() {
   try {
+    showTableLoading('#tabla tbody', 9);
     const r = await PersonaApiApi.getAll();
-    personas = r.data;
+    personas = r?.data || r || [];
+    pagination.setData(personas, () => {
+      renderTablaPersonas(personas);
+    });
+    pagination.render('pagination-persona');
     renderTablaPersonas(personas);
     poblarFiltroLocalidad(personas);
     bindFiltros();
-  } catch (e) { mostrarError(e.message || 'Error cargando personas'); }
+  } catch (e) {
+    personas = [];
+    pagination.setData([], () => {
+      renderTablaPersonas([]);
+    });
+    pagination.render('pagination-persona');
+    renderTablaPersonas([]);
+  }
 }
 
 // ================================
@@ -66,16 +85,22 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroIDBombero = document.getElementById('filtroIDBombero')?.value.toLowerCase().trim() ?? '';
   const filtroLocalidad = document.getElementById('filtroLocalidad')?.value ?? '';
   const filtroActivo    = document.getElementById('filtroActivo')?.value ?? '';
 
-  renderTablaPersonas(personas.filter(p => {
+  const filtrados = personas.filter(p => {
     const cumpleID        = !filtroIDBombero || String(p.id_bombero).toLowerCase().includes(filtroIDBombero);
     const cumpleLocalidad = !filtroLocalidad || p.localidad === filtroLocalidad;
     const cumpleActivo    = filtroActivo === '' || String(p.activo) === String(filtroActivo);
     return cumpleID && cumpleLocalidad && cumpleActivo;
-  }));
+  });
+  pagination.setData(filtrados, () => {
+      renderTablaPersonas(filtrados);
+    });
+  pagination.render('pagination-persona');
+  renderTablaPersonas(filtrados);
 }
 
 // ================================
@@ -86,7 +111,7 @@ async function cargarSelectRoles() {
   try {
     const res = await RolApi.getAll();
     select.innerHTML = '<option value="">Seleccione rol...</option>';
-    res.data.forEach(r => {
+    (res?.data || res || []).forEach(r => {
       const o = document.createElement('option');
       o.value = r.id_rol;
       o.textContent = r.nombre;
@@ -102,8 +127,9 @@ function renderTablaPersonas(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(p => {
+  itemsPagina.forEach(p => {
     const tr = document.createElement('tr');
     const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${p.id_bombero}"><i class="bi bi-eye"></i></button>
@@ -283,7 +309,7 @@ function bindModalEditar() {
     const id = btn.dataset.id;
     try {
       const r = await PersonaApiApi.getById(id);
-      const persona = r.data; if (!persona) return;
+      const persona = r?.data || r; if (!persona) return;
       const form = document.getElementById('formEditar');
       form.innerHTML = `
         <div class="row mb-3">

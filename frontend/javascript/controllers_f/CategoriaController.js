@@ -1,9 +1,16 @@
 import CategoriaApi from '../api_f/CategoriaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let categorias = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 4);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('categorias');
@@ -22,10 +29,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ================================
 async function cargarCategorias() {
   try {
+    showTableLoading('#tabla tbody', 4);
     const response = await CategoriaApi.getAll();
-    categorias = response.data;
+    categorias = response?.data || response || [];
+    pagination.setData(categorias, () => {
+      renderTablaCategorias(categorias);
+    });
+    pagination.render('pagination-categoria');
     renderTablaCategorias(categorias);
   } catch (e) {
+    categorias = [];
+    pagination.setData([], () => {
+      renderTablaCategorias([]);
+    });
+    pagination.render('pagination-categoria');
+    renderTablaCategorias([]);
     mostrarError(e.message || 'Error cargando categorías');
   }
 }
@@ -37,9 +55,11 @@ function renderTablaCategorias(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
 
+  const itemsPagina = pagination.getPageItems(lista);
+
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
 
-  lista.forEach(c => {
+  itemsPagina.forEach(c => {
     const tr = document.createElement('tr');
 
     const botonesAccion = puedeEscribir
