@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <script src="/frontend/config/config.js"></script>
     <script>loadHead("Permisos", { fullcalendar: true })</script>
-    <script>loadHead("Permisos")</script>
     <script type="module" src="/frontend/javascript/controllers_f/PermisoController.js"></script>
 </head>
 <body class="bg-white text-dark d-flex flex-column">
@@ -36,7 +35,7 @@
                 
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
                     <h2 class="text-center mb-4">Solicitud de Permisos</h2>
-                    <form id="formInsertar" class="mx-auto">
+                    <form id="formInsertar" method="POST" class="mx-auto">
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label class="form-label">Motivo</label>
