@@ -51,8 +51,8 @@ class FormacionService
     public function createFormacion(array $input): array
     {
         $data = Validator::validate($input, [
-            'nombre'            => 'required|string|min:1|max:50',
-            'descripcion'       => 'required|string|min:1|max:100'
+            'nombre'            => 'required|string|min:1|max:100',
+            'descripcion'       => 'required|string|min:1'
         ]);
 
         try {
@@ -76,7 +76,7 @@ class FormacionService
         ]);
 
         $data = Validator::validate($input, [
-            'nombre'            => 'required|string|min:1|max:50',
+            'nombre'            => 'required|string|min:1|max:100',
             'descripcion'       => 'required|string|min:1|max:100'
         ]);
 

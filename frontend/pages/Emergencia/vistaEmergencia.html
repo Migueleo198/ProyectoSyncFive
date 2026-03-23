@@ -6,20 +6,23 @@
     <script>loadHead("Emergencias")</script>
     <script type="module" src="/frontend/javascript/controllers_f/EmergenciaController.js"></script>
 </head>
-<body class="bg-white text-dark">
+<body class="bg-white text-dark d-flex flex-column">
 
     <div id="header-placeholder"></div>
 
     <div class="d-flex flex-grow-1">
 
-        <div id="sidebar-placeholder" class="sidebar-bg"></div>
+        <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
 
         <main class="p-3 w-100">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">Partes de Intervención</h1>
+                <div>
+                    <h1 class="mb-0 fw-bold">Partes de Intervención</h1>
+                    <small class="text-muted">Registro de intervenciones y emergencias atendidas</small>
+                </div>
                 <a href="https://www.notion.so/06_Emergencias-31b0bf35f60680368697dfcc52939852" target="_blank"
-                   class="text-dark" title="Abrir ayuda en Notion">
-                    <i class="bi bi-question-circle fs-3"></i>
+                   class="text-muted" title="Ayuda">
+                    <i class="bi bi-question-circle fs-4"></i>
                 </a>
             </div>
 
@@ -44,21 +47,23 @@
                         </select>
                     </div>
                 </div>
-                <table class="table table-bordered table-striped" id="tabla">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-responsive-sm" id="tabla">
                     <thead class="table-dark">
                         <tr>
-                            <th class="d-none d-md-table-cell">ID Emergencia</th>
+                            <th class="d-none d-lg-table-cell">ID Emergencia</th>
                             <th>Fecha</th>
-                            <th class="d-none d-md-table-cell">Descripción</th>
+                            <th class="d-none d-lg-table-cell">Descripción</th>
                             <th>Estado</th>
-                            <th class="d-none d-md-table-cell">Dirección</th>
-                            <th class="d-none d-md-table-cell">Tipo</th>
-                            <th class="d-none d-md-table-cell">Vehículos</th>
+                            <th class="d-none d-lg-table-cell">Dirección</th>
+                            <th class="d-none d-lg-table-cell">Tipo</th>
+                            <th class="d-none d-lg-table-cell">Vehículos</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
+                </div>
             </div>
             <!-- Paginación -->
             <div id="pagination-emergencia" class="mt-3"></div>
@@ -70,11 +75,11 @@
 
                     <!-- Fila 1 -->
                     <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-4">
+                        <div class="col-md-6 col-lg-4">
                             <label for="fecha" class="form-label">Fecha</label>
                             <input type="date" class="form-control" id="fecha" name="fecha" required>
                         </div>
-                        <div class="col-mg-6 col-lg-4">
+                        <div class="col-md-6 col-lg-4">
                             <label for="estado" class="form-label">Estado</label>
                             <select class="form-select" id="estado" name="estado">
                                 <option value="">Seleccione...</option>
@@ -82,7 +87,7 @@
                                 <option value="cerrada">Cerrada</option>
                             </select>
                         </div>
-                        <div class="col-mg-6 col-lg-4">
+                        <div class="col-md-6 col-lg-4">
                             <label for="direccion" class="form-label">Dirección</label>
                             <input type="text" class="form-control" id="direccion" name="direccion">
                         </div>
@@ -90,15 +95,15 @@
 
                     <!-- Fila 2 -->
                     <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-4">
+                        <div class="col-md-6 col-lg-4">
                             <label for="tipoEmergenciaInsert" class="form-label">Tipo</label>
                             <select class="form-select" id="tipoEmergenciaInsert" name="codigo_tipo"></select>
                         </div>
-                        <div class="col-mg-6 col-lg-4">
+                        <div class="col-md-6 col-lg-4">
                             <label for="id_bombero" class="form-label">ID Bombero</label>
                             <input type="text" class="form-control" id="id_bombero" name="id_bombero">
                         </div>
-                        <div class="col-mg-6 col-lg-4">
+                        <div class="col-md-6 col-lg-4">
                             <label for="nombre_solicitante" class="form-label">Nombre Solicitante</label>
                             <input type="text" class="form-control" id="nombre_solicitante" name="nombre_solicitante">
                         </div>
@@ -106,7 +111,7 @@
 
                     <!-- Fila 3 -->
                     <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-4">
+                        <div class="col-md-6 col-lg-4">
                             <label for="tlf_solicitante" class="form-label">Tlfn Solicitante</label>
                             <input type="tel" class="form-control" id="tlf_solicitante" name="tlf_solicitante">
                         </div>
@@ -114,7 +119,7 @@
                             <label class="form-label">Vehículos asignados</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="resumenVehiculosInsertar"
-                                       placeholder="Sin vehículos asignados" disabled>
+                                       placeholder="Sin vehículos asignados" readonly>
                                 <button type="button" class="btn btn-primary"
                                         data-bs-toggle="modal"
                                         data-bs-target="#modalInsertarEquipo">+</button>
@@ -131,7 +136,7 @@
                     <!-- Botones -->
                     <div class="d-flex justify-content-center gap-2">
                         <button type="reset" class="btn btn-secondary">Limpiar</button>
-                        <button type="submit" class="btn btn-primary">Guardar</button>
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
                     </div>
 
                 </form>
@@ -230,7 +235,35 @@
     </div>
 
     <div id="footer-placeholder"></div>
-    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
+
+    <script>
+      // Auto-completar ID Bombero y fechas desde sesión
+      document.addEventListener('DOMContentLoaded', function() {
+        // Auto-completar ID Bombero con sesión
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        if (user?.id_bombero) {
+          document.getElementById('id_bombero').value = user.id_bombero;
+        }
+        
+        // Auto-completar fecha del formulario con fecha actual
+        const fechaInput = document.getElementById('fecha');
+        if (fechaInput && !fechaInput.value) {
+          fechaInput.value = new Date().toISOString().split('T')[0];
+        }
+        
+        // Auto-completar fechas del modal al abrir
+        const modalInsertarEquipo = document.getElementById('modalInsertarEquipo');
+        if (modalInsertarEquipo) {
+          modalInsertarEquipo.addEventListener('show.bs.modal', function() {
+            const now = new Date().toISOString().slice(0, 16);
+            document.getElementById('fechSalida').value = now;
+            document.getElementById('fechLlegada').value = now;
+            document.getElementById('fechRegreso').value = now;
+          });
+        }
+      });
+    </script>
 
 </body>
 </html>

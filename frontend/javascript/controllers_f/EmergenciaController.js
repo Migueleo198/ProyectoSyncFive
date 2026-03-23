@@ -209,13 +209,13 @@ async function renderTablaEmergencias(lista) {
         </button>`;
 
     tr.innerHTML = `
-      <td class="d-none d-md-table-cell">${e.id_emergencia}</td>
+      <td class="d-none d-lg-table-cell">${e.id_emergencia}</td>
       <td>${formatearFechaHora(e.fecha)}</td>
-      <td class="d-none d-md-table-cell">${e.descripcion ?? ''}</td>
+      <td class="d-none d-lg-table-cell">${e.descripcion ?? ''}</td>
       <td>${e.estado}</td>
-      <td class="d-none d-md-table-cell">${e.direccion ?? ''}</td>
-      <td class="d-none d-md-table-cell">${e.nombre_tipo ?? ''}</td>
-      <td class="d-none d-md-table-cell">${textoVehiculos}</td>
+      <td class="d-none d-lg-table-cell">${e.direccion ?? ''}</td>
+      <td class="d-none d-lg-table-cell">${e.nombre_tipo ?? ''}</td>
+      <td class="d-none d-lg-table-cell">${textoVehiculos}</td>
       <td>
         <div  class="d-flex justify-content-around">
           ${botonesAccion}
@@ -315,12 +315,17 @@ function bindModalEquipo() {
       f_regreso: v.esNuevo ? (fechRegreso || null) : v.f_regreso,
     }));
 
-    const resumenTexto = vehiculosEnModal.map(v => v.matricula).join(', ') || '—';
+    // Mostrar resumen con vehículos y personas (más informativo)
+    const resumenTexto = vehiculosEnModal.map(v => {
+      const personasCount = v.personas?.length || 0;
+      const personasInfo = personasCount > 0 ? ` (${personasCount}p)` : '';
+      return `${v.matricula}${personasInfo}`;
+    }).join(', ') || '—';
 
     const resumenEditar   = document.getElementById('resumenVehiculosEditar');
     const resumenInsertar = document.getElementById('resumenVehiculosInsertar');
     if (resumenEditar)   resumenEditar.value        = resumenTexto;
-    if (resumenInsertar) resumenInsertar.textContent = resumenTexto;
+    if (resumenInsertar) resumenInsertar.value = resumenTexto;
 
     mostrarExito(`${vehiculosEnModal.length} vehículo(s) listos para guardar`);
 
@@ -371,7 +376,7 @@ function renderVehiculosModal() {
           <select class="form-select form-select-sm select-persona" data-idx="${idx}">
             <option value="">Añadir persona...</option>
             ${personasDisponibles.map(p =>
-              `<option value="${p.id_bombero}">${p.nombre ?? p.id_bombero}</option>`
+              `<option value="${p.id_bombero}">${p.nombre} ${p.apellidos || ''} (${p.id_bombero})</option>`
             ).join('')}
           </select>
         </div>
@@ -457,7 +462,7 @@ function bindCrearEmergencia() {
 
     try {
       const nuevaEmergencia = await EmergenciaApi.create(data);
-      const idEmergencia    = nuevaEmergencia.data.id_emergencia;
+      const idEmergencia    = nuevaEmergencia.data.id; // Backend devuelve 'id', no 'id_emergencia'
 
       if (vehiculosEnModal.length > 0) {
         for (const vehiculo of vehiculosEnModal) {

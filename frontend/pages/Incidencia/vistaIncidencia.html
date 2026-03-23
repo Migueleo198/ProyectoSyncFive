@@ -20,10 +20,13 @@
             <!-- CONTENIDO PRINCIPAL -->
             <main class="col p-3 p-md-4 main-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 class="mb-0">Incidencias</h1>
+                    <div>
+                        <h1 class="mb-0 fw-bold">Incidencias</h1>
+                        <small class="text-muted">Registro de incidencias</small>
+                    </div>
                     <a href="https://www.notion.so/SIGEBO-Centro-de-Ayuda-31b0bf35f60680b08459f5e24c9295fd" target="_blank" 
-                    class="text-dark" title="Abrir ayuda en Notion">
-                        <i class="bi bi-question-circle fs-3"></i>
+                    class="text-muted" title="Ayuda">
+                        <i class="bi bi-question-circle fs-4"></i>
                     </a>
                 </div>
 
@@ -33,11 +36,11 @@
                 <!-- Contenedor tabla con filtro-->
                 <div class="container mt-4 p-0"> 
                     <div id="filtroTabla" class="m-0 row d-flex justify-content-around">
-                        <div class="col-md-5 d-flex align-items-center m-1">
+                        <div class="col-lg-3 col-md-5 col-sm-12 d-flex align-items-center m-1">
                             <label class="m-2" for="asunto">Asunto:</label>
-                            <input placeholder="Asunto" id="asunto" type="text" class="form-control m-1 filtro" data-col="1">
+                            <input placeholder="Asunto" id="asunto" type="text" class="form-control form-control-sm m-1 filtro" data-col="1">
                         </div>
-                        <div class="col-md-3 d-flex align-items-center m-1">
+                        <div class="col-lg-3 col-md-5 col-sm-12 d-flex align-items-center m-1">
                             <label class="m-2" for="estado">Estado:</label>
                             <select class="form-select m-1 filtro" id="estado" data-col="2">
                                 <option value="">Todos</option>
@@ -72,11 +75,11 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="insertFecha" class="form-label">Fecha</label>
-                                <input type="date" class="form-control" id="insertFecha" name="fecha" required>
+                                <input type="date" class="form-control form-control-sm" id="insertFecha" name="fecha" required>
                             </div>
                             <div class="col-md-4">
                                 <label for="insertAsunto" class="form-label">Asunto</label>
-                                <input type="text" class="form-control" id="insertAsunto" name="asunto" required>
+                                <input type="text" class="form-control form-control-sm" id="insertAsunto" name="asunto" required>
                             </div>
                             <div class="col-md-4">
                                 <label for="insertEstado" class="form-label">Estado</label>
@@ -91,7 +94,7 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="insertTipo" class="form-label">Tipo</label>
-                                <input type="text" class="form-control" id="insertTipo" name="tipo" required>
+                                <input type="text" class="form-control form-control-sm" id="insertTipo" name="tipo" required>
                             </div>
                             <div class="col-md-4">
                                 <label for="selectResponsable" class="form-label">Responsable (Bombero)</label>
@@ -116,7 +119,7 @@
                             </div>
                             <div class="col-md-8">
                                 <label for="insertDescripcion" class="form-label">Descripción</label>
-                                <textarea class="form-control" id="insertDescripcion" name="descripcion" rows="3"></textarea>
+                                <textarea class="form-control form-control-sm" id="insertDescripcion" name="descripcion" rows="3"></textarea>
                             </div>
                         </div>
 
@@ -191,6 +194,6 @@
     <div id="footer-placeholder" class="mt-auto"></div>
     
     <!-- ALERTAS -->
-    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
 </body>
 </html>

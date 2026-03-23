@@ -6,7 +6,7 @@
     <script>loadHead("Materiales")</script>
     <script type="module" src="/frontend/javascript/controllers_f/MaterialController.js"></script>
 </head>
-<body class="bg-white text-dark">
+<body class="bg-white text-dark d-flex flex-column">
 
     <!-- HEADER -->
     <div id="header-placeholder"></div>
@@ -21,10 +21,13 @@
             <!-- CONTENIDO PRINCIPAL -->
             <main class="col p-3 p-md-4 main-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 class="mb-0">Materiales</h1>
+                    <div>
+                        <h1 class="mb-0 fw-bold">Materiales</h1>
+                        <small class="text-muted">Catálogo de materiales y equipos</small>
+                    </div>
                     <a href="https://www.notion.so/11_Materiales-31b0bf35f60680dd840aca0da6b216ca" target="_blank"
-                       class="text-dark" title="Abrir ayuda en Notion">
-                        <i class="bi bi-question-circle fs-3"></i>
+                       class="text-muted" title="Ayuda">
+                        <i class="bi bi-question-circle fs-4"></i>
                     </a>
                 </div>
 
@@ -165,7 +168,7 @@
     <div id="footer-placeholder" class="mt-auto"></div>
 
     <!-- ALERTAS -->
-    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
 
 </body>
 </html>

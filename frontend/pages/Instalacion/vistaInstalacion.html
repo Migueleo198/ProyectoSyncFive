@@ -21,11 +21,13 @@
             <!-- CONTENIDO PRINCIPAL -->
             <main class="col p-3 p-md-4 main-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 class="mb-0">Instalaciones</h1>
-                    <!-- Icono de ayuda que redirige a Notion -->
+                    <div>
+                        <h1 class="mb-0 fw-bold">Instalaciones</h1>
+                        <small class="text-muted">Infraestructuras y dependencias del servicio</small>
+                    </div>
                     <a href="https://www.notion.so/13_Almacenes_Instalaciones-31f0bf35f606809fa788d1fa1c05c2e9" target="_blank" 
-                        class="text-dark" title="Abrir ayuda en Notion">
-                        <i class="bi bi-question-circle fs-3"></i>
+                        class="text-muted" title="Ayuda">
+                        <i class="bi bi-question-circle fs-4"></i>
                     </a>
                 </div>
 
@@ -90,7 +92,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="insertLocalidad" class="form-label">Localidad</label>
-                                <select class="form-control" id="insertLocalidad" name="localidad" required>
+                                <select class="form-select" id="insertLocalidad" name="localidad" required>
                                     <option value="">Selecciona una localidad</option>
                                     <option>Alcañiz</option>
                                     <option>Almería</option>
@@ -176,7 +178,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalle del tipo</h5>
+                    <h5 class="modal-title">Detalle de la instalación</h5>
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="modalVerBody">
@@ -192,11 +194,10 @@
     </div>
     
     <!-- ALERTAS -->
-    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
     
     <!-- FOOTER -->
     <div id="footer-placeholder" class="mt-auto"></div>
-
 
 </body>
 </html>

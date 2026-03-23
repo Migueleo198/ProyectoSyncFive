@@ -16,11 +16,13 @@
 
             <main class="col p-3 p-md-4 main-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 class="mb-0">Control de Guardias</h1>
-                    <!-- Icono de ayuda que redirige a Notion -->
+                    <div>
+                        <h1 class="mb-0 fw-bold">Control de Guardias</h1>
+                        <small class="text-muted">Programación y control de turnos de guardia</small>
+                    </div>
                     <a href="https://www.notion.so/07_Guardias_Cuadrantes-31b0bf35f60680b29d0bfa3a87b4d750" target="_blank" 
-                    class="text-dark" title="Abrir ayuda en Notion">
-                        <i class="bi bi-question-circle fs-3"></i>
+                    class="text-muted" title="Ayuda">
+                        <i class="bi bi-question-circle fs-4"></i>
                     </a>
                 </div>
 
@@ -31,13 +33,13 @@
                     <h2 class="d-flex align-items-center">Guardias</h2>
 
                     <div id="filtroTabla" class="m-0 row d-flex justify-content-center">
-                        <div class="col-md-4 d-flex align-items-center m-1">
+                        <div class="col-lg-3 col-md-5 col-sm-12 d-flex align-items-center m-1">
                             <label class="m-2" for="filtroFecha">Fecha:</label>
-                            <input type="date" class="form-control m-1" id="filtroFecha">
+                            <input type="date" class="form-control form-control-sm m-1" id="filtroFecha">
                         </div>
-                        <div class="col-md-4 d-flex align-items-center m-1">
+                        <div class="col-lg-3 col-md-5 col-sm-12 d-flex align-items-center m-1">
                             <label class="m-2" for="filtroNotas">Notas:</label>
-                            <input type="text" class="form-control m-1" id="filtroNotas" placeholder="Buscar en notas...">
+                            <input type="text" class="form-control form-control-sm m-1" id="filtroNotas" placeholder="Buscar en notas...">
                         </div>
                     </div>
 
@@ -68,7 +70,7 @@
                             </div>
                             <div class="col-md-4 col-sm-6">
                                 <label class="m-2" for="h_inicio">Hora inicio:</label>
-                                <input type="time" class="form-control" id="h_inicio" name="h_inicio">
+                                <input type="time" class="form-control form-control-sm" id="h_inicio" name="h_inicio">
                             </div>
                             <div class="col-md-4 col-sm-6">
                                 <label class="m-2" for="h_fin">Hora fin:</label>
@@ -76,7 +78,7 @@
                             </div>
                             <div class="col-md-4 col-sm-6">
                                 <label class="m-2" for="notas">Notas:</label>
-                                <input type="text" class="form-control" id="notas" name="notas">
+                                <input type="text" class="form-control form-control-sm" id="notas" name="notas">
                             </div>
                         </div>
                         <div class="d-flex justify-content-center gap-2">
@@ -152,6 +154,6 @@
     </div>
 
     <div id="footer-placeholder" class="mt-auto"></div>
-    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
 </body>
 </html>

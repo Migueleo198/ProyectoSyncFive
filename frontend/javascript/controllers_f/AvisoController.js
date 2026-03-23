@@ -49,23 +49,42 @@ async function cargarPersonas() {
 }
 
 function poblarSelectDestinatarios(lista) {
-  const select = document.getElementById('insertDestinatarios');
-  if (!select) return;
+  // Excluir al usuario actual de la lista de destinatarios
+  const personasFiltradas = lista.filter(p => 
+    !usuarioActual || String(p.id_bombero) !== String(usuarioActual.id_bombero)
+  );
 
-  select.innerHTML = '';
-
-  const personasOrdenadas = [...lista].sort((a, b) =>
+  // Ordenar alfabéticamente
+  const personasOrdenadas = [...personasFiltradas].sort((a, b) =>
     `${a.nombre} ${a.apellidos}`.localeCompare(`${b.nombre} ${b.apellidos}`)
   );
 
-  personasOrdenadas.forEach(p => {
-    if (usuarioActual && p.id_bombero === usuarioActual.id_bombero) return;
+  // Poblar select único (modo "uno")
+  const selectUnico = document.getElementById('destinatarioSelect');
+  if (selectUnico) {
+    selectUnico.innerHTML = '<option value="">Seleccione un destinatario</option>';
+    personasOrdenadas.forEach(p => {
+      const option = document.createElement('option');
+      option.value = p.id_bombero;
+      option.textContent = `${p.nombre} ${p.apellidos} (${p.nombre_usuario})`;
+      selectUnico.appendChild(option);
+    });
+  }
 
-    const option = document.createElement('option');
-    option.value = p.id_bombero;
-    option.textContent = `${p.nombre} ${p.apellidos} (${p.nombre_usuario})`;
-    select.appendChild(option);
-  });
+  // Poblar select múltiple (modo "varios")
+  const selectMultiple = document.getElementById('destinatariosMultiSelect');
+  if (selectMultiple) {
+    selectMultiple.innerHTML = '';
+    personasOrdenadas.forEach(p => {
+      const option = document.createElement('option');
+      option.value = p.id_bombero;
+      option.textContent = `${p.nombre} ${p.apellidos} (${p.nombre_usuario})`;
+      selectMultiple.appendChild(option);
+    });
+  }
+
+  // Guardar lista de personas para el modo "todos"
+  window._personasParaAviso = personasOrdenadas.map(p => p.id_bombero);
 }
 
 function poblarSelectFiltroRemitente(lista) {
@@ -211,12 +230,72 @@ function aplicarFiltros() {
     });
   pagination.render('pagination-aviso');
   renderTablaAvisos(filtrados);
+  }));
+}
+
+// ================================
+// VALIDAR AVISO
+// Según DDL Aviso:
+//   asunto  VARCHAR(150) NOT NULL
+//   mensaje TEXT         NOT NULL
+// ================================
+function validarAviso(asunto, mensaje) {
+  if (!asunto) {
+    mostrarError('El asunto es obligatorio.');
+    return false;
+  }
+  if (asunto.length > 150) {
+    mostrarError('El asunto no puede superar los 150 caracteres.');
+    return false;
+  }
+
+  if (!mensaje) {
+    mostrarError('El mensaje es obligatorio.');
+    return false;
+  }
+
+  return true;
+}
+
+// ================================
+// TOGGLE MODO DESTINATARIOS
+// ================================
+function bindDestinatarioModeToggle() {
+  const radios = document.querySelectorAll('input[name="destinatarioMode"]');
+  const selectUnico = document.getElementById('destinatarioSelect');
+  const selectMultiple = document.getElementById('destinatariosMultiSelect');
+  const infoText = document.getElementById('destinatarioInfo');
+
+  radios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      const modo = radio.value;
+
+      if (modo === 'todos') {
+        selectUnico.style.display = 'none';
+        selectMultiple.style.display = 'none';
+        infoText.textContent = 'El aviso se enviará a TODOS los usuarios del sistema';
+      } else if (modo === 'uno') {
+        selectUnico.style.display = 'block';
+        selectMultiple.style.display = 'none';
+        selectUnico.value = '';
+        infoText.textContent = 'Seleccione un único destinatario';
+      } else if (modo === 'varios') {
+        selectUnico.style.display = 'none';
+        selectMultiple.style.display = 'block';
+        // Limpiar selección múltiple
+        Array.from(selectMultiple.options).forEach(opt => opt.selected = false);
+        infoText.textContent = 'Seleccione uno o varios destinatarios (mantenga Ctrl/Cmd para múltiples)';
+      }
+    });
+  });
 }
 
 // ================================
 // CREAR AVISO
 // ================================
 function bindCrearAviso() {
+  bindDestinatarioModeToggle();
+
   const form = document.getElementById('formInsertar');
   if (!form) return;
 
@@ -229,10 +308,32 @@ function bindCrearAviso() {
     // ── Validación ──
     if (!validarAviso(asunto, mensaje)) return;
 
-    const selectDest = document.getElementById('insertDestinatarios');
-    const destinatarios = selectDest
-      ? Array.from(selectDest.selectedOptions).map(opt => opt.value).filter(v => v !== '')
-      : [];
+    // ── Obtener destinatarios según modo ──
+    const modo = document.querySelector('input[name="destinatarioMode"]:checked')?.value || 'uno';
+    let destinatarios = [];
+
+    if (modo === 'todos') {
+      // Modo "todos": todos los usuarios excepto el actual
+      destinatarios = window._personasParaAviso || [];
+    } else if (modo === 'uno') {
+      // Modo "uno": un solo destinatario
+      const selectUnico = document.getElementById('destinatarioSelect');
+      if (selectUnico?.value) {
+        destinatarios = [selectUnico.value];
+      }
+    } else if (modo === 'varios') {
+      // Modo "varios": múltiples destinatarios seleccionados
+      const selectMultiple = document.getElementById('destinatariosMultiSelect');
+      if (selectMultiple) {
+        destinatarios = Array.from(selectMultiple.selectedOptions).map(opt => opt.value);
+      }
+    }
+
+    // Validar que haya al menos un destinatario
+    if (destinatarios.length === 0) {
+      mostrarError('Debe seleccionar al menos un destinatario');
+      return;
+    }
 
     try {
       const response = await AvisoApi.create({
@@ -253,6 +354,12 @@ function bindCrearAviso() {
 
       await cargarAvisos();
       form.reset();
+      
+      // Resetear modo a "uno" por defecto
+      const radioUno = document.getElementById('modeUno');
+      if (radioUno) radioUno.checked = true;
+      bindDestinatarioModeToggle();
+      
       mostrarExito('Aviso creado correctamente');
 
     } catch (err) {

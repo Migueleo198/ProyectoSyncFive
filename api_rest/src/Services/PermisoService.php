@@ -157,5 +157,26 @@ class PermisoService
             );
         }
     }
+
+    /**
+     * Obtener las personas asociadas a un permiso
+     */
+    public function getPersonsByPermiso(string $id_permiso): array
+    {
+        Validator::validate(['id_permiso' => $id_permiso], [
+            'id_permiso' => 'required|string'
+        ]);
+
+        try {
+            $personas = $this->model->getPersonsByPermiso($id_permiso);
+        } catch (Throwable $e) {
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
+        }
+
+        return $personas;
+    }
 }
 ?>
