@@ -21,10 +21,13 @@
             <!-- CONTENIDO PRINCIPAL -->
             <main class="col p-3 p-md-4 main-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 class="mb-0">Mantenimientos</h1>
+                    <div>
+                        <h1 class="mb-0 fw-bold">Mantenimientos</h1>
+                        <small class="text-muted">Registro de mantenimiento de equipos</small>
+                    </div>
                     <a href="https://www.notion.so/SIGEBO-Centro-de-Ayuda-31b0bf35f60680b08459f5e24c9295fd" target="_blank"
-                        class="text-dark" title="Abrir ayuda en Notion">
-                        <i class="bi bi-question-circle fs-3"></i>
+                        class="text-muted" title="Ayuda">
+                        <i class="bi bi-question-circle fs-4"></i>
                     </a>
                 </div>
 
@@ -36,11 +39,11 @@
                     <div id="filtroTabla" class="m-0 row d-flex justify-content-around">
                         <div class="col-md-4 d-flex align-items-center m-1">
                             <label class="m-2" for="filtroResponsable">Responsable:</label>
-                            <input placeholder="Responsable" id="filtroResponsable" type="text" class="form-control m-1">
+                            <input placeholder="Responsable" id="filtroResponsable" type="text" class="form-control form-control-sm m-1">
                         </div>
                         <div class="col-md-3 d-flex align-items-center m-1">
                             <label class="m-2" for="filtroTipo">Tipo:</label>
-                            <select class="form-select m-1" id="filtroTipo">
+                            <select class="form-select form-select-sm m-1" id="filtroTipo">
                                 <option value="">Todos</option>
                                 <option value="Vehiculo">Vehículo</option>
                                 <option value="Material">Material</option>
@@ -48,7 +51,7 @@
                         </div>
                         <div class="col-md-3 d-flex align-items-center m-1">
                             <label class="m-2" for="filtroEstado">Estado:</label>
-                            <select class="form-select m-1" id="filtroEstado">
+                            <select class="form-select form-select-sm m-1" id="filtroEstado">
                                 <option value="">Todos</option>
                                 <option value="ABIERTO">ABIERTO</option>
                                 <option value="REALIZADO">REALIZADO</option>
@@ -259,7 +262,7 @@
     <div id="footer-placeholder" class="mt-auto"></div>
 
     <!-- ALERT -->
-    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
 
 </body>
 </html>

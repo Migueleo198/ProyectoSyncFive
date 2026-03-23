@@ -11,3 +11,40 @@
         background-color: var(--gris);
     }
 
+    /* ── Quick Access Card ── */
+    .quick-access-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        height: 100%;
+    }
+    .quick-access-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    /* ── Stat Card ── */
+    .stat-card { border-left: 4px solid; }
+    .stat-card.emergency  { border-color: #dc3545; }
+    .stat-card.personnel  { border-color: #0d6efd; }
+    .stat-card.vehicles   { border-color: #198754; }
+    .stat-card.materials  { border-color: #ffc107; }
+
+    /* ── Section Title ── */
+    .section-title {
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    /* ── Mapa Utilities ── */
+    .text-purple { color: #8e44ad; }
+    .h-450px { height: 450px; }
+    .rounded-8 { border-radius: 8px; }
+
+    /* ── Small Font Utility ── */
+    .fs-11px { font-size: 11px; }
+    .fs-8rem { font-size: .8rem; }
+    .w-170px { width: 170px; }
+
