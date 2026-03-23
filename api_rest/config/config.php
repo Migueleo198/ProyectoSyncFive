@@ -45,10 +45,10 @@ define('BASE_PATH', '/api');
 // ----------------------------------------------------
 // DATABASE
 // ----------------------------------------------------
-define('DB_HOST', '192.168.13.108:3306');
-define('DB_NAME', 'SyncFive');
+define('DB_HOST', 'localhost:3306');
+define('DB_NAME', 'syncfive');
 define('DB_USER', 'root');
-define('DB_PASS', '1234');
+define('DB_PASS', '');
 define('DB_CHARSET', 'utf8mb4');
 
 
