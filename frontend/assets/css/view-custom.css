@@ -1,0 +1,132 @@
+/**
+ * view-custom.css
+ * Centralized CSS for view pages - contains inline styles extracted from HTML files
+ * 
+ * This file is automatically loaded by config.js for all view pages.
+ */
+
+/* ========================================
+   vistaAreaPersonal.html - Profile & Stats
+   ======================================== */
+
+/* ── Foto de perfil ── */
+.profile-picture-container {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #dc3545;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 0 0 6px rgba(220,53,69,.15);
+    transition: box-shadow .2s;
+}
+.profile-picture-container:hover { box-shadow: 0 0 0 8px rgba(220,53,69,.25); }
+.profile-picture-container img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.profile-picture-container:hover::after {
+    content: "✎ Cambiar foto";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+}
+
+/* ── Tarjetas estadísticas ── */
+.stat-badge {
+    border-radius: 12px;
+    transition: transform .2s, box-shadow .2s;
+}
+.stat-badge:hover { transform: translateY(-4px); box-shadow: 0 6px 20px rgba(0,0,0,.1); }
+
+/* ── Número grande animado ── */
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* ── Logros ── */
+.achievement-card {
+    border-radius: 12px;
+    transition: transform .25s, box-shadow .25s;
+}
+.achievement-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+
+/* ── Sección de contenido ── */
+.content-area { transition: opacity .3s ease; }
+
+/* ── Badge productividad ── */
+.kpi-card {
+    border-left: 4px solid;
+    border-radius: 8px;
+    transition: transform .2s;
+}
+.kpi-card:hover { transform: scale(1.02); }
+.kpi-respuesta { border-color: #0d6efd; }
+.kpi-resolucion { border-color: #fd7e14; }
+.kpi-exitosas { border-color: #198754; }
+
+/* ── Tabla carnets ── */
+#tabla-carnets td, #tabla-carnets th { vertical-align: middle; }
+
+/* ── Bienestar grid ── */
+.bienestar-item {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    transition: background .2s;
+}
+.bienestar-item:hover { background: #e9ecef; }
+.bienestar-num { font-size: 1.8rem; font-weight: 700; }
+
+/* ── Readonly fields ── */
+input[readonly] { background: #f8f9fa !important; cursor: default; }
+
+/* ── Section headers ── */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: 1.25rem;
+}
+.section-header h5 { margin: 0; font-weight: 600; }
+.section-divider {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, #dee2e6, transparent);
+}
+
+/* ── Animación de entrada ── */
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+.fade-up { animation: fadeUp .4s ease both; }
+.fade-up:nth-child(1) { animation-delay:.05s }
+.fade-up:nth-child(2) { animation-delay:.10s }
+.fade-up:nth-child(3) { animation-delay:.15s }
+.fade-up:nth-child(4) { animation-delay:.20s }
+
+/* ========================================
+   Alert Container Styles
+   ======================================== */
+
+/**
+ * Alert container positioning
+ * Used across all view pages for toast notifications
+ */
+#alert-container {
+    z-index: 1080;
+}
