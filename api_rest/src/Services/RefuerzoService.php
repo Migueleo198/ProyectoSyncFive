@@ -7,6 +7,7 @@ use Models\RefuerzoModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class RefuerzoService
 {
@@ -153,6 +154,15 @@ class RefuerzoService
 
         try {
             $result = $this->model->delete($id_turno_refuerzo);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar este refuerzo porque hay personas asignadas", 409);
+            }
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -162,13 +172,6 @@ class RefuerzoService
 
         if ($result === 0) {
             throw new \Exception("Refuerzo no encontrado", 404);
-        }
-
-        if ($result === -1) {
-            throw new \Exception(
-                "No se puede eliminar el refuerzo: el registro está en uso",
-                409
-            );
         }
     }
     /**

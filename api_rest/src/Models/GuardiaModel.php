@@ -199,19 +199,43 @@ public function create(array $data): int|false
 
     /**
      * Actualizar el cargo de una persona en una guardia específica
+     * Si el registro no existe, lo crea (INSERT). Si existe, lo actualiza (UPDATE).
      */
     public function updateCargo(string $id_bombero, string $id_guardia, string $cargo): int
     {
-        $this->db->query("
-            UPDATE Persona_Hace_Guardia 
-            SET cargo = :cargo
-            WHERE id_bombero = :id_bombero 
-            AND id_guardia = :id_guardia
-        ")
-        ->bind(':cargo', $cargo)
-        ->bind(':id_bombero', $id_bombero)
-        ->bind(':id_guardia', $id_guardia)
-        ->execute();
+        // Verificar si el registro ya existe
+        $existing = $this->db
+            ->query("
+                SELECT id_bombero FROM Persona_Hace_Guardia
+                WHERE id_bombero = :id_bombero AND id_guardia = :id_guardia
+            ")
+            ->bind(':id_bombero', $id_bombero)
+            ->bind(':id_guardia', $id_guardia)
+            ->fetch();
+
+        if ($existing) {
+            // El registro existe → UPDATE
+            $this->db->query("
+                UPDATE Persona_Hace_Guardia 
+                SET cargo = :cargo
+                WHERE id_bombero = :id_bombero 
+                AND id_guardia = :id_guardia
+            ")
+            ->bind(':cargo', $cargo)
+            ->bind(':id_bombero', $id_bombero)
+            ->bind(':id_guardia', $id_guardia)
+            ->execute();
+        } else {
+            // El registro no existe → INSERT
+            $this->db->query("
+                INSERT INTO Persona_Hace_Guardia (id_bombero, id_guardia, cargo)
+                VALUES (:id_bombero, :id_guardia, :cargo)
+            ")
+            ->bind(':id_bombero', $id_bombero)
+            ->bind(':id_guardia', $id_guardia)
+            ->bind(':cargo', $cargo)
+            ->execute();
+        }
 
         return $this->db
             ->query("SELECT ROW_COUNT() AS affected")

@@ -7,6 +7,7 @@ use Models\SalidaModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class SalidaService
 {
@@ -119,6 +120,12 @@ class SalidaService
 
         try {
             $result = $this->model->delete($id);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar esta salida porque hay personas asignadas", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -126,11 +133,6 @@ class SalidaService
         if ($result === 0) {
             // No existe el registro
             throw new \Exception("Salida no encontrada", 404);
-        }
-
-        if ($result === -1) {
-            // Conflicto por FK u otra restricción
-            throw new \Exception("No se puede eliminar la salida: el registro está en uso", 409);
         }
 
         // Eliminación exitosa → no retorna nada
@@ -167,6 +169,12 @@ class SalidaService
     {
         try {
             $result = $this->model->deletePersonaSalida($id_registro, $n_funcionario);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar esta persona de la salida debido a restricciones", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }

@@ -7,6 +7,7 @@ use Models\IncidenciaModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class IncidenciaService
 {
@@ -131,6 +132,12 @@ class IncidenciaService
             if ($deleted === 0) {
                 throw new \Exception("No se pudo eliminar la incidencia", 500);
             }
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar esta incidencia porque hay registros asociados", 409);
+            }
+            throw new \Exception("Error al eliminar incidencia: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             if ($e->getCode() === 404) {
                 throw $e;

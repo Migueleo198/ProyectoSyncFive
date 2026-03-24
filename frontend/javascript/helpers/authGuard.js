@@ -85,6 +85,9 @@ export async function authGuard(clavePagina) {
     aplicarModoLectura();
   }
 
+  // ── 5. Ocultar botones de gestión según permisos de sub-páginas ─
+  aplicarPermisosSubPaginas(rolUsuario);
+
   return { usuario, rol: rolUsuario, puedeEscribir };
 }
 
@@ -119,6 +122,29 @@ function aplicarModoLectura() {
   // También ocultar elementos ya presentes en el DOM en este momento
   document.querySelectorAll('.contenedorInsertar').forEach(el => {
     el.style.display = 'none';
+  });
+}
+
+// ────────────────────────────────────────────────────────────────
+// PERMISOS DE SUB-PÁGINAS: oculta botones de gestión según permisos
+// ────────────────────────────────────────────────────────────────
+
+/**
+ * Oculta los botones de gestión (btn-gestion) según los permisos de las sub-páginas.
+ * Un botón con data-permiso="tiposEmergencia" solo será visible si el usuario
+ * tiene permiso de lectura para esa sub-página.
+ */
+function aplicarPermisosSubPaginas(rolUsuario) {
+  const botonesGestion = document.querySelectorAll('.btn-gestion[data-permiso]');
+  
+  botonesGestion.forEach(boton => {
+    const permisoRequerido = boton.getAttribute('data-permiso');
+    const permisosSubPagina = PERMISOS[permisoRequerido];
+    
+    // Si no existe el permiso o el usuario no tiene acceso, ocultar el botón
+    if (!permisosSubPagina || !permisosSubPagina.rolesLectura.includes(rolUsuario)) {
+      boton.style.display = 'none';
+    }
   });
 }
 
