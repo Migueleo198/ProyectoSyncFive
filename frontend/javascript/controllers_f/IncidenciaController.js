@@ -14,7 +14,7 @@ let sesionActual = null;
 const pagination = new PaginationHelper(15);
 pagination.setLoadingCallback((isLoading) => {
     if (isLoading) {
-        showTableLoading('#tabla tbody', 7);
+        showTableLoading('#tabla tbody', 6);
     }
 });
 
@@ -80,7 +80,7 @@ async function cargarVehiculos() {
 // ================================
 async function cargarIncidencias() {
   try {
-    showTableLoading('#tabla tbody', 7);
+    showTableLoading('#tabla tbody', 6);
     const r = await IncidenciaApi.getAll();
     incidencias = r?.data || r || [];
     incidencias.forEach(i => {
@@ -147,7 +147,7 @@ function renderTablaIncidencias(lista) {
   tbody.innerHTML = '';
 
   if (!lista.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay incidencias para mostrar</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay incidencias para mostrar</td></tr>';
     return;
   }
 
@@ -155,7 +155,7 @@ function renderTablaIncidencias(lista) {
   const itemsPagina = pagination.getPageItems(lista);
 
   itemsPagina.forEach(i => {
-    const id = i.cod_incidencia || i.id;
+    const id = i.id_incidencia;
     const tr = document.createElement('tr');
 
     const botonesAccion = puedeEscribir
@@ -165,16 +165,15 @@ function renderTablaIncidencias(lista) {
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${id}"><i class="bi bi-eye"></i></button>`;
 
     tr.innerHTML = `
-      <td class="d-none d-md-table-cell">${id}</td>
+      <td>${id}</td>
       <td>${i.fecha ? new Date(i.fecha).toLocaleDateString() : ''}</td>
       <td>${i.asunto ?? ''}</td>
       <td>${i.estado ?? ''}</td>
-      <td class="d-none d-md-table-cell">${i.tipo ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.nombre_responsable ?? ''}</td>
       <td>
         <div  class="d-flex justify-content-around">
           ${botonesAccion}
-        </div>  
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
@@ -209,8 +208,8 @@ function aplicarFiltros() {
   renderTablaIncidencias(filtrados);
 }
 
-const nombresCampos = ['ID','Fecha','Asunto','Estado','Tipo','Responsable','Material','Vehículo','Descripción'];
-const camposBd      = ['cod_incidencia','fecha','asunto','estado','tipo','id_bombero','id_material','matricula','descripcion'];
+const nombresCampos = ['ID','Fecha','Asunto','Estado','Responsable','Material','Vehículo','Descripción'];
+const camposBd      = ['id_incidencia','fecha','asunto','estado','id_bombero','id_material','matricula','descripcion'];
 
 // ================================
 // VALIDAR DATOS DE INCIDENCIA
@@ -236,6 +235,16 @@ function validarDatosIncidencia(data) {
   if (data.matricula && !validarMatriculaEspanola(data.matricula)) {
     mostrarError('La matrícula no tiene un formato válido'); return false;
   }
+  // NUEVA: validar exclusión mutua material/vehículo
+  const tieneMaternal = data.id_material && data.id_material !== '';
+  const tieneVehiculo = data.matricula && data.matricula !== '';
+
+  if (tieneMaternal && tieneVehiculo) {
+    mostrarError('No puedes asignar Material y Vehículo a la vez. Elige uno solo'); return false;
+  }
+  if (!tieneMaternal && !tieneVehiculo) {
+    mostrarError('Debe asignarse al menos un Material o un Vehículo'); return false;
+  }
   return true;
 }
 
@@ -247,7 +256,7 @@ function bindModalVer() {
     const btn = e.target.closest('.btn-ver');
     if (!btn) return;
     const id = btn.dataset.id;
-    const inc = incidencias.find(i => i.cod_incidencia == id || i.id == id);
+    const inc = incidencias.find(i => i.id_incidencia == id);
     if (!inc) return;
     const modalBody = document.getElementById('modalVerBody');
     if (!modalBody) return;
@@ -274,7 +283,7 @@ function bindModalEditar() {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
     const id = btn.dataset.id;
-    const inc = incidencias.find(i => i.cod_incidencia == id || i.id == id);
+    const inc = incidencias.find(i => i.id_incidencia == id);
     if (!inc) return;
 
     const form = document.getElementById('formEditar');
@@ -313,7 +322,7 @@ function bindModalEditar() {
     document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
       const data = {};
       camposBd.forEach(campo => {
-        if (campo === 'cod_incidencia') return;
+        if (campo === 'id_incidencia') return;
         const input = form.querySelector(`[name="${campo}"]`);
         if (input) data[campo] = campo === 'id_material' ? (input.value ? parseInt(input.value) : null) : input.value;
       });

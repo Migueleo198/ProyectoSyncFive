@@ -17,6 +17,39 @@ class IncidenciaService
         $this->model = new IncidenciaModel();
     }
 
+    // Validar exclusión mutua: Material O Vehículo, no ambos
+    private function validarMaterialVehiculo(array $data): void
+    {
+        $tieneMaternal = !empty($data['id_material']);
+        $tieneVehiculo = !empty($data['matricula']);
+
+        if ($tieneMaternal && $tieneVehiculo) {
+            throw new ValidationException('No puedes asignar Material y Vehículo a la vez. Elige uno solo');
+        }
+        if (!$tieneMaternal && !$tieneVehiculo) {
+            throw new ValidationException('Debe asignarse al menos un Material o un Vehículo');
+        }
+    }
+
+    // Validar formato de matrícula española
+    private function validarFormatoMatricula(?string $matricula): void
+    {
+        if (empty($matricula)) {
+            return; // No es obligatoria
+        }
+
+        $m = preg_replace('/\s+/', '', strtoupper($matricula));
+
+        // Nuevo formato (desde 2000): 4 dígitos + 3 letras (sin vocales ni Ñ)
+        $formatoNuevo = '/^[0-9]{4}[BCDFGHJKLMNPRSTVWXYZ]{3}$/';
+        // Formato antiguo: 1-2 letras + 4 dígitos + 0-2 letras (sin vocales ni Ñ)
+        $formatoAntiguo = '/^[BCDFGHJKLMNPRSTVWXYZ]{1,2}[0-9]{4}[BCDFGHJKLMNPRSTVWXYZ]{0,2}$/';
+
+        if (!preg_match($formatoNuevo, $m) && !preg_match($formatoAntiguo, $m)) {
+            throw new ValidationException('La matrícula no tiene un formato válido (ej: 1234ABC o AB1234)');
+        }
+    }
+
     // GET, /incidencias
     public function getAllIncidencias(): array
     {
@@ -40,6 +73,9 @@ class IncidenciaService
             'tipo' => 'required|string|max:50'
         ]);
 
+        $this->validarFormatoMatricula($data['matricula'] ?? null);
+        $this->validarMaterialVehiculo($data);
+
         try {
             $id = $this->model->create($data);
             return $this->model->find($id);
@@ -60,6 +96,9 @@ class IncidenciaService
             'estado' => 'required|string|in:ABIERTA,CERRADA',
             'tipo' => 'required|string|max:50'
         ]);
+
+        $this->validarFormatoMatricula($data['matricula'] ?? null);
+        $this->validarMaterialVehiculo($data);
 
         try {
             $existing = $this->model->find($id);
@@ -105,6 +144,9 @@ class IncidenciaService
             }
 
             $updatedData = array_merge($existing, $data);
+            $this->validarFormatoMatricula($updatedData['matricula'] ?? null);
+            $this->validarMaterialVehiculo($updatedData);
+
             $updated = $this->model->update($id, $updatedData);
             if ($updated === 0) {
                 throw new \Exception("No se pudo actualizar la incidencia", 500);
