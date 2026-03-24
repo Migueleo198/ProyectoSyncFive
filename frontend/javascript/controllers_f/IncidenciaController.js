@@ -4,12 +4,19 @@ import MaterialApi from '../api_f/MaterialApi.js';
 import VehiculoApi from '../api_f/VehiculoApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { validarMatriculaEspanola } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let incidencias = [];
 let personas = [];
 let materiales = [];
 let vehiculos = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 7);
+    }
+});
 
 // CORRECCIÓN: estados válidos según DDL — ENUM('ABIERTA','CERRADA')
 const ESTADOS_INCIDENCIA_VALIDOS = ['ABIERTA', 'CERRADA'];
@@ -46,14 +53,14 @@ async function cargarDatosIniciales() {
 // CARGAR PERSONAS
 // ================================
 async function cargarPersonas() {
-  try { const r = await PersonaApi.getAll(); personas = r.data || []; } catch (e) { console.error(e); }
+  try { const r = await PersonaApi.getAll(); personas = r?.data || r || []; } catch (e) { console.error(e); }
 }
 
 // ================================
 // CARGAR MATERIALES
 // ================================
 async function cargarMateriales() {
-  try { const r = await MaterialApi.getAll(); materiales = r.data || []; } catch (e) { console.error(e); }
+  try { const r = await MaterialApi.getAll(); materiales = r?.data || r || []; } catch (e) { console.error(e); }
 }
 
 // ================================
@@ -62,7 +69,7 @@ async function cargarMateriales() {
 async function cargarVehiculos() {
   try {
     const r = await VehiculoApi.getAll();
-    vehiculos = r.data || [];
+    vehiculos = r?.data || r || [];
   } catch (e) {
     vehiculos = [];
   }
@@ -73,14 +80,26 @@ async function cargarVehiculos() {
 // ================================
 async function cargarIncidencias() {
   try {
+    showTableLoading('#tabla tbody', 7);
     const r = await IncidenciaApi.getAll();
-    incidencias = r.data || [];
+    incidencias = r?.data || r || [];
     incidencias.forEach(i => {
       const persona = personas.find(p => p.id_bombero == i.id_bombero);
       i.nombre_responsable = persona ? `${persona.nombre} ${persona.apellidos}` : 'No asignado';
     });
+    pagination.setData(incidencias, () => {
+      renderTablaIncidencias(incidencias);
+    });
+    pagination.render('pagination-incidencia');
     renderTablaIncidencias(incidencias);
-  } catch (e) { console.error(e); }
+  } catch (e) {
+    incidencias = [];
+    pagination.setData([], () => {
+      renderTablaIncidencias([]);
+    });
+    pagination.render('pagination-incidencia');
+    renderTablaIncidencias([]);
+  }
 }
 
 // ================================
@@ -133,8 +152,9 @@ function renderTablaIncidencias(lista) {
   }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(i => {
+  itemsPagina.forEach(i => {
     const id = i.cod_incidencia || i.id;
     const tr = document.createElement('tr');
 
@@ -173,6 +193,7 @@ function bindFiltros() {
 // APLICAR FILTROS
 // ================================
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroEstado = document.getElementById('estado')?.value;
   const filtroAsunto = document.getElementById('asunto')?.value?.toLowerCase();
   const filtrados = incidencias.filter(i => {
@@ -181,6 +202,10 @@ function aplicarFiltros() {
     if (filtroAsunto) cumple = cumple && i.asunto?.toLowerCase().includes(filtroAsunto);
     return cumple;
   });
+  pagination.setData(filtrados, () => {
+      renderTablaIncidencias(filtrados);
+    });
+  pagination.render('pagination-incidencia');
   renderTablaIncidencias(filtrados);
 }
 

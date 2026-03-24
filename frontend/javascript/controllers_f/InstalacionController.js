@@ -2,9 +2,16 @@ import InstalacionApi from '../api_f/InstalacionApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarEmail, validarTelefono } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let instalaciones = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 6);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('instalaciones');
@@ -21,13 +28,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ================================
 async function cargarInstalaciones() {
   try {
+    showTableLoading('#tabla tbody', 6);
     const response = await InstalacionApi.getAll();
-    instalaciones = response.data;
+    instalaciones = response?.data || response || [];
+    pagination.setData(instalaciones, () => {
+      renderTablaInstalaciones(instalaciones);
+    });
+    pagination.render('pagination-instalacion');
+    renderTablaInstalaciones(instalaciones);
     poblarFiltroLocalidad();
     poblarSelectLocalidad();
-    renderTablaInstalaciones(instalaciones);
   } catch (e) {
-    mostrarError(e.message || 'Error cargando instalaciones');
+    instalaciones = [];
+    pagination.setData([], () => {
+      renderTablaInstalaciones([]);
+    });
+    pagination.render('pagination-instalacion');
+    renderTablaInstalaciones([]);
   }
 }
 
@@ -82,8 +99,9 @@ function renderTablaInstalaciones(lista) {
   tbody.innerHTML = '';
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(i => {
+  itemsPagina.forEach(i => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${i.nombre ?? ''}</td>
@@ -128,6 +146,7 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroNombre    = document.getElementById('nombre')?.value?.toLowerCase() || '';
   const filtroLocalidad = document.getElementById('localidad')?.value?.toLowerCase() || '';
 
@@ -137,6 +156,10 @@ function aplicarFiltros() {
     return cumpleNombre && cumpleLocalidad;
   });
 
+  pagination.setData(filtrados, () => {
+      renderTablaInstalaciones(filtrados);
+    });
+  pagination.render('pagination-instalacion');
   renderTablaInstalaciones(filtrados);
 }
 

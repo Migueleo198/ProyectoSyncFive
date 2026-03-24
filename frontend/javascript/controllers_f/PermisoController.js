@@ -2,9 +2,16 @@ import PermisoApi from '../api_f/PermisoApi.js';
 import MotivoApi from '../api_f/MotivoApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { truncar, mostrarError, mostrarExito } from '../helpers/utils.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let permisos = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 8);
+    }
+});
 
 // CORRECCIÓN: estados del DDL — ENUM('ACEPTADO','REVISION','DENEGADO') — sin tilde en REVISION
 const ESTADOS_PERMISO_VALIDOS = ['ACEPTADO', 'REVISION', 'DENEGADO'];
@@ -42,14 +49,24 @@ function normalizarEstado(estado) {
 // ================================
 async function cargarPermisos() {
   try {
+    showTableLoading('#tabla tbody', 8);
     const r = await PermisoApi.getAll();
-    permisos = r.data;
+    permisos = r?.data || r || [];
+    pagination.setData(permisos, () => {
+      renderTablaPermisos(permisos);
+    });
+    pagination.render('pagination-permiso');
     renderTablaPermisos(permisos);
     poblarFiltroMotivo(permisos);
     poblarFiltroEstado(permisos);
     bindFiltros();
   } catch (e) {
-    mostrarError(e.message || 'Error cargando permisos');
+    permisos = [];
+    pagination.setData([], () => {
+      renderTablaPermisos([]);
+    });
+    pagination.render('pagination-permiso');
+    renderTablaPermisos([]);
   }
 }
 
@@ -93,16 +110,22 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroMotivo = document.getElementById('filtroMotivo')?.value ?? '';
   const filtroEstado = document.getElementById('filtroEstado')?.value ?? '';
   const filtroFecha  = document.getElementById('filtroFecha')?.value ?? '';
 
-  renderTablaPermisos(permisos.filter(p => {
+  const filtrados = permisos.filter(p => {
     const cumpleMotivo = !filtroMotivo || String(p.cod_motivo) === String(filtroMotivo);
     const cumpleEstado = !filtroEstado || p.estado === filtroEstado;
     const cumpleFecha  = !filtroFecha  || p.fecha?.startsWith(filtroFecha);
     return cumpleMotivo && cumpleEstado && cumpleFecha;
-  }));
+  });
+  pagination.setData(filtrados, () => {
+      renderTablaPermisos(filtrados);
+    });
+  pagination.render('pagination-permiso');
+  renderTablaPermisos(filtrados);
 }
 
 // ================================
@@ -113,7 +136,7 @@ async function cargarSelectPermisos() {
   try {
     const res = await PermisoApi.getAll();
     select.innerHTML = '<option value="">Seleccione permiso...</option>';
-    res.data.forEach(r => {
+    (res?.data || res || []).forEach(r => {
       const o = document.createElement('option');
       o.value = r.id_permiso;
       o.textContent = `${r.id_permiso} - ${r.fecha} (${r.estado})`;
@@ -130,7 +153,7 @@ async function cargarSelectMotivos(seleccionado, id_select) {
   try {
     const res = await MotivoApi.getAll();
     select.innerHTML = '<option value="">Seleccione motivo...</option>';
-    res.data.forEach(m => {
+    (res?.data || res || []).forEach(m => {
       const o = document.createElement('option');
       o.value = m.cod_motivo;
       o.textContent = `${m.nombre} (${m.dias} días)`;
@@ -167,8 +190,9 @@ function renderTablaPermisos(lista) {
   }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(m => {
+  itemsPagina.forEach(m => {
     const tr = document.createElement('tr');
     const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_permiso}"><i class="bi bi-eye"></i></button>

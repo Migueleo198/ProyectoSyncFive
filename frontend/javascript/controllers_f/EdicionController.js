@@ -3,9 +3,16 @@ import FormacionApi from '../api_f/FormacionApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { formatearFecha, mostrarExito, mostrarError } from '../helpers/utils.js';
 import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let ediciones = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 6);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('ediciones');
@@ -32,12 +39,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ================================
 async function cargarEdiciones() {
   try {
+    showTableLoading('#tabla tbody', 6);
     const response = await EdicionApi.getAll();
-    ediciones = response.data;
+    ediciones = response?.data || response || [];
+    pagination.setData(ediciones, () => {
+      renderTablaEdiciones(ediciones);
+    });
+    pagination.render('pagination-edicion');
     renderTablaEdiciones(ediciones);
     bindFiltros();
   } catch (e) {
-    mostrarError(e.message || 'Error cargando ediciones');
+    ediciones = [];
+    pagination.setData([], () => {
+      renderTablaEdiciones([]);
+    });
+    pagination.render('pagination-edicion');
+    renderTablaEdiciones([]);
   }
 }
 
@@ -49,8 +66,9 @@ function renderTablaEdiciones(lista) {
   tbody.innerHTML = '';
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(e => {
+  itemsPagina.forEach(e => {
     const tr = document.createElement('tr');
 
     const botonesAccion = puedeEscribir
@@ -97,18 +115,24 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroNombre = document.getElementById('nombre')?.value.toLowerCase().trim() ?? '';
   const filtroDesde  = document.getElementById('filtroDesde')?.value ?? '';
   const filtroHasta  = document.getElementById('filtroHasta')?.value ?? '';
 
-  renderTablaEdiciones(ediciones.filter(e => {
+  const filtrados = ediciones.filter(e => {
     const cumpleNombre = !filtroNombre || e.nombre_formacion?.toLowerCase().includes(filtroNombre);
     const fInicio = e.f_inicio?.slice(0, 10) ?? '';
     const fFin    = e.f_fin?.slice(0, 10) ?? '';
     const cumpleDesde = !filtroDesde || fInicio >= filtroDesde;
     const cumpleHasta = !filtroHasta || fFin    <= filtroHasta;
     return cumpleNombre && cumpleDesde && cumpleHasta;
-  }));
+  });
+  pagination.setData(filtrados, () => {
+      renderTablaEdiciones(filtrados);
+    });
+  pagination.render('pagination-edicion');
+  renderTablaEdiciones(filtrados);
 }
 
 // ================================
@@ -120,7 +144,7 @@ async function cargarFormaciones(formacionSeleccionada, id_select) {
 
   try {
     const response = await FormacionApi.getAll();
-    const formaciones = response.data;
+    const formaciones = response?.data || response || [];
 
     select.innerHTML = '<option value="">Seleccione...</option>';
     formaciones.forEach(formacion => {
@@ -224,7 +248,8 @@ function bindModalVer() {
 
     try {
       const response = await EdicionApi.getById(id_formacion, id_edicion);
-      const edicion  = response.data[0];
+      const edicionData = response?.data || response || [];
+      const edicion  = edicionData[0];
       if (!edicion) return;
 
       const modalBody = document.getElementById('modalVerBody');
@@ -263,7 +288,8 @@ function bindModalEditar() {
 
     try {
       const response = await EdicionApi.getById(id_formacion, id_edicion);
-      const edicion  = response.data[0];
+      const edicionData = response?.data || response || [];
+      const edicion  = edicionData[0];
       if (!edicion) return;
 
       const form = document.getElementById('formEditar');
@@ -361,14 +387,14 @@ function bindModalEliminarEdicion() {
 async function cargarPersonas() {
   try {
     const resEdiciones   = await EdicionApi.getAll();
-    const todasEdiciones = resEdiciones.data;
+    const todasEdiciones = resEdiciones?.data || resEdiciones || [];
 
     const tbody = document.querySelector('#tablaPersonas tbody');
     tbody.innerHTML = '';
 
     const promesas = todasEdiciones.map(e =>
       EdicionApi.getPersonas(e.id_formacion, e.id_edicion)
-        .then(res => ({ edicion: e, personas: res.data }))
+        .then(res => ({ edicion: e, personas: res?.data || res || [] }))
         .catch(() => ({ edicion: e, personas: [] }))
     );
 
@@ -423,8 +449,8 @@ function bindInsertarPersona() {
     if (!id_bombero)   { mostrarError('Introduce el ID del bombero.'); return; }
 
     try {
-      const resEdiciones       = await EdicionApi.getAll();
-      const edicionesFormacion = resEdiciones.data
+      const resEdiciones   = await EdicionApi.getAll();
+      const edicionesFormacion = resEdiciones?.data || resEdiciones || []
         .filter(e => Number(e.id_formacion) === Number(id_formacion))
         .sort((a, b) => new Date(b.f_inicio) - new Date(a.f_inicio));
 

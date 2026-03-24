@@ -1,6 +1,7 @@
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarCheck, validarRangoFechas } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 // ================================
 // CONSTANTES
@@ -16,6 +17,12 @@ let personas = [];
 let vehiculos = [];
 let materiales = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 9);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('mantenimiento');
@@ -50,7 +57,25 @@ async function cargarDatosIniciales() {
 async function cargarVehiculos()      { try { const r = await fetch('/api/vehiculos');      vehiculos     = (await r.json()).data || []; } catch(e) { console.error(e); } }
 async function cargarMateriales()     { try { const r = await fetch('/api/materiales');     materiales    = (await r.json()).data || []; } catch(e) { console.error(e); } }
 async function cargarPersonas()       { try { const r = await fetch('/api/personas');       personas      = (await r.json()).data || []; } catch(e) { console.error(e); } }
-async function cargarMantenimientos() { try { const r = await fetch('/api/mantenimientos'); mantenimientos = (await r.json()).data || []; } catch(e) { mantenimientos = []; } }
+async function cargarMantenimientos() {
+  try {
+    showTableLoading('#tabla tbody', 9);
+    const r = await fetch('/api/mantenimientos');
+    mantenimientos = (await r.json()).data || [];
+    pagination.setData(mantenimientos, () => {
+      renderTabla(mantenimientos);
+    });
+    pagination.render('pagination-mantenimiento');
+    renderTabla(mantenimientos);
+  } catch(e) {
+    mantenimientos = [];
+    pagination.setData([], () => {
+      renderTabla([]);
+    });
+    pagination.render('pagination-mantenimiento');
+    renderTabla([]);
+  }
+}
 
 // ================================
 // POBLAR SELECTS
@@ -86,8 +111,9 @@ function renderTabla(lista) {
   if (!lista?.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay mantenimientos para mostrar</td></tr>'; return; }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(m => {
+  itemsPagina.forEach(m => {
     const tr = document.createElement('tr');
     const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.cod_mantenimiento}"><i class="bi bi-eye"></i></button>
@@ -119,16 +145,22 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const fr = document.getElementById('filtroResponsable')?.value?.toLowerCase();
   const fe = document.getElementById('filtroEstado')?.value;
   const ft = document.getElementById('filtroTipo')?.value;
-  renderTabla(mantenimientos.filter(m => {
+  const filtrados = mantenimientos.filter(m => {
     let c = true;
     if (fr) c = c && (m.nombre_bombero?.toLowerCase().includes(fr) || m.id_bombero?.toLowerCase().includes(fr));
     if (fe) c = c && m.estado === fe;
     if (ft) c = c && m.tipo === ft;
     return c;
-  }));
+  });
+  pagination.setData(filtrados, () => {
+      renderTabla(filtrados);
+    });
+  pagination.render('pagination-mantenimiento');
+  renderTabla(filtrados);
 }
 
 // ================================

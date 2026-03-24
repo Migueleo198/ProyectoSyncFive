@@ -1,6 +1,7 @@
 import InfraestructuraAguaApi from '../api_f/InfraestructuraAguaApi.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarCheck } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 // ================================
 // CONSTANTES
@@ -20,6 +21,12 @@ const ESTADOS_VALIDOS   = ['ACTIVO', 'AVERIA', 'SECO', 'FUERA_SERVICIO', 'RETIRA
 
 // ─── Estado ────────────────────────────────────────────────────────────────
 let todasLasInfraestructuras = [];
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tablaInfraestructuras tbody', 8);
+    }
+});
 
 // ─── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -117,10 +124,15 @@ async function cargarInfraestructuras(filtros = {}) {
       InfraestructuraAguaApi.getVehiculos(),
     ]);
 
-    todasLasInfraestructuras = respInfra.data;
+    // Manejar diferentes formatos de respuesta
+    todasLasInfraestructuras = respInfra?.data || respInfra || [];
+    const vehiculos = respVehiculos?.data || respVehiculos || [];
+    
+    pagination.setData(todasLasInfraestructuras, () => renderTabla(todasLasInfraestructuras));
+    pagination.render('pagination-infraestructura');
     renderTabla(todasLasInfraestructuras);
-    actualizarContadores(todasLasInfraestructuras, respVehiculos.data);    
-    renderMapa(todasLasInfraestructuras, respVehiculos.data);
+    actualizarContadores(todasLasInfraestructuras, vehiculos);    
+    renderMapa(todasLasInfraestructuras, vehiculos);
   } catch (e) {
     mostrarError(e.message || 'Error cargando datos');
   }
@@ -140,7 +152,9 @@ function renderTabla(lista) {
     return;
   }
 
-  lista.forEach(item => {
+  const itemsPagina = pagination.getPageItems(lista);
+
+  itemsPagina.forEach(item => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${item.codigo}</td>
@@ -240,8 +254,20 @@ function bindFiltros() {
   if (filtroMun) {
     filtroMun.addEventListener('input', () => {
       const texto = filtroMun.value.toLowerCase().trim();
-      if (texto.length === 0) { renderTabla(todasLasInfraestructuras); return; }
-      renderTabla(todasLasInfraestructuras.filter(i => i.municipio.toLowerCase().includes(texto)));
+      if (texto.length === 0) {
+pagination.setData(todasLasInfraestructuras, () => {
+      renderTabla(todasLasInfraestructuras);
+    });
+        pagination.render('pagination-infraestructura');
+        renderTabla(todasLasInfraestructuras);
+        return;
+      }
+      const filtrados = todasLasInfraestructuras.filter(i => i.municipio.toLowerCase().includes(texto));
+      pagination.setData(filtrados, () => {
+      renderTabla(filtrados);
+    });
+      pagination.render('pagination-infraestructura');
+      renderTabla(filtrados);
     });
   }
 }

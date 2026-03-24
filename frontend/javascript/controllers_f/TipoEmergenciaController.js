@@ -1,9 +1,16 @@
 import TipoEmergenciaApi from '../api_f/TipoEmergenciaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let tiposEmergencia = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 4);
+    }
+});
 
 const nombresCampos = ['Nombre', 'Grupo'];
 const camposBd      = ['nombre', 'grupo'];
@@ -28,12 +35,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function cargarTiposEmergencia() {
   try {
+    showTableLoading('#tabla tbody', 4);
     const r = await TipoEmergenciaApi.getAll();
-    tiposEmergencia = r.data;
+    tiposEmergencia = r?.data || r || [];
+    pagination.setData(tiposEmergencia, () => {
+      renderTablaTiposEmergencia(tiposEmergencia);
+    });
+    pagination.render('pagination-tipoEmergencia');
     renderTablaTiposEmergencia(tiposEmergencia);
-    poblarFiltroGrupo(tiposEmergencia); // ← AÑADIR
+    poblarFiltroGrupo(tiposEmergencia);
   } catch (e) {
-    mostrarError(e.message || 'Error cargando tipos de emergencia');
+    tiposEmergencia = [];
+    pagination.setData([], () => {
+      renderTablaTiposEmergencia([]);
+    });
+    pagination.render('pagination-tipoEmergencia');
+    renderTablaTiposEmergencia([]);
   }
 }
 
@@ -56,8 +73,9 @@ function renderTablaTiposEmergencia(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(e => {
+  itemsPagina.forEach(e => {
     const tr = document.createElement('tr');
     const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${e.codigo_tipo}"><i class="bi bi-eye"></i></button>
@@ -97,14 +115,20 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroNombre = document.getElementById('nombre')?.value.toLowerCase().trim() ?? '';
   const filtroGrupo  = document.getElementById('grupo')?.value ?? '';
 
-  renderTablaTiposEmergencia(tiposEmergencia.filter(t => {
+  const filtrados = tiposEmergencia.filter(t => {
     const cumpleNombre = !filtroNombre || t.nombre?.toLowerCase().includes(filtroNombre);
     const cumpleGrupo  = !filtroGrupo  || t.grupo === filtroGrupo;
     return cumpleNombre && cumpleGrupo;
-  }));
+  });
+  pagination.setData(filtrados, () => {
+      renderTablaTiposEmergencia(filtrados);
+    });
+  pagination.render('pagination-tipoEmergencia');
+  renderTablaTiposEmergencia(filtrados);
 }
 
 function bindCrearTipoEmergencia() {
@@ -144,7 +168,7 @@ function bindModalEditar() {
     const id = btn.dataset.id;
     try {
       const r = await TipoEmergenciaApi.getById(id);
-      const tipo = r.data; if (!tipo) return;
+      const tipo = r?.data || r; if (!tipo) return;
       const form = document.getElementById('formEditar');
       form.innerHTML = `
         <div class="row mb-3">

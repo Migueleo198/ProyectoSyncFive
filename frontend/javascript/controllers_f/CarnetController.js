@@ -3,9 +3,16 @@ import PersonaApiApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let carnets = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 5);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('carnets');
@@ -31,13 +38,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ================================
 async function cargarCarnets() {
   try {
+    showTableLoading('#tabla tbody', 5);
     const response = await CarnetApiApi.getAll();
-    carnets = response.data;
+    carnets = response?.data || response || [];
+    pagination.setData(carnets, () => {
+      renderTablaCarnets(carnets);
+    });
+    pagination.render('pagination-carnet');
     renderTablaCarnets(carnets);
     poblarFiltroCategoria(carnets);
     bindFiltros();
   } catch (e) {
-    mostrarError(e.message || 'Error cargando carnets');
+    carnets = [];
+    pagination.setData([], () => {
+      renderTablaCarnets([]);
+    });
+    pagination.render('pagination-carnet');
+    renderTablaCarnets([]);
   }
 }
 
@@ -62,14 +79,20 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroNombre    = document.getElementById('filtroNombre')?.value.toLowerCase().trim() ?? '';
   const filtroCategoria = document.getElementById('filtroCategoria')?.value ?? '';
 
-  renderTablaCarnets(carnets.filter(c => {
+  const filtrados = carnets.filter(c => {
     const cumpleNombre    = !filtroNombre    || c.nombre?.toLowerCase().includes(filtroNombre);
     const cumpleCategoria = !filtroCategoria || c.categoria === filtroCategoria;
     return cumpleNombre && cumpleCategoria;
-  }));
+  });
+  pagination.setData(filtrados, () => {
+      renderTablaCarnets(filtrados);
+    });
+  pagination.render('pagination-carnet');
+  renderTablaCarnets(filtrados);
 }
 
 // ================================
@@ -81,7 +104,7 @@ async function cargarTiposCarnet(tipoSeleccionado, id_select) {
 
   try {
     const response = await CarnetApiApi.getAll();
-    const tipos = response.data;
+    const tipos = response?.data || response || [];
 
     select.innerHTML = '<option value="">Seleccione...</option>';
     tipos.forEach(tipo => {
@@ -106,8 +129,9 @@ function renderTablaCarnets(lista) {
   tbody.innerHTML = '';
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(c => {
+  itemsPagina.forEach(c => {
     const tr = document.createElement('tr');
 
     const botonesAccion = puedeEscribir
@@ -285,7 +309,7 @@ function bindModalEditar() {
 
     try {
       const response = await CarnetApiApi.getById(id);
-      const carnet = response.data;
+      const carnet = response?.data || response;
       if (!carnet) return;
 
       const form = document.getElementById('formEditar');
@@ -369,7 +393,7 @@ async function cargarCarnetsDisponibles(carnetSeleccionado, id_select) {
 
   try {
     const response = await CarnetApiApi.getAll();
-    const lista = response.data;
+    const lista = response?.data || response || [];
     select.innerHTML = '<option value="">Seleccione carnet...</option>';
     lista.forEach(carnet => {
       const option = document.createElement('option');
@@ -392,7 +416,7 @@ async function cargarBomberosDisponibles(bomberoSeleccionado, id_select) {
 
   try {
     const response = await PersonaApiApi.getAll();
-    const bomberos = response.data;
+    const bomberos = response?.data || response || [];
     select.innerHTML = '<option value="">Seleccione bombero...</option>';
     bomberos.forEach(bombero => {
       const option = document.createElement('option');

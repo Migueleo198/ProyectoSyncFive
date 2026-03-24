@@ -2,9 +2,16 @@ import SalidaApi from '../api_f/SalidaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { validarNumero, validarRangoFechas, validarIdBombero, validarMatriculaEspanola } from '../helpers/validacion.js';
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let salidas = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 8);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('salidas');
@@ -25,13 +32,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ================================
 async function cargarSalidas() {
   try {
+    showTableLoading('#tabla tbody', 8);
     const r = await SalidaApi.getAll();
-    salidas = r.data;
+    salidas = r?.data || r || [];
+    pagination.setData(salidas, () => {
+      renderTablaSalidas(salidas);
+    });
+    pagination.render('pagination-salida');
     renderTablaSalidas(salidas);
     poblarFiltroMatricula(salidas);
     poblarFiltroBombero(salidas);
     bindFiltros();
-  } catch (e) { mostrarError(e.message || 'Error cargando salidas'); }
+  } catch (e) {
+    salidas = [];
+    pagination.setData([], () => {
+      renderTablaSalidas([]);
+    });
+    pagination.render('pagination-salida');
+    renderTablaSalidas([]);
+  }
 }
 
 // ================================
@@ -75,19 +94,25 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroMatricula = document.getElementById('filtroMatricula')?.value ?? '';
   const filtroBombero   = document.getElementById('filtroBombero')?.value ?? '';
   const filtroDesde     = document.getElementById('filtroDesde')?.value ?? '';
   const filtroHasta     = document.getElementById('filtroHasta')?.value ?? '';
 
-  renderTablaSalidas(salidas.filter(s => {
+  const filtrados = salidas.filter(s => {
     const cumpleMatricula = !filtroMatricula || s.matricula === filtroMatricula;
     const cumpleBombero   = !filtroBombero   || String(s.id_bombero) === String(filtroBombero);
     const fSalida = s.f_salida?.slice(0, 10) ?? '';
     const cumpleDesde = !filtroDesde || fSalida >= filtroDesde;
     const cumpleHasta = !filtroHasta || fSalida <= filtroHasta;
     return cumpleMatricula && cumpleBombero && cumpleDesde && cumpleHasta;
-  }));
+  });
+  pagination.setData(filtrados, () => {
+      renderTablaSalidas(filtrados);
+    });
+  pagination.render('pagination-salida');
+  renderTablaSalidas(filtrados);
 }
 
 // ================================
@@ -97,8 +122,9 @@ function renderTablaSalidas(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(s => {
+  itemsPagina.forEach(s => {
     const tr = document.createElement('tr');
     const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${s.id_registro}"><i class="bi bi-eye"></i></button>

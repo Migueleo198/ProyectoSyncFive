@@ -5,6 +5,7 @@ import PersonaApi         from '../api_f/PersonaApi.js';
 import { authGuard }      from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
 import { validarTelefono, validarIdBombero } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 // CORRECCIÓN: estados del DDL — ENUM('ACTIVA','CERRADA')
 const ESTADOS_EMERGENCIA_VALIDOS = ['ACTIVA', 'CERRADA'];
@@ -14,6 +15,13 @@ let emergencias = [];
 let vehiculosEnModal = [];
 let todasLasPersonas = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15); // 15 items por página
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 8);
+    }
+});
+
 
 // ================================
 // DOM CONTENT LOADED
@@ -28,6 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   cargarTiposEmergencia(0, 'tipoEmergenciaInsert');
   cargarSelectVehiculos();
   cargarPersonas();
+  bindFiltros();
   bindModalEquipo();
   
   // Solo vinculamos el form de insertar si puede escribir
@@ -41,10 +50,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ================================
 async function cargarEmergencias() {
   try {
+    // Mostrar spinner de carga ANTES de hacer la petición
+    showTableLoading('#tabla tbody', 8);
+    
     const response = await EmergenciaApi.getAll();
     emergencias = response.data;
+
+    // Configurar paginación y renderizar tabla
+    pagination.setData(emergencias, () => {
+      renderTablaEmergencias(emergencias);
+    });
+    pagination.render('pagination-emergencia');
     renderTablaEmergencias(emergencias);
   } catch (e) {
+    // Ocultar spinner en caso de error
+    renderTablaEmergencias([]);
     mostrarError(e.message || 'Error cargando emergencias');
   }
 }
@@ -141,9 +161,22 @@ async function renderTablaEmergencias(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
 
+  // Obtener solo los items de la página actual
+  const itemsPagina = pagination.getPageItems(lista);
+
+  if (!itemsPagina.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-muted py-4">
+          No hay emergencias para mostrar
+        </td>
+      </tr>`;
+    return;
+  }
+
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
 
-  for (const e of lista) {
+  for (const e of itemsPagina) {
     const tr = document.createElement('tr');
 
     let textoVehiculos = '—';
@@ -202,14 +235,21 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroTipo   = document.getElementById('filtroTipoEmergencia')?.value ?? '';
   const filtroEstado = document.getElementById('grupo')?.value.toLowerCase().trim() ?? '';
 
-  renderTablaEmergencias(emergencias.filter(e => {
+  const filtrados = emergencias.filter(e => {
     const cumpleTipo   = !filtroTipo   || String(e.codigo_tipo) === String(filtroTipo);
     const cumpleEstado = !filtroEstado || e.estado?.toLowerCase().includes(filtroEstado);
     return cumpleTipo && cumpleEstado;
-  }));
+  });
+
+  pagination.setData(filtrados, () => {
+    renderTablaEmergencias(filtrados);
+  });
+  pagination.render('pagination-emergencia');
+  renderTablaEmergencias(filtrados);
 }
 
 // ================================
