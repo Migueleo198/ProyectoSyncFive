@@ -319,12 +319,12 @@ function bindModalEditar() {
       const form = document.getElementById('formEditar');
       form.innerHTML = `
         <div class="row mb-3">
-          <div class="col-md-6 col-lg-4"><label class="form-label">ID Bombero</label><input type="text" class="form-control" name="id_bombero" value="${salida.id_bombero??''}" required></div>
+          <div class="col-md-6 col-lg-4"><label class="form-label">ID Bombero</label><select class="form-select" name="id_bombero" required>${getOpcionesBomberos(salida.id_bombero)}</select></div>
           <div class="col-md-6 col-lg-4"><label class="form-label">Fecha salida</label><input type="datetime-local" class="form-control" name="f_salida" value="${salida.f_salida??''}"></div>
           <div class="col-md-6 col-lg-4"><label class="form-label">Fecha regreso</label><input type="datetime-local" class="form-control" name="f_regreso" value="${salida.f_regreso??''}"></div>
         </div>
         <div class="row mb-4">
-          <div class="col-md-6 col-lg-4"><label class="form-label">Matrícula</label><input type="text" class="form-control" name="matricula" value="${salida.matricula??''}"></div>
+          <div class="col-md-6 col-lg-4"><label class="form-label">Matrícula</label><select class="form-select" name="matricula">${getOpcionesVehiculos(salida.matricula)}</select></div>
           <div class="col-md-6 col-lg-4"><label class="form-label">KM inicio</label><input type="number" class="form-control" name="km_inicio" value="${salida.km_inicio??''}"></div>
           <div class="col-md-6 col-lg-4"><label class="form-label">KM fin</label><input type="number" class="form-control" name="km_fin" value="${salida.km_fin??''}"></div>
         </div>
