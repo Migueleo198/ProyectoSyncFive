@@ -208,8 +208,8 @@ function aplicarFiltros() {
   renderTablaIncidencias(filtrados);
 }
 
-const nombresCampos = ['ID','Fecha','Asunto','Estado','Responsable','Material','Vehículo','Descripción'];
-const camposBd      = ['id_incidencia','fecha','asunto','estado','id_bombero','id_material','matricula','descripcion'];
+const nombresCampos = ['ID','Fecha','Asunto','Estado','Tipo','Responsable','Material','Vehículo','Descripción'];
+const camposBd      = ['id_incidencia','fecha','asunto','estado','tipo','id_bombero','id_material','matricula','descripcion'];
 
 // ================================
 // VALIDAR DATOS DE INCIDENCIA
