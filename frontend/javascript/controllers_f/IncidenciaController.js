@@ -165,9 +165,9 @@ function renderTablaIncidencias(lista) {
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${id}"><i class="bi bi-eye"></i></button>`;
 
     tr.innerHTML = `
-      <td>${id}</td>
+      <td class="d-none d-md-table-cell">${id}</td>
       <td>${i.fecha ? new Date(i.fecha).toLocaleDateString() : ''}</td>
-      <td>${i.asunto ?? ''}</td>
+      <td class="d-none d-md-table-cell">${i.asunto ?? ''}</td>
       <td>${i.estado ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.nombre_responsable ?? ''}</td>
       <td>
