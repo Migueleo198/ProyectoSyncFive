@@ -208,8 +208,8 @@ function aplicarFiltros() {
   renderTablaIncidencias(filtrados);
 }
 
-const nombresCampos = ['ID','Fecha','Asunto','Estado','Tipo','Responsable','Material','Vehículo','Descripción'];
-const camposBd      = ['id_incidencia','fecha','asunto','estado','tipo','id_bombero','id_material','matricula','descripcion'];
+const nombresCampos = ['ID','Fecha','Asunto','Estado','Tipo','Responsable','Material','Vehículo'];
+const camposBd      = ['id_incidencia','fecha','asunto','estado','tipo','id_bombero','id_material','matricula'];
 
 // ================================
 // VALIDAR DATOS DE INCIDENCIA
@@ -317,7 +317,6 @@ function bindModalEditar() {
         <div class="col-lg-6"><label class="form-label">Material</label><select class="form-select" name="id_material">${materialesOpts}</select></div>
         <div class="col-lg-6"><label class="form-label">Vehículo</label><select class="form-select" name="matricula">${vehiculosOpts}</select></div>
       </div>
-      <div class="mb-3"><label class="form-label">Descripción</label><textarea class="form-control" name="descripcion" rows="3">${inc.descripcion || ''}</textarea></div>
     `;
 
     // Agregar listener al botón de guardar (que está fuera del form)
@@ -331,7 +330,7 @@ function bindModalEditar() {
           if (input) {
             let valor = input.value;
             // Convertir campos opcionales a null si están vacíos
-            if (['id_material', 'matricula', 'descripcion'].includes(campo)) {
+            if (['id_material', 'matricula'].includes(campo)) {
               data[campo] = valor ? (campo === 'id_material' ? parseInt(valor) : valor) : null;
             } else {
               data[campo] = valor;
@@ -390,8 +389,7 @@ function bindCrearIncidencia() {
       tipo:        f.get('tipo'),
       id_bombero:  f.get('id_bombero') || null,
       id_material: f.get('id_material') ? parseInt(f.get('id_material')) : null,
-      matricula:   f.get('matricula') || null,
-      descripcion: f.get('descripcion') || ''
+      matricula:   f.get('matricula') || null
     };
     // CORRECCIÓN: validar antes de enviar
     if (!validarDatosIncidencia(data)) return;

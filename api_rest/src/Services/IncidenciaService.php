@@ -70,8 +70,7 @@ class IncidenciaService
             'fecha' => 'required|date',
             'asunto' => 'required|string|max:150',
             'estado' => 'required|string|in:ABIERTA,CERRADA',
-            'tipo' => 'required|string|max:50',
-            'descripcion' => 'nullable|string|max:500'
+            'tipo' => 'required|string|max:50'
         ]);
 
         $this->validarFormatoMatricula($data['matricula'] ?? null);
@@ -95,8 +94,7 @@ class IncidenciaService
             'fecha' => 'required|date',
             'asunto' => 'required|string|max:150',
             'estado' => 'required|string|in:ABIERTA,CERRADA',
-            'tipo' => 'required|string|max:50',
-            'descripcion' => 'nullable|string|max:500'
+            'tipo' => 'required|string|max:50'
         ]);
 
         $this->validarFormatoMatricula($data['matricula'] ?? null);
@@ -131,8 +129,7 @@ class IncidenciaService
             'fecha' => 'date',
             'asunto' => 'string|max:150',
             'estado' => 'string|in:ABIERTA,CERRADA',
-            'tipo' => 'string|max:50',
-            'descripcion' => 'nullable|string|max:500'
+            'tipo' => 'string|max:50'
         ]);
 
         // Si el array está vacío, no hay nada que actualizar
