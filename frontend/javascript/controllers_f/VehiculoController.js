@@ -3,10 +3,17 @@ import InstalacionApi from '../api_f/InstalacionApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarMatriculaEspanola } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let vehiculos = [];
 let instalaciones = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 7);
+    }
+});
 
 // ================================
 // INICIALIZACIÓN
@@ -44,7 +51,7 @@ async function cargarDatosIniciales() {
 async function cargarInstalaciones() {
   try {
     const response = await InstalacionApi.getAll();
-    instalaciones = response.data;
+    instalaciones = response?.data || response || [];
     poblarSelectInstalaciones();
   } catch (e) {
     console.error('Error cargando instalaciones:', e);
@@ -56,15 +63,25 @@ async function cargarInstalaciones() {
 // ================================
 async function cargarVehiculos() {
   try {
+    showTableLoading('#tabla tbody', 7);
     const response = await VehiculoApi.getAll();
-    vehiculos = response.data;
+    vehiculos = response?.data || response || [];
     vehiculos.forEach(v => {
       const instalacion = instalaciones.find(i => i.id_instalacion == v.id_instalacion);
       v.nombre_instalacion = instalacion ? instalacion.nombre : 'Sin asignar';
     });
+    pagination.setData(vehiculos, () => {
+      renderTablaVehiculos(vehiculos);
+    });
+    pagination.render('pagination-vehiculo');
     renderTablaVehiculos(vehiculos);
   } catch (e) {
-    mostrarError(e.message || 'Error cargando vehículos');
+    vehiculos = [];
+    pagination.setData([], () => {
+      renderTablaVehiculos([]);
+    });
+    pagination.render('pagination-vehiculo');
+    renderTablaVehiculos([]);
   }
 }
 
@@ -92,8 +109,9 @@ function renderTablaVehiculos(lista) {
   if (!tbody) return;
   tbody.innerHTML = '';
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(v => {
+  itemsPagina.forEach(v => {
     const tr = document.createElement('tr');
     tr.dataset.matricula = v.matricula;
     const botonesAccion = puedeEscribir
@@ -137,6 +155,7 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroDisponibilidad = document.getElementById('disponibilidad')?.value;
   const filtroNombre = document.getElementById('nombre')?.value?.toLowerCase();
   const filtrados = vehiculos.filter(v => {
@@ -145,6 +164,10 @@ function aplicarFiltros() {
     if (filtroNombre && filtroNombre !== '') cumple = cumple && v.nombre?.toLowerCase().includes(filtroNombre);
     return cumple;
   });
+  pagination.setData(filtrados, () => {
+      renderTablaVehiculos(filtrados);
+    });
+  pagination.render('pagination-vehiculo');
   renderTablaVehiculos(filtrados);
 }
 

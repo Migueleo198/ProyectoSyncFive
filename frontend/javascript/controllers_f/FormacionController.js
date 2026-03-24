@@ -1,9 +1,16 @@
 import FormacionApi from '../api_f/FormacionApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let formaciones = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 4);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('formaciones');
@@ -25,12 +32,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ================================
 async function cargarFormaciones() {
   try {
+    showTableLoading('#tabla tbody', 4);
     const response = await FormacionApi.getAll();
-    formaciones = response.data;
+    formaciones = response?.data || response || [];
+    pagination.setData(formaciones, () => {
+      renderTablaFormaciones(formaciones);
+    });
+    pagination.render('pagination-formacion');
     renderTablaFormaciones(formaciones);
     bindFiltros();
   } catch (e) {
-    mostrarError(e.message || 'Error cargando formaciones');
+    formaciones = [];
+    pagination.setData([], () => {
+      renderTablaFormaciones([]);
+    });
+    pagination.render('pagination-formacion');
+    renderTablaFormaciones([]);
   }
 }
 
@@ -42,8 +59,9 @@ function renderTablaFormaciones(lista) {
   tbody.innerHTML = '';
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(f => {
+  itemsPagina.forEach(f => {
     const tr = document.createElement('tr');
 
     const botonesAccion = puedeEscribir
@@ -82,12 +100,18 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+  pagination.goToPage(0);
   const filtroNombre = document.getElementById('filtroNombre')?.value.toLowerCase().trim() ?? '';
-  renderTablaFormaciones(formaciones.filter(f =>
+  const filtrados = formaciones.filter(f =>
     !filtroNombre || f.nombre?.toLowerCase().includes(filtroNombre)
-  ));
+  );
+  pagination.setData(filtrados, () => {
+      renderTablaFormaciones(filtrados);
+    });
+  pagination.render('pagination-formacion');
+  renderTablaFormaciones(filtrados);
 }
-
+  
 // ================================
 // VALIDAR FORMACIÓN
 // Según DDL Formacion:
@@ -180,7 +204,7 @@ function bindModalEditar() {
 
     try {
       const response  = await FormacionApi.getById(id);
-      const formacion = response.data;
+      const formacion = response?.data || response;
       if (!formacion) return;
 
       const form = document.getElementById('formEditar');

@@ -2,9 +2,16 @@ import MotivoApi from '../api_f/MotivoApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { truncar, mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarNumero } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let motivos = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 4);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('motivos');
@@ -24,8 +31,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 // CARGAR MOTIVOS
 // ================================
 async function cargarMotivos() {
-  try { const r = await MotivoApi.getAll(); motivos = r.data; renderTablaMotivos(motivos); }
-  catch (e) { mostrarError(e.message || 'Error cargando motivos'); }
+  try {
+    showTableLoading('#tabla tbody', 4);
+    const r = await MotivoApi.getAll();
+    motivos = r?.data || r || [];
+    pagination.setData(motivos, () => {
+      renderTablaMotivos(motivos);
+    });
+    pagination.render('pagination-motivo');
+    renderTablaMotivos(motivos);
+  } catch (e) {
+    motivos = [];
+    pagination.setData([], () => {
+      renderTablaMotivos([]);
+    });
+    pagination.render('pagination-motivo');
+    renderTablaMotivos([]);
+  }
 }
 
 // ================================
@@ -37,8 +59,9 @@ function renderTablaMotivos(lista) {
   if (!lista.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No hay motivos registrados</td></tr>'; return; }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(m => {
+  itemsPagina.forEach(m => {
     const tr = document.createElement('tr');
     const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.cod_motivo}"><i class="bi bi-eye"></i></button>

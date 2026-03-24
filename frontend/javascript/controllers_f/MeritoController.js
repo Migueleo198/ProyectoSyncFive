@@ -2,9 +2,16 @@ import MeritosApi from '../api_f/MeritoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { truncar, mostrarError, mostrarExito } from '../helpers/utils.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let meritos = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 4);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('meritos');
@@ -29,8 +36,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 // CARGAR MÉRITOS
 // ================================
 async function cargarMeritos() {
-  try { const r = await MeritosApi.getAll(); meritos = r.data; renderTablaMeritos(meritos); }
-  catch (e) { mostrarError(e.message || 'Error cargando méritos'); }
+  try {
+    showTableLoading('#tabla tbody', 4);
+    const r = await MeritosApi.getAll();
+    meritos = r?.data || r || [];
+    pagination.setData(meritos, () => {
+      renderTablaMeritos(meritos);
+    });
+    pagination.render('pagination-merito');
+    renderTablaMeritos(meritos);
+  } catch (e) {
+    meritos = [];
+    pagination.setData([], () => {
+      renderTablaMeritos([]);
+    });
+    pagination.render('pagination-merito');
+    renderTablaMeritos([]);
+  }
 }
 
 // ================================
@@ -41,7 +63,7 @@ async function cargarSelectMeritos(id_select = 'merito') {
   try {
     const res = await MeritosApi.getAll();
     select.innerHTML = '<option value="">Seleccione mérito...</option>';
-    res.data.forEach(r => { const o = document.createElement('option'); o.value = r.id_merito; o.textContent = r.nombre; select.appendChild(o); });
+    (res?.data || res || []).forEach(r => { const o = document.createElement('option'); o.value = r.id_merito; o.textContent = r.nombre; select.appendChild(o); });
   } catch (e) { mostrarError(e.message || 'Error cargando méritos'); }
 }
 
@@ -53,7 +75,7 @@ async function cargarSelectPersonas(seleccionado, id_select) {
   try {
     const res = await PersonaApi.getAll();
     select.innerHTML = '<option value="">Seleccione persona...</option>';
-    res.data.forEach(p => { const o = document.createElement('option'); o.value = p.id_bombero; o.textContent = `${p.n_funcionario} - ${p.nombre} ${p.apellidos}`; if (seleccionado && p.n_funcionario === seleccionado) o.selected = true; select.appendChild(o); });
+    (res?.data || res || []).forEach(p => { const o = document.createElement('option'); o.value = p.id_bombero; o.textContent = `${p.n_funcionario} - ${p.nombre} ${p.apellidos}`; if (seleccionado && p.n_funcionario === seleccionado) o.selected = true; select.appendChild(o); });
   } catch (e) { mostrarError(e.message || 'Error cargando personas'); }
 }
 
@@ -66,8 +88,9 @@ function renderTablaMeritos(lista) {
   if (!lista.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No hay méritos registrados</td></tr>'; return; }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  lista.forEach(m => {
+  itemsPagina.forEach(m => {
     const tr = document.createElement('tr');
     const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_merito}"><i class="bi bi-eye"></i></button>
@@ -177,8 +200,9 @@ function bindModalVer() {
     try {
       const res = await MeritosApi.getPersonsByMerito(id);
       tbody.innerHTML = '';
-      if (!res.data.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No hay personas asignadas</td></tr>'; return; }
-      res.data.forEach(p => {
+      const personsData = res?.data || res || [];
+      if (!personsData.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No hay personas asignadas</td></tr>'; return; }
+      personsData.forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${p.id_bombero}</td><td>${p.n_funcionario}</td><td>${p.nombre} ${p.apellidos}</td>
           <td><button class="btn btn-sm btn-danger btn-desasignar-persona" data-id-bombero="${p.id_bombero}" data-id-merito="${id}"><i class="bi bi-person-dash"></i></button></td>`;

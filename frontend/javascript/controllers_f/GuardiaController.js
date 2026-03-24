@@ -3,9 +3,16 @@ import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarRangoFechas } from '../helpers/validacion.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let guardias = [];
 let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 6);
+    }
+});
 
 const cargos = [
     "BOMBERO1", "BOMBERO2", "BOMBERO3", "BOMBERO4", "BOMBERO5",
@@ -44,11 +51,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ================================
 async function cargarGuardias() {
     try {
+        showTableLoading('#tabla tbody', 6);
         const res = await GuardiaApi.getAll();
-        guardias = res.data;
+        guardias = res?.data || res || [];
+        pagination.setData(guardias, () => {
+      renderTablaGuardias(guardias);
+    });
+        pagination.render('pagination-guardia');
         renderTablaGuardias(guardias);
     } catch (e) {
-        mostrarError(e.message || 'Error cargando guardias');
+        guardias = [];
+        pagination.setData([], () => {
+      renderTablaGuardias([]);
+    });
+        pagination.render('pagination-guardia');
+        renderTablaGuardias([]);
     }
 }
 
@@ -61,14 +78,20 @@ function bindFiltros() {
 }
 
 function aplicarFiltros() {
+    pagination.goToPage(0);
     const filtroFecha = document.getElementById('filtroFecha')?.value ?? '';
     const filtroNotas = document.getElementById('filtroNotas')?.value.toLowerCase().trim() ?? '';
 
-    renderTablaGuardias(guardias.filter(g => {
+    const filtrados = guardias.filter(g => {
         const cumpleFecha = !filtroFecha || g.fecha === filtroFecha;
         const cumpleNotas = !filtroNotas || g.notas?.toLowerCase().includes(filtroNotas);
         return cumpleFecha && cumpleNotas;
-    }));
+    });
+    pagination.setData(filtrados, () => {
+      renderTablaGuardias(filtrados);
+    });
+    pagination.render('pagination-guardia');
+    renderTablaGuardias(filtrados);
 }
 
 // ================================
@@ -136,8 +159,9 @@ function renderTablaGuardias(lista) {
     tbody.innerHTML = '';
 
     const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+    const itemsPagina = pagination.getPageItems(lista);
 
-    lista.forEach(g => {
+    itemsPagina.forEach(g => {
         const tr = document.createElement('tr');
 
         const botonesAccion = puedeEscribir
