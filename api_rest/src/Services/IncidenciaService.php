@@ -65,13 +65,13 @@ class IncidenciaService
     {
         $data = Validator::validate($input, [
             'id_bombero' => 'required|integer|min:1',
-            'id_material' => 'integer|min:1',
-            'matricula' => 'string|max:15',
+            'id_material' => 'nullable|integer|min:1',
+            'matricula' => 'nullable|string|max:15',
             'fecha' => 'required|date',
             'asunto' => 'required|string|max:150',
             'estado' => 'required|string|in:ABIERTA,CERRADA',
             'tipo' => 'required|string|max:50',
-            'descripcion' => 'string|max:500'
+            'descripcion' => 'nullable|string|max:500'
         ]);
 
         $this->validarFormatoMatricula($data['matricula'] ?? null);
@@ -90,13 +90,13 @@ class IncidenciaService
     {
         $data = Validator::validate($input, [
             'id_bombero' => 'required|integer|min:1',
-            'id_material' => 'integer|min:1',
-            'matricula' => 'string|max:15',
+            'id_material' => 'nullable|integer|min:1',
+            'matricula' => 'nullable|string|max:15',
             'fecha' => 'required|date',
             'asunto' => 'required|string|max:150',
             'estado' => 'required|string|in:ABIERTA,CERRADA',
             'tipo' => 'required|string|max:50',
-            'descripcion' => 'string|max:500'
+            'descripcion' => 'nullable|string|max:500'
         ]);
 
         $this->validarFormatoMatricula($data['matricula'] ?? null);
@@ -126,13 +126,13 @@ class IncidenciaService
     {
         $data = Validator::validate($input, [
             'id_bombero' => 'integer|min:1',
-            'id_material' => 'integer|min:1',
-            'matricula' => 'string|max:15',
+            'id_material' => 'nullable|integer|min:1',
+            'matricula' => 'nullable|string|max:15',
             'fecha' => 'date',
             'asunto' => 'string|max:150',
             'estado' => 'string|in:ABIERTA,CERRADA',
             'tipo' => 'string|max:50',
-            'descripcion' => 'string|max:500'
+            'descripcion' => 'nullable|string|max:500'
         ]);
 
         // Si el array está vacío, no hay nada que actualizar

@@ -328,7 +328,15 @@ function bindModalEditar() {
         camposBd.forEach(campo => {
           if (campo === 'id_incidencia') return;
           const input = form.querySelector(`[name="${campo}"]`);
-          if (input) data[campo] = campo === 'id_material' ? (input.value ? parseInt(input.value) : null) : input.value;
+          if (input) {
+            let valor = input.value;
+            // Convertir campos opcionales a null si están vacíos
+            if (['id_material', 'matricula', 'descripcion'].includes(campo)) {
+              data[campo] = valor ? (campo === 'id_material' ? parseInt(valor) : valor) : null;
+            } else {
+              data[campo] = valor;
+            }
+          }
         });
         // Normalizar estado
         if (data.estado) data.estado = data.estado.toUpperCase();
