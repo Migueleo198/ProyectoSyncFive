@@ -301,6 +301,9 @@ function bindModalEditar() {
     // Regenerar HTML del formulario (limpia listeners antiguos implícitamente)
     form.innerHTML = `
       <div class="row mb-3">
+        <div class="col-lg-12"><label class="form-label">Asunto</label><textarea class="form-control" name="asunto" rows="3" maxlength="200">${inc.asunto || ''}</textarea></div>
+      </div>
+      <div class="row mb-3">
         <div class="col-lg-4"><label class="form-label">Fecha</label><input type="date" class="form-control" name="fecha" value="${inc.fecha || ''}"></div>
         <div class="col-lg-4"><label class="form-label">Estado</label>
           <select class="form-select" name="estado">
@@ -310,8 +313,8 @@ function bindModalEditar() {
         <div class="col-lg-4"><label class="form-label">Tipo</label><input type="text" class="form-control" name="tipo" value="${inc.tipo || ''}"></div>
       </div>
       <div class="row mb-3">
-        <div class="col-lg-6"><label class="form-label">Asunto</label><input type="text" class="form-control" name="asunto" value="${inc.asunto || ''}" maxlength="200"></div>
         <div class="col-lg-6"><label class="form-label">Responsable</label><select class="form-select" name="id_bombero">${personasOpts}</select></div>
+        <div class="col-lg-6"></div>
       </div>
       <div class="row mb-3">
         <div class="col-lg-6"><label class="form-label">Material</label><select class="form-select" name="id_material">${materialesOpts}</select></div>
