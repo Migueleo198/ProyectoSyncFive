@@ -106,13 +106,26 @@ class IncidenciaService
                 throw new \Exception("Incidencia no encontrada", 404);
             }
 
+            // Comparar datos para detectar cambios
+            $hubosCambios = false;
+            foreach ($data as $campo => $valor) {
+                if ($existing[$campo] != $valor) {
+                    $hubosCambios = true;
+                    break;
+                }
+            }
+
+            if (!$hubosCambios) {
+                throw new \Exception("No hay cambios para guardar", 400);
+            }
+
             $updated = $this->model->update($id, $data);
             if ($updated === 0) {
                 throw new \Exception("No se pudo actualizar la incidencia", 500);
             }
             return $this->model->find($id);
         } catch (Throwable $e) {
-            if ($e->getCode() === 404) {
+            if ($e->getCode() === 404 || $e->getCode() === 400) {
                 throw $e;
             }
             throw new \Exception("Error al actualizar incidencia: " . $e->getMessage(), 500);

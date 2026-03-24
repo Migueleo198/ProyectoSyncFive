@@ -350,7 +350,12 @@ function bindModalEditar() {
           bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
           mostrarExito('Incidencia actualizada');
         } catch (err) {
-          mostrarError(err.message || 'Error al guardar cambios');
+          // Detectar si no hay cambios (don't close modal, just show info)
+          if (err.message && err.message.includes('No hay cambios')) {
+            mostrarExito('No hay cambios para guardar');
+          } else {
+            mostrarError(err.message || 'Error al guardar cambios');
+          }
         }
       };
     }
