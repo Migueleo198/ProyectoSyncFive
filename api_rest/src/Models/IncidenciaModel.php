@@ -57,21 +57,23 @@ class IncidenciaModel
     {
         $this->db->query("
             INSERT INTO Incidencia (
-                id_bombero, 
-                id_material, 
-                matricula, 
-                fecha, 
-                asunto, 
-                estado, 
-                tipo
+                id_bombero,
+                id_material,
+                matricula,
+                fecha,
+                asunto,
+                estado,
+                tipo,
+                descripcion
             ) VALUES (
-                :id_bombero, 
-                :id_material, 
-                :matricula, 
-                :fecha, 
-                :asunto, 
-                :estado, 
-                :tipo
+                :id_bombero,
+                :id_material,
+                :matricula,
+                :fecha,
+                :asunto,
+                :estado,
+                :tipo,
+                :descripcion
             )
         ")
         ->bind(":id_bombero", $data['id_bombero'])
@@ -81,6 +83,7 @@ class IncidenciaModel
         ->bind(":asunto", $data['asunto'])
         ->bind(":estado", $data['estado'])
         ->bind(":tipo", $data['tipo'])
+        ->bind(":descripcion", $data['descripcion'] ?? null)
         ->execute();
 
         return (int) $this->db->lastId();
@@ -97,7 +100,8 @@ class IncidenciaModel
                 fecha = :fecha,
                 asunto = :asunto,
                 estado = :estado,
-                tipo = :tipo
+                tipo = :tipo,
+                descripcion = :descripcion
             WHERE id_incidencia = :id
         ")
         ->bind(":id", $id)
@@ -108,6 +112,7 @@ class IncidenciaModel
         ->bind(":asunto", $data['asunto'])
         ->bind(":estado", $data['estado'])
         ->bind(":tipo", $data['tipo'])
+        ->bind(":descripcion", $data['descripcion'] ?? null)
         ->execute();
 
         return $this->getAffectedRows();

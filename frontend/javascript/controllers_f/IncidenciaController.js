@@ -279,7 +279,8 @@ function bindModalVer() {
 // MODAL EDITAR
 // ================================
 function bindModalEditar() {
-  document.addEventListener('click', function (e) {
+  // Listener de delegación para botón editar
+  document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
     const id = btn.dataset.id;
@@ -289,6 +290,7 @@ function bindModalEditar() {
     const form = document.getElementById('formEditar');
     if (!form) return;
 
+    // Generar opciones de selectores
     let personasOpts = '<option value="">Seleccione un responsable...</option>';
     personas.forEach(p => { personasOpts += `<option value="${p.id_bombero}" ${p.id_bombero == inc.id_bombero ? 'selected' : ''}>${p.nombre} ${p.apellidos}</option>`; });
     let materialesOpts = '<option value="">Seleccione un material...</option>';
@@ -296,7 +298,7 @@ function bindModalEditar() {
     let vehiculosOpts = '<option value="">Seleccione un vehículo...</option>';
     vehiculos.forEach(v => { vehiculosOpts += `<option value="${v.matricula}" ${v.matricula == inc.matricula ? 'selected' : ''}>${v.nombre} (${v.matricula})</option>`; });
 
-    // CORRECCIÓN: opciones de estado usan los valores del DDL
+    // Regenerar HTML del formulario (limpia listeners antiguos implícitamente)
     form.innerHTML = `
       <div class="row mb-3">
         <div class="col-lg-4"><label class="form-label">Fecha</label><input type="date" class="form-control" name="fecha" value="${inc.fecha || ''}"></div>
@@ -316,26 +318,32 @@ function bindModalEditar() {
         <div class="col-lg-6"><label class="form-label">Vehículo</label><select class="form-select" name="matricula">${vehiculosOpts}</select></div>
       </div>
       <div class="mb-3"><label class="form-label">Descripción</label><textarea class="form-control" name="descripcion" rows="3">${inc.descripcion || ''}</textarea></div>
-      <div class="text-center"><button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button></div>
     `;
 
-    document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-      const data = {};
-      camposBd.forEach(campo => {
-        if (campo === 'id_incidencia') return;
-        const input = form.querySelector(`[name="${campo}"]`);
-        if (input) data[campo] = campo === 'id_material' ? (input.value ? parseInt(input.value) : null) : input.value;
-      });
-      // CORRECCIÓN: normalizar estado
-      if (data.estado) data.estado = data.estado.toUpperCase();
-      // CORRECCIÓN: validar antes de guardar
-      if (!validarDatosIncidencia(data)) return;
-      try {
-        await IncidenciaApi.update(id, data);
-        await cargarIncidencias();
-      } catch (err) { mostrarError(err.message || 'Error al guardar cambios'); }
-      bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
-    });
+    // Agregar listener al botón de guardar (que está fuera del form)
+    const btnGuardar = document.getElementById('btnGuardarCambios');
+    if (btnGuardar) {
+      btnGuardar.onclick = async () => {
+        const data = {};
+        camposBd.forEach(campo => {
+          if (campo === 'id_incidencia') return;
+          const input = form.querySelector(`[name="${campo}"]`);
+          if (input) data[campo] = campo === 'id_material' ? (input.value ? parseInt(input.value) : null) : input.value;
+        });
+        // Normalizar estado
+        if (data.estado) data.estado = data.estado.toUpperCase();
+        // Validar antes de guardar
+        if (!validarDatosIncidencia(data)) return;
+        try {
+          await IncidenciaApi.update(id, data);
+          await cargarIncidencias();
+          bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+          mostrarExito('Incidencia actualizada');
+        } catch (err) {
+          mostrarError(err.message || 'Error al guardar cambios');
+        }
+      };
+    }
   });
 }
 
