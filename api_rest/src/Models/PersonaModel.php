@@ -36,6 +36,19 @@ class PersonaModel
 
         return $result ?: null;
     }
+
+    /**
+     * Buscar persona por id_bombero o n_funcionario
+     */
+    public function findByIdentifier(string $identifier): ?array
+    {
+        $result = $this->db
+            ->query("SELECT * FROM Persona WHERE id_bombero = :identifier OR n_funcionario = :identifier")
+            ->bind(':identifier', $identifier)
+            ->fetch();
+
+        return $result ?: null;
+    }
     /**
      * Crear una persona
      */
@@ -611,12 +624,14 @@ class PersonaModel
             ->query("
                 SELECT
                     c.nombre,
-                    c.categoria,
+                    c.id_grupo,
+                    g.nombre AS grupo_nombre,
                     cp.f_obtencion,
                     cp.f_vencimiento,
                     CASE WHEN cp.f_vencimiento >= CURDATE() THEN 1 ELSE 0 END AS vigente
                 FROM Carnet_Persona cp
                 JOIN Carnet c ON c.id_carnet = cp.id_carnet
+                JOIN Grupo g ON g.id_grupo = c.id_grupo
                 WHERE cp.id_bombero = :id
                 ORDER BY cp.f_vencimiento ASC
             ")

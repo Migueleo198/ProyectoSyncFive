@@ -30,6 +30,7 @@ ErrorDocument 500 /frontend/errores/err500.html
     RewriteRule ^formaciones$ frontend/pages/Formacion/vistaFormacion.html [L]
     RewriteRule ^ediciones$ frontend/pages/Edicion/vistaEdicion.html [L]
     RewriteRule ^carnets$ frontend/pages/Carnet/vistaCarnet.html [L]
+    RewriteRule ^grupos$ frontend/pages/Grupo/vistaGrupo.html [L]
     RewriteRule ^permisos$ frontend/pages/Permiso/vistaPermiso.html [L]
     RewriteRule ^permisos/motivos$ frontend/pages/Permiso/vistaMotivo.html [L]
     RewriteRule ^vehiculos$ frontend/pages/Vehiculo/vistaVehiculo.html [L]

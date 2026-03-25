@@ -225,7 +225,7 @@ function renderCarnets(carnets) {
         tbody.innerHTML += `
             <tr class="${vencido ? 'table-danger' : ''}">
                 <td>${c.nombre}</td>
-                <td><span class="badge bg-secondary">${c.categoria}</span></td>
+                <td><span class="badge bg-secondary">${c.grupo_nombre || '—'}</span></td>
                 <td>${formatearFecha(c.f_obtencion)}</td>
                 <td>${formatearFecha(c.f_vencimiento)}</td>
                 <td><span class="badge ${vencido ? 'bg-danger' : 'bg-success'}">${vencido ? 'Caducado' : 'Vigente'}</span></td>

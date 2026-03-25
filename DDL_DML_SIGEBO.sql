@@ -306,14 +306,25 @@ CREATE TABLE Salida (
 );
 
 /* =======================
-   21. CARNET
+   21A. GRUPO
+   ======================= */
+CREATE TABLE Grupo (
+    id_grupo INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT
+);
+
+/* =======================
+   21B. CARNET
    ======================= */
 CREATE TABLE Carnet (
     id_carnet INT AUTO_INCREMENT PRIMARY KEY,
+    id_grupo INT NOT NULL,
     nombre VARCHAR(50) NOT NULL,
-    categoria VARCHAR(20) NOT NULL,
     duracion_meses INT NOT NULL,
-    CHECK (duracion_meses > 0)
+    CHECK (duracion_meses > 0),
+    FOREIGN KEY (id_grupo) REFERENCES Grupo(id_grupo)
+        ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 /* =======================
@@ -1827,20 +1838,31 @@ INSERT INTO Salida (matricula, id_bombero, f_salida, f_regreso, km_inicio, km_fi
 ('5678TVX', 'B022', '2026-03-15 08:00:00', '2026-03-15 18:00:00', 9080,  9250);
 
 -- =======================================================
--- 21. CARNET
+-- 21A. GRUPO
 -- =======================================================
-INSERT INTO Carnet (nombre, categoria, duracion_meses) VALUES
-('Permiso de Conducción B', 'B', 120),
-('Permiso de Conducción C', 'C', 60),
-('Permiso de Conducción C+E', 'C+E', 60),
-('Permiso de Conducción D', 'D', 60),
-('CAP Mercancías', 'CAP', 60),
-('CAP Viajeros', 'CAP', 60),
-('ADR Básico', 'ADR', 60),
-('ADR Clase 1 y 7', 'ADR', 60),
-('Patrón de Embarcación de Recreo','PER', 120),
-('Grúa Torre', 'Operador', 36),
-('Elevadora Telescópica', 'Operador', 36);
+INSERT INTO Grupo (id_grupo, nombre, descripcion) VALUES
+(1, 'Conducción ligera', 'Permisos habilitantes para la conducción de turismos, furgones ligeros y vehículos de apoyo del servicio'),
+(2, 'Conducción pesada', 'Permisos habilitantes para la conducción de autobombas, nodrizas, autoescalas y otros vehículos pesados de emergencias'),
+(3, 'Aptitud profesional', 'Acreditaciones complementarias para el transporte profesional de mercancías o viajeros en servicio'),
+(4, 'Mercancías peligrosas', 'Habilitaciones específicas para la conducción y actuación con vehículos o cargas ADR'),
+(5, 'Náutica y rescate acuático', 'Titulaciones náuticas útiles para maniobras con embarcaciones de apoyo y rescate en medio acuático'),
+(6, 'Maquinaria y elevación', 'Acreditaciones para el manejo seguro de grúas, plataformas y maquinaria auxiliar en intervenciones');
+
+-- =======================================================
+-- 21B. CARNET
+-- =======================================================
+INSERT INTO Carnet (id_grupo, nombre, duracion_meses) VALUES
+(1, 'Permiso de Conducción B', 120),
+(2, 'Permiso de Conducción C', 60),
+(2, 'Permiso de Conducción C+E', 60),
+(2, 'Permiso de Conducción D', 60),
+(3, 'CAP Mercancías', 60),
+(3, 'CAP Viajeros', 60),
+(4, 'ADR Básico', 60),
+(4, 'ADR Clase 1 y 7', 60),
+(5, 'Patrón de Embarcación de Recreo', 120),
+(6, 'Grúa Torre', 36),
+(6, 'Elevadora Telescópica', 36);
 
 -- =======================================================
 -- 22. CARNET_PERSONA
