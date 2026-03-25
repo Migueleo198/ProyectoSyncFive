@@ -45,8 +45,8 @@
                             <input type="text" class="form-control form-control-sm" id="filtroNombre" placeholder="Buscar nombre...">
                         </div>
                         <div class="col-lg-3 col-md-4 col-sm-12 d-flex align-items-center m-1">
-                            <label class="me-2 text-nowrap" for="filtroCategoria">Categoría:</label>
-                            <select class="form-select form-select-sm" id="filtroCategoria">
+                            <label class="me-2 text-nowrap" for="filtroGrupo">Grupo:</label>
+                            <select class="form-select form-select-sm" id="filtroGrupo">
                                 <option value="">Todas</option>
                             </select>
                         </div>
@@ -56,7 +56,7 @@
                             <tr> <!-- Cabecera de la tabla -->
                                 <th class="d-none d-md-table-cell">ID_Carnet</th>
                                 <th>Nombre</th>
-                                <th class="d-none d-md-table-cell">Categoria</th>
+                                <th class="d-none d-md-table-cell">Grupo</th>
                                 <th>Duración</th>
                                 <th>Acción</th>
                             </tr>
@@ -94,7 +94,8 @@
 
                             <div class="col-md-6">
                                 <label class="form-label" for="f_vencimiento">Fecha Vencimiento:</label>
-                                <input type="date" class="form-control" id="f_vencimiento" name="f_vencimiento" required>
+                                <input type="date" class="form-control" id="f_vencimiento" name="f_vencimiento" readonly required>
+                                <div class="form-text">Se calcula automaticamente segun la fecha de obtencion y la duracion del carnet.</div>
                             </div>
                         </div>
 
@@ -116,12 +117,14 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label for="categoria" class="form-label">Categoría:</label>
-                                <input type="text" class="form-control" id="categoria" name="categoria" required>
+                                <label for="insertIdGrupo" class="form-label">Grupo:</label>
+                                <select class="form-select" id="insertIdGrupo" name="id_grupo" required>
+                                    <option value="">Seleccione un grupo...</option>
+                                </select>
                             </div>
                             <div class="col-md-4">
                                 <label for="duracion_meses" class="form-label">Duración (meses):</label>
-                                <input type="text" class="form-control" id="duracion_meses" name="duracion_meses" required>
+                                <input type="number" min="1" step="1" class="form-control" id="duracion_meses" name="duracion_meses" required>
                             </div>
                         </div>
 
@@ -143,7 +146,7 @@
  
     <!-- Modal de ver -->
     <div class="modal fade" id="modalVer" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
 
                 <div class="modal-header">
@@ -166,7 +169,7 @@
     </div>
      <!-- Modal de edición -->
     <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
@@ -176,6 +179,24 @@
                     <form id="formEditar">
                         <!-- Los campos del formulario se generarán dinámicamente -->
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalEliminarRelacionCarnetPersona" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2" id="textoEliminarRelacionCarnetPersona">¿Estás seguro de que deseas eliminar esta relación persona-carnet?</p>
+                    <p class="text-muted mb-0">Si fue un error, podrás volver a asignar el carnet desde el formulario.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminarRelacionCarnetPersona">Eliminar</button>
                 </div>
             </div>
         </div>
