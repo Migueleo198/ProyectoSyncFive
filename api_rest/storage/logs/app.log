@@ -841,3 +841,6 @@
 2026-03-25T09:51:44+01:00 - Exception: Error de conexión a la base de datos.
 2026-03-25T09:51:44+01:00 - Exception: Error de conexión a la base de datos.
 2026-03-25T09:51:47+01:00 - Exception: Error de conexión a la base de datos.
+2026-03-24T12:58:12+01:00 - Exception: Route not found for GET /turnos-refuerzo/fecha/2026-03-24
+2026-03-24T13:38:27+01:00 - Exception: Route not found for GET /turnos-refuerzo/fecha/2026-03-24
+2026-03-24T13:44:11+01:00 - Exception: Route not found for GET /turnos-refuerzo/fecha/2026-03-24

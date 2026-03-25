@@ -11,6 +11,7 @@ use PDOException;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class CarnetService
 {
@@ -140,6 +141,15 @@ class CarnetService
 
         try {
             $result = $this->model->delete($ID_Carnet);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar este carnet porque hay personas que lo tienen asignado", 409);
+            }
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
         } catch (Throwable $e) {
             if ($this->isForeignKeyConstraintViolation($e)) {
                 throw new \Exception(
@@ -153,13 +163,6 @@ class CarnetService
 
         if ($result === 0) {
             throw new \Exception("Carnet no encontrado", 404);
-        }
-
-        if ($result === -1) {
-            throw new \Exception(
-                "No se puede eliminar el carnet: el registro está en uso",
-                409
-            );
         }
     }
 

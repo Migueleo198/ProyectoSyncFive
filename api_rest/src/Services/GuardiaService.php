@@ -7,6 +7,7 @@ use Models\GuardiaModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class GuardiaService
 {
@@ -161,6 +162,15 @@ public function createGuardia(array $input): array
 
         try {
             $result = $this->model->delete($id_guardia);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar esta guardia porque hay personas o refuerzos asignados", 409);
+            }
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -170,13 +180,6 @@ public function createGuardia(array $input): array
 
         if ($result === 0) {
             throw new \Exception("Guardia no encontrado", 404);
-        }
-
-        if ($result === -1) {
-            throw new \Exception(
-                "No se puede eliminar el guardia: el registro está en uso",
-                409
-            );
         }
     }
     /**
@@ -285,15 +288,16 @@ public function createGuardia(array $input): array
 
         /**
          * PATCH /personas/{id_bombero}/guardias/{id_guardia}
+         * El cargo puede ser null para desasignar
          */
-        public function updateCargo(string $id_bombero, string $id_guardia, string $cargo): array
+        public function updateCargo(string $id_bombero, string $id_guardia, ?string $cargo): array
         {
             Validator::validate(
                 ['id_bombero' => $id_bombero, 'id_guardia' => $id_guardia, 'cargo' => $cargo],
                 [
                     'id_bombero' => 'required|string',
                     'id_guardia' => 'required|string',
-                    'cargo'      => 'string|in:OFICIAL1,OFICIAL2,CONDUCTOR1,CONDUCTOR2,BOMBERO1,BOMBERO2,BOMBERO3,BOMBERO4,BOMBERO5,BOMBERO6,BOMBERO7,BOMBERO8,BOMBERO9,BOMBERO10'
+                    'cargo'      => 'string|nullable|in:OFICIAL1,OFICIAL2,CONDUCTOR1,CONDUCTOR2,BOMBERO1,BOMBERO2,BOMBERO3,BOMBERO4,BOMBERO5,BOMBERO6,BOMBERO7,BOMBERO8,BOMBERO9,BOMBERO10'
                 ]
             );
 

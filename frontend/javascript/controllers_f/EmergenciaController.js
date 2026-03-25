@@ -7,7 +7,6 @@ import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils
 import { validarTelefono, validarIdBombero } from '../helpers/validacion.js';
 import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
-// CORRECCIÓN: estados del DDL — ENUM('ACTIVA','CERRADA')
 const ESTADOS_EMERGENCIA_VALIDOS = ['ACTIVA', 'CERRADA'];
 
 let modalEquipoDesdeInsertar = false;
@@ -15,19 +14,15 @@ let emergencias = [];
 let vehiculosEnModal = [];
 let todasLasPersonas = [];
 let sesionActual = null;
-const pagination = new PaginationHelper(15); // 15 items por página
+const pagination = new PaginationHelper(15);
 pagination.setLoadingCallback((isLoading) => {
-    if (isLoading) {
-        showTableLoading('#tabla tbody', 8);
-    }
+  if (isLoading) showTableLoading('#tabla tbody', 8);
 });
 
-
-// ================================
+// =============================================================================
 // DOM CONTENT LOADED
-// ================================
+// =============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
-  // ── GUARD ── primero verificamos sesión y permisos ──────────  //
   sesionActual = await authGuard('emergencias');
   if (!sesionActual) return;
 
@@ -38,40 +33,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   cargarPersonas();
   bindFiltros();
   bindModalEquipo();
-  
-  // Solo vinculamos el form de insertar si puede escribir
+
   if (sesionActual.puedeEscribir) {
     bindCrearEmergencia();
   }
 });
 
-// ================================
+// =============================================================================
 // CARGAR EMERGENCIAS
-// ================================
+// =============================================================================
 async function cargarEmergencias() {
   try {
-    // Mostrar spinner de carga ANTES de hacer la petición
     showTableLoading('#tabla tbody', 8);
-    
     const response = await EmergenciaApi.getAll();
     emergencias = response.data;
 
-    // Configurar paginación y renderizar tabla
     pagination.setData(emergencias, () => {
       renderTablaEmergencias(emergencias);
     });
     pagination.render('pagination-emergencia');
     renderTablaEmergencias(emergencias);
   } catch (e) {
-    // Ocultar spinner en caso de error
     renderTablaEmergencias([]);
     mostrarError(e.message || 'Error cargando emergencias');
   }
 }
 
-// ================================
+// =============================================================================
 // CARGAR TIPOS DE EMERGENCIA
-// ================================
+// =============================================================================
 async function cargarTiposEmergencia(tipoSeleccionado, id_select) {
   const select = document.getElementById(id_select);
   if (!select) return;
@@ -94,9 +84,9 @@ async function cargarTiposEmergencia(tipoSeleccionado, id_select) {
   }
 }
 
-// ================================
+// =============================================================================
 // CARGAR VEHÍCULOS
-// ================================
+// =============================================================================
 async function cargarSelectVehiculos() {
   const select = document.getElementById('selectVehiculo');
   if (!select) return;
@@ -116,9 +106,9 @@ async function cargarSelectVehiculos() {
   }
 }
 
-// ================================
+// =============================================================================
 // CARGAR PERSONAS
-// ================================
+// =============================================================================
 async function cargarPersonas() {
   try {
     const response = await PersonaApi.getAll();
@@ -128,10 +118,9 @@ async function cargarPersonas() {
   }
 }
 
-// ================================
+// =============================================================================
 // VALIDAR DATOS DE EMERGENCIA
-// CORRECCIÓN: validar estado, teléfono e id_bombero
-// ================================
+// =============================================================================
 function validarDatosEmergencia(data) {
   if (!data.fecha) {
     mostrarError('La fecha es obligatoria'); return false;
@@ -154,14 +143,13 @@ function validarDatosEmergencia(data) {
   return true;
 }
 
-// ================================
+// =============================================================================
 // RENDER TABLA
-// ================================
+// =============================================================================
 async function renderTablaEmergencias(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
 
-  // Obtener solo los items de la página actual
   const itemsPagina = pagination.getPageItems(lista);
 
   if (!itemsPagina.length) {
@@ -188,7 +176,6 @@ async function renderTablaEmergencias(lista) {
       }
     } catch { /* dejamos — */ }
 
-    // Botones de acción según permiso
     const botonesAccion = puedeEscribir
       ? `
         <button type="button" class="btn p-0 btn-ver"
@@ -217,18 +204,18 @@ async function renderTablaEmergencias(lista) {
       <td class="d-none d-lg-table-cell">${e.nombre_tipo ?? ''}</td>
       <td class="d-none d-lg-table-cell">${textoVehiculos}</td>
       <td>
-        <div  class="d-flex justify-content-around">
+        <div class="d-flex justify-content-around">
           ${botonesAccion}
-        </div>  
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
   }
 }
 
-// ================================
+// =============================================================================
 // FILTROS
-// ================================
+// =============================================================================
 function bindFiltros() {
   document.getElementById('filtroTipoEmergencia')?.addEventListener('change', aplicarFiltros);
   document.getElementById('grupo')?.addEventListener('change', aplicarFiltros);
@@ -252,9 +239,9 @@ function aplicarFiltros() {
   renderTablaEmergencias(filtrados);
 }
 
-// ================================
+// =============================================================================
 // BIND MODAL EQUIPO
-// ================================
+// =============================================================================
 function bindModalEquipo() {
 
   document.getElementById('modalInsertarEquipo')
@@ -300,7 +287,6 @@ function bindModalEquipo() {
     const fechLlegada = document.getElementById('fechLlegada').value;
     const fechRegreso = document.getElementById('fechRegreso').value;
 
-    // CORRECCIÓN: validar que f_llegada >= f_salida si ambas están presentes
     if (fechSalida && fechLlegada && new Date(fechLlegada) < new Date(fechSalida)) {
       mostrarError('La fecha de llegada no puede ser anterior a la de salida'); return;
     }
@@ -315,16 +301,15 @@ function bindModalEquipo() {
       f_regreso: v.esNuevo ? (fechRegreso || null) : v.f_regreso,
     }));
 
-    // Mostrar resumen con vehículos y personas (más informativo)
     const resumenTexto = vehiculosEnModal.map(v => {
       const personasCount = v.personas?.length || 0;
-      const personasInfo = personasCount > 0 ? ` (${personasCount}p)` : '';
+      const personasInfo  = personasCount > 0 ? ` (${personasCount}p)` : '';
       return `${v.matricula}${personasInfo}`;
     }).join(', ') || '—';
 
     const resumenEditar   = document.getElementById('resumenVehiculosEditar');
     const resumenInsertar = document.getElementById('resumenVehiculosInsertar');
-    if (resumenEditar)   resumenEditar.value        = resumenTexto;
+    if (resumenEditar)   resumenEditar.value   = resumenTexto;
     if (resumenInsertar) resumenInsertar.value = resumenTexto;
 
     mostrarExito(`${vehiculosEnModal.length} vehículo(s) listos para guardar`);
@@ -343,9 +328,9 @@ function bindModalEquipo() {
   });
 }
 
-// ================================
+// =============================================================================
 // RENDER VEHÍCULOS EN EL MODAL
-// ================================
+// =============================================================================
 function renderVehiculosModal() {
   const contenedor = document.getElementById('listaVehiculosAsignados');
   contenedor.innerHTML = '';
@@ -435,9 +420,9 @@ function renderVehiculosModal() {
   });
 }
 
-// ================================
+// =============================================================================
 // CREAR / INSERTAR EMERGENCIA
-// ================================
+// =============================================================================
 function bindCrearEmergencia() {
   const form = document.getElementById('formIncidencia');
 
@@ -447,7 +432,6 @@ function bindCrearEmergencia() {
 
     const data = {
       fecha:              f.get('fecha'),
-      // CORRECCIÓN: forzar mayúsculas para comparar con ENUM del DDL
       estado:             (f.get('estado') || '').toUpperCase(),
       direccion:          f.get('direccion'),
       codigo_tipo:        Number(f.get('codigo_tipo')),
@@ -457,12 +441,11 @@ function bindCrearEmergencia() {
       descripcion:        f.get('descripcion'),
     };
 
-    // CORRECCIÓN: validar antes de enviar
     if (!validarDatosEmergencia(data)) return;
 
     try {
       const nuevaEmergencia = await EmergenciaApi.create(data);
-      const idEmergencia    = nuevaEmergencia.data.id; // Backend devuelve 'id', no 'id_emergencia'
+      const idEmergencia    = nuevaEmergencia.data.id;
 
       if (vehiculosEnModal.length > 0) {
         for (const vehiculo of vehiculosEnModal) {
@@ -494,9 +477,9 @@ function bindCrearEmergencia() {
   });
 }
 
-// ================================
+// =============================================================================
 // MODAL EDITAR
-// ================================
+// =============================================================================
 document.addEventListener('click', async function (e) {
   const btnEditarVehiculos = e.target.closest('.btn-editar-vehiculos');
   if (btnEditarVehiculos) {
@@ -538,7 +521,9 @@ document.addEventListener('click', async function (e) {
           return {
             matricula: v.matricula, label: v.matricula, personas,
             personasOriginales: personas.map(p => p.id_bombero),
-            f_salida: v.f_salida || null, f_llegada: v.f_llegada || null, f_regreso: v.f_regreso || null,
+            f_salida:  v.f_salida  || null,
+            f_llegada: v.f_llegada || null,
+            f_regreso: v.f_regreso || null,
             esNuevo: false,
           };
         })
@@ -550,13 +535,12 @@ document.addEventListener('click', async function (e) {
     const vehiculosOriginales = vehiculosEnModal.map(v => v.matricula);
 
     const form = document.getElementById('formEditar');
-    // CORRECCIÓN: opciones del select usan valores del DDL ('ACTIVA','CERRADA')
     form.innerHTML = `
       <div class="row mb-3">
         <div class="col-lg-4">
           <label class="form-label">Fecha</label>
           <input type="text" class="form-control"
-                 value="${formatearFechaHora(emergencia.fecha) || ''}" disabled>
+                 value="${formatearFechaHora(emergencia.fecha) || ''}" readonly>
         </div>
         <div class="col-lg-4">
           <label class="form-label">Estado</label>
@@ -615,56 +599,67 @@ document.addEventListener('click', async function (e) {
     await cargarTiposEmergencia(emergencia.codigo_tipo, 'selectTipoEmergencia');
 
     document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-      const camposBd = ['fecha','estado','direccion','codigo_tipo','id_bombero','nombre_solicitante','tlf_solicitante','descripcion'];
-      const data = {};
+      // ── CORRECCIÓN: la fecha se toma directamente del objeto emergencia,
+      // no del DOM, para evitar el error "fecha obligatoria" con el campo readonly
+      const camposBd = ['estado', 'direccion', 'codigo_tipo', 'id_bombero',
+                        'nombre_solicitante', 'tlf_solicitante', 'descripcion'];
+
+      const data = {
+        fecha: emergencia.fecha  // ← siempre disponible, no depende del DOM
+      };
+
       camposBd.forEach(campo => {
         const input = form.querySelector(`[name="${campo}"]`);
         if (input) data[campo] = input.value;
       });
 
-      // CORRECCIÓN: normalizar estado y validar antes de guardar
       if (data.estado) data.estado = data.estado.toUpperCase();
       if (!validarDatosEmergencia(data)) return;
 
-      await EmergenciaApi.update(id, data);
+      try {
+        await EmergenciaApi.update(id, data);
 
-      const vehiculosActuales   = vehiculosEnModal.map(v => v.matricula);
-      const vehiculosNuevos     = vehiculosEnModal.filter(v => !vehiculosOriginales.includes(v.matricula));
-      const vehiculosEliminados = vehiculosOriginales.filter(v => !vehiculosActuales.includes(v));
-      const vehiculosExistentes = vehiculosEnModal.filter(v => vehiculosOriginales.includes(v.matricula));
+        const vehiculosActuales   = vehiculosEnModal.map(v => v.matricula);
+        const vehiculosNuevos     = vehiculosEnModal.filter(v => !vehiculosOriginales.includes(v.matricula));
+        const vehiculosEliminados = vehiculosOriginales.filter(v => !vehiculosActuales.includes(v));
+        const vehiculosExistentes = vehiculosEnModal.filter(v => vehiculosOriginales.includes(v.matricula));
 
-      for (const matricula of vehiculosEliminados) {
-        try { await EmergenciaApi.deleteVehiculo(id, matricula); } catch {}
-      }
-      for (const vehiculo of vehiculosNuevos) {
-        try {
-          await EmergenciaApi.addVehiculo(id, {
-            matricula: vehiculo.matricula,
-            f_salida:  vehiculo.f_salida  || null,
-            f_llegada: vehiculo.f_llegada || null,
-            f_regreso: vehiculo.f_regreso || null,
-          });
-        } catch {}
-        for (const persona of (vehiculo.personas ?? [])) {
-          try { await EmergenciaApi.setPersonal(id, vehiculo.matricula, { id_bombero: persona.id_bombero }); } catch {}
+        for (const matricula of vehiculosEliminados) {
+          try { await EmergenciaApi.deleteVehiculo(id, matricula); } catch {}
         }
-      }
-      for (const vehiculo of vehiculosExistentes) {
-        const originales     = vehiculo.personasOriginales || [];
-        const personasNuevas = vehiculo.personas.filter(p => !originales.includes(p.id_bombero));
-        for (const persona of personasNuevas) {
-          try { await EmergenciaApi.setPersonal(id, vehiculo.matricula, { id_bombero: persona.id_bombero }); } catch {}
+        for (const vehiculo of vehiculosNuevos) {
+          try {
+            await EmergenciaApi.addVehiculo(id, {
+              matricula: vehiculo.matricula,
+              f_salida:  vehiculo.f_salida  || null,
+              f_llegada: vehiculo.f_llegada || null,
+              f_regreso: vehiculo.f_regreso || null,
+            });
+          } catch {}
+          for (const persona of (vehiculo.personas ?? [])) {
+            try { await EmergenciaApi.setPersonal(id, vehiculo.matricula, { id_bombero: persona.id_bombero }); } catch {}
+          }
         }
-        const actuales           = vehiculo.personas.map(p => p.id_bombero);
-        const personasEliminadas = originales.filter(idB => !actuales.includes(idB));
-        for (const idBombero of personasEliminadas) {
-          try { await EmergenciaApi.deletePersonal(id, vehiculo.matricula, idBombero); } catch {}
+        for (const vehiculo of vehiculosExistentes) {
+          const originales     = vehiculo.personasOriginales || [];
+          const personasNuevas = vehiculo.personas.filter(p => !originales.includes(p.id_bombero));
+          for (const persona of personasNuevas) {
+            try { await EmergenciaApi.setPersonal(id, vehiculo.matricula, { id_bombero: persona.id_bombero }); } catch {}
+          }
+          const actuales           = vehiculo.personas.map(p => p.id_bombero);
+          const personasEliminadas = originales.filter(idB => !actuales.includes(idB));
+          for (const idBombero of personasEliminadas) {
+            try { await EmergenciaApi.deletePersonal(id, vehiculo.matricula, idBombero); } catch {}
+          }
         }
-      }
 
-      await cargarEmergencias();
-      bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
-      mostrarExito('Emergencia actualizada correctamente');
+        await cargarEmergencias();
+        bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+        mostrarExito('Emergencia actualizada correctamente');
+
+      } catch (error) {
+        mostrarError('Error al guardar cambios: ' + error.message);
+      }
     });
 
   } catch (error) {
@@ -672,9 +667,9 @@ document.addEventListener('click', async function (e) {
   }
 });
 
-// ================================
+// =============================================================================
 // MODAL VER
-// ================================
+// =============================================================================
 document.addEventListener('click', async function (e) {
   const btn = e.target.closest('.btn-ver');
   if (!btn) return;
@@ -718,9 +713,9 @@ document.addEventListener('click', async function (e) {
           <div class="border rounded p-3 mb-3">
             <div class="fw-bold mb-2">🚒 ${vehiculo.matricula}</div>
             <div class="row text-muted small mb-2">
-              <div class="col-md-4"><strong>Salida:</strong> ${vehiculo.f_salida   ? formatearFechaHora(vehiculo.f_salida)  : '—'}</div>
-              <div class="col-md-4"><strong>Llegada:</strong> ${vehiculo.f_llegada ? formatearFechaHora(vehiculo.f_llegada) : '—'}</div>
-              <div class="col-md-4"><strong>Regreso:</strong> ${vehiculo.f_regreso ? formatearFechaHora(vehiculo.f_regreso) : '—'}</div>
+              <div class="col-md-4"><strong>Salida:</strong>  ${vehiculo.f_salida   ? formatearFechaHora(vehiculo.f_salida)  : '—'}</div>
+              <div class="col-md-4"><strong>Llegada:</strong> ${vehiculo.f_llegada  ? formatearFechaHora(vehiculo.f_llegada) : '—'}</div>
+              <div class="col-md-4"><strong>Regreso:</strong> ${vehiculo.f_regreso  ? formatearFechaHora(vehiculo.f_regreso) : '—'}</div>
             </div>`;
 
         try {
@@ -731,9 +726,13 @@ document.addEventListener('click', async function (e) {
           } else {
             html += `
               <table class="table table-sm table-bordered mb-0 text-center">
-                <thead class="table-secondary"><tr><th>ID Bombero</th><th>Nombre</th></tr></thead>
+                <thead class="table-secondary">
+                  <tr><th>ID Bombero</th><th>Nombre</th></tr>
+                </thead>
                 <tbody>
-                  ${personal.map(p => `<tr><td>${p.id_bombero ?? '—'}</td><td>${p.nombre ?? '—'}</td></tr>`).join('')}
+                  ${personal.map(p =>
+                    `<tr><td>${p.id_bombero ?? '—'}</td><td>${p.nombre ?? '—'}</td></tr>`
+                  ).join('')}
                 </tbody>
               </table>`;
           }

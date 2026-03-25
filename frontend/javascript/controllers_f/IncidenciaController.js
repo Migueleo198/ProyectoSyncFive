@@ -14,7 +14,7 @@ let sesionActual = null;
 const pagination = new PaginationHelper(15);
 pagination.setLoadingCallback((isLoading) => {
     if (isLoading) {
-        showTableLoading('#tabla tbody', 7);
+        showTableLoading('#tabla tbody', 6);
     }
 });
 
@@ -80,7 +80,7 @@ async function cargarVehiculos() {
 // ================================
 async function cargarIncidencias() {
   try {
-    showTableLoading('#tabla tbody', 7);
+    showTableLoading('#tabla tbody', 6);
     const r = await IncidenciaApi.getAll();
     incidencias = r?.data || r || [];
     incidencias.forEach(i => {
@@ -147,7 +147,7 @@ function renderTablaIncidencias(lista) {
   tbody.innerHTML = '';
 
   if (!lista.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay incidencias para mostrar</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay incidencias para mostrar</td></tr>';
     return;
   }
 
@@ -155,7 +155,7 @@ function renderTablaIncidencias(lista) {
   const itemsPagina = pagination.getPageItems(lista);
 
   itemsPagina.forEach(i => {
-    const id = i.cod_incidencia || i.id;
+    const id = i.id_incidencia;
     const tr = document.createElement('tr');
 
     const botonesAccion = puedeEscribir
@@ -167,14 +167,13 @@ function renderTablaIncidencias(lista) {
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${id}</td>
       <td>${i.fecha ? new Date(i.fecha).toLocaleDateString() : ''}</td>
-      <td>${i.asunto ?? ''}</td>
+      <td class="d-none d-md-table-cell">${i.asunto ?? ''}</td>
       <td>${i.estado ?? ''}</td>
-      <td class="d-none d-md-table-cell">${i.tipo ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.nombre_responsable ?? ''}</td>
       <td>
         <div  class="d-flex justify-content-around">
           ${botonesAccion}
-        </div>  
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
@@ -209,8 +208,8 @@ function aplicarFiltros() {
   renderTablaIncidencias(filtrados);
 }
 
-const nombresCampos = ['ID','Fecha','Asunto','Estado','Tipo','Responsable','Material','Vehículo','Descripción'];
-const camposBd      = ['cod_incidencia','fecha','asunto','estado','tipo','id_bombero','id_material','matricula','descripcion'];
+const nombresCampos = ['ID','Fecha','Asunto','Estado','Tipo','Responsable','Material','Vehículo'];
+const camposBd      = ['id_incidencia','fecha','asunto','estado','tipo','id_bombero','id_material','matricula'];
 
 // ================================
 // VALIDAR DATOS DE INCIDENCIA
@@ -236,6 +235,16 @@ function validarDatosIncidencia(data) {
   if (data.matricula && !validarMatriculaEspanola(data.matricula)) {
     mostrarError('La matrícula no tiene un formato válido'); return false;
   }
+  // NUEVA: validar exclusión mutua material/vehículo
+  const tieneMaternal = data.id_material && data.id_material !== '';
+  const tieneVehiculo = data.matricula && data.matricula !== '';
+
+  if (tieneMaternal && tieneVehiculo) {
+    mostrarError('No puedes asignar Material y Vehículo a la vez. Elige uno solo'); return false;
+  }
+  if (!tieneMaternal && !tieneVehiculo) {
+    mostrarError('Debe asignarse al menos un Material o un Vehículo'); return false;
+  }
   return true;
 }
 
@@ -247,7 +256,7 @@ function bindModalVer() {
     const btn = e.target.closest('.btn-ver');
     if (!btn) return;
     const id = btn.dataset.id;
-    const inc = incidencias.find(i => i.cod_incidencia == id || i.id == id);
+    const inc = incidencias.find(i => i.id_incidencia == id);
     if (!inc) return;
     const modalBody = document.getElementById('modalVerBody');
     if (!modalBody) return;
@@ -270,16 +279,18 @@ function bindModalVer() {
 // MODAL EDITAR
 // ================================
 function bindModalEditar() {
-  document.addEventListener('click', function (e) {
+  // Listener de delegación para botón editar
+  document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
     const id = btn.dataset.id;
-    const inc = incidencias.find(i => i.cod_incidencia == id || i.id == id);
+    const inc = incidencias.find(i => i.id_incidencia == id);
     if (!inc) return;
 
     const form = document.getElementById('formEditar');
     if (!form) return;
 
+    // Generar opciones de selectores
     let personasOpts = '<option value="">Seleccione un responsable...</option>';
     personas.forEach(p => { personasOpts += `<option value="${p.id_bombero}" ${p.id_bombero == inc.id_bombero ? 'selected' : ''}>${p.nombre} ${p.apellidos}</option>`; });
     let materialesOpts = '<option value="">Seleccione un material...</option>';
@@ -287,8 +298,11 @@ function bindModalEditar() {
     let vehiculosOpts = '<option value="">Seleccione un vehículo...</option>';
     vehiculos.forEach(v => { vehiculosOpts += `<option value="${v.matricula}" ${v.matricula == inc.matricula ? 'selected' : ''}>${v.nombre} (${v.matricula})</option>`; });
 
-    // CORRECCIÓN: opciones de estado usan los valores del DDL
+    // Regenerar HTML del formulario (limpia listeners antiguos implícitamente)
     form.innerHTML = `
+      <div class="row mb-3">
+        <div class="col-lg-12"><label class="form-label">Asunto</label><textarea class="form-control" name="asunto" rows="3" maxlength="200">${inc.asunto || ''}</textarea></div>
+      </div>
       <div class="row mb-3">
         <div class="col-lg-4"><label class="form-label">Fecha</label><input type="date" class="form-control" name="fecha" value="${inc.fecha || ''}"></div>
         <div class="col-lg-4"><label class="form-label">Estado</label>
@@ -299,34 +313,52 @@ function bindModalEditar() {
         <div class="col-lg-4"><label class="form-label">Tipo</label><input type="text" class="form-control" name="tipo" value="${inc.tipo || ''}"></div>
       </div>
       <div class="row mb-3">
-        <div class="col-lg-6"><label class="form-label">Asunto</label><input type="text" class="form-control" name="asunto" value="${inc.asunto || ''}" maxlength="200"></div>
         <div class="col-lg-6"><label class="form-label">Responsable</label><select class="form-select" name="id_bombero">${personasOpts}</select></div>
+        <div class="col-lg-6"></div>
       </div>
       <div class="row mb-3">
         <div class="col-lg-6"><label class="form-label">Material</label><select class="form-select" name="id_material">${materialesOpts}</select></div>
         <div class="col-lg-6"><label class="form-label">Vehículo</label><select class="form-select" name="matricula">${vehiculosOpts}</select></div>
       </div>
-      <div class="mb-3"><label class="form-label">Descripción</label><textarea class="form-control" name="descripcion" rows="3">${inc.descripcion || ''}</textarea></div>
-      <div class="text-center"><button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button></div>
     `;
 
-    document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-      const data = {};
-      camposBd.forEach(campo => {
-        if (campo === 'cod_incidencia') return;
-        const input = form.querySelector(`[name="${campo}"]`);
-        if (input) data[campo] = campo === 'id_material' ? (input.value ? parseInt(input.value) : null) : input.value;
-      });
-      // CORRECCIÓN: normalizar estado
-      if (data.estado) data.estado = data.estado.toUpperCase();
-      // CORRECCIÓN: validar antes de guardar
-      if (!validarDatosIncidencia(data)) return;
-      try {
-        await IncidenciaApi.update(id, data);
-        await cargarIncidencias();
-      } catch (err) { mostrarError(err.message || 'Error al guardar cambios'); }
-      bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
-    });
+    // Agregar listener al botón de guardar (que está fuera del form)
+    const btnGuardar = document.getElementById('btnGuardarCambios');
+    if (btnGuardar) {
+      btnGuardar.onclick = async () => {
+        const data = {};
+        camposBd.forEach(campo => {
+          if (campo === 'id_incidencia') return;
+          const input = form.querySelector(`[name="${campo}"]`);
+          if (input) {
+            let valor = input.value;
+            // Convertir campos opcionales a null si están vacíos
+            if (['id_material', 'matricula'].includes(campo)) {
+              data[campo] = valor ? (campo === 'id_material' ? parseInt(valor) : valor) : null;
+            } else {
+              data[campo] = valor;
+            }
+          }
+        });
+        // Normalizar estado
+        if (data.estado) data.estado = data.estado.toUpperCase();
+        // Validar antes de guardar
+        if (!validarDatosIncidencia(data)) return;
+        try {
+          await IncidenciaApi.update(id, data);
+          await cargarIncidencias();
+          bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+          mostrarExito('Incidencia actualizada');
+        } catch (err) {
+          // Detectar si no hay cambios (don't close modal, just show info)
+          if (err.message && err.message.includes('No hay cambios')) {
+            mostrarExito('No hay cambios para guardar');
+          } else {
+            mostrarError(err.message || 'Error al guardar cambios');
+          }
+        }
+      };
+    }
   });
 }
 
@@ -365,8 +397,7 @@ function bindCrearIncidencia() {
       tipo:        f.get('tipo'),
       id_bombero:  f.get('id_bombero') || null,
       id_material: f.get('id_material') ? parseInt(f.get('id_material')) : null,
-      matricula:   f.get('matricula') || null,
-      descripcion: f.get('descripcion') || ''
+      matricula:   f.get('matricula') || null
     };
     // CORRECCIÓN: validar antes de enviar
     if (!validarDatosIncidencia(data)) return;

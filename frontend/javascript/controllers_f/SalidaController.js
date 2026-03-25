@@ -1,10 +1,14 @@
 import SalidaApi from '../api_f/SalidaApi.js';
+import PersonaApi from '../api_f/PersonaApi.js';
+import VehiculoApi from '../api_f/VehiculoApi.js';
 import { authGuard } from '../helpers/authGuard.js';
-import { validarNumero, validarRangoFechas, validarIdBombero, validarMatriculaEspanola } from '../helpers/validacion.js';
+import { validarNumero, validarRangoFechas, validarIdBombero } from '../helpers/validacion.js';
 import { mostrarError, mostrarExito, formatearFechaHora } from '../helpers/utils.js';
 import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let salidas = [];
+let personas = [];
+let vehiculos = [];
 let sesionActual = null;
 const pagination = new PaginationHelper(15);
 pagination.setLoadingCallback((isLoading) => {
@@ -17,6 +21,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('salidas');
   if (!sesionActual) return;
 
+  await cargarPersonas();
+  await cargarVehiculos();
+  poblarSelectBomberos(); // Task 57: Populate id_bombero select on page load
+  poblarSelectVehiculos();
   cargarSalidas();
   bindModalVer();
 
@@ -26,6 +34,80 @@ document.addEventListener('DOMContentLoaded', async () => {
     bindModalEliminar();
   }
 });
+
+// ================================
+// CARGAR PERSONAS (BOMBEROS)
+// ================================
+async function cargarPersonas() {
+  try {
+    const r = await PersonaApi.getAll();
+    personas = r?.data || r || [];
+    // Ordenar por nombre
+    personas.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+  } catch (e) {
+    console.error('Error cargando personas:', e);
+    personas = [];
+  }
+}
+
+// ================================
+// CARGAR VEHÍCULOS
+// ================================
+async function cargarVehiculos() {
+  try {
+    const r = await VehiculoApi.getAll();
+    vehiculos = r?.data || r || [];
+    // Ordenar por matrícula
+    vehiculos.sort((a, b) => (a.matricula || '').localeCompare(b.matricula || ''));
+  } catch (e) {
+    console.error('Error cargando vehículos:', e);
+    vehiculos = [];
+  }
+}
+
+// ================================
+// GENERAR OPCIONES DE VEHÍCULOS
+// ================================
+function getOpcionesVehiculos(selectedMatricula = '') {
+  let opts = '<option value="">Seleccionar vehículo...</option>';
+  vehiculos.forEach(v => {
+    const selected = v.matricula === selectedMatricula ? 'selected' : '';
+    opts += `<option value="${v.matricula}" ${selected}>${v.matricula}</option>`;
+  });
+  return opts;
+}
+
+// ================================
+// POPULATE SELECT VEHÍCULOS
+// ================================
+function poblarSelectVehiculos() {
+  const select = document.getElementById('matricula');
+  if (select) {
+    select.innerHTML = getOpcionesVehiculos();
+  }
+}
+
+// ================================
+// GENERAR OPCIONES DE BOMBEROS
+// ================================
+function getOpcionesBomberos(selectedId = '') {
+  let opts = '<option value="">Seleccionar bombero...</option>';
+  personas.forEach(p => {
+    const selected = p.id_bombero === selectedId ? 'selected' : '';
+    opts += `<option value="${p.id_bombero}" ${selected}>${p.nombre} ${p.apellidos || ''} (${p.id_bombero})</option>`;
+  });
+  return opts;
+}
+
+// ================================
+// POPULATE SELECT BOMBEROS (Task 57)
+// ================================
+function poblarSelectBomberos() {
+  const select = document.getElementById('id_bombero');
+  if (select) {
+    select.innerHTML = getOpcionesBomberos();
+  }
+}
 
 // ================================
 // CARGAR SALIDAS
@@ -134,7 +216,7 @@ function renderTablaSalidas(lista) {
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${s.id_registro}</td>
       <td>${s.matricula}</td><td class="d-none d-md-table-cell">${s.id_bombero??''}</td>
-      <td>${formatearFechaHora(s.f_salida)??''}</td><td>${formatearFechaHora(s.f_regreso)??''}</td>
+      <td>${formatearFechaHora(s.f_salida)??''}</td><td class="d-none d-md-table-cell">${formatearFechaHora(s.f_regreso)??''}</td>
       <td class="d-none d-md-table-cell">${s.km_inicio??''}</td><td class="d-none d-md-table-cell">${s.km_fin??''}</td>
       <td>
         <div  class="d-flex justify-content-around">
@@ -145,8 +227,8 @@ function renderTablaSalidas(lista) {
   });
 }
 
-const nombresCampos = ['ID Bombero','f_salida','f_regreso','Matricula','KM_Inicio','KM_Fin'];
-const camposBd = ['id_bombero','f_salida','f_regreso','matricula','km_inicio','km_fin'];
+const nombresCampos = ['ID Registro','ID Bombero','Fecha Salida','Fecha Regreso','Matrícula','KM Inicio','KM Fin'];
+const camposBd = ['id_registro','id_bombero','f_salida','f_regreso','matricula','km_inicio','km_fin'];
 
 // ================================
 // MODAL VER
@@ -171,14 +253,14 @@ function bindModalVer() {
 // ================================
 // VALIDACIONES
 // ================================
-function validarDatosSalida(data) {
+async function validarDatosSalida(data) {
   if (!data.matricula?.trim()) { mostrarError('La matrícula es obligatoria'); return false; }
   if (!data.id_bombero?.trim()) { mostrarError('El ID del bombero es obligatorio'); return false; }
   if (!data.f_salida) { mostrarError('La fecha de salida es obligatoria'); return false; }
   if (!data.km_inicio) { mostrarError('El KM de inicio es obligatorio'); return false; }
   if (!data.km_fin) { mostrarError('El KM final es obligatorio'); return false; }
 
-  if (!validarMatriculaEspanola(data.matricula)) { mostrarError('Matrícula no válida (ej: 1234BCD)'); return false; }
+  // No need to validate matricula format - dropdown only contains valid vehicles
 
   // CORRECCIÓN: validarIdBombero espera formato A000, forzar mayúsculas
   if (!validarIdBombero(data.id_bombero.toUpperCase())) {
@@ -213,11 +295,12 @@ function bindCrearSalida() {
       km_fin:      f.get('km_fin'),
       id_bombero:  f.get('id_bombero')
     };
-    if (!validarDatosSalida(data)) return;
+    if (!(await validarDatosSalida(data))) return;
     try {
       await SalidaApi.create(data);
       await cargarSalidas();
       form.reset();
+      poblarSelectVehiculos(); // Repopulate vehicle select after form reset
       mostrarExito('Salida creada correctamente');
     } catch (err) { mostrarError(err.message || 'Error creando salida'); }
   });
@@ -236,12 +319,12 @@ function bindModalEditar() {
       const form = document.getElementById('formEditar');
       form.innerHTML = `
         <div class="row mb-3">
-          <div class="col-md-6 col-lg-4"><label class="form-label">ID Bombero</label><input type="text" class="form-control" name="id_bombero" value="${salida.id_bombero??''}" required></div>
+          <div class="col-md-6 col-lg-4"><label class="form-label">ID Bombero</label><select class="form-select" name="id_bombero" required>${getOpcionesBomberos(salida.id_bombero)}</select></div>
           <div class="col-md-6 col-lg-4"><label class="form-label">Fecha salida</label><input type="datetime-local" class="form-control" name="f_salida" value="${salida.f_salida??''}"></div>
           <div class="col-md-6 col-lg-4"><label class="form-label">Fecha regreso</label><input type="datetime-local" class="form-control" name="f_regreso" value="${salida.f_regreso??''}"></div>
         </div>
         <div class="row mb-4">
-          <div class="col-md-6 col-lg-4"><label class="form-label">Matrícula</label><input type="text" class="form-control" name="matricula" value="${salida.matricula??''}"></div>
+          <div class="col-md-6 col-lg-4"><label class="form-label">Matrícula</label><select class="form-select" name="matricula">${getOpcionesVehiculos(salida.matricula)}</select></div>
           <div class="col-md-6 col-lg-4"><label class="form-label">KM inicio</label><input type="number" class="form-control" name="km_inicio" value="${salida.km_inicio??''}"></div>
           <div class="col-md-6 col-lg-4"><label class="form-label">KM fin</label><input type="number" class="form-control" name="km_fin" value="${salida.km_fin??''}"></div>
         </div>
@@ -257,7 +340,7 @@ function bindModalEditar() {
           km_inicio:  form.querySelector('[name="km_inicio"]').value,
           km_fin:     form.querySelector('[name="km_fin"]').value
         };
-        if (!validarDatosSalida(data)) return;
+        if (!(await validarDatosSalida(data))) return;
         await SalidaApi.update(id, data);
         await cargarSalidas();
         bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();

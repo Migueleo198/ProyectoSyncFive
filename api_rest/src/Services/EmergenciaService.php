@@ -7,6 +7,7 @@ use Models\EmergenciaModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class EmergenciaService
 {
@@ -145,12 +146,17 @@ class EmergenciaService
 
         try {
             $result = $this->model->deleteVehiculo($id, $matricula);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar el vehículo de la emergencia debido a restricciones", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
         if ($result === 0) throw new \Exception("Vehículo no encontrado", 404);
-        if ($result === -1) throw new \Exception("No se puede eliminar: está en uso", 409);
     }
 
     //================= Personal en vehículos =====================
@@ -200,11 +206,16 @@ class EmergenciaService
 
         try {
             $result = $this->model->deletePersonal($id_emergencia, $matricula, $id_bombero);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar este personal del vehículo debido a restricciones", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
         if ($result === 0) throw new \Exception("Personal no encontrado en el vehículo", 404);
-        if ($result === -1) throw new \Exception("No se puede eliminar: restricciones en la base de datos", 409);
     }
 }
