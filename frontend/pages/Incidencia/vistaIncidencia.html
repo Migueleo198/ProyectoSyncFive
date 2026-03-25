@@ -52,11 +52,10 @@
                     <table class="table table-bordered table-striped" id="tabla">
                         <thead class="table-dark">
                             <tr>
-                                <th>ID</th>
+                                <th class="d-none d-md-table-cell">ID</th>
                                 <th>Fecha</th>
                                 <th class="d-none d-md-table-cell">Asunto</th>
                                 <th>Estado</th>
-                                <th class="d-none d-md-table-cell">Tipo</th>
                                 <th class="d-none d-md-table-cell">Responsable</th>
                                 <th>Acción</th>
                             </tr>
@@ -73,15 +72,11 @@
                     <h5 class="text-center mb-4">Insertar Incidencia</h5>
                     <form id="formInsertar" class="mx-auto">
                         <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="insertFecha" class="form-label">Fecha</label>
                                 <input type="date" class="form-control form-control-sm" id="insertFecha" name="fecha" required>
                             </div>
-                            <div class="col-md-4">
-                                <label for="insertAsunto" class="form-label">Asunto</label>
-                                <input type="text" class="form-control form-control-sm" id="insertAsunto" name="asunto" required>
-                            </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="insertEstado" class="form-label">Estado</label>
                                 <select class="form-select" id="insertEstado" name="estado" required>
                                     <option value="">Seleccione...</option>
@@ -89,37 +84,37 @@
                                     <option value="CERRADA">Cerrada</option>
                                 </select>
                             </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="insertTipo" class="form-label">Tipo</label>
                                 <input type="text" class="form-control form-control-sm" id="insertTipo" name="tipo" required>
                             </div>
-                            <div class="col-md-4">
-                                <label for="selectResponsable" class="form-label">Responsable (Bombero)</label>
+                            <div class="col-md-3">
+                                <label for="selectResponsable" class="form-label">Responsable</label>
                                 <select class="form-select" id="selectResponsable" name="id_bombero">
-                                    <option value="">Seleccione un bombero...</option>
+                                    <option value="">Seleccione bombero...</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="insertAsunto" class="form-label">Asunto</label>
+                                <textarea class="form-control form-control-sm" id="insertAsunto" name="asunto" rows="3" required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
                                 <label for="selectMaterial" class="form-label">Material</label>
                                 <select class="form-select" id="selectMaterial" name="id_material">
                                     <option value="">Seleccione un material...</option>
                                 </select>
                             </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label for="selectVehiculo" class="form-label">Vehículo</label>
                                 <select class="form-select" id="selectVehiculo" name="matricula">
                                     <option value="">Seleccione un vehículo...</option>
                                 </select>
-                            </div>
-                            <div class="col-md-8">
-                                <label for="insertDescripcion" class="form-label">Descripción</label>
-                                <textarea class="form-control form-control-sm" id="insertDescripcion" name="descripcion" rows="3"></textarea>
                             </div>
                         </div>
 

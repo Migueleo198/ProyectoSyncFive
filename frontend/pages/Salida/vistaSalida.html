@@ -65,7 +65,7 @@
                                 <th>Matricula</th>
                                 <th class="d-none d-md-table-cell">ID Bombero</th>
                                 <th>F_Salida</th>
-                                <th>F_Regreso</th>
+                                <th class="d-none d-md-table-cell">F_Regreso</th>
                                 <th class="d-none d-md-table-cell">KM_inicio</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
                                 <th class="d-none d-md-table-cell">KM_fin</th>
                                 <th>Acción</th>
@@ -85,8 +85,10 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6 col-lg-4">
-                                <label for="ID Bombero" class="form-label">ID Bombero</label>
-                                <input type="text" class="form-control form-control-sm" id="id_bombero" name="id_bombero" required>
+                                <label for="id_bombero" class="form-label">Bombero</label>
+                                <select class="form-select form-control-sm" id="id_bombero" name="id_bombero" required>
+                                    <option value="">Seleccionar bombero...</option>
+                                </select>
                             </div>
                             <div class="col-md-6 col-lg-4">
                                 <label for="f_salida" class="form-label">Fecha salida</label>
@@ -101,13 +103,15 @@
                         <div class="row mb-4">
                             <div class="col-md-6 col-lg-4">
                                 <label for="matricula" class="form-label">Matricula</label>
-                                <input type="text" class="form-control form-control-sm" id="matricula" name="matricula">
+                                <select class="form-select form-control-sm" id="matricula" name="matricula" required>
+                                    <option value="">Seleccionar vehículo...</option>
+                                </select>
                             </div>
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-md-6 col-lg-4 d-none d-md-block">
                                 <label for="km_inicio" class="form-label">KM_inicio</label>
                                 <input type="number" class="form-control form-control-sm" id="km_inicio" name="km_inicio">
                             </div>
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-md-6 col-lg-4 d-none d-md-block">
                                 <label for="km_fin" class="form-label">KM_fin</label>
                                 <input type="number" class="form-control form-control-sm" id="km_fin" name="km_fin">
                             </div>
