@@ -74,7 +74,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="insertAsunto" class="form-label">Asunto</label>
-                                <input type="text" class="form-control" id="insertAsunto" name="asunto" required>
+                                <input type="text" class="form-control" id="insertAsunto" name="asunto" minlength="3" maxlength="150" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Destinatarios</label>
@@ -109,7 +109,7 @@
                         <div class="row mb-3">
                             <div class="col-md-12">
                                 <label for="insertMensaje" class="form-label">Mensaje</label>
-                                <textarea class="form-control" id="insertMensaje" name="mensaje" rows="5" required></textarea>
+                                <textarea class="form-control" id="insertMensaje" name="mensaje" rows="5" minlength="5" required></textarea>
                             </div>
                         </div>
                         <!-- Botones centrados debajo -->
