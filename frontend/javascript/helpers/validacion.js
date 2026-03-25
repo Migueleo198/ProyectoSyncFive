@@ -74,8 +74,10 @@ export function validarMatriculaEspanola(matricula) {
 
     const m = matricula.replace(/\s+/g, '').toUpperCase();
 
+    // Nuevo formato (desde 2000): 4 dígitos + 3 letras (sin vocales ni Ñ)
     const formatoNuevo = /^[0-9]{4}[BCDFGHJKLMNPRSTVWXYZ]{3}$/;
-    const formatoAntiguo = /^[A-Z]{1,2}[0-9]{4}[A-Z]{0,2}$/;
+    // Formato antiguo: 1-2 letras + 4 dígitos + 0-2 letras (sin vocales ni Ñ)
+    const formatoAntiguo = /^[BCDFGHJKLMNPRSTVWXYZ]{1,2}[0-9]{4}[BCDFGHJKLMNPRSTVWXYZ]{0,2}$/;
 
     return formatoNuevo.test(m) || formatoAntiguo.test(m);
 }

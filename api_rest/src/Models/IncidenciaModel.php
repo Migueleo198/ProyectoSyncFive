@@ -57,20 +57,20 @@ class IncidenciaModel
     {
         $this->db->query("
             INSERT INTO Incidencia (
-                id_bombero, 
-                id_material, 
-                matricula, 
-                fecha, 
-                asunto, 
-                estado, 
+                id_bombero,
+                id_material,
+                matricula,
+                fecha,
+                asunto,
+                estado,
                 tipo
             ) VALUES (
-                :id_bombero, 
-                :id_material, 
-                :matricula, 
-                :fecha, 
-                :asunto, 
-                :estado, 
+                :id_bombero,
+                :id_material,
+                :matricula,
+                :fecha,
+                :asunto,
+                :estado,
                 :tipo
             )
         ")
