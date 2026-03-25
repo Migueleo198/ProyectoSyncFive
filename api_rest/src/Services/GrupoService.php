@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Services;
 
 use Models\GrupoModel;
+use PDOException;
 use Validation\Validator;
 use Throwable;
 
@@ -97,11 +98,25 @@ class GrupoService
             throw new \Exception("Grupo no encontrado", 404);
         }
 
-        $result = $this->model->delete($id);
+        try {
+            $result = $this->model->delete($id);
+        } catch (Throwable $e) {
+            if ($this->isForeignKeyConstraintViolation($e)) {
+                throw new \Exception("No se puede eliminar el grupo: el registro está en uso", 409);
+            }
+
+            throw new \Exception("Error al eliminar el grupo: " . $e->getMessage(), 500);
+        }
+
         if ($result === 0) {
             throw new \Exception("No se pudo eliminar el grupo");
         }
 
         return ['message' => 'Grupo eliminado correctamente'];
+    }
+
+    private function isForeignKeyConstraintViolation(Throwable $e): bool
+    {
+        return $e instanceof PDOException && (string) $e->getCode() === '23000';
     }
 }

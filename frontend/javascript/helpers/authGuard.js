@@ -14,6 +14,7 @@
  *     // sesion.usuario  → datos del usuario logueado
  *     // sesion.rol      → número de rol (1-5)
  *     // sesion.puedeEscribir → boolean
+ *     // sesion.puedeEliminar → boolean
  *
  *     cargarEmergencias(sesion.puedeEscribir);
  *   });
@@ -30,7 +31,7 @@ const API_ME_URL   = `${API_BASE_PATH}/auth/me`;
  * Ejecuta el guard completo.
  *
  * @param {string} clavePagina - Clave en PERMISOS (ej: 'emergencias')
- * @returns {Promise<{usuario: object, rol: number, puedeEscribir: boolean} | null>}
+ * @returns {Promise<{usuario: object, rol: number, puedeEscribir: boolean, puedeEliminar: boolean} | null>}
  */
 export async function authGuard(clavePagina) {
   // ── 1. Verificar sesión activa ──────────────────────────────
@@ -79,13 +80,15 @@ export async function authGuard(clavePagina) {
 
   // ── 3. Determinar si puede escribir ────────────────────────
   const puedeEscribir = permisos.rolesEscritura.includes(rolUsuario);
+  const rolesEliminar = permisos.rolesEliminar ?? permisos.rolesEscritura;
+  const puedeEliminar = rolesEliminar.includes(rolUsuario);
 
   // ── 4. Adaptar UI si es solo lectura ───────────────────────
   if (!puedeEscribir) {
     aplicarModoLectura();
   }
 
-  return { usuario, rol: rolUsuario, puedeEscribir };
+  return { usuario, rol: rolUsuario, puedeEscribir, puedeEliminar };
 }
 
 // ────────────────────────────────────────────────────────────────

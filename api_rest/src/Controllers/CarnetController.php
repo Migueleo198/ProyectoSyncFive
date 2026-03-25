@@ -61,7 +61,8 @@ class CarnetController
             );
             return;
         } catch (Throwable $e) {
-            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor", 500);
+            $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
+            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor", $code);
             return;
         }
     }
@@ -71,21 +72,28 @@ class CarnetController
     public function delete(Request $req, Response $res, string $id): void
     {
         try {
-            // Convierte el id a entero
-            $id = (int) $id;
-
-            // Llama al servicio para eliminar el carnet
-            $service = new \Services\CarnetService();
-            $service->deleteCarnet($id);
-
-            // Éxito
+            $this->service->deleteCarnet((int) $id);
             $res->status(200)->json([], "Carnet eliminado correctamente");
-
         } catch (ValidationException $e) {
-            // Gestiona errores de validación
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
         } catch (Throwable $e) {
-            // Gestiona errores generales del servidor
+            $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+
+    /**
+     * GET /personas/{id_bombero}/carnets
+     */
+    public function personCarnets(Request $req, Response $res, string $id_bombero): void
+    {
+        try {
+            $carnets = $this->service->getCarnetsByPerson($id_bombero);
+            $res->status(200)->json(
+                $carnets,
+                "Carnets asociados a la persona obtenidos correctamente"
+            );
+        } catch (Throwable $e) {
             $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
             $res->errorJson($e->getMessage(), $code);
         }

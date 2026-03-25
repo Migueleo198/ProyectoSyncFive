@@ -4,6 +4,10 @@ declare(strict_types=1);
 namespace Services;
 
 use Models\CarnetModel;
+use Models\GrupoModel;
+use Models\PersonaModel;
+use DateTimeImmutable;
+use PDOException;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
@@ -11,10 +15,14 @@ use Throwable;
 class CarnetService
 {
     private CarnetModel $model;
+    private GrupoModel $grupoModel;
+    private PersonaModel $personaModel;
 
     public function __construct()
     {
         $this->model = new CarnetModel();
+        $this->grupoModel = new GrupoModel();
+        $this->personaModel = new PersonaModel();
     }
 
     /**
@@ -25,10 +33,7 @@ class CarnetService
         try {
             return $this->model->all();
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            $this->rethrowServiceException($e);
         }
     }
 
@@ -39,24 +44,25 @@ class CarnetService
     {
         $data = Validator::validate($input, [
             'nombre'         => 'required|string',
-            'categoria'      => 'required|string',
+            'id_grupo'       => 'required|int|min:1',
             'duracion_meses' => 'required|int|min:1',
         ]);
+
+        if (!$this->grupoModel->find((int) $data['id_grupo'])) {
+            throw new \Exception("Grupo no encontrado", 404);
+        }
 
         try {
             $id = $this->model->create($data);
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            $this->rethrowServiceException($e);
         }
 
         if (!$id) {
             throw new \Exception("No se pudo crear el carnet");
         }
 
-        return ['ID_Carnet' => $id]; // ← devuelve el id generado por la BDD
+        return ['ID_Carnet' => $id];
     }
 
     /**
@@ -70,8 +76,8 @@ class CarnetService
 
         $data = Validator::validate($input, [
             'nombre'        => 'string|min:1',
-            'categoria'          => 'string|min:1',
-            'duracion_meses'      => 'int|min:1',
+            'id_grupo'      => 'int|min:1',
+            'duracion_meses'=> 'int|min:1',
 
             // Asociación a persona (actualizada a string)
             'id_bombero' => 'string'
@@ -83,13 +89,18 @@ class CarnetService
             ]);
         }
 
+        if (isset($data['id_grupo']) && !$this->grupoModel->find((int) $data['id_grupo'])) {
+            throw new \Exception("Grupo no encontrado", 404);
+        }
+
         try {
             $result = $this->model->update($ID_Carnet, $data);
+
+            if (isset($data['duracion_meses'])) {
+                $this->model->refreshPersonExpirationDates((int) $ID_Carnet, (int) $data['duracion_meses']);
+            }
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            $this->rethrowServiceException($e);
         }
 
         if ($result === 0) {
@@ -130,10 +141,14 @@ class CarnetService
         try {
             $result = $this->model->delete($ID_Carnet);
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            if ($this->isForeignKeyConstraintViolation($e)) {
+                throw new \Exception(
+                    "No se puede eliminar el carnet: el registro está en uso",
+                    409
+                );
+            }
+
+            $this->rethrowServiceException($e);
         }
 
         if ($result === 0) {
@@ -149,16 +164,15 @@ class CarnetService
     }
 
     /**
-     * Obtener todas las personas asociadas a un carnet NO SE USA TODAVIA PARA UNA FURUTA EXPANSION
+     * Obtener todas las personas asociadas a un carnet
      */
-/*     public function getPersonsByCarnet(string $ID_Carnet): array
+    public function getPersonsByCarnet(string $ID_Carnet): array
     {
         Validator::validate(['ID_Carnet' => $ID_Carnet], [
             'ID_Carnet' => 'required|string'
         ]);
 
         try {
-            // verificamos que el carnet exista primero
             $exists = $this->model->find($ID_Carnet);
 
             if (!$exists) {
@@ -168,12 +182,31 @@ class CarnetService
             return $this->model->getPersonsByCarnet($ID_Carnet);
 
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            $this->rethrowServiceException($e);
         }
-    } */
+    }
+
+    /**
+     * Obtener todos los carnets asociados a una persona
+     */
+    public function getCarnetsByPerson(string $personIdentifier): array
+    {
+        Validator::validate(['id_bombero' => $personIdentifier], [
+            'id_bombero' => 'required|string'
+        ]);
+
+        try {
+            $persona = $this->personaModel->findByIdentifier($personIdentifier);
+
+            if (!$persona) {
+                throw new \Exception("Persona no encontrada", 404);
+            }
+
+            return $this->model->getCarnetsByPerson((string) $persona['id_bombero']);
+        } catch (Throwable $e) {
+            $this->rethrowServiceException($e);
+        }
+    }
 
 
         
@@ -184,30 +217,31 @@ class CarnetService
     {
         $data = Validator::validate($input, [
             'id_bombero' => 'required|string',
-            'ID_Carnet'     => 'required|string',
-            'f_obtencion'   => 'required|string',
-            'f_vencimiento' => 'required|string'
+            'ID_Carnet'   => 'required|string',
+            'f_obtencion' => 'required|string'
         ]);
 
         try {
-            $exists = $this->model->find($data['ID_Carnet']);
+            $carnet = $this->model->find($data['ID_Carnet']);
 
-            if (!$exists) {
+            if (!$carnet) {
                 throw new \Exception("Carnet no encontrado", 404);
             }
+
+            $fechaVencimiento = $this->calculateExpirationDate(
+                $data['f_obtencion'],
+                (int) ($carnet['duracion_meses'] ?? 0)
+            );
 
             $result = $this->model->assign(
                 $data['id_bombero'],
                 $data['ID_Carnet'],
                 $data['f_obtencion'],
-                $data['f_vencimiento']
+                $fechaVencimiento
             );
 
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            $this->rethrowServiceException($e);
         }
 
         if (!$result) {
@@ -249,10 +283,7 @@ public function getCarnetById(int $id): array
         try {
             $result = $this->model->unassignFromPerson($id_bombero, $ID_Carnet);
         } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
+            $this->rethrowServiceException($e);
         }
 
         if ($result === 0) {
@@ -265,6 +296,45 @@ public function getCarnetById(int $id): array
         ];
     }
 
+    private function calculateExpirationDate(string $fechaObtencion, int $duracionMeses): string
+    {
+        if ($duracionMeses < 1) {
+            throw new ValidationException([
+                'duracion_meses' => ['La duración del carnet debe ser mayor que cero']
+            ]);
+        }
 
+        try {
+            $fecha = new DateTimeImmutable($fechaObtencion);
+        } catch (Throwable $e) {
+            throw new ValidationException([
+                'f_obtencion' => ['La fecha de obtención no es válida']
+            ]);
+        }
+
+        return $fecha->modify(sprintf('+%d months', $duracionMeses))->format('Y-m-d');
+    }
+
+    private function rethrowServiceException(Throwable $e): never
+    {
+        if ($e instanceof ValidationException) {
+            throw $e;
+        }
+
+        $code = (int) $e->getCode();
+        if ($code >= 400 && $code < 600) {
+            throw $e;
+        }
+
+        throw new \Exception(
+            "Error interno en la base de datos: " . $e->getMessage(),
+            500
+        );
+    }
+
+    private function isForeignKeyConstraintViolation(Throwable $e): bool
+    {
+        return $e instanceof PDOException && (string) $e->getCode() === '23000';
+    }
 }
 ?>

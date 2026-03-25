@@ -1,25 +1,25 @@
 import ApiClient from './ApiClient.js';
 
-const CategoriaCarnetApi = {
+const GrupoApi = {
   getAll() {
-    return ApiClient.get('/categorias-carnet');
+    return ApiClient.get('/grupos');
   },
 
   getById(id) {
-    return ApiClient.get(`/categorias-carnet/${id}`);
+    return ApiClient.get(`/grupos/${id}`);
   },
 
   create(data) {
-    return ApiClient.post('/categorias-carnet', data);
+    return ApiClient.post('/grupos', data);
   },
 
   update(id, data) {
-    return ApiClient.put(`/categorias-carnet/${id}`, data);
+    return ApiClient.put(`/grupos/${id}`, data);
   },
 
   delete(id) {
-    return ApiClient.delete(`/categorias-carnet/${id}`);
+    return ApiClient.delete(`/grupos/${id}`);
   }
 };
 
-export default CategoriaCarnetApi;
+export default GrupoApi;
