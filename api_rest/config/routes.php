@@ -222,7 +222,7 @@ $router->protectedSession('DELETE', '/salidas/{id_registro}', 'Controllers\\Sali
 $router->protectedSession('GET', '/avisos', 'Controllers\\AvisoController@index', [1,2,3,4,5]);
 $router->protectedSession('GET', '/avisos/{id_aviso}', 'Controllers\\AvisoController@show', [1,2,3,4,5]);
 $router->protectedSession('POST', '/avisos', 'Controllers\\AvisoController@store', [2,3,4,5]);
-$router->protectedSession('DELETE', '/avisos/{id_aviso}', 'Controllers\\AvisoController@delete', [5]);
+$router->protectedSession('DELETE', '/avisos/{id_aviso}', 'Controllers\\AvisoController@delete', [2,3,4,5]);
 
 // DESTINATARIOS
 $router->protectedSession('GET', '/avisos/{id_aviso}/destinatarios', 'Controllers\\AvisoController@getDestinatario', [1,2,3,4,5]);
