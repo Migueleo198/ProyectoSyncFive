@@ -9,10 +9,7 @@ const PermisoApi = {
     return ApiClient.post('/permisos', data);
   },
 
-  remove(idPermiso) {
-    return ApiClient.delete(`/permisos/${idPermiso}`);
-  },
-    getPersonsByPermiso(id_permiso) {
+  getPersonsByPermiso(id_permiso) {
       return ApiClient.get(`/permisos/${id_permiso}/personas`);
   },
   update(idPermiso, data) {

@@ -1,6 +1,7 @@
-import CarnetApiApi from '../api_f/CarnetApi.js';
-import PersonaApiApi from '../api_f/PersonaApi.js';
+import CarnetApi from '../api_f/CarnetApi.js';
+import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
+import { PERMISOS } from '/frontend/config/permissions.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
 import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
@@ -8,256 +9,221 @@ import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.
 let carnets = [];
 let sesionActual = null;
 const pagination = new PaginationHelper(15);
+
 pagination.setLoadingCallback((isLoading) => {
-    if (isLoading) {
-        showTableLoading('#tabla tbody', 5);
-    }
+  if (isLoading) {
+    showTableLoading('#tabla tbody', 5);
+  }
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('carnets');
   if (!sesionActual) return;
 
-  cargarCarnets();
-  cargarTiposCarnet(0, 'filtroTipoCarnet');
-  cargarTiposCarnet(0, 'tipoCarnetInsert');
-  cargarCarnetsDisponibles(null, 'seleccionarCarnet');
-  cargarBomberosDisponibles(null, 'id_bombero');
-  bindModalEliminar();
-  bindModalEditar();
+  bindFiltros();
   bindModalVer();
+  bindModalEditar();
+  bindModalEliminar();
+  bindDesasignarPersona();
 
   if (sesionActual.puedeEscribir) {
     bindCrearCarnet();
     bindAsignarCarnet();
+    bindAutocalculoVencimiento();
   }
+
+  await Promise.all([
+    cargarCarnets(),
+    cargarCarnetsDisponibles(null, 'seleccionarCarnet'),
+    cargarBomberosDisponibles(null, 'id_bombero')
+  ]);
 });
 
-// ================================
-// CARGAR CARNETS
-// ================================
+function puedeEditarCarnets() {
+  return PERMISOS.carnets.rolesEditar.includes(sesionActual?.rol ?? 0);
+}
+
+function puedeEliminarCarnets() {
+  return PERMISOS.carnets.rolesEliminar.includes(sesionActual?.rol ?? 0);
+}
+
 async function cargarCarnets() {
   try {
     showTableLoading('#tabla tbody', 5);
-    const response = await CarnetApiApi.getAll();
+    const response = await CarnetApi.getAll();
     carnets = response?.data || response || [];
-    pagination.setData(carnets, () => {
-      renderTablaCarnets(carnets);
-    });
-    pagination.render('pagination-carnet');
-    renderTablaCarnets(carnets);
-    poblarFiltroCategoria(carnets);
-    bindFiltros();
-  } catch (e) {
+    poblarFiltroGrupo(carnets);
+    aplicarFiltros();
+    recalcularVencimientoAsignacion();
+  } catch (_e) {
     carnets = [];
-    pagination.setData([], () => {
-      renderTablaCarnets([]);
-    });
+    pagination.setData([], () => renderTablaCarnets([]));
     pagination.render('pagination-carnet');
     renderTablaCarnets([]);
   }
 }
 
-function poblarFiltroCategoria(lista) {
-  const select = document.getElementById('filtroCategoria');
+function poblarFiltroGrupo(lista) {
+  const select = document.getElementById('filtroGrupo');
   if (!select) return;
+
   const valorActual = select.value;
-  select.innerHTML = '<option value="">Todas</option>';
-  const categoriasUnicas = [...new Set(lista.map(c => c.categoria).filter(Boolean))].sort();
-  categoriasUnicas.forEach(cat => {
-    const opt = document.createElement('option');
-    opt.value = cat;
-    opt.textContent = cat;
-    select.appendChild(opt);
+  select.innerHTML = '<option value="">Todos</option>';
+
+  const grupos = [...new Set(lista.map((c) => c.grupo ?? c.categoria).filter(Boolean))].sort();
+  grupos.forEach((grupo) => {
+    const option = document.createElement('option');
+    option.value = grupo;
+    option.textContent = grupo;
+    select.appendChild(option);
   });
-  select.value = valorActual;
+
+  select.value = grupos.includes(valorActual) ? valorActual : '';
 }
 
 function bindFiltros() {
   document.getElementById('filtroNombre')?.addEventListener('input', aplicarFiltros);
-  document.getElementById('filtroCategoria')?.addEventListener('change', aplicarFiltros);
+  document.getElementById('filtroGrupo')?.addEventListener('change', aplicarFiltros);
 }
 
 function aplicarFiltros() {
   pagination.goToPage(0);
-  const filtroNombre    = document.getElementById('filtroNombre')?.value.toLowerCase().trim() ?? '';
-  const filtroCategoria = document.getElementById('filtroCategoria')?.value ?? '';
+  const filtroNombre = document.getElementById('filtroNombre')?.value.toLowerCase().trim() ?? '';
+  const filtroGrupo = document.getElementById('filtroGrupo')?.value ?? '';
 
-  const filtrados = carnets.filter(c => {
-    const cumpleNombre    = !filtroNombre    || c.nombre?.toLowerCase().includes(filtroNombre);
-    const cumpleCategoria = !filtroCategoria || c.categoria === filtroCategoria;
-    return cumpleNombre && cumpleCategoria;
+  const filtrados = carnets.filter((carnet) => {
+    const grupo = carnet.grupo ?? carnet.categoria ?? '';
+    const cumpleNombre = !filtroNombre || String(carnet.nombre ?? '').toLowerCase().includes(filtroNombre);
+    const cumpleGrupo = !filtroGrupo || grupo === filtroGrupo;
+    return cumpleNombre && cumpleGrupo;
   });
-  pagination.setData(filtrados, () => {
-      renderTablaCarnets(filtrados);
-    });
+
+  pagination.setData(filtrados, () => renderTablaCarnets(filtrados));
   pagination.render('pagination-carnet');
   renderTablaCarnets(filtrados);
 }
 
-// ================================
-// CARGAR TIPOS DE CARNET
-// ================================
-async function cargarTiposCarnet(tipoSeleccionado, id_select) {
-  const select = document.getElementById(id_select);
-  if (!select) return;
-
-  try {
-    const response = await CarnetApiApi.getAll();
-    const tipos = response?.data || response || [];
-
-    select.innerHTML = '<option value="">Seleccione...</option>';
-    tipos.forEach(tipo => {
-      const option = document.createElement('option');
-      option.value = tipo.codigo_tipo;
-      option.textContent = tipo.nombre;
-      if (tipoSeleccionado !== 0 && Number(tipo.codigo_tipo) === Number(tipoSeleccionado)) {
-        option.selected = true;
-      }
-      select.appendChild(option);
-    });
-  } catch (e) {
-    mostrarError(e.message || 'Error cargando tipos de carnet');
-  }
-}
-
-// ================================
-// RENDER TABLA
-// ================================
 function renderTablaCarnets(lista) {
   const tbody = document.querySelector('#tabla tbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
-  const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No hay carnets registrados</td></tr>';
+    return;
+  }
+
   const itemsPagina = pagination.getPageItems(lista);
+  const puedeEditar = puedeEditarCarnets();
+  const puedeEliminar = puedeEliminarCarnets();
 
-  itemsPagina.forEach(c => {
+  itemsPagina.forEach((carnet) => {
+    const grupo = carnet.grupo ?? carnet.categoria ?? 'Sin grupo';
+    const botones = [`<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${carnet.id_carnet}" title="Ver detalle"><i class="bi bi-eye"></i></button>`];
+
+    if (puedeEditar) {
+      botones.push(`<button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${carnet.id_carnet}" title="Editar"><i class="bi bi-pencil text-primary"></i></button>`);
+    }
+
+    if (puedeEliminar) {
+      botones.push(`<button type="button" class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${carnet.id_carnet}" title="Eliminar"><i class="bi bi-trash3 text-danger"></i></button>`);
+    }
+
     const tr = document.createElement('tr');
-
-    const botonesAccion = puedeEscribir
-      ? `<button type="button" class="btn p-0 btn-ver"
-              data-bs-toggle="modal" data-bs-target="#modalVer"
-              data-id="${c.id_carnet}"><i class="bi bi-eye"></i></button>
-         <button type="button" class="btn p-0 btn-editar"
-              data-bs-toggle="modal" data-bs-target="#modalEditar"
-              data-id="${c.id_carnet}"><i class="bi bi-pencil"></i></button>
-         <button type="button" class="btn p-0 btn-eliminar"
-              data-bs-toggle="modal" data-bs-target="#modalEliminar"
-              data-id="${c.id_carnet}"><i class="bi bi-trash3"></i></button>`
-      : `<button type="button" class="btn p-0 btn-ver"
-              data-bs-toggle="modal" data-bs-target="#modalVer"
-              data-id="${c.id_carnet}"><i class="bi bi-eye"></i></button>`;
-
     tr.innerHTML = `
-      <td class="d-none d-md-table-cell">${c.id_carnet}</td>
-      <td>${c.nombre}</td>
-      <td>${c.categoria}</td>
-      <td>${c.duracion_meses}</td>
-      <td>
-        <div class="d-flex justify-content-around">
-          ${botonesAccion}
-        </div>
-      </td>
+      <td class="d-none d-md-table-cell">${carnet.id_carnet}</td>
+      <td>${carnet.nombre ?? ''}</td>
+      <td>${grupo}</td>
+      <td>${carnet.duracion_meses ?? ''}</td>
+      <td><div class="d-flex justify-content-around">${botones.join('')}</div></td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-// ================================
-// VALIDAR CARNET (tipo)
-// Según DDL Carnet:
-//   nombre          VARCHAR(50) NOT NULL
-//   categoria       VARCHAR(20) NOT NULL
-//   duracion_meses  INT NOT NULL  CHECK (duracion_meses > 0)
-// ================================
-function validarCarnet(nombre, categoria, duracion_meses) {
+function validarCarnet(nombre, grupo, duracionMeses) {
   if (!nombre || !nombre.trim()) {
     mostrarError('El nombre del carnet es obligatorio.');
     return false;
   }
+
   if (nombre.trim().length > 50) {
     mostrarError('El nombre del carnet no puede superar los 50 caracteres.');
     return false;
   }
 
-  if (!categoria || !categoria.trim()) {
-    mostrarError('La categoría es obligatoria.');
-    return false;
-  }
-  if (categoria.trim().length > 20) {
-    mostrarError('La categoría no puede superar los 20 caracteres.');
+  if (!grupo || !grupo.trim()) {
+    mostrarError('El grupo es obligatorio.');
     return false;
   }
 
-  // CHECK (duracion_meses > 0)
-  if (!validarNumero(duracion_meses)) {
-    mostrarError('La duración en meses debe ser un número entero positivo.');
+  if (grupo.trim().length > 20) {
+    mostrarError('El grupo no puede superar los 20 caracteres.');
+    return false;
+  }
+
+  if (!validarNumero(duracionMeses)) {
+    mostrarError('La duracion en meses debe ser un numero entero positivo.');
     return false;
   }
 
   return true;
 }
 
-// ================================
-// VALIDAR ASIGNACIÓN DE CARNET A PERSONA
-// Según DDL Carnet_Persona:
-//   f_obtencion   DATE NOT NULL
-//   f_vencimiento DATE NOT NULL  CHECK (f_vencimiento > f_obtencion)
-// ================================
-function validarAsignacionCarnet(id_bombero, id_carnet, f_obtencion, f_vencimiento) {
-  if (!id_bombero) {
+function validarAsignacionCarnet(idBombero, idCarnet, fechaObtencion, fechaVencimiento) {
+  if (!idBombero) {
     mostrarError('Debe seleccionar un bombero.');
     return false;
   }
 
-  if (!id_carnet) {
+  if (!idCarnet) {
     mostrarError('Debe seleccionar un carnet.');
     return false;
   }
 
-  if (!f_obtencion) {
-    mostrarError('La fecha de obtención es obligatoria.');
+  if (!fechaObtencion) {
+    mostrarError('La fecha de obtencion es obligatoria.');
     return false;
   }
 
-  if (!f_vencimiento) {
+  if (!fechaVencimiento) {
     mostrarError('La fecha de vencimiento es obligatoria.');
     return false;
   }
 
-  // CHECK (f_vencimiento > f_obtencion)
-  if (!validarRangoFechas(f_obtencion, f_vencimiento)) {
-    mostrarError('La fecha de vencimiento debe ser posterior a la fecha de obtención.');
+  if (!validarRangoFechas(fechaObtencion, fechaVencimiento)) {
+    mostrarError('La fecha de vencimiento debe ser posterior a la fecha de obtencion.');
     return false;
   }
 
   return true;
 }
 
-// ================================
-// CREAR CARNET
-// ================================
 function bindCrearCarnet() {
   const form = document.getElementById('formInsertarCarnet');
   if (!form) return;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const f = new FormData(form);
-    const nombre         = f.get('nombre');
-    const categoria      = f.get('categoria');
-    const duracion_meses = f.get('duracion_meses');
+    const formData = new FormData(form);
+    const nombre = String(formData.get('nombre') ?? '').trim();
+    const grupo = String(formData.get('grupo') ?? '').trim();
+    const duracionMeses = String(formData.get('duracion_meses') ?? '').trim();
 
-    // ── Validación ──
-    if (!validarCarnet(nombre, categoria, duracion_meses)) return;
+    if (!validarCarnet(nombre, grupo, duracionMeses)) return;
 
     try {
-      await CarnetApiApi.create({
-        nombre:         nombre.trim(),
-        categoria:      categoria.trim(),
-        duracion_meses: Number(duracion_meses)
+      await CarnetApi.create({
+        nombre,
+        grupo,
+        duracion_meses: Number(duracionMeses)
       });
-      await cargarCarnets();
+
+      await Promise.all([
+        cargarCarnets(),
+        cargarCarnetsDisponibles(null, 'seleccionarCarnet')
+      ]);
+
       form.reset();
       mostrarExito('Carnet creado correctamente');
     } catch (err) {
@@ -266,140 +232,207 @@ function bindCrearCarnet() {
   });
 }
 
-// ================================
-// MODAL ELIMINAR
-// ================================
 function bindModalEliminar() {
-  document.addEventListener('click', function (e) {
+  if (!puedeEliminarCarnets()) return;
+
+  document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-eliminar');
     if (!btn) return;
     document.getElementById('btnConfirmarEliminar').dataset.id = btn.dataset.id;
   });
 
-  document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
+  document.getElementById('btnConfirmarEliminar')?.addEventListener('click', async function () {
     const id = this.dataset.id;
     if (!id) return;
 
     try {
-      await CarnetApiApi.remove(id);
-      await cargarCarnets();
-      bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+      await CarnetApi.remove(id);
+      await Promise.all([
+        cargarCarnets(),
+        cargarCarnetsDisponibles(null, 'seleccionarCarnet')
+      ]);
+      bootstrap.Modal.getInstance(document.getElementById('modalEliminar'))?.hide();
       mostrarExito('Carnet eliminado correctamente');
     } catch (error) {
-      mostrarError('Error al eliminar carnet: ' + error.message);
+      mostrarError(error.message || 'Error al eliminar carnet');
     }
   });
 }
 
-// ================================
-// CAMPOS BD
-// ================================
-const nombresCampos = ['nombre', 'categoria', 'duracion_meses'];
-const camposBd      = ['nombre', 'categoria', 'duracion_meses'];
-
-// ================================
-// MODAL EDITAR
-// ================================
 function bindModalEditar() {
-  document.addEventListener('click', async function (e) {
+  if (!puedeEditarCarnets()) return;
+
+  document.addEventListener('click', async (e) => {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
 
-    const id = btn.dataset.id;
+    const idCarnet = btn.dataset.id;
 
     try {
-      const response = await CarnetApiApi.getById(id);
-      const carnet = response?.data || response;
-      if (!carnet) return;
+      const [carnetResponse, personsResponse] = await Promise.all([
+        CarnetApi.getById(idCarnet),
+        CarnetApi.getPersonsByCarnet(idCarnet)
+      ]);
 
+      const carnet = carnetResponse?.data || carnetResponse;
+      const personas = personsResponse?.data || personsResponse || [];
+      const grupo = carnet.grupo ?? carnet.categoria ?? '';
       const form = document.getElementById('formEditar');
+      if (!form || !carnet) return;
+
       form.innerHTML = `
-        <div class="row mb-3">
+        <div class="row g-3 mb-4">
           <div class="col-lg-4">
             <label class="form-label">Nombre</label>
-            <input type="text" class="form-control" name="nombre" maxlength="50" value="${carnet.nombre || ''}">
+            <input type="text" class="form-control" name="nombre" maxlength="50" value="${carnet.nombre ?? ''}">
           </div>
           <div class="col-lg-4">
-            <label class="form-label">Categoría</label>
-            <input type="text" class="form-control" name="categoria" maxlength="20" value="${carnet.categoria || ''}">
+            <label class="form-label">Grupo</label>
+            <input type="text" class="form-control" name="grupo" maxlength="20" value="${grupo}">
           </div>
           <div class="col-lg-4">
-            <label class="form-label">Duración (meses)</label>
-            <input type="number" min="1" step="1" class="form-control" name="duracion_meses" value="${carnet.duracion_meses || ''}">
+            <label class="form-label">Duracion (meses)</label>
+            <input type="number" min="1" step="1" class="form-control" name="duracion_meses" value="${carnet.duracion_meses ?? ''}">
           </div>
         </div>
-        <div class="text-center">
-          <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
+        ${renderPersonasAsociadas(personas, idCarnet, true)}
+        <div class="text-center mt-4">
+          <button type="button" id="btnGuardarCambiosCarnet" class="btn btn-primary">Guardar cambios</button>
         </div>
       `;
 
-      document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-        const data = {};
-        camposBd.forEach(campo => {
-          const input = form.querySelector(`[name="${campo}"]`);
-          if (input) data[campo] = input.value;
-        });
+      document.getElementById('btnGuardarCambiosCarnet')?.addEventListener('click', async () => {
+        const data = {
+          nombre: String(form.querySelector('[name="nombre"]')?.value ?? '').trim(),
+          grupo: String(form.querySelector('[name="grupo"]')?.value ?? '').trim(),
+          duracion_meses: String(form.querySelector('[name="duracion_meses"]')?.value ?? '').trim()
+        };
 
-        // ── Validación ──
-        if (!validarCarnet(data.nombre, data.categoria, data.duracion_meses)) return;
+        if (!validarCarnet(data.nombre, data.grupo, data.duracion_meses)) return;
 
-        await CarnetApiApi.update(id, {
-          nombre:         data.nombre.trim(),
-          categoria:      data.categoria.trim(),
+        await CarnetApi.update(idCarnet, {
+          nombre: data.nombre,
+          grupo: data.grupo,
           duracion_meses: Number(data.duracion_meses)
         });
-        await cargarCarnets();
-        bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+
+        await Promise.all([
+          cargarCarnets(),
+          cargarCarnetsDisponibles(idCarnet, 'seleccionarCarnet')
+        ]);
+
+        bootstrap.Modal.getInstance(document.getElementById('modalEditar'))?.hide();
         mostrarExito('Carnet actualizado correctamente');
       });
-
     } catch (error) {
-      mostrarError('Error al editar carnet: ' + error.message);
+      mostrarError(error.message || 'Error al editar carnet');
     }
   });
 }
 
-// ================================
-// MODAL VER
-// ================================
 function bindModalVer() {
-  document.addEventListener('click', function (e) {
+  document.addEventListener('click', async (e) => {
     const btn = e.target.closest('.btn-ver');
     if (!btn) return;
 
-    const carnet = carnets.find(p => p.id_carnet == btn.dataset.id);
+    const idCarnet = btn.dataset.id;
+    const carnet = carnets.find((item) => String(item.id_carnet) === String(idCarnet));
     if (!carnet) return;
 
     const modalBody = document.getElementById('modalVerBody');
-    modalBody.innerHTML = '';
+    if (!modalBody) return;
+    modalBody.innerHTML = '<p class="text-muted text-center">Cargando...</p>';
 
-    nombresCampos.forEach((nombre, index) => {
-      const p = document.createElement('p');
-      const strong = document.createElement('strong');
-      strong.textContent = nombre + ': ';
-      p.appendChild(strong);
-      p.appendChild(document.createTextNode(carnet[camposBd[index]] ?? ''));
-      modalBody.appendChild(p);
-    });
+    try {
+      const response = await CarnetApi.getPersonsByCarnet(idCarnet);
+      const personas = response?.data || response || [];
+      const grupo = carnet.grupo ?? carnet.categoria ?? 'Sin grupo';
+
+      modalBody.innerHTML = `
+        <p><strong>ID:</strong> ${carnet.id_carnet}</p>
+        <p><strong>Nombre:</strong> ${carnet.nombre ?? ''}</p>
+        <p><strong>Grupo:</strong> ${grupo}</p>
+        <p><strong>Duracion:</strong> ${carnet.duracion_meses ?? ''} meses</p>
+        ${renderPersonasAsociadas(personas, idCarnet, false)}
+      `;
+    } catch (error) {
+      modalBody.innerHTML = '<p class="text-danger mb-0">No se pudieron cargar las personas asociadas.</p>';
+      mostrarError(error.message || 'Error cargando detalle del carnet');
+    }
   });
 }
 
-// ================================
-// CARGAR CARNETS DISPONIBLES
-// ================================
-async function cargarCarnetsDisponibles(carnetSeleccionado, id_select) {
-  const select = document.getElementById(id_select);
+function renderPersonasAsociadas(personas, idCarnet, permitirEliminar) {
+  const columnasAccion = permitirEliminar ? '<th class="text-end">Accion</th>' : '';
+  const filas = !personas.length
+    ? `<tr><td colspan="${permitirEliminar ? 5 : 4}" class="text-center text-muted py-3">Sin personas asociadas</td></tr>`
+    : personas.map((persona) => `
+        <tr>
+          <td>${persona.id_bombero}</td>
+          <td>${persona.nombre ?? ''} ${persona.apellidos ?? ''}</td>
+          <td>${persona.f_obtencion ?? '—'}</td>
+          <td>${persona.f_vencimiento ?? '—'}</td>
+          ${permitirEliminar ? `<td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-carnet" data-id-carnet="${idCarnet}" data-id-bombero="${persona.id_bombero}">Quitar</button></td>` : ''}
+        </tr>
+      `).join('');
+
+  return `
+    <div class="mt-4">
+      <h6 class="mb-3">Personas asociadas</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Bombero</th>
+              <th>Nombre</th>
+              <th>Obtencion</th>
+              <th>Vencimiento</th>
+              ${columnasAccion}
+            </tr>
+          </thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function bindDesasignarPersona() {
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-desasignar-carnet');
+    if (!btn || !puedeEditarCarnets()) return;
+
+    const idCarnet = btn.dataset.idCarnet;
+    const idBombero = btn.dataset.idBombero;
+    if (!idCarnet || !idBombero) return;
+
+    try {
+      await CarnetApi.unassignFromPerson(idCarnet, idBombero);
+      btn.closest('tr')?.remove();
+      await cargarCarnets();
+      mostrarExito('Asignacion eliminada correctamente');
+    } catch (error) {
+      mostrarError(error.message || 'Error eliminando la asignacion');
+    }
+  });
+}
+
+async function cargarCarnetsDisponibles(carnetSeleccionado, idSelect) {
+  const select = document.getElementById(idSelect);
   if (!select) return;
 
   try {
-    const response = await CarnetApiApi.getAll();
+    const response = await CarnetApi.getAll();
     const lista = response?.data || response || [];
     select.innerHTML = '<option value="">Seleccione carnet...</option>';
-    lista.forEach(carnet => {
+
+    lista.forEach((carnet) => {
       const option = document.createElement('option');
       option.value = carnet.id_carnet;
-      option.textContent = `${carnet.nombre} - ${carnet.categoria} (${carnet.duracion_meses} meses)`;
-      if (carnetSeleccionado && carnet.id_carnet === carnetSeleccionado) option.selected = true;
+      option.textContent = `${carnet.nombre} - ${carnet.grupo ?? carnet.categoria} (${carnet.duracion_meses} meses)`;
+      if (String(carnetSeleccionado ?? '') === String(carnet.id_carnet)) {
+        option.selected = true;
+      }
       select.appendChild(option);
     });
   } catch (e) {
@@ -407,22 +440,22 @@ async function cargarCarnetsDisponibles(carnetSeleccionado, id_select) {
   }
 }
 
-// ================================
-// CARGAR BOMBEROS DISPONIBLES
-// ================================
-async function cargarBomberosDisponibles(bomberoSeleccionado, id_select) {
-  const select = document.getElementById(id_select);
+async function cargarBomberosDisponibles(bomberoSeleccionado, idSelect) {
+  const select = document.getElementById(idSelect);
   if (!select) return;
 
   try {
-    const response = await PersonaApiApi.getAll();
+    const response = await PersonaApi.getAll();
     const bomberos = response?.data || response || [];
     select.innerHTML = '<option value="">Seleccione bombero...</option>';
-    bomberos.forEach(bombero => {
+
+    bomberos.forEach((bombero) => {
       const option = document.createElement('option');
       option.value = bombero.id_bombero;
       option.textContent = `${bombero.id_bombero} - ${bombero.nombre} ${bombero.apellidos}`;
-      if (bomberoSeleccionado && bombero.id_bombero === bomberoSeleccionado) option.selected = true;
+      if (String(bomberoSeleccionado ?? '') === String(bombero.id_bombero)) {
+        option.selected = true;
+      }
       select.appendChild(option);
     });
   } catch (e) {
@@ -430,31 +463,28 @@ async function cargarBomberosDisponibles(bomberoSeleccionado, id_select) {
   }
 }
 
-// ================================
-// ASIGNAR CARNET A PERSONA
-// ================================
 function bindAsignarCarnet() {
   const form = document.getElementById('formInsertar');
   if (!form) return;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const f = new FormData(form);
-    const id_bombero    = f.get('id_bombero');
-    const id_carnet     = f.get('seleccionarCarnet');
-    const f_obtencion   = f.get('f_obtencion');
-    const f_vencimiento = f.get('f_vencimiento');
+    const formData = new FormData(form);
+    const idBombero = String(formData.get('id_bombero') ?? '');
+    const idCarnet = String(formData.get('seleccionarCarnet') ?? '');
+    const fechaObtencion = String(formData.get('f_obtencion') ?? '');
+    const fechaVencimiento = String(formData.get('f_vencimiento') ?? '');
 
-    // ── Validación ──
-    if (!validarAsignacionCarnet(id_bombero, id_carnet, f_obtencion, f_vencimiento)) return;
+    if (!validarAsignacionCarnet(idBombero, idCarnet, fechaObtencion, fechaVencimiento)) return;
 
     try {
-      await CarnetApiApi.assignToPerson({
-        id_bombero,
-        ID_Carnet:  id_carnet,
-        f_obtencion,
-        f_vencimiento
+      await CarnetApi.assignToPerson({
+        id_bombero: idBombero,
+        ID_Carnet: idCarnet,
+        f_obtencion: fechaObtencion,
+        f_vencimiento: fechaVencimiento
       });
+
       await cargarCarnets();
       form.reset();
       mostrarExito('Carnet asignado correctamente');
@@ -462,4 +492,42 @@ function bindAsignarCarnet() {
       mostrarError(err.message || 'Error asignando carnet');
     }
   });
-}a
+}
+
+function bindAutocalculoVencimiento() {
+  document.getElementById('seleccionarCarnet')?.addEventListener('change', recalcularVencimientoAsignacion);
+  document.getElementById('f_obtencion')?.addEventListener('input', recalcularVencimientoAsignacion);
+}
+
+function recalcularVencimientoAsignacion() {
+  const selectCarnet = document.getElementById('seleccionarCarnet');
+  const inputObtencion = document.getElementById('f_obtencion');
+  const inputVencimiento = document.getElementById('f_vencimiento');
+  if (!selectCarnet || !inputObtencion || !inputVencimiento) return;
+
+  const carnet = carnets.find((item) => String(item.id_carnet) === String(selectCarnet.value));
+  if (!carnet || !inputObtencion.value) {
+    inputVencimiento.value = '';
+    return;
+  }
+
+  inputVencimiento.value = sumarMeses(inputObtencion.value, Number(carnet.duracion_meses ?? 0));
+}
+
+function sumarMeses(fechaIso, meses) {
+  if (!fechaIso || !meses) return '';
+
+  const [anio, mes, dia] = fechaIso.split('-').map(Number);
+  if (!anio || !mes || !dia) return '';
+
+  const totalMeses = (mes - 1) + meses;
+  const anioObjetivo = anio + Math.floor(totalMeses / 12);
+  const mesObjetivo = (totalMeses % 12) + 1;
+  const ultimoDiaMesObjetivo = new Date(anioObjetivo, mesObjetivo, 0).getDate();
+  const diaObjetivo = Math.min(dia, ultimoDiaMesObjetivo);
+
+  const yyyy = String(anioObjetivo);
+  const mm = String(mesObjetivo).padStart(2, '0');
+  const dd = String(diaObjetivo).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}

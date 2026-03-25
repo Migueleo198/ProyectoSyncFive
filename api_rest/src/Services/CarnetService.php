@@ -38,9 +38,13 @@ class CarnetService
      */
     public function createCarnet(array $input): array
     {
+        if (!array_key_exists('grupo', $input) && array_key_exists('categoria', $input)) {
+            $input['grupo'] = $input['categoria'];
+        }
+
         $data = Validator::validate($input, [
             'nombre'         => 'required|string',
-            'categoria'      => 'required|string',
+            'grupo'          => 'required|string',
             'duracion_meses' => 'required|int|min:1',
         ]);
 
@@ -65,17 +69,19 @@ class CarnetService
      */
     public function updateCarnet(string $ID_Carnet, array $input): array
     {
+        if (!array_key_exists('grupo', $input) && array_key_exists('categoria', $input)) {
+            $input['grupo'] = $input['categoria'];
+        }
+
         Validator::validate(['ID_Carnet' => $ID_Carnet], [
             'ID_Carnet' => 'required|string'
         ]);
 
         $data = Validator::validate($input, [
             'nombre'        => 'string|min:1',
-            'categoria'          => 'string|min:1',
-            'duracion_meses'      => 'int|min:1',
-
-            // Asociación a persona (actualizada a string)
-            'id_bombero' => 'string'
+            'grupo'         => 'string|min:1',
+            'duracion_meses'=> 'int|min:1',
+            'id_bombero'    => 'string'
         ]);
 
         if (empty($data)) {
@@ -152,16 +158,15 @@ class CarnetService
     }
 
     /**
-     * Obtener todas las personas asociadas a un carnet NO SE USA TODAVIA PARA UNA FURUTA EXPANSION
+     * Obtener todas las personas asociadas a un carnet.
      */
-/*     public function getPersonsByCarnet(string $ID_Carnet): array
+    public function getPersonsByCarnet(string $ID_Carnet): array
     {
         Validator::validate(['ID_Carnet' => $ID_Carnet], [
             'ID_Carnet' => 'required|string'
         ]);
 
         try {
-            // verificamos que el carnet exista primero
             $exists = $this->model->find($ID_Carnet);
 
             if (!$exists) {
@@ -171,12 +176,16 @@ class CarnetService
             return $this->model->getPersonsByCarnet($ID_Carnet);
 
         } catch (Throwable $e) {
+            if ($e->getCode() >= 400 && $e->getCode() < 600) {
+                throw $e;
+            }
+
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
                 500
             );
         }
-    } */
+    }
 
 
         
@@ -185,10 +194,18 @@ class CarnetService
      */
     public function assign(array $input): array
     {
-        $data = Validator::validate($input, [
+        $inputNormalizado = $input;
+        if (!empty($inputNormalizado['f_obtencion']) && !empty($inputNormalizado['ID_Carnet'])) {
+            $inputNormalizado['f_vencimiento'] = $this->calculateExpirationDate(
+                (string) $inputNormalizado['ID_Carnet'],
+                (string) $inputNormalizado['f_obtencion']
+            );
+        }
+
+        $data = Validator::validate($inputNormalizado, [
             'id_bombero' => 'required|string',
-            'ID_Carnet'     => 'required|string',
-            'f_obtencion'   => 'required|string',
+            'ID_Carnet'  => 'required|string',
+            'f_obtencion'=> 'required|string',
             'f_vencimiento' => 'required|string'
         ]);
 
@@ -199,6 +216,12 @@ class CarnetService
                 throw new \Exception("Carnet no encontrado", 404);
             }
 
+            if (strtotime($data['f_vencimiento']) <= strtotime($data['f_obtencion'])) {
+                throw new ValidationException([
+                    'f_vencimiento' => ['La fecha de vencimiento debe ser posterior a la fecha de obtencion']
+                ]);
+            }
+
             $result = $this->model->assign(
                 $data['id_bombero'],
                 $data['ID_Carnet'],
@@ -207,6 +230,10 @@ class CarnetService
             );
 
         } catch (Throwable $e) {
+            if ($e instanceof ValidationException || ($e->getCode() >= 400 && $e->getCode() < 600)) {
+                throw $e;
+            }
+
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
                 500
@@ -226,7 +253,7 @@ class CarnetService
     /**
  * Obtener carnet por ID
  */
-public function getCarnetById(int $id): array
+    public function getCarnetById(int $id): array
 {
     $carnet = $this->model->findById($id);
 
@@ -236,6 +263,39 @@ public function getCarnetById(int $id): array
 
     return $carnet;
 }
+
+    public function calculateExpirationDate(string $ID_Carnet, string $fechaObtencion): string
+    {
+        $carnet = $this->model->find($ID_Carnet);
+
+        if (!$carnet) {
+            throw new \Exception("Carnet no encontrado", 404);
+        }
+
+        $meses = (int) ($carnet['duracion_meses'] ?? 0);
+        if ($meses < 1) {
+            throw new \Exception("La duracion del carnet no es valida", 409);
+        }
+
+        $fecha = \DateTimeImmutable::createFromFormat('!Y-m-d', $fechaObtencion);
+        if (!$fecha || $fecha->format('Y-m-d') !== $fechaObtencion) {
+            throw new ValidationException([
+                'f_obtencion' => ['La fecha de obtencion no es valida']
+            ]);
+        }
+
+        $anio = (int) $fecha->format('Y');
+        $mes = (int) $fecha->format('n');
+        $dia = (int) $fecha->format('j');
+        $totalMeses = ($mes - 1) + $meses;
+        $anioObjetivo = $anio + intdiv($totalMeses, 12);
+        $mesObjetivo = ($totalMeses % 12) + 1;
+        $ultimoDiaMesObjetivo = cal_days_in_month(CAL_GREGORIAN, $mesObjetivo, $anioObjetivo);
+        $diaObjetivo = min($dia, $ultimoDiaMesObjetivo);
+
+        return sprintf('%04d-%02d-%02d', $anioObjetivo, $mesObjetivo, $diaObjetivo);
+    }
+
     /**
      * Eliminar asignación carnet-persona
      */

@@ -59,7 +59,7 @@ class MotivoService
     public function createMotivo(array $input): array
     {
         $data = Validator::validate($input, [
-            'nombre' => 'required|string',  // ← era ID_Motivo, Nombre, Dias
+            'nombre' => 'required|string|max:100',
             'dias'   => 'required|int|min:1'
         ]);
 
@@ -76,7 +76,11 @@ class MotivoService
             throw new \Exception("No se pudo crear el motivo", 500);
         }
 
-        return ['cod_motivo' => $id];
+        return [
+            'cod_motivo' => $id,
+            'nombre' => $data['nombre'],
+            'dias' => $data['dias']
+        ];
     }
 
     public function updateMotivo(string $cod_motivo, array $input): array
@@ -86,7 +90,7 @@ class MotivoService
         ]);
 
         $data = Validator::validate($input, [
-            'nombre' => 'string|min:1',
+            'nombre' => 'string|min:1|max:100',
             'dias'   => 'int|min:1'
         ]);
 
@@ -99,9 +103,8 @@ class MotivoService
         try {
             $result = $this->model->update($cod_motivo, $data);
         } catch (Throwable $e) {
-                throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500); // ← añade . $e->getMessage()
             throw new \Exception(
-                "Error interno en la base de datos",
+                "Error interno en la base de datos: " . $e->getMessage(),
                 500
             );
         }

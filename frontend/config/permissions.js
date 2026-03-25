@@ -30,6 +30,7 @@ export const PERMISOS = {
   avisos: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [2, 3, 4, 5],
+    rolesEliminar:  [5],
   },
 
   // ── PERSONAL ─────────────────────────────────────────────────
@@ -68,6 +69,8 @@ export const PERMISOS = {
   carnets: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
+    rolesEditar:    [4, 5],
+    rolesEliminar:  [5],
   },
   permisos: {
     rolesLectura:   [1, 2, 3, 4, 5],
@@ -76,6 +79,8 @@ export const PERMISOS = {
   motivos: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
+    rolesEditar:    [5],
+    rolesEliminar:  [5],
   },
 
   // ── RECURSOS ─────────────────────────────────────────────────

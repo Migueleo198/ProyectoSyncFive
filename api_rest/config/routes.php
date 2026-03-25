@@ -34,11 +34,6 @@ $router->protectedSession('GET', '/personas/{id_bombero}/material', 'Controllers
 $router->protectedSession('POST', '/personas/{id_bombero}/material/{id_material}/{nserie}', 'Controllers\\PersonaController@setMaterial', [4,5]);
 $router->protectedSession('DELETE', '/personas/{id_bombero}/material/{id_material}', 'Controllers\\PersonaController@deleteMaterial', [4,5]);
 
-// CARNET PERSONA
-$router->protectedSession('GET', '/personas/{n_funcionario}/carnets', 'Controllers\\CarnetController@persons', [1,2,3,4,5]);
-$router->protectedSession('POST', '/personas/{n_funcionario}/carnets', 'Controllers\\CarnetController@assign', [4,5]);
-$router->protectedSession('DELETE', '/personas/{id_carnet}/carnets/{n_funcionario}', 'Controllers\\CarnetController@unassign', [4,5]);
-
 // MERITO PERSONA
 $router->protectedSession('GET', '/personas/{id_bombero}/meritos', 'Controllers\\PersonaController@getMerito', [1,2,3,4,5]);
 $router->protectedSession('POST', '/personas/{id_bombero}/meritos', 'Controllers\\PersonaController@setMerito', [4,5]);
@@ -240,8 +235,11 @@ $router->protectedSession('GET', '/avisos/{id_bombero}/recibidos', 'Controllers\
 //++++++++++++++++++++++++++++++ CARNETS ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/carnets', 'Controllers\\CarnetController@index', [1,2,3,4,5]);
 $router->protectedSession('GET',    '/carnets/{id_carnet}',  'Controllers\\CarnetController@show',   [1,2,3,4,5]);
+$router->protectedSession('GET', '/carnets/{id_carnet}/personas', 'Controllers\\CarnetController@persons', [1,2,3,4,5]);
 $router->protectedSession('POST', '/carnets', 'Controllers\\CarnetController@store', [4,5]);
+$router->protectedSession('POST', '/carnets/asignar', 'Controllers\\CarnetController@assign', [4,5]);
 $router->protectedSession('PUT', '/carnets/{id_carnet}', 'Controllers\\CarnetController@update', [4,5]);
+$router->protectedSession('DELETE', '/carnets/{id_carnet}/personas/{id_bombero}', 'Controllers\\CarnetController@unassign', [4,5]);
 $router->protectedSession('DELETE', '/carnets/{id_carnet}', 'Controllers\\CarnetController@delete', [5]);
 
 
@@ -265,13 +263,13 @@ $router->protectedSession('GET', '/permisos', 'Controllers\\PermisoController@in
 $router->protectedSession('POST', '/permisos', 'Controllers\\PermisoController@store', [1,2,3,4,5]);
 $router->protectedSession('GET', '/permisos/{id_permiso}', 'Controllers\\PermisoController@show', [1,2,3,4,5]);
 $router->protectedSession('PUT', '/permisos/{id_permiso}', 'Controllers\\PermisoController@update', [4,5]);
-$router->protectedSession('DELETE', '/permisos/{id_permiso}', 'Controllers\\PermisoController@delete', [5]);
 $router->protectedSession('PATCH', '/permisos/{id_permiso}', 'Controllers\\PermisoController@update', [4,5]);
 $router->protectedSession('GET', '/permisos/{id_permiso}/personas', 'Controllers\\PermisoController@persons', [1,2,3,4,5]);
 
 //++++++++++++++++++++++++++++++ MOTIVOS DE PERMISO ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/motivos', 'Controllers\\MotivoController@index', [1,2,3,4,5]);
 $router->protectedSession('POST', '/motivos', 'Controllers\\MotivoController@store', [4,5]);
+$router->protectedSession('GET', '/motivos/{cod_motivo}', 'Controllers\\MotivoController@show', [1,2,3,4,5]);
 $router->protectedSession('DELETE', '/motivos/{cod_motivo}', 'Controllers\\MotivoController@delete', [5]);
 $router->protectedSession('PUT', '/motivos/{cod_motivo}', 'Controllers\\MotivoController@update', [5]);
 

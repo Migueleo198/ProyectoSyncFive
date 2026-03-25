@@ -45,8 +45,8 @@
                             <input type="text" class="form-control form-control-sm" id="filtroNombre" placeholder="Buscar nombre...">
                         </div>
                         <div class="col-lg-3 col-md-4 col-sm-12 d-flex align-items-center m-1">
-                            <label class="me-2 text-nowrap" for="filtroCategoria">Categoría:</label>
-                            <select class="form-select form-select-sm" id="filtroCategoria">
+                            <label class="me-2 text-nowrap" for="filtroGrupo">Grupo:</label>
+                            <select class="form-select form-select-sm" id="filtroGrupo">
                                 <option value="">Todas</option>
                             </select>
                         </div>
@@ -56,7 +56,7 @@
                             <tr> <!-- Cabecera de la tabla -->
                                 <th class="d-none d-md-table-cell">ID_Carnet</th>
                                 <th>Nombre</th>
-                                <th class="d-none d-md-table-cell">Categoria</th>
+                                <th class="d-none d-md-table-cell">Grupo</th>
                                 <th>Duración</th>
                                 <th>Acción</th>
                             </tr>
@@ -95,6 +95,7 @@
                             <div class="col-md-6">
                                 <label class="form-label" for="f_vencimiento">Fecha Vencimiento:</label>
                                 <input type="date" class="form-control" id="f_vencimiento" name="f_vencimiento" required>
+                                <small class="text-muted">Se calcula automaticamente segun la duracion del carnet seleccionado.</small>
                             </div>
                         </div>
 
@@ -116,8 +117,8 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label for="categoria" class="form-label">Categoría:</label>
-                                <input type="text" class="form-control" id="categoria" name="categoria" required>
+                                <label for="grupo" class="form-label">Grupo:</label>
+                                <input type="text" class="form-control" id="grupo" name="grupo" required>
                             </div>
                             <div class="col-md-4">
                                 <label for="duracion_meses" class="form-label">Duración (meses):</label>
@@ -210,4 +211,4 @@
 
 </body>
 
-</html> 
+</html>
