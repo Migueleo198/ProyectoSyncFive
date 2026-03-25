@@ -7,6 +7,7 @@ use Models\FormacionModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class FormacionService
 {
@@ -118,6 +119,12 @@ class FormacionService
 
         try {
             $result = $this->model->delete($id);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar esta formación porque hay ediciones asociadas", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -125,11 +132,6 @@ class FormacionService
         if ($result === 0) {
             // No existe el registro
             throw new \Exception("Formación no encontrada", 404);
-        }
-
-        if ($result === -1) {
-            // Conflicto por FK u otra restricción
-            throw new \Exception("No se puede eliminar la formación: el registro está en uso", 409);
         }
 
         // Eliminación exitosa → no retorna nada

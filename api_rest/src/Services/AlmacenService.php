@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Services;
 
 use Models\AlmacenModel;
-use Models\MaterialModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class AlmacenService
 {
@@ -102,12 +102,17 @@ class AlmacenService
     {
         try {
             $result = $this->model->delete($id_almacen, $id_instalacion);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar este almacén porque hay materiales almacenados", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
         if ($result === 0) throw new \Exception("Almacén no encontrado", 404);
-        if ($result === -1) throw new \Exception("No se puede eliminar el almacén: está en uso", 409);
     }
 
     // ========== MATERIAL EN ALMACÉN ==========
@@ -246,6 +251,12 @@ class AlmacenService
             if (!$eliminado) {
                 throw new \Exception("No existe la asignación del material en este almacén", 404);
             }
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar el material del almacén debido a restricciones", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (\Exception $e) {
             throw $e;
         }

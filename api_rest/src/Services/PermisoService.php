@@ -7,6 +7,7 @@ use Models\PermisoModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class PermisoService
 {
@@ -139,6 +140,15 @@ class PermisoService
 
         try {
             $result = $this->model->delete($ID_Permiso);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar este permiso porque hay personas que lo tienen asignado", 409);
+            }
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -148,13 +158,6 @@ class PermisoService
 
         if ($result === 0) {
             throw new \Exception("Permiso no encontrado", 404);
-        }
-
-        if ($result === -1) {
-            throw new \Exception(
-                "No se puede eliminar el permiso: el registro está en uso",
-                409
-            );
         }
     }
 

@@ -9,6 +9,7 @@ use Models\MaterialModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 use Core\DB;
 
 class VehiculoService
@@ -113,6 +114,12 @@ class VehiculoService
             if ($deletedRows === 0) {
                 throw new \Exception("No se pudo eliminar el vehículo", 500);
             }
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar este vehículo porque hay emergencias o mantenimientos asociados", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (\Exception $e) {
             throw $e;
         } catch (Throwable $e) {
@@ -204,6 +211,12 @@ class VehiculoService
     {
         try {
             $affected = $this->model->deleteMaterial($matricula, $id_material);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar el material del vehículo debido a una restricción", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -245,6 +258,12 @@ class VehiculoService
             if ($deletedRows === 0) {
                 throw new \Exception("Instalación no encontrada para el vehículo", 404);
             }
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar la instalación del vehículo debido a una restricción", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (\Exception $e) {
             throw $e;
         } catch (Throwable $e) {

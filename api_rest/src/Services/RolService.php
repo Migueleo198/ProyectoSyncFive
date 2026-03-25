@@ -7,6 +7,7 @@ use Models\RolModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class RolService
 {
@@ -121,6 +122,15 @@ class RolService
 
         try {
             $result = $this->model->delete($id);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar este rol porque hay personas que lo tienen asignado", 409);
+            }
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -130,13 +140,6 @@ class RolService
 
         if ($result === 0) {
             throw new \Exception("Rol no encontrado", 404);
-        }
-
-        if ($result === -1) {
-            throw new \Exception(
-                "No se puede eliminar el rol: el registro está en uso",
-                409
-            );
         }
 
         // Eliminación exitosa → no retorna nada
