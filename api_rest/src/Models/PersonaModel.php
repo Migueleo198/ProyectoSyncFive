@@ -136,6 +136,7 @@ class PersonaModel
                 correo = :correo,
                 telefono = :telefono,
                 telefono_emergencia = :telefono_emergencia,
+                id_rol = :id_rol,
                 nombre_usuario = :nombre_usuario,
                 activo = :activo
             WHERE id_bombero = :id_bombero
@@ -149,6 +150,7 @@ class PersonaModel
         ->bind(':correo', $data['correo'] ?? null)
         ->bind(':telefono', $data['telefono'] ?? null)
         ->bind(':telefono_emergencia', $data['telefono_emergencia'] ?? null)
+        ->bind(':id_rol', $data['id_rol'] ?? null)
         ->bind(':nombre_usuario', $data['nombre_usuario'] ?? null)
         ->bind(':activo', $data['activo'] ?? null)
         ->execute();

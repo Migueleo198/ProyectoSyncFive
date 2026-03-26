@@ -149,6 +149,7 @@ class PersonaService
             'correo'                => 'email',
             'telefono'              => 'int',
             'telefono_emergencia'   => 'int',
+            'id_rol'                => 'int|min:1',
             'nombre_usuario'        => 'text|min:3|max:30',
             'activo'                => 'boolean'
         ]);
