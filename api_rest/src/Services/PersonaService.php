@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Services;
 
+use Core\Session;
 use Models\PersonaModel;
 use Validation\Validator;
 use Validation\ValidationException;
@@ -443,6 +444,11 @@ class PersonaService
             $this->model->updateFoto($id_bombero, $filename);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+
+        $sessionUser = Session::getUser();
+        if (($sessionUser['id_bombero'] ?? null) === $id_bombero) {
+            Session::updateUser(['foto_perfil' => $filename]);
         }
 
         return $filename;
