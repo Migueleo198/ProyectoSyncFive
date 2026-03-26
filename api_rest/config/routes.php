@@ -26,9 +26,6 @@ $router->protectedSession('DELETE', '/personas/{id_bombero}', 'Controllers\\Pers
 $router->protectedSession('GET', '/storage/fotos/{filename}', 'Controllers\\PersonaController@servirFoto', [1,2,3,4,5]);
 $router->protectedSession('PATCH', '/personas/{id_bombero}/foto', 'Controllers\\PersonaController@uploadFoto', [1,2,3,4,5]);
 
-// ROL PERSONA
-$router->protectedSession('GET', '/personas/{id_bombero}/roles', 'Controllers\\RolController@persons', [4,5]);
-$router->protectedSession('POST', '/roles/asignar', 'Controllers\\RolController@assign', [5]);
 // MATERIAL PERSONA
 $router->protectedSession('GET', '/personas/{id_bombero}/material', 'Controllers\\PersonaController@getMaterial', [1,2,3,4,5]);
 $router->protectedSession('POST', '/personas/{id_bombero}/material/{id_material}/{nserie}', 'Controllers\\PersonaController@setMaterial', [4,5]);
@@ -99,6 +96,7 @@ $router->protectedSession('DELETE', '/refuerzos/{id_turno_refuerzo}', 'Controlle
 
 //++++++++++++++++++++++++++++++ ROLES ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/roles', 'Controllers\\RolController@index', [4,5]);
+$router->protectedSession('GET', '/roles/{id_rol}/personas', 'Controllers\\RolController@persons', [4,5]);
 $router->protectedSession('POST', '/roles', 'Controllers\\RolController@store', [5]);
 $router->protectedSession('PUT', '/roles/{id_rol}', 'Controllers\\RolController@update', [5]);
 $router->protectedSession('DELETE', '/roles/{id_rol}', 'Controllers\\RolController@delete', [5]);

@@ -142,70 +142,31 @@ class RolService
             throw new \Exception("Rol no encontrado", 404);
         }
 
-        // Eliminación exitosa → no retorna nada
+        // Eliminacion exitosa -> no retorna nada
     }
-        /**
-     * Obtener todas las personas asociadas a un Rol
+
+    /**
+     * Obtener las personas asociadas a un rol.
      */
     public function getPersonsByRol(int $id_rol): array
     {
-        Validator::validate(['id_Rol' => $id_rol], [
-            'ID_rol' => 'required|int|min:1'
+        Validator::validate(['id_rol' => $id_rol], [
+            'id_rol' => 'required|int|min:1'
         ]);
 
+        if (!$this->model->find($id_rol)) {
+            throw new \Exception('Rol no encontrado', 404);
+        }
+
         try {
-            // verificamos que el rol exista primero
-            $exists = $this->model->find($id_Rol);
-
-            if (!$exists) {
-                throw new \Exception("Rol no encontrado", 404);
-            }
-
-            return $this->model->getPersonsByRol($id_Rol);
-
+            return $this->model->getPersonsByRol($id_rol);
         } catch (Throwable $e) {
             throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
+                'Error interno en la base de datos: ' . $e->getMessage(),
                 500
             );
         }
     }
-    /**
-     * Asignar rol a una persona
-     */
-    public function assignRolToPerson(array $input): array
-    {
-        $data = Validator::validate($input, [
-            'id_bombero' => 'required|string',
-            'id_rol'     => 'required|int|min:1' 
-        ]);
 
-        try {
-            $exists = $this->model->find($data['id_rol']);
-            if (!$exists) {
-                throw new \Exception("Rol no encontrado", 404);
-            }
-
-            $result = $this->model->assignToPerson(
-                $data['id_bombero'],  // ← era n_funcionario
-                $data['id_rol']       // ← era ID_Rol
-            );
-
-        } catch (Throwable $e) {
-            throw new \Exception(
-                "Error interno en la base de datos: " . $e->getMessage(),
-                500
-            );
-        }
-
-        if (!$result) {
-            throw new \Exception("No se pudo asignar el Rol", 409);
-        }
-
-        return [
-            'status'  => 'assigned',
-            'message' => 'Rol asignado correctamente'
-        ];
-    }
 }
 ?>

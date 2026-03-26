@@ -18,16 +18,16 @@
             <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
 
             <!-- CONTENIDO PRINCIPAL -->
-            <main class="col p-3 main-container">
+            <main class="col p-3 p-md-4 main-container">
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h1 class="mb-0 fw-bold">Roles</h1>
                         <small class="text-muted">Configuración de roles y permisos</small>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="/usuarios" class="btn btn-outline-secondary btn-gestion">
-                            <i class="bi bi-gear me-1"></i> Gestionar Usuarios
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="/personas" class="btn btn-outline-secondary btn-gestion" data-permiso="personas">
+                            <i class="bi bi-gear me-1"></i> Gestionar Personas
                         </a>
                         <a href="https://www.notion.so/16_Administracion-31b0bf35f606803885e5caf3dc9e960f" target="_blank" 
                        class="text-muted" title="Ayuda">
@@ -39,9 +39,7 @@
                 <!-- MIGAS DE PAN -->
                 <div id="breadcrumb-placeholder"></div>
 
-                <div class="container mt-4 p-0"> 
-                    <h2 class="d-flex">Roles</h2>
-
+                <div class="container mt-4 p-0">
                     <!-- TABLA -->
                     <table class="table table-bordered table-striped" id="tabla">
                         <thead class="table-dark">
@@ -95,35 +93,6 @@
                     </form>
                 </div>
 
-                <!-- ASIGNAR ROL A USUARIO -->
-                <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Insertar usuario a guardia</h5>
-
-                    <form id="formAsignarRol" class="mx-auto">
-                        <!-- Campos en la misma fila -->
-                        <div class="row mb-3">
-                            <!-- Rol -->
-                            <div class="col-md-6 col-sm-6">
-                                <label for="rol" class="form-label">Rol</label>
-                                <select name="rol" id="rol" class="form-select form-select-sm" required>
-                                    <option value="">Seleccione rol...</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-sm-6">
-                                <label for="n_funcionario" class="form-label">Persona</label>
-                                <select class="form-select form-select-sm" id="n_funcionario" name="n_funcionario">
-                                    <option value="">Seleccione persona...</option>
-                                    <!-- Se llenará dinámicamente desde JS -->
-                                </select>       
-                            </div>
-                        </div>
-                        <!-- Botones centrados debajo -->
-                        <div class="d-flex justify-content-center gap-2">
-                            <button type="reset" class="btn btn-secondary">Limpiar</button>
-                            <button type="submit" class="btn btn-primary" id="btnInsertarUsuario">Insertar</button>
-                        </div>
-                    </form>
-                </div>
             </main>
         </div>
     </div>
@@ -171,7 +140,7 @@
 
     <!-- MODAL VER -->
     <div class="modal fade" id="modalVer" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Detalle del Rol</h5>
@@ -179,6 +148,31 @@
                 </div>
 
                 <div class="modal-body" id="modalVerBody">
+                </div>
+
+                <div class="px-3 pb-2">
+                    <div class="alert alert-info d-flex align-items-start gap-2 mb-3" role="alert">
+                        <i class="bi bi-info-circle-fill mt-1"></i>
+                        <div>
+                            Si necesitas cambiar el rol de una persona, hazlo desde el apartado de <strong>Usuarios</strong>.
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold">Personas con este rol</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mb-0" id="tablaPersonasRol">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID Bombero</th>
+                                    <th>N. Funcionario</th>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="pagination-modal-ver-rol" class="mt-3"></div>
                 </div>
 
                 <div class="modal-footer">
