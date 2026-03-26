@@ -172,27 +172,29 @@ function renderTabla(lista) {
           ${item.estado}
         </span>
       </td>
-      <td class="d-flex justify-content-around">
-        <button type="button"
-                class="btn p-0 btn-ver"
-                data-bs-toggle="modal"
-                data-bs-target="#modalVer"
-                data-codigo="${item.codigo}">
-          <i class="bi bi-eye"></i>
-        </button>
-        <button type="button"
-                class="btn p-0 btn-editar"
-                data-bs-toggle="modal"
-                data-bs-target="#modalEditar"
-                data-codigo="${item.codigo}">
-          <i class="bi bi-pencil"></i>
-        </button>
-        <button type="button"
-          class="btn p-0 btn-eliminar"
-          data-id="${item.codigo}"
-          data-codigo="${item.codigo}">
-          <i class="bi bi-trash"></i>
-        </button>
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
+          <button type="button"
+                  class="btn p-0 btn-ver"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalVer"
+                  data-codigo="${item.codigo}">
+            <i class="bi bi-eye"></i>
+          </button>
+          <button type="button"
+                  class="btn p-0 btn-editar"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalEditar"
+                  data-codigo="${item.codigo}">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button type="button"
+            class="btn p-0 btn-eliminar"
+            data-id="${item.codigo}"
+            data-codigo="${item.codigo}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
