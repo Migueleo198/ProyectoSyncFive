@@ -860,3 +860,10 @@
 2026-03-26T15:48:26+01:00 - Exception: Route not found for GET /turnos-refuerzo/fecha/2026-03-26
 2026-03-26T16:00:51+01:00 - Exception: Route not found for GET /turnos-refuerzo/fecha/2026-03-26
 2026-03-26T16:05:44+01:00 - Exception: Route not found for GET /turnos-refuerzo/fecha/2026-03-26
+2026-03-26T16:37:50+01:00 - Exception: Error de conexión a la base de datos.
+2026-03-26T16:37:50+01:00 - Exception: Error de conexión a la base de datos.
+2026-03-26T16:37:50+01:00 - Exception: Error de conexión a la base de datos.
+2026-03-26T16:37:50+01:00 - Exception: Error de conexión a la base de datos.
+2026-03-26T16:37:52+01:00 - Exception: Error de conexión a la base de datos.
+2026-03-26T16:48:34+01:00 - Exception: Route not found for GET /turnos-refuerzo/fecha/2026-03-26
+2026-03-26T16:52:36+01:00 - Exception: Route not found for GET /turnos-refuerzo/fecha/2026-03-26

@@ -74,8 +74,8 @@ function renderTablaCategorias(lista) {
       <td>${c.id_categoria}</td>
       <td>${c.nombre}</td>
       <td>${Number(c.inventariable) === 1 ? 'Sí' : 'No'}</td>
-      <td>
-        <div class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>

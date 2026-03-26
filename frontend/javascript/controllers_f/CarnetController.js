@@ -332,8 +332,8 @@ function renderTablaCarnets(lista) {
             <td>${carnet.nombre ?? ''}</td>
             <td class="d-none d-md-table-cell">${grupoNombre}</td>
             <td>${carnet.duracion_meses ?? ''}</td>
-            <td>
-                <div class="d-flex justify-content-around">
+            <td class="celda-acciones">
+                <div class="acciones-tabla">
                     ${botonesAccion}
                 </div>
             </td>

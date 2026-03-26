@@ -170,8 +170,8 @@ function renderTablaIncidencias(lista) {
       <td class="d-none d-md-table-cell">${i.asunto ?? ''}</td>
       <td>${i.estado ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.nombre_responsable ?? ''}</td>
-      <td>
-        <div  class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>

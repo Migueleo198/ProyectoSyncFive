@@ -109,8 +109,8 @@ function renderTablaInstalaciones(lista) {
       <td class="d-none d-md-table-cell">${i.telefono ?? ''}</td>
       <td class="d-none d-md-table-cell">${i.correo ?? ''}</td>
       <td>${i.localidad ?? ''}</td>
-      <td>
-        <div  class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
         <button type="button" class="btn p-0 btn-ver"
                 data-bs-toggle="modal"
                 data-bs-target="#modalVer"

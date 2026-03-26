@@ -154,8 +154,8 @@ function renderTablaAlmacenes(lista) {
       <td>${a.nombre || ''}</td>
       <td>${a.nombre_instalacion || 'Desconocida'}</td>
       <td class="d-none d-md-table-cell">${a.planta || ''}</td>
-      <td>
-        <div  class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>  
       </td>

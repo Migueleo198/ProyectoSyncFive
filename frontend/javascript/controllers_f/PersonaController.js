@@ -145,8 +145,8 @@ function renderTablaPersonas(lista) {
       <td>${p.apellidos}</td>
       <td class="d-none d-md-table-cell">${p.localidad}</td>
       <td>${p.nombre_usuario}</td>
-      <td>
-        <div  class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>  
       </td>`;
