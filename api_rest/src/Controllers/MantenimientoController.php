@@ -28,6 +28,18 @@ class MantenimientoController
         }
     }
 
+    /** GET /mantenimientos/{cod_mantenimiento} */
+    public function show(Request $req, Response $res, string $cod_mantenimiento): void
+    {
+        try {
+            $result = $this->service->getMantenimientoById((int) $cod_mantenimiento);
+            $res->status(200)->json($result);
+        } catch (Throwable $e) {
+            $code = (int) $e->getCode();
+            $res->errorJson($e->getMessage(), ($code >= 400 && $code < 600) ? $code : 500);
+        }
+    }
+
     /** POST /mantenimientos */
     public function store(Request $req, Response $res): void
     {
