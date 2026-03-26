@@ -92,6 +92,42 @@ class MantenimientoModel
         return (int) $this->db->lastId();
     }
 
+    public function createWithRelation(array $data): int
+    {
+        $this->db->beginTransaction();
+
+        try {
+            $id = $this->create($data);
+
+            if (($data['tipo_recurso'] ?? null) === 'vehiculo') {
+                $this->db->query("
+                    INSERT INTO Mantenimiento_Vehiculo (cod_mantenimiento, matricula)
+                    VALUES (:cod, :matricula)
+                ")
+                ->bind(':cod', $id)
+                ->bind(':matricula', $data['matricula'])
+                ->execute();
+            }
+
+            if (($data['tipo_recurso'] ?? null) === 'material') {
+                $this->db->query("
+                    INSERT INTO Mantenimiento_Material (cod_mantenimiento, cod_material)
+                    VALUES (:cod, :id_material)
+                ")
+                ->bind(':cod', $id)
+                ->bind(':id_material', $data['id_material'])
+                ->execute();
+            }
+
+            $this->db->commit();
+
+            return $id;
+        } catch (\Throwable $e) {
+            $this->db->rollback();
+            throw $e;
+        }
+    }
+
     public function update(int $id, array $data): int
     {
         $this->db->query("
@@ -131,6 +167,24 @@ class MantenimientoModel
             ->bind(":id", $id)->execute();
     }
 
+    public function countVehiculos(int $cod): int
+    {
+        $result = $this->db->query("SELECT COUNT(*) AS total FROM Mantenimiento_Vehiculo WHERE cod_mantenimiento = :cod")
+            ->bind(':cod', $cod)
+            ->fetch();
+
+        return (int) ($result['total'] ?? 0);
+    }
+
+    public function countMateriales(int $cod): int
+    {
+        $result = $this->db->query("SELECT COUNT(*) AS total FROM Mantenimiento_Material WHERE cod_mantenimiento = :cod")
+            ->bind(':cod', $cod)
+            ->fetch();
+
+        return (int) ($result['total'] ?? 0);
+    }
+
     // VEHICULOS
     public function addVehiculo(int $cod, string $matricula): void
     {
@@ -141,6 +195,21 @@ class MantenimientoModel
         ->bind(":cod", $cod)
         ->bind(":matricula", $matricula)
         ->execute();
+    }
+
+    public function hasVehiculo(int $cod, string $matricula): bool
+    {
+        $result = $this->db->query("
+            SELECT 1
+            FROM Mantenimiento_Vehiculo
+            WHERE cod_mantenimiento = :cod AND matricula = :matricula
+            LIMIT 1
+        ")
+        ->bind(':cod', $cod)
+        ->bind(':matricula', $matricula)
+        ->fetch();
+
+        return $result !== false;
     }
 
     public function removeVehiculo(int $cod, string $matricula): void
@@ -164,6 +233,21 @@ class MantenimientoModel
         ->bind(":cod", $cod)
         ->bind(":id_material", $id_material)
         ->execute();
+    }
+
+    public function hasMaterial(int $cod, int $id_material): bool
+    {
+        $result = $this->db->query("
+            SELECT 1
+            FROM Mantenimiento_Material
+            WHERE cod_mantenimiento = :cod AND cod_material = :id_material
+            LIMIT 1
+        ")
+        ->bind(':cod', $cod)
+        ->bind(':id_material', $id_material)
+        ->fetch();
+
+        return $result !== false;
     }
 
     public function removeMaterial(int $cod, int $id_material): void

@@ -102,6 +102,7 @@ export const PERMISOS = {
   mantenimiento: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
+    rolesEliminar:  [5],
   },
   incidencias: {
     rolesLectura:   [1, 2, 3, 4, 5],
