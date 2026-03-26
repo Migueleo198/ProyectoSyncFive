@@ -194,6 +194,7 @@ $router->protectedSession('DELETE', '/materiales/{id_material}', 'Controllers\\M
 
 //++++++++++++++++++++++++++++++ MANTENIMIENTO ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/mantenimientos', 'Controllers\\MantenimientoController@index', [1,2,3,4,5]);
+$router->protectedSession('GET', '/mantenimientos/{cod_mantenimiento}', 'Controllers\\MantenimientoController@show', [1,2,3,4,5]);
 $router->protectedSession('POST', '/mantenimientos', 'Controllers\\MantenimientoController@store', [4,5]);
 $router->protectedSession('PUT', '/mantenimientos/{cod_mantenimiento}', 'Controllers\\MantenimientoController@update', [4,5]);
 $router->protectedSession('PATCH', '/mantenimientos/{cod_mantenimiento}', 'Controllers\\MantenimientoController@patch', [4,5]);
