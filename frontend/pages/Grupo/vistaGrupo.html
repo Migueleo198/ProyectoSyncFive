@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <script src="/frontend/config/config.js"></script>
-    <script>loadHead("Categorías")</script>
-    <script type="module" src="/frontend/javascript/controllers_f/CategoriaController.js"></script>
+    <script>loadHead("Grupos de Carnet")</script>
+    <script type="module" src="/frontend/javascript/controllers_f/GrupoController.js"></script>
 </head>
 <body class="bg-white text-dark d-flex flex-column">
 
@@ -21,14 +21,14 @@
             <main class="col p-3 p-md-4 main-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h1 class="mb-0 fw-bold">Categorías</h1>
-                        <small class="text-muted">Clasificación de materiales por categorías</small>
+                        <h1 class="mb-0 fw-bold">Grupos de Carnet</h1>
+                        <small class="text-muted">Clasificación de carnets por grupos</small>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="/materiales" class="btn btn-outline-secondary btn-gestion">
-                            <i class="bi bi-gear me-1"></i> Gestionar Materiales
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="/carnets" class="btn btn-outline-secondary btn-gestion">
+                            <i class="bi bi-gear me-1"></i> Administrar Carnets
                         </a>
-                        <a href="https://www.notion.so/11_Materiales-31b0bf35f60680dd840aca0da6b216ca" target="_blank" 
+                        <a href="https://www.notion.so/10_Carnets-31b0bf35f60680b187b3f138d4e35b68" target="_blank" 
                         class="text-muted" title="Ayuda">
                             <i class="bi bi-question-circle fs-4"></i>
                         </a>
@@ -40,57 +40,42 @@
 
                 <!-- Contenedor tabla con filtro-->
                 <div class="container mt-4 p-0"> 
-                    <div id="filtroTabla" class="m-0 row d-flex justify-content-center"> <!-- Filtro -->
-                        <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-center">
+                        <div class="col-md-4 offset-1 d-flex align-items-center m-1">
                             <label class="m-2" for="nombre">Nombre:</label>
-                            <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="1">
-                        </div>
-                        <div class="col-md-5 d-flex align-items-center m-1">
-                            <label class="m-2" for="Inventariable">Inventariable:</label>
-                            <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="2">
-                                <option value="">Todos</option>
-                                <option>Sí</option>
-                                <option>No</option>
-                            </select>
+                            <input placeholder="Nombre del grupo" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="1">
                         </div>
                     </div>
                     <table class="table table-bordered table-striped" id="tabla">
                         <thead class="table-dark">
-                            <tr> <!-- Cabecera de la tabla -->
-                                <th>Identificador Categoria</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
+                            <tr>
+                                <th class="d-none d-md-table-cell">ID</th>
                                 <th>Nombre</th>
-                                <th>Inventariable</th>
+                                <th>Descripción</th>
                                 <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
                             
-                            <!-- Aquí puedes agregar más filas de datos -->
                         </tbody>
                     </table>
-                    <div id="pagination-categoria" class="mt-3"></div>
+                    <div id="pagination-grupo" class="mt-3"></div>
                 </div>
                 
                 <!-- Contenedor insertar -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Insertar Categoria</h5>
+                    <h5 class="text-center mb-4">Insertar Grupo</h5>
                     <form id="formInsertar" class="mx-auto">
-                        <!-- Campos en la misma fila -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="insertNombre" class="form-label">Nombre</label>
                                 <input type="text" class="form-control" id="insertNombre" name="nombre" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="insertInventariable" class="form-label">Inventariable</label>
-                                <select class="form-select" id="insertInventariable" name="inventariable">
-                                    <option value="">Seleccione...</option>
-                                    <option value="1">Sí</option>
-                                    <option value="0">No</option>
-                                </select>
+                                <label for="insertDescripcion" class="form-label">Descripción</label>
+                                <textarea class="form-control" id="insertDescripcion" name="descripcion" rows="1"></textarea>
                             </div>
                         </div>
-                        <!-- Botones centrados debajo -->
                         <div class="d-flex justify-content-center gap-2">
                             <button type="reset" class="btn btn-secondary">
                                 Limpiar
@@ -134,22 +119,22 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
+                    <h5 class="modal-title" id="modalEditarLabel">Editar grupo</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
                     <form id="formEditar">
                         <div class="mb-3">
-                            <label for="editIdTipo" class="form-label">ID Tipo</label>
-                            <input type="text" class="form-control" id="editIdTipo" name="id_tipo" readonly>
+                            <label for="editIdGrupo" class="form-label">ID Grupo</label>
+                            <input type="text" class="form-control" id="editIdGrupo" name="id_grupo" readonly>
                         </div>
                         <div class="mb-3">
                             <label for="editNombre" class="form-label">Nombre</label>
                             <input type="text" class="form-control" id="editNombre" name="nombre" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editGrupo" class="form-label">Grupo</label>
-                            <input type="text" class="form-control" id="editGrupo" name="grupo" required>
+                            <label for="editDescripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="editDescripcion" name="descripcion" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
@@ -157,7 +142,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         Cancelar
                     </button>
-                    <button type="button" class="btn btn-primary" id="btnGuardarCambios">
+                    <button type="submit" class="btn btn-primary" id="btnGuardarCambios" form="formEditar">
                         Guardar cambios
                     </button>
                 </div>
@@ -169,25 +154,21 @@
     <div class="modal fade" id="modalVer" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalle del tipo</h5>
+                    <h5 class="modal-title">Detalle del grupo</h5>
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
                 <div class="modal-body" id="modalVerBody">
-                   <!-- Body dinamico del modal-->
                 </div>
-
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">
                         Cerrar
                     </button>
                 </div>
-
             </div>
         </div>
     </div>
+
     <!-- FOOTER -->
     <div id="footer-placeholder" class="mt-auto"></div>
     <!-- ALERT-->

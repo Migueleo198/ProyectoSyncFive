@@ -9,6 +9,7 @@ let avisos = [];
 let personas = [];
 let sesionActual = null;
 let usuarioActual = null;
+let destinatarioModeBound = false;
 const pagination = new PaginationHelper(15);
 pagination.setLoadingCallback((isLoading) => {
     if (isLoading) {
@@ -139,14 +140,26 @@ async function filtrarAvisosDelUsuario(lista) {
   );
 
   return lista.filter((aviso, index) => {
+    const esRemitente = String(aviso.remitente) === String(usuarioActual.id_bombero);
     const resultado = resultados[index];
-    if (resultado.status !== 'fulfilled') return false;
+    if (resultado.status !== 'fulfilled') return esRemitente;
 
     const destinatarios = resultado.value.data ?? [];
     const esDestinatario = destinatarios.some(d => String(d.id_bombero) === String(usuarioActual.id_bombero));
-    const esRemitente = String(aviso.remitente) === String(usuarioActual.id_bombero);
     return esDestinatario || esRemitente;
   });
+}
+
+function obtenerNombrePersona(idBombero, incluirUsuario = false) {
+  if (!idBombero) return '—';
+
+  const persona = personas.find(p => String(p.id_bombero) === String(idBombero));
+  if (!persona) return idBombero;
+
+  const nombreBase = `${persona.nombre} ${persona.apellidos}`.trim();
+  return incluirUsuario && persona.nombre_usuario
+    ? `${nombreBase} (${persona.nombre_usuario})`
+    : nombreBase;
 }
 
 // ================================
@@ -170,11 +183,7 @@ function renderTablaAvisos(lista) {
 
   itemsPagina.forEach(a => {
     const tr = document.createElement('tr');
-
-    const remitentePersona = personas.find(p => String(p.id_bombero) === String(a.remitente));
-    const nombreRemitente = remitentePersona
-      ? `${remitentePersona.nombre} ${remitentePersona.apellidos}`
-      : (a.remitente || '—');
+    const nombreRemitente = obtenerNombrePersona(a.remitente);
 
     const botonesAccion = !puedeEscribir
       ? `<button type="button" class="btn p-0 btn-ver"
@@ -245,6 +254,10 @@ function validarAviso(asunto, mensaje) {
     mostrarError('El asunto es obligatorio.');
     return false;
   }
+  if (asunto.length < 3) {
+    mostrarError('El asunto debe tener al menos 3 caracteres.');
+    return false;
+  }
   if (asunto.length > 150) {
     mostrarError('El asunto no puede superar los 150 caracteres.');
     return false;
@@ -252,6 +265,10 @@ function validarAviso(asunto, mensaje) {
 
   if (!mensaje) {
     mostrarError('El mensaje es obligatorio.');
+    return false;
+  }
+  if (mensaje.length < 5) {
+    mostrarError('El mensaje debe tener al menos 5 caracteres.');
     return false;
   }
 
@@ -267,28 +284,47 @@ function bindDestinatarioModeToggle() {
   const selectMultiple = document.getElementById('destinatariosMultiSelect');
   const infoText = document.getElementById('destinatarioInfo');
 
-  radios.forEach(radio => {
-    radio.addEventListener('change', () => {
-      const modo = radio.value;
+  if (!selectUnico || !selectMultiple || !infoText || !radios.length) return;
 
-      if (modo === 'todos') {
-        selectUnico.style.display = 'none';
-        selectMultiple.style.display = 'none';
-        infoText.textContent = 'El aviso se enviará a TODOS los usuarios del sistema';
-      } else if (modo === 'uno') {
-        selectUnico.style.display = 'block';
-        selectMultiple.style.display = 'none';
-        selectUnico.value = '';
-        infoText.textContent = 'Seleccione un único destinatario';
-      } else if (modo === 'varios') {
-        selectUnico.style.display = 'none';
-        selectMultiple.style.display = 'block';
-        // Limpiar selección múltiple
-        Array.from(selectMultiple.options).forEach(opt => opt.selected = false);
-        infoText.textContent = 'Seleccione uno o varios destinatarios (mantenga Ctrl/Cmd para múltiples)';
-      }
+  const aplicarModoDestinatario = (modo) => {
+    if (modo === 'todos') {
+      selectUnico.style.display = 'none';
+      selectMultiple.style.display = 'none';
+      selectUnico.value = '';
+      Array.from(selectMultiple.options).forEach(opt => {
+        opt.selected = false;
+      });
+      infoText.textContent = 'El aviso se enviara a todos los usuarios disponibles';
+      return;
+    }
+
+    if (modo === 'varios') {
+      selectUnico.style.display = 'none';
+      selectMultiple.style.display = 'block';
+      selectUnico.value = '';
+      infoText.textContent = 'Seleccione uno o varios destinatarios (mantenga Ctrl/Cmd para multiples)';
+      return;
+    }
+
+    selectUnico.style.display = 'block';
+    selectMultiple.style.display = 'none';
+    Array.from(selectMultiple.options).forEach(opt => {
+      opt.selected = false;
     });
-  });
+    infoText.textContent = 'Seleccione un unico destinatario';
+  };
+
+  if (!destinatarioModeBound) {
+    radios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        aplicarModoDestinatario(radio.value);
+      });
+    });
+    destinatarioModeBound = true;
+  }
+
+  const modoActual = document.querySelector('input[name="destinatarioMode"]:checked')?.value || 'uno';
+  aplicarModoDestinatario(modoActual);
 }
 
 // ================================
@@ -299,6 +335,12 @@ function bindCrearAviso() {
 
   const form = document.getElementById('formInsertar');
   if (!form) return;
+
+  form.addEventListener('reset', () => {
+    window.setTimeout(() => {
+      bindDestinatarioModeToggle();
+    }, 0);
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -343,7 +385,10 @@ function bindCrearAviso() {
         fecha: new Date().toISOString().slice(0, 19).replace('T', ' ')
       });
 
-      const idAviso = response.data.id;
+      const idAviso = response?.data?.id ?? response?.id;
+      if (!idAviso) {
+        throw new Error('No se pudo obtener el identificador del aviso creado');
+      }
 
       if (usuarioActual?.id_bombero) {
         await AvisoApi.setRemitente(idAviso, usuarioActual.id_bombero);
@@ -388,10 +433,7 @@ function bindModalVer() {
     const modalBody = document.getElementById('modalVerBody');
     modalBody.innerHTML = '<p class="text-muted text-center">Cargando...</p>';
 
-    const remitentePersona = personas.find(p => String(p.id_bombero) === String(aviso.remitente));
-    const nombreRemitente = remitentePersona
-      ? `${remitentePersona.nombre} ${remitentePersona.apellidos} (${remitentePersona.nombre_usuario})`
-      : (aviso.remitente || '—');
+    const nombreRemitente = obtenerNombrePersona(aviso.remitente, true);
 
     const campos = [
       { label: 'ID',        valor: aviso.id_aviso },
@@ -447,10 +489,16 @@ function bindModalEliminar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar');
     if (!btn) return;
-    document.getElementById('btnConfirmarEliminar').dataset.id = btn.dataset.id;
+    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+    if (btnConfirmar) {
+      btnConfirmar.dataset.id = btn.dataset.id;
+    }
   });
 
-  document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
+  const btnConfirmarEliminar = document.getElementById('btnConfirmarEliminar');
+  if (!btnConfirmarEliminar) return;
+
+  btnConfirmarEliminar.addEventListener('click', async function () {
     const id = this.dataset.id;
     if (!id) return;
 
@@ -464,8 +512,9 @@ function bindModalEliminar() {
       try {
         const resRem   = await AvisoApi.getRemitente(id);
         const remitente = resRem.data;
-        if (remitente?.id_bombero) {
-          await AvisoApi.deleteRemitente(id, remitente.id_bombero);
+        const idRemitente = remitente?.id_bombero ?? remitente?.remitente;
+        if (idRemitente) {
+          await AvisoApi.deleteRemitente(id, idRemitente);
         }
       } catch { /* sin remitente, continuamos */ }
 
