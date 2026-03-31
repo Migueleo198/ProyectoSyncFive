@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Services;
 
 use Models\CarnetModel;
+use Models\GrupoModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
@@ -12,10 +13,12 @@ use PDOException;
 class CarnetService
 {
     private CarnetModel $model;
+    private GrupoModel $grupoModel;
 
     public function __construct()
     {
         $this->model = new CarnetModel();
+        $this->grupoModel = new GrupoModel();
     }
 
     /**
@@ -38,15 +41,13 @@ class CarnetService
      */
     public function createCarnet(array $input): array
     {
-        if (!array_key_exists('grupo', $input) && array_key_exists('categoria', $input)) {
-            $input['grupo'] = $input['categoria'];
-        }
-
         $data = Validator::validate($input, [
             'nombre'         => 'required|string',
-            'grupo'          => 'required|string',
+            'id_grupo'       => 'required|int|min:1',
             'duracion_meses' => 'required|int|min:1',
         ]);
+
+        $this->assertGrupoExiste($data['id_grupo']);
 
         try {
             $id = $this->model->create($data);
@@ -69,17 +70,13 @@ class CarnetService
      */
     public function updateCarnet(string $ID_Carnet, array $input): array
     {
-        if (!array_key_exists('grupo', $input) && array_key_exists('categoria', $input)) {
-            $input['grupo'] = $input['categoria'];
-        }
-
         Validator::validate(['ID_Carnet' => $ID_Carnet], [
             'ID_Carnet' => 'required|string'
         ]);
 
         $data = Validator::validate($input, [
             'nombre'        => 'string|min:1',
-            'grupo'         => 'string|min:1',
+            'id_grupo'      => 'int|min:1',
             'duracion_meses'=> 'int|min:1',
             'id_bombero'    => 'string'
         ]);
@@ -90,8 +87,21 @@ class CarnetService
             ]);
         }
 
+        $carnetActual = $this->model->find($ID_Carnet);
+        if (!$carnetActual) {
+            throw new \Exception("Carnet no encontrado", 404);
+        }
+
+        $payload = [
+            'nombre' => $data['nombre'] ?? $carnetActual['nombre'],
+            'id_grupo' => $data['id_grupo'] ?? $carnetActual['id_grupo'],
+            'duracion_meses' => $data['duracion_meses'] ?? $carnetActual['duracion_meses'],
+        ];
+
+        $this->assertGrupoExiste((int) $payload['id_grupo']);
+
         try {
-            $result = $this->model->update($ID_Carnet, $data);
+            $result = $this->model->update($ID_Carnet, $payload);
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -123,6 +133,13 @@ class CarnetService
             'status'  => 'updated',
             'message' => 'Carnet actualizado correctamente'
         ];
+    }
+
+    private function assertGrupoExiste(int $idGrupo): void
+    {
+        if (!$this->grupoModel->find($idGrupo)) {
+            throw new \Exception("Grupo no encontrado", 404);
+        }
     }
 
     /**

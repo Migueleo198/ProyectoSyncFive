@@ -76,7 +76,7 @@ class GrupoService
         try {
             $result = $this->model->update($id, $input);
             if ($result === 0) {
-                throw new \Exception("No se pudo actualizar el grupo");
+                return ['message' => 'No hubo cambios en el grupo'];
             }
             return ['message' => 'Grupo actualizado correctamente'];
         } catch (Throwable $e) {

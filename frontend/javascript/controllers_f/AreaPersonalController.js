@@ -223,7 +223,7 @@ function renderCarnets(carnets) {
     tbody.innerHTML = '';
     (carnets?.detalle || []).forEach(c => {
         const vencido = c.vigente == 0;
-        const grupo = c.grupo ?? c.categoria ?? 'Sin grupo';
+        const grupo = c.grupo ?? 'Sin grupo';
         tbody.innerHTML += `
             <tr class="${vencido ? 'table-danger' : ''}">
                 <td>${c.nombre}</td>

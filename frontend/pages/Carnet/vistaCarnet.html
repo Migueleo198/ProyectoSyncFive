@@ -25,10 +25,15 @@
                         <h1 class="mb-0 fw-bold">Carnets</h1>
                         <small class="text-muted">Gestión de carnets y acreditaciones</small>
                     </div>
-                    <a href="https://www.notion.so/08_Formacion_Carnets-31b0bf35f606808681e7d73df8325c6b" target="_blank" 
-                    class="text-muted" title="Ayuda">
-                        <i class="bi bi-question-circle fs-4"></i>
-                    </a>
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="/grupos" class="btn btn-outline-secondary btn-gestion" data-permiso="grupos">
+                            <i class="bi bi-gear me-1"></i> Administrar Grupos
+                        </a>
+                        <a href="https://www.notion.so/08_Formacion_Carnets-31b0bf35f606808681e7d73df8325c6b" target="_blank"
+                        class="text-muted" title="Ayuda">
+                            <i class="bi bi-question-circle fs-4"></i>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- MIGAS DE PAN -->
@@ -118,7 +123,9 @@
 
                             <div class="col-md-4">
                                 <label for="grupo" class="form-label">Grupo:</label>
-                                <input type="text" class="form-control" id="grupo" name="grupo" required>
+                                <select class="form-select" id="grupo" name="id_grupo" required>
+                                    <option value="">Seleccione grupo...</option>
+                                </select>
                             </div>
                             <div class="col-md-4">
                                 <label for="duracion_meses" class="form-label">Duración (meses):</label>
