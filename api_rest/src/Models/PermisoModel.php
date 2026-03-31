@@ -9,6 +9,14 @@ class PermisoModel
 {
     private DB $db;
 
+    private const ALLOWED_UPDATE_FIELDS = [
+        'cod_motivo',
+        'fecha_hora_inicio',
+        'fecha_hora_fin',
+        'estado',
+        'descripcion'
+    ];
+
     public function __construct()
     {
         $this->db = new DB();
@@ -20,7 +28,7 @@ class PermisoModel
     public function all(): array
     {
         return $this->db
-            ->query("SELECT * FROM Permiso ORDER BY ID_Permiso ASC")
+            ->query($this->baseSelect() . " ORDER BY p.fecha_hora_inicio DESC, p.id_permiso DESC")
             ->fetchAll();
     }
 
@@ -30,7 +38,7 @@ class PermisoModel
     public function find(string $id_permiso): ?array
     {
         $result = $this->db
-            ->query("SELECT * FROM Permiso WHERE ID_Permiso = :id")
+            ->query($this->baseSelect() . " WHERE p.id_permiso = :id")
             ->bind(':id', $id_permiso)
             ->fetch();
 
@@ -43,12 +51,29 @@ class PermisoModel
     public function create(array $data): int|false
     {
         $this->db->query("
-            INSERT INTO Permiso (cod_motivo, fecha, h_inicio, h_fin, estado, descripcion)
-            VALUES (:cod_motivo, CURDATE(), :h_inicio, :h_fin, 'REVISION', :descripcion)
+            INSERT INTO Permiso (
+                cod_motivo,
+                id_bombero,
+                fecha_solicitud,
+                fecha_hora_inicio,
+                fecha_hora_fin,
+                estado,
+                descripcion
+            )
+            VALUES (
+                :cod_motivo,
+                :id_bombero,
+                CURRENT_TIMESTAMP,
+                :fecha_hora_inicio,
+                :fecha_hora_fin,
+                'REVISION',
+                :descripcion
+            )
         ")
         ->bind(':cod_motivo',  $data['cod_motivo'])
-        ->bind(':h_inicio',    $data['h_inicio'] ?? null)
-        ->bind(':h_fin',       $data['h_fin'] ?? null)
+        ->bind(':id_bombero',  $data['id_bombero'])
+        ->bind(':fecha_hora_inicio', $data['fecha_hora_inicio'])
+        ->bind(':fecha_hora_fin', $data['fecha_hora_fin'])
         ->bind(':descripcion', $data['descripcion'] ?? null)
         ->execute();
 
@@ -59,64 +84,50 @@ class PermisoModel
      * Actualizar permiso (PATCH)
      */
     public function update(string $id_permiso, array $data): int
-{
-    $this->db->query("
-        UPDATE Permiso SET
-            h_inicio    = COALESCE(:h_inicio, h_inicio),
-            h_fin       = COALESCE(:h_fin, h_fin),
-            estado      = COALESCE(:estado, estado),
-            descripcion = COALESCE(:descripcion, descripcion)
-        WHERE id_permiso = :id_permiso
-    ")
-    ->bind(':id_permiso',  $id_permiso)
-    ->bind(':h_inicio',    $data['h_inicio'] ?? null)
-    ->bind(':h_fin',       $data['h_fin'] ?? null)
-    ->bind(':estado',      $data['estado'] ?? null)
-    ->bind(':descripcion', $data['descripcion'] ?? null)
-    ->execute();
-
-    return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
-}
-    /**
-     * Eliminar permiso
-     */
-    public function delete(string $id_permiso): int
     {
-        $this->db
-            ->query("DELETE FROM permiso WHERE id_permiso = :id_permiso")
-            ->bind(':id_permiso', $id_permiso)
-            ->execute();
+        $data = array_intersect_key($data, array_flip(self::ALLOWED_UPDATE_FIELDS));
 
-        return $this->db
-            ->query("SELECT ROW_COUNT() AS affected")
-            ->fetch()['affected'];
+        if (empty($data)) {
+            return 0;
+        }
+
+        $setParts = [];
+        foreach ($data as $field => $_value) {
+            $setParts[] = "$field = :$field";
+        }
+
+        $query = $this->db->query(
+            "UPDATE Permiso SET " . implode(', ', $setParts) . " WHERE id_permiso = :id_permiso"
+        )
+        ->bind(':id_permiso', $id_permiso);
+
+        foreach ($data as $field => $value) {
+            $query->bind(':' . $field, $value);
+        }
+
+        $query->execute();
+
+        return $this->db->query("SELECT ROW_COUNT() AS affected")->fetch()['affected'];
     }
 
-    /**
-     * Asignar un permiso a una persona con fecha de obtención y vencimiento
-     */
-    public function assignToPerson(
-        string $n_funcionario,
-        string $id_permiso,
-        string $cargo,
-    ): bool {
-        $this->db->query("
-            INSERT INTO Persona_Carnet (
-                n_funcionario,
-                id_permiso,
-                cargo
-            ) VALUES (
-                :n_funcionario,
-                :id_permiso,
-                :cargo
-            )
-        ")
-        ->bind(':n_funcionario', $n_funcionario)
-        ->bind(':id_permiso', $id_permiso)
-        ->bind(':cargo', $cargo)
-        ->execute();
+    public function motivoExists(int $cod_motivo): bool
+    {
+        $result = $this->db
+            ->query("SELECT cod_motivo FROM Motivo WHERE cod_motivo = :cod_motivo")
+            ->bind(':cod_motivo', $cod_motivo)
+            ->fetch();
 
-        return $this->db->rowCount() > 0;
+        return $result !== false;
+    }
+
+    public function findMotivo(int $cod_motivo): ?array
+    {
+        $result = $this->db
+            ->query("SELECT cod_motivo, nombre, dias FROM Motivo WHERE cod_motivo = :cod_motivo")
+            ->bind(':cod_motivo', $cod_motivo)
+            ->fetch();
+
+        return $result ?: null;
     }
 
     /**
@@ -127,37 +138,50 @@ class PermisoModel
         return $this->db
             ->query("
                 SELECT 
-                    p.*,
-                    pc.f_obtencion,
-                    pc.f_vencimiento
-                FROM Persona_Permiso pc
-                INNER JOIN Persona p 
-                    ON p.n_funcionario = pc.n_funcionario
-                WHERE pc.id_permiso = :id_permiso
-                ORDER BY p.n_funcionario ASC
+                    p.id_bombero,
+                    p.n_funcionario,
+                    p.nombre,
+                    p.apellidos,
+                    permiso.fecha_solicitud,
+                    permiso.fecha_hora_inicio,
+                    permiso.fecha_hora_fin,
+                    DATE(permiso.fecha_hora_inicio) AS fecha,
+                    TIME_FORMAT(permiso.fecha_hora_inicio, '%H:%i:%s') AS h_inicio,
+                    TIME_FORMAT(permiso.fecha_hora_fin, '%H:%i:%s') AS h_fin,
+                    permiso.estado
+                FROM Permiso permiso
+                INNER JOIN Persona p
+                    ON p.id_bombero = permiso.id_bombero
+                WHERE permiso.id_permiso = :id_permiso
             ")
             ->bind(':id_permiso', $id_permiso)
             ->fetchAll();
     }
 
-    /**
-     * Eliminar la asignación de un permiso a una persona
-     */
-    public function unassignFromPerson(string $n_funcionario, string $id_permiso): int
+    private function baseSelect(): string
     {
-        $this->db
-            ->query("
-                DELETE FROM Persona_Permiso
-                WHERE n_funcionario = :n_funcionario
-                AND id_permiso = :id_permiso
-            ")
-            ->bind(':n_funcionario', $n_funcionario)
-            ->bind(':id_permiso', $id_permiso)
-            ->execute();
-
-        return $this->db
-            ->query("SELECT ROW_COUNT() AS affected")
-            ->fetch()['affected'];
+        return "
+            SELECT
+                p.id_permiso,
+                p.cod_motivo,
+                p.id_bombero,
+                p.fecha_solicitud,
+                p.fecha_hora_inicio,
+                p.fecha_hora_fin,
+                p.estado,
+                p.descripcion,
+                DATE(p.fecha_hora_inicio) AS fecha,
+                TIME_FORMAT(p.fecha_hora_inicio, '%H:%i:%s') AS h_inicio,
+                TIME_FORMAT(p.fecha_hora_fin, '%H:%i:%s') AS h_fin,
+                TIMESTAMPDIFF(MINUTE, p.fecha_hora_inicio, p.fecha_hora_fin) AS duracion_minutos,
+                m.nombre AS motivo_nombre,
+                pe.nombre AS bombero_nombre,
+                pe.apellidos AS bombero_apellidos
+            FROM Permiso p
+            LEFT JOIN Motivo m ON m.cod_motivo = p.cod_motivo
+            LEFT JOIN Persona pe ON pe.id_bombero = p.id_bombero
+        ";
     }
+
 }
 ?>

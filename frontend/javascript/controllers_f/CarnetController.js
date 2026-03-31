@@ -1,722 +1,533 @@
 import CarnetApi from '../api_f/CarnetApi.js';
-import GrupoApi from '../api_f/GrupoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
+import { PERMISOS } from '/frontend/config/permissions.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
 import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let carnets = [];
-let grupos = [];
 let sesionActual = null;
-
 const pagination = new PaginationHelper(15);
+
 pagination.setLoadingCallback((isLoading) => {
-    if (isLoading) {
-        showTableLoading('#tabla tbody', 5);
-    }
+  if (isLoading) {
+    showTableLoading('#tabla tbody', 5);
+  }
 });
-
-const modalVerPagination = new PaginationHelper(5);
-modalVerPagination.setLoadingCallback((isLoading) => {
-    if (isLoading) {
-        showTableLoading('#modalVerPersonasTable tbody', 4);
-    }
-});
-
-const modalEditarPagination = new PaginationHelper(5);
-modalEditarPagination.setLoadingCallback((isLoading) => {
-    if (isLoading) {
-        showTableLoading('#modalEditarPersonasTable tbody', 5);
-    }
-});
-
-let personasModalEdicion = [];
-let carnetModalEdicionActual = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    sesionActual = await authGuard('carnets');
-    if (!sesionActual) return;
+  sesionActual = await authGuard('carnets');
+  if (!sesionActual) return;
 
-    await cargarDatosIniciales();
-    bindFiltros();
-    bindModalVer();
+  bindFiltros();
+  bindModalVer();
+  bindModalEditar();
+  bindModalEliminar();
+  bindDesasignarPersona();
 
-    if (sesionActual.puedeEscribir) {
-        bindCrearCarnet();
-        bindModalEditar();
-        bindAsignarCarnet();
-        bindEliminarRelacionPersonaCarnet();
-    }
+  if (sesionActual.puedeEscribir) {
+    bindCrearCarnet();
+    bindAsignarCarnet();
+    bindAutocalculoVencimiento();
+  }
 
-    if (sesionActual.puedeEliminar) {
-        bindModalEliminar();
-    }
+  await Promise.all([
+    cargarCarnets(),
+    cargarCarnetsDisponibles(null, 'seleccionarCarnet'),
+    cargarBomberosDisponibles(null, 'id_bombero')
+  ]);
 });
 
-async function cargarDatosIniciales() {
-    const resultados = await Promise.allSettled([
-        cargarGrupos(),
-        cargarCarnets(),
-        cargarBomberosDisponibles(null, 'id_bombero')
-    ]);
-
-    resultados.forEach(resultado => {
-        if (resultado.status === 'rejected') {
-            mostrarError(resultado.reason?.message || 'Error cargando datos de carnets');
-        }
-    });
+function puedeEditarCarnets() {
+  return PERMISOS.carnets.rolesEditar.includes(sesionActual?.rol ?? 0);
 }
 
-function obtenerNombreGrupo(carnet) {
-    if (carnet?.grupo_nombre) return carnet.grupo_nombre;
-    const grupo = grupos.find(g => String(g.id_grupo) === String(carnet?.id_grupo));
-    return grupo?.nombre || 'Sin grupo';
-}
-
-function renderSinResultados(colspan = 5, mensaje = 'No hay carnets para mostrar') {
-    const tbody = document.querySelector('#tabla tbody');
-    if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-center">${mensaje}</td></tr>`;
-}
-
-function formatearFecha(fecha) {
-    if (!fecha) return '—';
-
-    const date = new Date(`${fecha}T00:00:00`);
-    if (Number.isNaN(date.getTime())) {
-        return fecha;
-    }
-
-    return date.toLocaleDateString('es-ES');
-}
-
-function obtenerNombrePersona(persona) {
-    return `${persona.nombre ?? ''} ${persona.apellidos ?? ''}`.trim() || '—';
-}
-
-function renderSinResultadosTabla(selector, colspan, mensaje) {
-    const tbody = document.querySelector(selector);
-    if (!tbody) return;
-
-    tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-center">${mensaje}</td></tr>`;
-}
-
-function crearSeccionTablaPersonas({ tableId, paginationId, editable = false }) {
-    const columnaAccion = editable ? '<th class="text-center">Accion</th>' : '';
-    const avisoEdicion = editable
-        ? '<p class="text-muted small mb-2">Las relaciones persona-carnet no se editan: si hay un error, elimine la relacion y vuelva a asignarla.</p>'
-        : '';
-
-    return `
-        <div class="mt-3">
-            <h6 class="mb-2">Personas con este carnet</h6>
-            ${avisoEdicion}
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped mb-0" id="${tableId}">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID Bombero</th>
-                            <th>Nombre</th>
-                            <th>Obtencion</th>
-                            <th>Vencimiento</th>
-                            ${columnaAccion}
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <div id="${paginationId}" class="mt-3"></div>
-        </div>
-    `;
-}
-
-function renderTablaPersonasCarnet(lista, { tableId, paginationId, paginationHelper, editable = false }) {
-    const tbody = document.querySelector(`#${tableId} tbody`);
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-
-    if (!lista.length) {
-        renderSinResultadosTabla(`#${tableId} tbody`, editable ? 5 : 4, 'No hay personas asociadas.');
-        const paginationContainer = document.getElementById(paginationId);
-        if (paginationContainer) {
-            paginationContainer.innerHTML = '';
-        }
-        return;
-    }
-
-    const itemsPagina = paginationHelper.getPageItems(lista);
-
-    itemsPagina.forEach(persona => {
-        const tr = document.createElement('tr');
-        const botonEliminar = editable
-            ? `
-                <button
-                    type="button"
-                    class="btn btn-danger btn-sm btn-eliminar-relacion-carnet"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalEliminarRelacionCarnetPersona"
-                    data-id-bombero="${persona.id_bombero ?? ''}"
-                    data-id-carnet="${carnetModalEdicionActual ?? ''}"
-                    data-nombre-persona="${obtenerNombrePersona(persona)}"
-                >
-                    <i class="bi bi-trash3"></i>
-                </button>
-            `
-            : '';
-
-        tr.innerHTML = `
-            <td>${persona.id_bombero ?? '—'}</td>
-            <td>${obtenerNombrePersona(persona)}</td>
-            <td>${formatearFecha(persona.f_obtencion)}</td>
-            <td>${formatearFecha(persona.f_vencimiento)}</td>
-            ${editable ? `<td class="text-center">${botonEliminar}</td>` : ''}
-        `;
-
-        tbody.appendChild(tr);
-    });
-}
-
-function actualizarTablaPersonasModalVer(personas) {
-    modalVerPagination.setData(personas, () => {
-        renderTablaPersonasCarnet(personas, {
-            tableId: 'modalVerPersonasTable',
-            paginationId: 'pagination-modal-ver-carnet',
-            paginationHelper: modalVerPagination
-        });
-    });
-    modalVerPagination.render('pagination-modal-ver-carnet');
-    renderTablaPersonasCarnet(personas, {
-        tableId: 'modalVerPersonasTable',
-        paginationId: 'pagination-modal-ver-carnet',
-        paginationHelper: modalVerPagination
-    });
-}
-
-function actualizarTablaPersonasModalEditar(personas) {
-    modalEditarPagination.setData(personas, () => {
-        renderTablaPersonasCarnet(personas, {
-            tableId: 'modalEditarPersonasTable',
-            paginationId: 'pagination-modal-editar-carnet',
-            paginationHelper: modalEditarPagination,
-            editable: true
-        });
-    });
-    modalEditarPagination.render('pagination-modal-editar-carnet');
-    renderTablaPersonasCarnet(personas, {
-        tableId: 'modalEditarPersonasTable',
-        paginationId: 'pagination-modal-editar-carnet',
-        paginationHelper: modalEditarPagination,
-        editable: true
-    });
-}
-
-function calcularFechaVencimiento(fechaObtencion, duracionMeses) {
-    if (!fechaObtencion || !validarNumero(duracionMeses)) {
-        return '';
-    }
-
-    const date = new Date(`${fechaObtencion}T00:00:00`);
-    if (Number.isNaN(date.getTime())) {
-        return '';
-    }
-
-    date.setMonth(date.getMonth() + Number(duracionMeses));
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
-}
-
-function actualizarFechaVencimientoAsignacion() {
-    const selectCarnet = document.getElementById('seleccionarCarnet');
-    const inputFechaObtencion = document.getElementById('f_obtencion');
-    const inputFechaVencimiento = document.getElementById('f_vencimiento');
-
-    if (!selectCarnet || !inputFechaObtencion || !inputFechaVencimiento) return;
-
-    const carnet = carnets.find(item => String(item.id_carnet) === String(selectCarnet.value));
-    inputFechaVencimiento.value = calcularFechaVencimiento(
-        inputFechaObtencion.value,
-        carnet?.duracion_meses
-    );
-}
-
-async function cargarGrupos() {
-    try {
-        const response = await GrupoApi.getAll();
-        grupos = response?.data || response || [];
-        poblarSelectGrupos('filtroGrupo', 'Todos los grupos', '');
-        poblarSelectGrupos('insertIdGrupo', 'Seleccione un grupo...', '');
-    } catch (error) {
-        grupos = [];
-        poblarSelectGrupos('filtroGrupo', 'Todos los grupos', '');
-        poblarSelectGrupos('insertIdGrupo', 'Seleccione un grupo...', '');
-        throw error;
-    }
-}
-
-function poblarSelectGrupos(idSelect, placeholder, valorSeleccionado = '') {
-    const select = document.getElementById(idSelect);
-    if (!select) return;
-
-    select.innerHTML = '';
-
-    const defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.textContent = placeholder;
-    select.appendChild(defaultOption);
-
-    grupos.forEach(grupo => {
-        const option = document.createElement('option');
-        option.value = grupo.id_grupo;
-        option.textContent = grupo.nombre;
-        if (String(valorSeleccionado) === String(grupo.id_grupo)) {
-            option.selected = true;
-        }
-        select.appendChild(option);
-    });
+function puedeEliminarCarnets() {
+  return PERMISOS.carnets.rolesEliminar.includes(sesionActual?.rol ?? 0);
 }
 
 async function cargarCarnets() {
-    try {
-        showTableLoading('#tabla tbody', 5);
-        const response = await CarnetApi.getAll();
-        carnets = response?.data || response || [];
-        pagination.setData(carnets, () => renderTablaCarnets(carnets));
-        pagination.render('pagination-carnet');
-        renderTablaCarnets(carnets);
-        await cargarCarnetsDisponibles(null, 'seleccionarCarnet');
-        actualizarFechaVencimientoAsignacion();
-    } catch (error) {
-        carnets = [];
-        pagination.setData([], () => renderTablaCarnets([]));
-        pagination.render('pagination-carnet');
-        renderTablaCarnets([]);
-        mostrarError(error.message || 'Error cargando carnets');
-    }
+  try {
+    showTableLoading('#tabla tbody', 5);
+    const response = await CarnetApi.getAll();
+    carnets = response?.data || response || [];
+    poblarFiltroGrupo(carnets);
+    aplicarFiltros();
+    recalcularVencimientoAsignacion();
+  } catch (_e) {
+    carnets = [];
+    pagination.setData([], () => renderTablaCarnets([]));
+    pagination.render('pagination-carnet');
+    renderTablaCarnets([]);
+  }
 }
 
-function renderTablaCarnets(lista) {
-    const tbody = document.querySelector('#tabla tbody');
-    if (!tbody) return;
+function poblarFiltroGrupo(lista) {
+  const select = document.getElementById('filtroGrupo');
+  if (!select) return;
 
-    tbody.innerHTML = '';
+  const valorActual = select.value;
+  select.innerHTML = '<option value="">Todos</option>';
 
-    if (!lista.length) {
-        renderSinResultados();
-        return;
-    }
+  const grupos = [...new Set(lista.map((c) => c.grupo ?? c.categoria).filter(Boolean))].sort();
+  grupos.forEach((grupo) => {
+    const option = document.createElement('option');
+    option.value = grupo;
+    option.textContent = grupo;
+    select.appendChild(option);
+  });
 
-    const puedeEscribir = sesionActual?.puedeEscribir ?? false;
-    const puedeEliminar = sesionActual?.puedeEliminar ?? false;
-    const itemsPagina = pagination.getPageItems(lista);
-
-    itemsPagina.forEach(carnet => {
-        const tr = document.createElement('tr');
-        const grupoNombre = obtenerNombreGrupo(carnet);
-
-        const botonesAccion = puedeEscribir
-            ? `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${carnet.id_carnet}"><i class="bi bi-eye"></i></button>
-               <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${carnet.id_carnet}"><i class="bi bi-pencil"></i></button>
-               ${puedeEliminar
-                   ? `<button type="button" class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${carnet.id_carnet}" data-nombre="${carnet.nombre ?? ''}"><i class="bi bi-trash3"></i></button>`
-                   : ''}`
-            : `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${carnet.id_carnet}"><i class="bi bi-eye"></i></button>`;
-
-        tr.innerHTML = `
-            <td class="d-none d-md-table-cell">${carnet.id_carnet ?? ''}</td>
-            <td>${carnet.nombre ?? ''}</td>
-            <td class="d-none d-md-table-cell">${grupoNombre}</td>
-            <td>${carnet.duracion_meses ?? ''}</td>
-            <td>
-                <div class="d-flex justify-content-around">
-                    ${botonesAccion}
-                </div>
-            </td>
-        `;
-
-        tbody.appendChild(tr);
-    });
+  select.value = grupos.includes(valorActual) ? valorActual : '';
 }
 
 function bindFiltros() {
-    document.getElementById('filtroNombre')?.addEventListener('input', aplicarFiltros);
-    document.getElementById('filtroGrupo')?.addEventListener('change', aplicarFiltros);
+  document.getElementById('filtroNombre')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('filtroGrupo')?.addEventListener('change', aplicarFiltros);
 }
 
 function aplicarFiltros() {
-    pagination.goToPage(0);
+  pagination.goToPage(0);
+  const filtroNombre = document.getElementById('filtroNombre')?.value.toLowerCase().trim() ?? '';
+  const filtroGrupo = document.getElementById('filtroGrupo')?.value ?? '';
 
-    const filtroNombre = document.getElementById('filtroNombre')?.value.toLowerCase().trim() ?? '';
-    const filtroGrupo = document.getElementById('filtroGrupo')?.value ?? '';
+  const filtrados = carnets.filter((carnet) => {
+    const grupo = carnet.grupo ?? carnet.categoria ?? '';
+    const cumpleNombre = !filtroNombre || String(carnet.nombre ?? '').toLowerCase().includes(filtroNombre);
+    const cumpleGrupo = !filtroGrupo || grupo === filtroGrupo;
+    return cumpleNombre && cumpleGrupo;
+  });
 
-    const filtrados = carnets.filter(carnet => {
-        const cumpleNombre = !filtroNombre || carnet.nombre?.toLowerCase().includes(filtroNombre);
-        const cumpleGrupo = !filtroGrupo || String(carnet.id_grupo) === String(filtroGrupo);
-        return cumpleNombre && cumpleGrupo;
-    });
-
-    pagination.setData(filtrados, () => renderTablaCarnets(filtrados));
-    pagination.render('pagination-carnet');
-    renderTablaCarnets(filtrados);
+  pagination.setData(filtrados, () => renderTablaCarnets(filtrados));
+  pagination.render('pagination-carnet');
+  renderTablaCarnets(filtrados);
 }
 
-function validarCarnet(nombre, idGrupo, duracionMeses) {
-    if (!idGrupo) {
-        mostrarError('Debe seleccionar un grupo.');
-        return false;
+function renderTablaCarnets(lista) {
+  const tbody = document.querySelector('#tabla tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No hay carnets registrados</td></tr>';
+    return;
+  }
+
+  const itemsPagina = pagination.getPageItems(lista);
+  const puedeEditar = puedeEditarCarnets();
+  const puedeEliminar = puedeEliminarCarnets();
+
+  itemsPagina.forEach((carnet) => {
+    const grupo = carnet.grupo ?? carnet.categoria ?? 'Sin grupo';
+    const botones = [`<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${carnet.id_carnet}" title="Ver detalle"><i class="bi bi-eye"></i></button>`];
+
+    if (puedeEditar) {
+      botones.push(`<button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${carnet.id_carnet}" title="Editar"><i class="bi bi-pencil text-primary"></i></button>`);
     }
 
-    if (!nombre || !nombre.trim()) {
-        mostrarError('El nombre del carnet es obligatorio.');
-        return false;
+    if (puedeEliminar) {
+      botones.push(`<button type="button" class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${carnet.id_carnet}" title="Eliminar"><i class="bi bi-trash3 text-danger"></i></button>`);
     }
 
-    if (nombre.trim().length > 50) {
-        mostrarError('El nombre del carnet no puede superar los 50 caracteres.');
-        return false;
-    }
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="d-none d-md-table-cell">${carnet.id_carnet}</td>
+      <td>${carnet.nombre ?? ''}</td>
+      <td>${grupo}</td>
+      <td>${carnet.duracion_meses ?? ''}</td>
+      <td><div class="d-flex justify-content-around">${botones.join('')}</div></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 
-    if (!validarNumero(duracionMeses)) {
-        mostrarError('La duración en meses debe ser un número entero positivo.');
-        return false;
-    }
+function validarCarnet(nombre, grupo, duracionMeses) {
+  if (!nombre || !nombre.trim()) {
+    mostrarError('El nombre del carnet es obligatorio.');
+    return false;
+  }
 
-    return true;
+  if (nombre.trim().length > 50) {
+    mostrarError('El nombre del carnet no puede superar los 50 caracteres.');
+    return false;
+  }
+
+  if (!grupo || !grupo.trim()) {
+    mostrarError('El grupo es obligatorio.');
+    return false;
+  }
+
+  if (grupo.trim().length > 20) {
+    mostrarError('El grupo no puede superar los 20 caracteres.');
+    return false;
+  }
+
+  if (!validarNumero(duracionMeses)) {
+    mostrarError('La duracion en meses debe ser un numero entero positivo.');
+    return false;
+  }
+
+  return true;
 }
 
 function validarAsignacionCarnet(idBombero, idCarnet, fechaObtencion, fechaVencimiento) {
-    if (!idBombero) {
-        mostrarError('Debe seleccionar un bombero.');
-        return false;
-    }
+  if (!idBombero) {
+    mostrarError('Debe seleccionar un bombero.');
+    return false;
+  }
 
-    if (!idCarnet) {
-        mostrarError('Debe seleccionar un carnet.');
-        return false;
-    }
+  if (!idCarnet) {
+    mostrarError('Debe seleccionar un carnet.');
+    return false;
+  }
 
-    if (!fechaObtencion) {
-        mostrarError('La fecha de obtención es obligatoria.');
-        return false;
-    }
+  if (!fechaObtencion) {
+    mostrarError('La fecha de obtencion es obligatoria.');
+    return false;
+  }
 
-    if (!fechaVencimiento) {
-        mostrarError('La fecha de vencimiento es obligatoria.');
-        return false;
-    }
+  if (!fechaVencimiento) {
+    mostrarError('La fecha de vencimiento es obligatoria.');
+    return false;
+  }
 
-    if (!validarRangoFechas(fechaObtencion, fechaVencimiento)) {
-        mostrarError('La fecha de vencimiento debe ser posterior a la fecha de obtención.');
-        return false;
-    }
+  if (!validarRangoFechas(fechaObtencion, fechaVencimiento)) {
+    mostrarError('La fecha de vencimiento debe ser posterior a la fecha de obtencion.');
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
 function bindCrearCarnet() {
-    const form = document.getElementById('formInsertarCarnet');
-    if (!form) return;
+  const form = document.getElementById('formInsertarCarnet');
+  if (!form) return;
 
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const nombre = String(formData.get('nombre') ?? '').trim();
+    const grupo = String(formData.get('grupo') ?? '').trim();
+    const duracionMeses = String(formData.get('duracion_meses') ?? '').trim();
 
-        const formData = new FormData(form);
-        const nombre = formData.get('nombre');
-        const idGrupo = formData.get('id_grupo');
-        const duracionMeses = formData.get('duracion_meses');
+    if (!validarCarnet(nombre, grupo, duracionMeses)) return;
 
-        if (!validarCarnet(nombre, idGrupo, duracionMeses)) return;
+    try {
+      await CarnetApi.create({
+        nombre,
+        grupo,
+        duracion_meses: Number(duracionMeses)
+      });
 
-        try {
-            await CarnetApi.create({
-                nombre: nombre.trim(),
-                id_grupo: Number(idGrupo),
-                duracion_meses: Number(duracionMeses)
-            });
-            await cargarCarnets();
-            form.reset();
-            poblarSelectGrupos('insertIdGrupo', 'Seleccione un grupo...', '');
-            mostrarExito('Carnet creado correctamente');
-        } catch (error) {
-            mostrarError(error.message || 'Error creando carnet');
-        }
-    });
+      await Promise.all([
+        cargarCarnets(),
+        cargarCarnetsDisponibles(null, 'seleccionarCarnet')
+      ]);
+
+      form.reset();
+      mostrarExito('Carnet creado correctamente');
+    } catch (err) {
+      mostrarError(err.message || 'Error creando carnet');
+    }
+  });
 }
 
 function bindModalEliminar() {
-    document.addEventListener('click', function (event) {
-        const btn = event.target.closest('.btn-eliminar');
-        if (!btn) return;
+  if (!puedeEliminarCarnets()) return;
 
-        const btnConfirmar = document.getElementById('btnConfirmarEliminar');
-        if (btnConfirmar) {
-            btnConfirmar.dataset.id = btn.dataset.id;
-        }
-    });
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-eliminar');
+    if (!btn) return;
+    document.getElementById('btnConfirmarEliminar').dataset.id = btn.dataset.id;
+  });
 
-    document.getElementById('btnConfirmarEliminar')?.addEventListener('click', async function () {
-        const id = this.dataset.id;
-        if (!id) return;
+  document.getElementById('btnConfirmarEliminar')?.addEventListener('click', async function () {
+    const id = this.dataset.id;
+    if (!id) return;
 
-        try {
-            await CarnetApi.remove(id);
-            await cargarCarnets();
-            bootstrap.Modal.getInstance(document.getElementById('modalEliminar'))?.hide();
-            mostrarExito('Carnet eliminado correctamente');
-        } catch (error) {
-            mostrarError(error.message || 'Error al eliminar carnet');
-        }
-    });
+    try {
+      await CarnetApi.remove(id);
+      await Promise.all([
+        cargarCarnets(),
+        cargarCarnetsDisponibles(null, 'seleccionarCarnet')
+      ]);
+      bootstrap.Modal.getInstance(document.getElementById('modalEliminar'))?.hide();
+      mostrarExito('Carnet eliminado correctamente');
+    } catch (error) {
+      mostrarError(error.message || 'Error al eliminar carnet');
+    }
+  });
 }
 
 function bindModalEditar() {
-    document.addEventListener('click', async function (event) {
-        const btn = event.target.closest('.btn-editar');
-        if (!btn) return;
+  if (!puedeEditarCarnets()) return;
 
-        try {
-            const [carnetResponse, personasResponse] = await Promise.all([
-                CarnetApi.getById(btn.dataset.id),
-                CarnetApi.getPersonsByCarnet(btn.dataset.id)
-            ]);
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-editar');
+    if (!btn) return;
 
-            const carnet = carnetResponse?.data || carnetResponse;
-            if (!carnet) return;
+    const idCarnet = btn.dataset.id;
 
-            personasModalEdicion = personasResponse?.data || personasResponse || [];
-            carnetModalEdicionActual = carnet.id_carnet;
+    try {
+      const [carnetResponse, personsResponse] = await Promise.all([
+        CarnetApi.getById(idCarnet),
+        CarnetApi.getPersonsByCarnet(idCarnet)
+      ]);
 
-            const form = document.getElementById('formEditar');
-            if (!form) return;
+      const carnet = carnetResponse?.data || carnetResponse;
+      const personas = personsResponse?.data || personsResponse || [];
+      const grupo = carnet.grupo ?? carnet.categoria ?? '';
+      const form = document.getElementById('formEditar');
+      if (!form || !carnet) return;
 
-            const grupoOptions = [
-                '<option value="">Seleccione un grupo...</option>',
-                ...grupos.map(grupo => `<option value="${grupo.id_grupo}" ${String(grupo.id_grupo) === String(carnet.id_grupo) ? 'selected' : ''}>${grupo.nombre}</option>`)
-            ].join('');
+      form.innerHTML = `
+        <div class="row g-3 mb-4">
+          <div class="col-lg-4">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" name="nombre" maxlength="50" value="${carnet.nombre ?? ''}">
+          </div>
+          <div class="col-lg-4">
+            <label class="form-label">Grupo</label>
+            <input type="text" class="form-control" name="grupo" maxlength="20" value="${grupo}">
+          </div>
+          <div class="col-lg-4">
+            <label class="form-label">Duracion (meses)</label>
+            <input type="number" min="1" step="1" class="form-control" name="duracion_meses" value="${carnet.duracion_meses ?? ''}">
+          </div>
+        </div>
+        ${renderPersonasAsociadas(personas, idCarnet, true)}
+        <div class="text-center mt-4">
+          <button type="button" id="btnGuardarCambiosCarnet" class="btn btn-primary">Guardar cambios</button>
+        </div>
+      `;
 
-            form.innerHTML = `
-                <div class="row mb-3">
-                    <div class="col-lg-2">
-                        <label class="form-label">ID</label>
-                        <input type="text" class="form-control" value="${carnet.id_carnet ?? ''}" disabled>
-                    </div>
-                    <div class="col-lg-5">
-                        <label class="form-label">Nombre</label>
-                        <input type="text" class="form-control" name="nombre" maxlength="50" value="${carnet.nombre ?? ''}" required>
-                    </div>
-                    <div class="col-lg-5">
-                        <label class="form-label">Grupo</label>
-                        <select class="form-select" name="id_grupo" required>${grupoOptions}</select>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-lg-4">
-                        <label class="form-label">Duración (meses)</label>
-                        <input type="number" min="1" step="1" class="form-control" name="duracion_meses" value="${carnet.duracion_meses ?? ''}" required>
-                    </div>
-                </div>
-                <div class="text-center mb-4">
-                    <button type="button" class="btn btn-primary btn-guardar-carnet">Guardar cambios</button>
-                </div>
-                ${crearSeccionTablaPersonas({
-                    tableId: 'modalEditarPersonasTable',
-                    paginationId: 'pagination-modal-editar-carnet',
-                    editable: true
-                })}
-            `;
-
-            actualizarTablaPersonasModalEditar(personasModalEdicion);
-
-            form.querySelector('.btn-guardar-carnet')?.addEventListener('click', async () => {
-                const nombre = form.querySelector('[name="nombre"]')?.value ?? '';
-                const idGrupo = form.querySelector('[name="id_grupo"]')?.value ?? '';
-                const duracionMeses = form.querySelector('[name="duracion_meses"]')?.value ?? '';
-
-                if (!validarCarnet(nombre, idGrupo, duracionMeses)) return;
-
-                try {
-                    await CarnetApi.update(carnet.id_carnet, {
-                        nombre: nombre.trim(),
-                        id_grupo: Number(idGrupo),
-                        duracion_meses: Number(duracionMeses)
-                    });
-                    await cargarCarnets();
-                    bootstrap.Modal.getInstance(document.getElementById('modalEditar'))?.hide();
-                    mostrarExito('Carnet actualizado correctamente');
-                } catch (error) {
-                    mostrarError(error.message || 'Error actualizando carnet');
-                }
-            });
-        } catch (error) {
-            mostrarError(error.message || 'Error cargando el carnet');
-        }
-    });
-}
-
-const camposVer = [
-    { label: 'ID', key: 'id_carnet' },
-    { label: 'Nombre', key: 'nombre' },
-    { label: 'Grupo', key: 'grupo_nombre' },
-    { label: 'Duración (meses)', key: 'duracion_meses' }
-];
-
-function bindModalVer() {
-    document.addEventListener('click', async function (event) {
-        const btn = event.target.closest('.btn-ver');
-        if (!btn) return;
-
-        const carnet = carnets.find(item => String(item.id_carnet) === String(btn.dataset.id));
-        if (!carnet) return;
-
-        const modalBody = document.getElementById('modalVerBody');
-        if (!modalBody) return;
-
-        const detalle = {
-            ...carnet,
-            grupo_nombre: obtenerNombreGrupo(carnet)
+      document.getElementById('btnGuardarCambiosCarnet')?.addEventListener('click', async () => {
+        const data = {
+          nombre: String(form.querySelector('[name="nombre"]')?.value ?? '').trim(),
+          grupo: String(form.querySelector('[name="grupo"]')?.value ?? '').trim(),
+          duracion_meses: String(form.querySelector('[name="duracion_meses"]')?.value ?? '').trim()
         };
 
-        modalBody.innerHTML = `
-            ${camposVer.map(({ label, key }) => `<p><strong>${label}:</strong> ${detalle[key] ?? '—'}</p>`).join('')}
-            <hr>
-            ${crearSeccionTablaPersonas({
-                tableId: 'modalVerPersonasTable',
-                paginationId: 'pagination-modal-ver-carnet'
-            })}
-        `;
+        if (!validarCarnet(data.nombre, data.grupo, data.duracion_meses)) return;
 
-        showTableLoading('#modalVerPersonasTable tbody', 4);
+        await CarnetApi.update(idCarnet, {
+          nombre: data.nombre,
+          grupo: data.grupo,
+          duracion_meses: Number(data.duracion_meses)
+        });
 
-        try {
-            const response = await CarnetApi.getPersonsByCarnet(carnet.id_carnet);
-            const personas = response?.data || response || [];
+        await Promise.all([
+          cargarCarnets(),
+          cargarCarnetsDisponibles(idCarnet, 'seleccionarCarnet')
+        ]);
 
-            actualizarTablaPersonasModalVer(personas);
-        } catch (error) {
-            renderSinResultadosTabla('#modalVerPersonasTable tbody', 4, error.message || 'Error cargando personas asociadas.');
-        }
-    });
+        bootstrap.Modal.getInstance(document.getElementById('modalEditar'))?.hide();
+        mostrarExito('Carnet actualizado correctamente');
+      });
+    } catch (error) {
+      mostrarError(error.message || 'Error al editar carnet');
+    }
+  });
 }
 
-function bindEliminarRelacionPersonaCarnet() {
-    document.addEventListener('click', function (event) {
-        const btn = event.target.closest('.btn-eliminar-relacion-carnet');
-        if (!btn) return;
+function bindModalVer() {
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-ver');
+    if (!btn) return;
 
-        const btnConfirmar = document.getElementById('btnConfirmarEliminarRelacionCarnetPersona');
-        if (!btnConfirmar) return;
+    const idCarnet = btn.dataset.id;
+    const carnet = carnets.find((item) => String(item.id_carnet) === String(idCarnet));
+    if (!carnet) return;
 
-        btnConfirmar.dataset.idCarnet = btn.dataset.idCarnet;
-        btnConfirmar.dataset.idBombero = btn.dataset.idBombero;
-        btnConfirmar.dataset.nombrePersona = btn.dataset.nombrePersona;
+    const modalBody = document.getElementById('modalVerBody');
+    if (!modalBody) return;
+    modalBody.innerHTML = '<p class="text-muted text-center">Cargando...</p>';
 
-        const textoConfirmacion = document.getElementById('textoEliminarRelacionCarnetPersona');
-        if (textoConfirmacion) {
-            textoConfirmacion.textContent = `¿Estás seguro de que deseas eliminar la relación de ${btn.dataset.nombrePersona || 'esta persona'} con este carnet?`;
-        }
-    });
+    try {
+      const response = await CarnetApi.getPersonsByCarnet(idCarnet);
+      const personas = response?.data || response || [];
+      const grupo = carnet.grupo ?? carnet.categoria ?? 'Sin grupo';
 
-    document.getElementById('btnConfirmarEliminarRelacionCarnetPersona')?.addEventListener('click', async function () {
-        const idCarnet = this.dataset.idCarnet;
-        const idBombero = this.dataset.idBombero;
+      modalBody.innerHTML = `
+        <p><strong>ID:</strong> ${carnet.id_carnet}</p>
+        <p><strong>Nombre:</strong> ${carnet.nombre ?? ''}</p>
+        <p><strong>Grupo:</strong> ${grupo}</p>
+        <p><strong>Duracion:</strong> ${carnet.duracion_meses ?? ''} meses</p>
+        ${renderPersonasAsociadas(personas, idCarnet, false)}
+      `;
+    } catch (error) {
+      modalBody.innerHTML = '<p class="text-danger mb-0">No se pudieron cargar las personas asociadas.</p>';
+      mostrarError(error.message || 'Error cargando detalle del carnet');
+    }
+  });
+}
 
-        if (!idCarnet || !idBombero) return;
+function renderPersonasAsociadas(personas, idCarnet, permitirEliminar) {
+  const columnasAccion = permitirEliminar ? '<th class="text-end">Accion</th>' : '';
+  const filas = !personas.length
+    ? `<tr><td colspan="${permitirEliminar ? 5 : 4}" class="text-center text-muted py-3">Sin personas asociadas</td></tr>`
+    : personas.map((persona) => `
+        <tr>
+          <td>${persona.id_bombero}</td>
+          <td>${persona.nombre ?? ''} ${persona.apellidos ?? ''}</td>
+          <td>${persona.f_obtencion ?? '—'}</td>
+          <td>${persona.f_vencimiento ?? '—'}</td>
+          ${permitirEliminar ? `<td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-carnet" data-id-carnet="${idCarnet}" data-id-bombero="${persona.id_bombero}">Quitar</button></td>` : ''}
+        </tr>
+      `).join('');
 
-        try {
-            await CarnetApi.removePersonFromCarnet(idCarnet, idBombero);
-            personasModalEdicion = personasModalEdicion.filter(persona => String(persona.id_bombero) !== String(idBombero));
-            actualizarTablaPersonasModalEditar(personasModalEdicion);
-            bootstrap.Modal.getInstance(document.getElementById('modalEliminarRelacionCarnetPersona'))?.hide();
-            mostrarExito('Relacion persona-carnet eliminada correctamente');
-        } catch (error) {
-            mostrarError(error.message || 'Error eliminando la relacion persona-carnet');
-        }
-    });
+  return `
+    <div class="mt-4">
+      <h6 class="mb-3">Personas asociadas</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Bombero</th>
+              <th>Nombre</th>
+              <th>Obtencion</th>
+              <th>Vencimiento</th>
+              ${columnasAccion}
+            </tr>
+          </thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function bindDesasignarPersona() {
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-desasignar-carnet');
+    if (!btn || !puedeEditarCarnets()) return;
+
+    const idCarnet = btn.dataset.idCarnet;
+    const idBombero = btn.dataset.idBombero;
+    if (!idCarnet || !idBombero) return;
+
+    try {
+      await CarnetApi.unassignFromPerson(idCarnet, idBombero);
+      btn.closest('tr')?.remove();
+      await cargarCarnets();
+      mostrarExito('Asignacion eliminada correctamente');
+    } catch (error) {
+      mostrarError(error.message || 'Error eliminando la asignacion');
+    }
+  });
 }
 
 async function cargarCarnetsDisponibles(carnetSeleccionado, idSelect) {
-    const select = document.getElementById(idSelect);
-    if (!select) return;
+  const select = document.getElementById(idSelect);
+  if (!select) return;
 
+  try {
+    const response = await CarnetApi.getAll();
+    const lista = response?.data || response || [];
     select.innerHTML = '<option value="">Seleccione carnet...</option>';
-    carnets.forEach(carnet => {
-        const option = document.createElement('option');
-        option.value = carnet.id_carnet;
-        option.textContent = `${carnet.nombre} - ${obtenerNombreGrupo(carnet)} (${carnet.duracion_meses} meses)`;
-        if (String(carnetSeleccionado) === String(carnet.id_carnet)) {
-            option.selected = true;
-        }
-        select.appendChild(option);
+
+    lista.forEach((carnet) => {
+      const option = document.createElement('option');
+      option.value = carnet.id_carnet;
+      option.textContent = `${carnet.nombre} - ${carnet.grupo ?? carnet.categoria} (${carnet.duracion_meses} meses)`;
+      if (String(carnetSeleccionado ?? '') === String(carnet.id_carnet)) {
+        option.selected = true;
+      }
+      select.appendChild(option);
     });
+  } catch (e) {
+    mostrarError(e.message || 'Error cargando carnets');
+  }
 }
 
 async function cargarBomberosDisponibles(bomberoSeleccionado, idSelect) {
-    const select = document.getElementById(idSelect);
-    if (!select) return;
+  const select = document.getElementById(idSelect);
+  if (!select) return;
 
-    try {
-        const response = await PersonaApi.getAll();
-        const bomberos = response?.data || response || [];
-        select.innerHTML = '<option value="">Seleccione bombero...</option>';
+  try {
+    const response = await PersonaApi.getAll();
+    const bomberos = response?.data || response || [];
+    select.innerHTML = '<option value="">Seleccione bombero...</option>';
 
-        bomberos.forEach(bombero => {
-            const option = document.createElement('option');
-            option.value = bombero.id_bombero;
-            option.textContent = `${bombero.id_bombero} - ${bombero.nombre} ${bombero.apellidos}`;
-            if (String(bomberoSeleccionado) === String(bombero.id_bombero)) {
-                option.selected = true;
-            }
-            select.appendChild(option);
-        });
-    } catch (error) {
-        mostrarError(error.message || 'Error cargando bomberos');
-    }
+    bomberos.forEach((bombero) => {
+      const option = document.createElement('option');
+      option.value = bombero.id_bombero;
+      option.textContent = `${bombero.id_bombero} - ${bombero.nombre} ${bombero.apellidos}`;
+      if (String(bomberoSeleccionado ?? '') === String(bombero.id_bombero)) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+    });
+  } catch (e) {
+    mostrarError(e.message || 'Error cargando bomberos');
+  }
 }
 
 function bindAsignarCarnet() {
-    const form = document.getElementById('formInsertar');
-    if (!form) return;
+  const form = document.getElementById('formInsertar');
+  if (!form) return;
 
-    document.getElementById('seleccionarCarnet')?.addEventListener('change', actualizarFechaVencimientoAsignacion);
-    document.getElementById('f_obtencion')?.addEventListener('change', actualizarFechaVencimientoAsignacion);
-    form.addEventListener('reset', () => {
-        setTimeout(() => actualizarFechaVencimientoAsignacion(), 0);
-    });
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const idBombero = String(formData.get('id_bombero') ?? '');
+    const idCarnet = String(formData.get('seleccionarCarnet') ?? '');
+    const fechaObtencion = String(formData.get('f_obtencion') ?? '');
+    const fechaVencimiento = String(formData.get('f_vencimiento') ?? '');
 
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
+    if (!validarAsignacionCarnet(idBombero, idCarnet, fechaObtencion, fechaVencimiento)) return;
 
-        const formData = new FormData(form);
-        const idBombero = formData.get('id_bombero');
-        const idCarnet = formData.get('seleccionarCarnet');
-        const fechaObtencion = formData.get('f_obtencion');
-        const carnetSeleccionado = carnets.find(carnet => String(carnet.id_carnet) === String(idCarnet));
-        const fechaVencimiento = calcularFechaVencimiento(fechaObtencion, carnetSeleccionado?.duracion_meses);
+    try {
+      await CarnetApi.assignToPerson({
+        id_bombero: idBombero,
+        ID_Carnet: idCarnet,
+        f_obtencion: fechaObtencion,
+        f_vencimiento: fechaVencimiento
+      });
 
-        const inputFechaVencimiento = document.getElementById('f_vencimiento');
-        if (inputFechaVencimiento) {
-            inputFechaVencimiento.value = fechaVencimiento;
-        }
+      await cargarCarnets();
+      form.reset();
+      mostrarExito('Carnet asignado correctamente');
+    } catch (err) {
+      mostrarError(err.message || 'Error asignando carnet');
+    }
+  });
+}
 
-        if (!validarAsignacionCarnet(idBombero, idCarnet, fechaObtencion, fechaVencimiento)) return;
+function bindAutocalculoVencimiento() {
+  document.getElementById('seleccionarCarnet')?.addEventListener('change', recalcularVencimientoAsignacion);
+  document.getElementById('f_obtencion')?.addEventListener('input', recalcularVencimientoAsignacion);
+}
 
-        try {
-            await CarnetApi.assignToPerson({
-                id_bombero: idBombero,
-                ID_Carnet: idCarnet,
-                f_obtencion: fechaObtencion,
-                f_vencimiento: fechaVencimiento
-            });
-            form.reset();
-            actualizarFechaVencimientoAsignacion();
-            mostrarExito('Carnet asignado correctamente');
-        } catch (error) {
-            mostrarError(error.message || 'Error asignando carnet');
-        }
-    });
+function recalcularVencimientoAsignacion() {
+  const selectCarnet = document.getElementById('seleccionarCarnet');
+  const inputObtencion = document.getElementById('f_obtencion');
+  const inputVencimiento = document.getElementById('f_vencimiento');
+  if (!selectCarnet || !inputObtencion || !inputVencimiento) return;
+
+  const carnet = carnets.find((item) => String(item.id_carnet) === String(selectCarnet.value));
+  if (!carnet || !inputObtencion.value) {
+    inputVencimiento.value = '';
+    return;
+  }
+
+  inputVencimiento.value = sumarMeses(inputObtencion.value, Number(carnet.duracion_meses ?? 0));
+}
+
+function sumarMeses(fechaIso, meses) {
+  if (!fechaIso || !meses) return '';
+
+  const [anio, mes, dia] = fechaIso.split('-').map(Number);
+  if (!anio || !mes || !dia) return '';
+
+  const totalMeses = (mes - 1) + meses;
+  const anioObjetivo = anio + Math.floor(totalMeses / 12);
+  const mesObjetivo = (totalMeses % 12) + 1;
+  const ultimoDiaMesObjetivo = new Date(anioObjetivo, mesObjetivo, 0).getDate();
+  const diaObjetivo = Math.min(dia, ultimoDiaMesObjetivo);
+
+  const yyyy = String(anioObjetivo);
+  const mm = String(mesObjetivo).padStart(2, '0');
+  const dd = String(diaObjetivo).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }

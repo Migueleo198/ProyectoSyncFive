@@ -1,6 +1,7 @@
 import AvisoApi from '../api_f/AvisoApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
+import { PERMISOS } from '/frontend/config/permissions.js';
 import { formatearFecha, truncar, mostrarExito, mostrarError } from '../helpers/utils.js';
 import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
@@ -177,28 +178,29 @@ function renderTablaAvisos(lista) {
   }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const puedeEliminar = PERMISOS.avisos.rolesEliminar.includes(sesionActual?.rol ?? 0);
   const itemsPagina = pagination.getPageItems(lista);
 
   itemsPagina.forEach(a => {
     const tr = document.createElement('tr');
     const nombreRemitente = obtenerNombrePersona(a.remitente);
 
-    const botonesAccion = puedeEscribir
+    const botonesAccion = !puedeEscribir
       ? `<button type="button" class="btn p-0 btn-ver"
               data-bs-toggle="modal" data-bs-target="#modalVer"
               data-id="${a.id_aviso}" title="Ver detalle">
             <i class="bi bi-eye"></i>
-         </button>
-         <button type="button" class="btn p-0 btn-eliminar"
-              data-bs-toggle="modal" data-bs-target="#modalEliminar"
-              data-id="${a.id_aviso}" title="Eliminar">
-            <i class="bi bi-trash3 text-danger"></i>
          </button>`
       : `<button type="button" class="btn p-0 btn-ver"
               data-bs-toggle="modal" data-bs-target="#modalVer"
               data-id="${a.id_aviso}" title="Ver detalle">
             <i class="bi bi-eye"></i>
-         </button>`;
+         </button>
+         ${puedeEliminar ? `<button type="button" class="btn p-0 btn-eliminar"
+               data-bs-toggle="modal" data-bs-target="#modalEliminar"
+               data-id="${a.id_aviso}" title="Eliminar">
+            <i class="bi bi-trash3 text-danger"></i>
+         </button>` : ''}`;
 
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${a.id_aviso}</td>
@@ -235,8 +237,8 @@ function aplicarFiltros() {
     return cumpleAsunto && cumpleRemitente;
   });
   pagination.setData(filtrados, () => {
-      renderTablaAvisos(filtrados);
-    });
+    renderTablaAvisos(filtrados);
+  });
   pagination.render('pagination-aviso');
   renderTablaAvisos(filtrados);
 }
@@ -481,6 +483,9 @@ function bindModalVer() {
 // MODAL ELIMINAR
 // ================================
 function bindModalEliminar() {
+  const puedeEliminar = PERMISOS.avisos.rolesEliminar.includes(sesionActual?.rol ?? 0);
+  if (!puedeEliminar) return;
+
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar');
     if (!btn) return;
