@@ -570,3 +570,30 @@ function bindModalEditar() {
     });
   });
 }
+
+// ================================
+// GESTIONAR ESTADO
+// CORRECCIÓN: normalizar estado antes de enviar
+// ================================
+function bindGestionarEstado() {
+  const form = document.getElementById('formGestionarEstado'); if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = new FormData(form);
+    const id_permiso = f.get('id_permiso');
+    const estadoRaw  = f.get('estado') || '';
+    const estado     = normalizarEstado(estadoRaw);
+
+    if (!id_permiso) { mostrarError('Seleccione un permiso'); return; }
+    if (!estado || !ESTADOS_PERMISO_VALIDOS.includes(estado)) {
+      mostrarError('El estado no es válido (debe ser ACEPTADO, REVISION o DENEGADO)'); return;
+    }
+    try {
+      await PermisoApi.update(id_permiso, { estado: estado });
+      await cargarPermisos();
+      await cargarSelectPermisos();
+      form.reset();
+      mostrarExito('Estado actualizado correctamente');
+    } catch (err) { mostrarError(err.message || 'Error actualizando estado'); }
+  });
+}
