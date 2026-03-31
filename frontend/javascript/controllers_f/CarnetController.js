@@ -9,10 +9,42 @@ import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.
 let carnets = [];
 let sesionActual = null;
 const pagination = new PaginationHelper(15);
+const modalVerPagination = new PaginationHelper(5);
+const modalEditarPagination = new PaginationHelper(5);
+const modalPersonasConfigs = {
+  ver: {
+    tableId: 'tablaPersonasCarnet',
+    paginationId: 'pagination-modal-ver-carnet',
+    pagination: modalVerPagination,
+    personas: [],
+    carnetId: null,
+    permiteEliminar: false
+  },
+  editar: {
+    tableId: 'tablaPersonasCarnetEditar',
+    paginationId: 'pagination-modal-editar-carnet',
+    pagination: modalEditarPagination,
+    personas: [],
+    carnetId: null,
+    permiteEliminar: true
+  }
+};
 
 pagination.setLoadingCallback((isLoading) => {
   if (isLoading) {
     showTableLoading('#tabla tbody', 5);
+  }
+});
+
+modalVerPagination.setLoadingCallback((isLoading) => {
+  if (isLoading) {
+    showTableLoading('#tablaPersonasCarnet tbody', obtenerColspanTablaPersonas(modalPersonasConfigs.ver));
+  }
+});
+
+modalEditarPagination.setLoadingCallback((isLoading) => {
+  if (isLoading) {
+    showTableLoading('#tablaPersonasCarnetEditar tbody', obtenerColspanTablaPersonas(modalPersonasConfigs.editar));
   }
 });
 
@@ -133,7 +165,7 @@ function renderTablaCarnets(lista) {
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${carnet.id_carnet}</td>
       <td>${carnet.nombre ?? ''}</td>
-      <td>${grupo}</td>
+      <td class="d-none d-md-table-cell">${grupo}</td>
       <td>${carnet.duracion_meses ?? ''}</td>
       <td><div class="d-flex justify-content-around">${botones.join('')}</div></td>
     `;
@@ -267,40 +299,53 @@ function bindModalEditar() {
     if (!btn) return;
 
     const idCarnet = btn.dataset.id;
+    const carnet = carnets.find((item) => String(item.id_carnet) === String(idCarnet));
+    const form = document.getElementById('formEditar');
+    const tabla = document.getElementById('tablaPersonasCarnetEditar');
+    const paginationContainer = document.getElementById('pagination-modal-editar-carnet');
+    if (!carnet || !form || !tabla || !paginationContainer) return;
 
-    const puedeEscribir = sesionActual?.puedeEscribir ?? false;
-    const puedeEliminar = sesionActual?.puedeEliminar ?? false;
-    const itemsPagina = pagination.getPageItems(lista);
+    const contexto = modalPersonasConfigs.editar;
+    contexto.personas = [];
+    contexto.carnetId = idCarnet;
+    contexto.permiteEliminar = true;
+    actualizarColumnaAccionTablaPersonasCarnet(contexto);
+    showTableLoading('#tablaPersonasCarnetEditar tbody', obtenerColspanTablaPersonas(contexto));
+    paginationContainer.innerHTML = '';
 
-    itemsPagina.forEach(carnet => {
-        const tr = document.createElement('tr');
-        const grupoNombre = obtenerNombreGrupo(carnet);
+    form.innerHTML = `
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label" for="editNombre">Nombre</label>
+          <input type="text" class="form-control" id="editNombre" name="nombre" maxlength="50" value="${carnet.nombre ?? ''}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="editGrupo">Grupo</label>
+          <input type="text" class="form-control" id="editGrupo" name="grupo" maxlength="20" value="${carnet.grupo ?? carnet.categoria ?? ''}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="editDuracionMeses">Duracion (meses)</label>
+          <input type="number" class="form-control" id="editDuracionMeses" name="duracion_meses" min="1" step="1" value="${carnet.duracion_meses ?? ''}">
+        </div>
+      </div>
+      <div class="d-flex justify-content-end gap-2 mt-4 pt-2 border-top">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnGuardarCambiosCarnet">Guardar cambios</button>
+      </div>
+    `;
 
-        const botonesAccion = puedeEscribir
-            ? `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${carnet.id_carnet}"><i class="bi bi-eye"></i></button>
-               <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${carnet.id_carnet}"><i class="bi bi-pencil"></i></button>
-               ${puedeEliminar
-                   ? `<button type="button" class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${carnet.id_carnet}" data-nombre="${carnet.nombre ?? ''}"><i class="bi bi-trash3"></i></button>`
-                   : ''}`
-            : `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${carnet.id_carnet}"><i class="bi bi-eye"></i></button>`;
+    try {
+      const response = await CarnetApi.getPersonsByCarnet(idCarnet);
+      const personas = response?.data || response || [];
+      actualizarTablaPersonasCarnet('editar', personas, idCarnet, true);
+    } catch (error) {
+      renderSinResultadosTablaPersonasCarnet(contexto, 'No se pudieron cargar las personas asociadas.');
+      paginationContainer.innerHTML = '';
+      mostrarError(error.message || 'Error cargando personas asociadas al carnet');
+    }
 
-        tr.innerHTML = `
-            <td class="d-none d-md-table-cell">${carnet.id_carnet ?? ''}</td>
-            <td>${carnet.nombre ?? ''}</td>
-            <td class="d-none d-md-table-cell">${grupoNombre}</td>
-            <td>${carnet.duracion_meses ?? ''}</td>
-            <td class="celda-acciones">
-                <div class="acciones-tabla">
-                    ${botonesAccion}
-                </div>
-            </td>
-        `;
-
-        tbody.appendChild(tr);
-    });
-}
-
-      document.getElementById('btnGuardarCambiosCarnet')?.addEventListener('click', async () => {
+    document.getElementById('btnGuardarCambiosCarnet')?.addEventListener('click', async () => {
+      try {
         const data = {
           nombre: String(form.querySelector('[name="nombre"]')?.value ?? '').trim(),
           grupo: String(form.querySelector('[name="grupo"]')?.value ?? '').trim(),
@@ -322,10 +367,10 @@ function bindModalEditar() {
 
         bootstrap.Modal.getInstance(document.getElementById('modalEditar'))?.hide();
         mostrarExito('Carnet actualizado correctamente');
-      });
-    } catch (error) {
-      mostrarError(error.message || 'Error al editar carnet');
-    }
+      } catch (error) {
+        mostrarError(error.message || 'Error al editar carnet');
+      }
+    });
   });
 }
 
@@ -339,8 +384,16 @@ function bindModalVer() {
     if (!carnet) return;
 
     const modalBody = document.getElementById('modalVerBody');
-    if (!modalBody) return;
+    const paginationContainer = document.getElementById('pagination-modal-ver-carnet');
+    if (!modalBody || !paginationContainer) return;
+    const contexto = modalPersonasConfigs.ver;
+    contexto.personas = [];
+    contexto.carnetId = idCarnet;
+    contexto.permiteEliminar = false;
+    actualizarColumnaAccionTablaPersonasCarnet(contexto);
     modalBody.innerHTML = '<p class="text-muted text-center">Cargando...</p>';
+    showTableLoading('#tablaPersonasCarnet tbody', obtenerColspanTablaPersonas(contexto));
+    paginationContainer.innerHTML = '';
 
     try {
       const response = await CarnetApi.getPersonsByCarnet(idCarnet);
@@ -352,48 +405,96 @@ function bindModalVer() {
         <p><strong>Nombre:</strong> ${carnet.nombre ?? ''}</p>
         <p><strong>Grupo:</strong> ${grupo}</p>
         <p><strong>Duracion:</strong> ${carnet.duracion_meses ?? ''} meses</p>
-        ${renderPersonasAsociadas(personas, idCarnet, false)}
       `;
+
+      actualizarTablaPersonasCarnet('ver', personas, idCarnet, false);
     } catch (error) {
-      modalBody.innerHTML = '<p class="text-danger mb-0">No se pudieron cargar las personas asociadas.</p>';
+      modalBody.innerHTML = `
+        <p><strong>ID:</strong> ${carnet.id_carnet}</p>
+        <p><strong>Nombre:</strong> ${carnet.nombre ?? ''}</p>
+        <p><strong>Grupo:</strong> ${carnet.grupo ?? carnet.categoria ?? 'Sin grupo'}</p>
+        <p><strong>Duracion:</strong> ${carnet.duracion_meses ?? ''} meses</p>
+      `;
+      renderSinResultadosTablaPersonasCarnet(contexto, 'No se pudieron cargar las personas asociadas.');
+      paginationContainer.innerHTML = '';
       mostrarError(error.message || 'Error cargando detalle del carnet');
     }
   });
 }
 
-function renderPersonasAsociadas(personas, idCarnet, permitirEliminar) {
-  const columnasAccion = permitirEliminar ? '<th class="text-end">Accion</th>' : '';
-  const filas = !personas.length
-    ? `<tr><td colspan="${permitirEliminar ? 5 : 4}" class="text-center text-muted py-3">Sin personas asociadas</td></tr>`
-    : personas.map((persona) => `
-        <tr>
-          <td>${persona.id_bombero}</td>
-          <td>${persona.nombre ?? ''} ${persona.apellidos ?? ''}</td>
-          <td>${persona.f_obtencion ?? '—'}</td>
-          <td>${persona.f_vencimiento ?? '—'}</td>
-          ${permitirEliminar ? `<td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-carnet" data-id-carnet="${idCarnet}" data-id-bombero="${persona.id_bombero}">Quitar</button></td>` : ''}
-        </tr>
-      `).join('');
+function obtenerColspanTablaPersonas(contexto) {
+  return contexto.permiteEliminar ? 5 : 4;
+}
 
-  return `
-    <div class="mt-4">
-      <h6 class="mb-3">Personas asociadas</h6>
-      <div class="table-responsive">
-        <table class="table table-sm table-bordered align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Bombero</th>
-              <th>Nombre</th>
-              <th>Obtencion</th>
-              <th>Vencimiento</th>
-              ${columnasAccion}
-            </tr>
-          </thead>
-          <tbody>${filas}</tbody>
-        </table>
-      </div>
-    </div>
-  `;
+function actualizarTablaPersonasCarnet(contextoKey, personas, idCarnet, permitirEliminar) {
+  const contexto = modalPersonasConfigs[contextoKey];
+  if (!contexto) return;
+
+  contexto.personas = Array.isArray(personas) ? personas : [];
+  contexto.carnetId = idCarnet;
+  contexto.permiteEliminar = permitirEliminar;
+
+  const tabla = document.getElementById(contexto.tableId);
+  const paginationContainer = document.getElementById(contexto.paginationId);
+  if (!tabla || !paginationContainer) return;
+
+  actualizarColumnaAccionTablaPersonasCarnet(contexto);
+  contexto.pagination.setData(contexto.personas, () => renderTablaPersonasCarnet(contextoKey));
+  contexto.pagination.render(contexto.paginationId);
+  renderTablaPersonasCarnet(contextoKey);
+}
+
+function actualizarColumnaAccionTablaPersonasCarnet(contexto) {
+  const headRow = document.querySelector(`#${contexto.tableId} thead tr`);
+  if (!headRow) return;
+
+  const thAccion = headRow.querySelector('.th-accion-carnet');
+  if (contexto.permiteEliminar && !thAccion) {
+    headRow.insertAdjacentHTML('beforeend', '<th class="text-end th-accion-carnet">Accion</th>');
+    return;
+  }
+
+  if (!contexto.permiteEliminar && thAccion) {
+    thAccion.remove();
+  }
+}
+
+function renderTablaPersonasCarnet(contextoKey) {
+  const contexto = modalPersonasConfigs[contextoKey];
+  if (!contexto) return;
+
+  const tbody = document.querySelector(`#${contexto.tableId} tbody`);
+  const paginationContainer = document.getElementById(contexto.paginationId);
+  if (!tbody || !paginationContainer) return;
+
+  tbody.innerHTML = '';
+
+  if (!contexto.personas.length) {
+    renderSinResultadosTablaPersonasCarnet(contexto, 'Sin personas asociadas');
+    paginationContainer.innerHTML = '';
+    return;
+  }
+
+  const itemsPagina = contexto.pagination.getPageItems(contexto.personas);
+  tbody.innerHTML = itemsPagina.map((persona) => `
+    <tr>
+      <td>${persona.id_bombero ?? '—'}</td>
+      <td>${obtenerNombreCompleto(persona)}</td>
+      <td>${persona.f_obtencion ?? '—'}</td>
+      <td>${persona.f_vencimiento ?? '—'}</td>
+      ${contexto.permiteEliminar ? `<td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-carnet" data-contexto="${contextoKey}" data-id-carnet="${contexto.carnetId}" data-id-bombero="${persona.id_bombero}" title="Desasignar carnet"><i class="bi bi-trash3"></i><span class="visually-hidden">Desasignar carnet</span></button></td>` : ''}
+    </tr>
+  `).join('');
+}
+
+function renderSinResultadosTablaPersonasCarnet(contexto, mensaje) {
+  const tbody = document.querySelector(`#${contexto.tableId} tbody`);
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="${obtenerColspanTablaPersonas(contexto)}" class="text-center text-muted py-3">${mensaje}</td></tr>`;
+}
+
+function obtenerNombreCompleto(persona) {
+  return `${persona.nombre ?? ''} ${persona.apellidos ?? ''}`.trim() || '—';
 }
 
 function bindDesasignarPersona() {
@@ -407,12 +508,32 @@ function bindDesasignarPersona() {
 
     try {
       await CarnetApi.unassignFromPerson(idCarnet, idBombero);
-      btn.closest('tr')?.remove();
+      sincronizarDesasignacionEnContextos(idCarnet, idBombero);
+
       await cargarCarnets();
       mostrarExito('Asignacion eliminada correctamente');
     } catch (error) {
       mostrarError(error.message || 'Error eliminando la asignacion');
     }
+  });
+}
+
+function sincronizarDesasignacionEnContextos(idCarnet, idBombero) {
+  Object.entries(modalPersonasConfigs).forEach(([contextoKey, contexto]) => {
+    if (String(contexto.carnetId) !== String(idCarnet)) return;
+
+    contexto.personas = contexto.personas.filter((persona) => String(persona.id_bombero) !== String(idBombero));
+    contexto.pagination.totalItems = contexto.personas.length;
+
+    const totalPages = contexto.pagination.getTotalPages();
+    if (totalPages === 0) {
+      contexto.pagination.currentPage = 0;
+    } else if (contexto.pagination.currentPage >= totalPages) {
+      contexto.pagination.currentPage = totalPages - 1;
+    }
+
+    renderTablaPersonasCarnet(contextoKey);
+    contexto.pagination.render(contexto.paginationId);
   });
 }
 
