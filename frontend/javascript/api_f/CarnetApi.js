@@ -9,10 +9,6 @@ const CarnetApi = {
     return ApiClient.get(`/carnets/${idCarnet}`);
   },
 
-  getPersonsByCarnet(idCarnet) {
-    return ApiClient.get(`/carnets/${idCarnet}/personas`);
-  },
-
   removePersonFromCarnet(idCarnet, idBombero) {
     return ApiClient.delete(`/carnets/${idCarnet}/personas/${idBombero}`);
   },

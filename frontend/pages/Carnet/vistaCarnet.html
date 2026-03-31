@@ -144,7 +144,7 @@
  
     <!-- Modal de ver -->
     <div class="modal fade" id="modalVer" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
 
                 <div class="modal-header">
@@ -152,8 +152,28 @@
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body" id="modalVerBody">
-                   <!-- Body dinamico del modal-->
+                <div class="modal-body">
+                    <div id="modalVerBody">
+                       <!-- Body dinamico del modal-->
+                    </div>
+
+                    <div class="mt-4">
+                        <h6 class="fw-bold">Personas con este carnet</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped mb-0" id="tablaPersonasCarnet">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Bombero</th>
+                                        <th>Nombre</th>
+                                        <th>Obtencion</th>
+                                        <th>Vencimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div id="pagination-modal-ver-carnet" class="mt-3"></div>
+                    </div>
                 </div>
 
                 <div class="modal-footer">
@@ -167,7 +187,7 @@
     </div>
      <!-- Modal de edición -->
     <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
@@ -177,6 +197,24 @@
                     <form id="formEditar">
                         <!-- Los campos del formulario se generarán dinámicamente -->
                     </form>
+
+                    <div class="mt-4">
+                        <h6 class="fw-bold">Personas con este carnet</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped mb-0" id="tablaPersonasCarnetEditar">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Bombero</th>
+                                        <th>Nombre</th>
+                                        <th>Obtencion</th>
+                                        <th>Vencimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div id="pagination-modal-editar-carnet" class="mt-3"></div>
+                    </div>
                 </div>
             </div>
         </div>

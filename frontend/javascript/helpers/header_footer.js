@@ -1,4 +1,9 @@
-import { mostrarNombreUsuario, bindLogoutButtons } from '../controllers_f/AuthController.js';
+import {
+    mostrarNombreUsuario,
+    bindLogoutButtons,
+    getHeaderAvatarSrc,
+    getStoredSessionUser
+} from '../controllers_f/AuthController.js';
 import { mostrarEmergenciasHeader } from '../controllers_f/EmergenciasActivasController.js';
 
 const ACCESSIBILITY_KEY = 's5.accessibility.v1';
@@ -6,6 +11,10 @@ const DEFAULT_PREFS = { highContrast: false, fontScale: 16 };
 const MIN_FONT_SCALE = 14;
 const MAX_FONT_SCALE = 20;
 const ROOT_FONT_ID = 'app-font-size';
+
+const LAYOUT_CACHE_KEYS = {
+    header: 'layout-cache:header.html'
+};
 
 const globalState = window.__s5LayoutState || (window.__s5LayoutState = {
     initPromise: null,
@@ -31,6 +40,79 @@ const ICON_ONLY_ICON_LABELS = [
     ['bi-trash3', 'Eliminar'],
     ['bi-person-dash', 'Desasignar persona']
 ];
+
+function obtenerLayoutCacheado(cacheKey) {
+    try {
+        return sessionStorage.getItem(cacheKey);
+    } catch (_) {
+        return null;
+    }
+}
+
+function guardarLayoutCacheado(cacheKey, html) {
+    try {
+        sessionStorage.setItem(cacheKey, html);
+    } catch (_) {
+        // Ignoramos errores de quota o acceso al storage.
+    }
+}
+
+function prepararHeaderHTML(html) {
+    const user = getStoredSessionUser();
+
+    if (!user) {
+        return html;
+    }
+
+    const template = document.createElement('template');
+    template.innerHTML = html.trim();
+
+    const userNameEl = template.content.querySelector('#header-user-name');
+
+    if (userNameEl) {
+        userNameEl.textContent = user.nombre_usuario || user.login || 'Usuario';
+    }
+
+    const avatarImgEl = template.content.querySelector('#header-user-avatar');
+    const avatarFallbackEl = template.content.querySelector('#header-user-avatar-fallback');
+    const avatarSrc = getHeaderAvatarSrc(user.foto_perfil);
+
+    if (!avatarImgEl || !avatarFallbackEl) {
+        return template.innerHTML;
+    }
+
+    if (!avatarSrc) {
+        avatarImgEl.classList.add('d-none');
+        avatarFallbackEl.classList.remove('d-none');
+        return template.innerHTML;
+    }
+
+    avatarImgEl.src = avatarSrc;
+    avatarImgEl.decoding = 'async';
+    avatarImgEl.classList.remove('d-none');
+    avatarFallbackEl.classList.add('d-none');
+
+    return template.innerHTML;
+}
+
+function renderizarHeaderCacheado() {
+    const container = document.getElementById('header-placeholder');
+
+    if (!container) {
+        return false;
+    }
+
+    const cachedHtml = obtenerLayoutCacheado(LAYOUT_CACHE_KEYS.header);
+
+    if (!cachedHtml) {
+        return false;
+    }
+
+    container.innerHTML = prepararHeaderHTML(cachedHtml);
+    mostrarNombreUsuario();
+    mostrarEmergenciasHeader();
+    return true;
+}
 
 function clampFontScale(value) {
     if (!Number.isFinite(value)) {
@@ -452,8 +534,8 @@ async function cargarFotoHeader() {
             img.className = 'header-profile-pic';
             iconEl.replaceWith(img);
         }
-
-        container.innerHTML = `<div class="alert alert-danger">Error al cargar ${fileName}</div>`;
+    } catch (_) {
+        // Si falla silenciosamente, el icono por defecto permanece.
     }
 }
 
@@ -463,6 +545,7 @@ async function initLayout() {
     }
 
     globalState.initPromise = (async () => {
+        renderizarHeaderCacheado();
         await cargarHTML('header-placeholder', 'header.html');
         await cargarHTML('sidebar-placeholder', 'sidebar.html');
         await cargarHTML('footer-placeholder', 'footer.html');
