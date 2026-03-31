@@ -90,33 +90,20 @@ class RolModel
             ->fetch()['affected'];
     }
 
-        /**
-     * Obtener todas las personas que tienen un rol
+    /**
+     * Obtener las personas que tienen asignado un rol.
      */
     public function getPersonsByRol(int $id_rol): array
     {
         return $this->db
             ->query("
-                SELECT *
+                SELECT id_bombero, n_funcionario, nombre, apellidos, correo, id_rol
                 FROM Persona
-                WHERE ID_Rol = :id_rol
-                ORDER BY id_bombero ASC
+                WHERE id_rol = :id_rol
+                ORDER BY apellidos ASC, nombre ASC
             ")
             ->bind(':id_rol', $id_rol)
             ->fetchAll();
-    }
-
-    public function assignToPerson(string $id_bombero, int $id_rol): bool
-    {
-        return $this->db
-            ->query("
-                UPDATE Persona
-                SET id_rol = :id_rol
-                WHERE id_bombero = :id_bombero
-            ")
-            ->bind(':id_bombero', $id_bombero)
-            ->bind(':id_rol', $id_rol)
-            ->execute();
     }
 
 }

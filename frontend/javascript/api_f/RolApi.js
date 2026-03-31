@@ -16,11 +16,9 @@ const RolesApi = {
   delete(idRol) {
     return ApiClient.delete(`/roles/${idRol}`);
   },
-  assignToPerson(data) {
-      return ApiClient.post(`/roles/asignar`, {
-          id_bombero: data.id_bombero,
-          id_rol: data.id_rol,
-      });
+
+  getPersonsByRole(idRol) {
+    return ApiClient.get(`/roles/${idRol}/personas`);
   }
 };
 
