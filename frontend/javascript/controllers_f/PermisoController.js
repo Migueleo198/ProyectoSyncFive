@@ -336,11 +336,10 @@ function renderTablaPermisos(lista) {
 
   itemsPagina.forEach((permiso) => {
     const tr = document.createElement('tr');
-    const botonesAccion = puedeEscribir
-      ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_permiso}"><i class="bi bi-eye"></i></button>
-         <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.id_permiso}"><i class="bi bi-pencil"></i></button>`
-      : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_permiso}"><i class="bi bi-eye"></i></button>`;
-    tr.innerHTML = `<td class="d-none d-md-table-cell">${m.id_permiso}</td><td>${m.cod_motivo??'—'}</td><td class="d-none d-md-table-cell">${m.fecha??'—'}</td><td>${m.h_inicio??'—'}</td><td>${m.h_fin??'—'}</td><td>${m.estado??'—'}</td><td class="d-none d-md-table-cell">${truncar(m.descripcion,80)}</td>
+    const botonesAccion = `
+      <button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${permiso.id_permiso}"><i class="bi bi-eye"></i></button>
+      ${puedeEditar ? `<button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${permiso.id_permiso}"><i class="bi bi-pencil"></i></button>` : ''}`;
+    tr.innerHTML = `<td class="d-none d-md-table-cell">${permiso.id_permiso ?? '—'}</td><td>${formatearMotivo(permiso)}</td><td class="d-none d-lg-table-cell">${obtenerSolicitante(permiso)}</td><td>${formatearFechaHoraCorta(permiso.fecha_hora_inicio)}</td><td>${formatearFechaHoraCorta(permiso.fecha_hora_fin)}</td><td>${renderEstadoBadge(permiso.estado)}</td><td class="d-none d-md-table-cell">${permiso.descripcion ? truncar(permiso.descripcion, 80) : '—'}</td>
     <td class="celda-acciones">
         <div class="acciones-tabla">
           ${botonesAccion}
