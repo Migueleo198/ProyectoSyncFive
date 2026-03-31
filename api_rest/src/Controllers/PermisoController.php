@@ -53,11 +53,18 @@ class PermisoController
     {
         try {
             $data = $req->json();
+            $user = $req->getUser();
 
-            // Ahora puede incluir id_permiso (string)
+            if (!$user || empty($user['id_bombero'])) {
+                $res->errorJson("No autorizado", 401);
+                return;
+            }
+
+            $data['id_bombero'] = $user['id_bombero'];
+
             $result = $this->service->createPermiso($data);
 
-        $res->status(201)->json($result, "Permiso creado correctamente"); 
+            $res->status(201)->json($result, "Permiso creado correctamente");
 
         } catch (ValidationException $e) {
             $res->status(422)->json(
@@ -65,7 +72,8 @@ class PermisoController
                 "Errores de validación"
             );
         } catch (Throwable $e) {
-            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor", 500);
+            $code = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
+            $res->errorJson(app_debug() ? $e->getMessage() : "Error interno del servidor", $code);
         }
     }
 
@@ -93,26 +101,6 @@ class PermisoController
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
         } catch (Throwable $e) {
             $code = $e->getCode() > 0 ? $e->getCode() : 500;
-            $res->errorJson($e->getMessage(), $code);
-        }
-    }
-
-    /**
-     * DELETE /Permiso/{id_permiso}
-     */
-    public function delete(Request $req, Response $res, string $id_permiso): void
-    {
-        try {
-            // Ya no se convierte a entero
-            $service = new \Services\PermisoService();
-            $service->deletePermiso($id_permiso);
-
-            $res->status(200)->json([], "Permiso eliminado correctamente");
-
-        } catch (ValidationException $e) {
-            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
-        } catch (Throwable $e) {
-            $code = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
             $res->errorJson($e->getMessage(), $code);
         }
     }

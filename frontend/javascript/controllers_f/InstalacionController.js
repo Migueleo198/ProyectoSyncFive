@@ -9,7 +9,7 @@ let sesionActual = null;
 const pagination = new PaginationHelper(15);
 pagination.setLoadingCallback((isLoading) => {
     if (isLoading) {
-        showTableLoading('#tabla tbody', 6);
+        showTableLoading('#tabla tbody', 7);
     }
 });
 
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ================================
 async function cargarInstalaciones() {
   try {
-    showTableLoading('#tabla tbody', 6);
+    showTableLoading('#tabla tbody', 7);
     const response = await InstalacionApi.getAll();
     instalaciones = response?.data || response || [];
     pagination.setData(instalaciones, () => {
@@ -104,10 +104,11 @@ function renderTablaInstalaciones(lista) {
   itemsPagina.forEach(i => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
+      <td>${i.id_instalacion ?? ''}</td>
       <td>${i.nombre ?? ''}</td>
-      <td class="d-none d-md-table-cell">${i.direccion ?? ''}</td>
-      <td class="d-none d-md-table-cell">${i.telefono ?? ''}</td>
-      <td class="d-none d-md-table-cell">${i.correo ?? ''}</td>
+      <td class="d-none d-lg-table-cell">${i.direccion ?? ''}</td>
+      <td class="d-none d-lg-table-cell">${i.telefono ?? ''}</td>
+      <td class="d-none d-lg-table-cell">${i.correo ?? ''}</td>
       <td>${i.localidad ?? ''}</td>
       <td class="celda-acciones">
         <div class="acciones-tabla">
@@ -264,13 +265,46 @@ function bindCrearInstalacion() {
 // ================================
 // CAMPOS PARA MODAL VER
 // ================================
-const nombresCampos = ['Nombre', 'Dirección', 'Teléfono', 'Correo', 'Localidad'];
-const camposBd      = ['nombre', 'direccion', 'telefono', 'correo', 'localidad'];
+const nombresCampos = ['ID', 'Nombre', 'Dirección', 'Teléfono', 'Correo', 'Localidad'];
+const camposBd      = ['id_instalacion', 'nombre', 'direccion', 'telefono', 'correo', 'localidad'];
 
 // ================================
 // MODALES
 // ================================
 function bindModales() {
+  const formEditar = document.getElementById('formEditar');
+
+  if (formEditar) {
+    formEditar.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const editId = formEditar.querySelector('input[name="id_instalacion"]')?.value;
+      if (!editId) return;
+
+      const data = {
+        nombre: formEditar.querySelector('input[name="nombre"]')?.value || '',
+        direccion: formEditar.querySelector('input[name="direccion"]')?.value || '',
+        telefono: formEditar.querySelector('input[name="telefono"]')?.value || '',
+        correo: formEditar.querySelector('input[name="correo"]')?.value || '',
+        localidad: formEditar.querySelector('select[name="localidad"]')?.value || ''
+      };
+
+      if (!validarInstalacion(data)) return;
+
+      try {
+        await InstalacionApi.update(editId, data);
+        await cargarInstalaciones();
+        bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+        mostrarExito('Instalación actualizada correctamente');
+      } catch (error) {
+        if (error.message?.includes('Duplicate entry')) {
+          mostrarError('No se puede actualizar: ya existe una instalación con ese nombre');
+        } else {
+          mostrarError('Error al actualizar instalación: ' + error.message);
+        }
+      }
+    });
+  }
 
   // MODAL VER
   document.addEventListener('click', function (e) {
@@ -306,8 +340,7 @@ function bindModales() {
       const instalacion = response.data;
       if (!instalacion) return;
 
-      const form = document.getElementById('formEditar');
-      if (!form) return;
+      if (!formEditar) return;
 
       const localidades = [...new Set(
         instalaciones.map(i => i.localidad).filter(Boolean)
@@ -319,73 +352,41 @@ function bindModales() {
         optionsHtml += `<option value="${loc}" ${selected}>${loc}</option>`;
       });
 
-      form.innerHTML = `
+      formEditar.innerHTML = `
         <div class="row mb-3">
-          <div class="col-lg-4">
+          <div class="col-md-6">
             <label class="form-label">ID</label>
             <input type="text" class="form-control" value="${instalacion.id_instalacion || ''}" disabled>
             <input type="hidden" name="id_instalacion" value="${instalacion.id_instalacion || ''}">
           </div>
-          <div class="col-lg-4">
+          <div class="col-md-6">
             <label class="form-label">Nombre</label>
             <input type="text" class="form-control" name="nombre" maxlength="100" value="${instalacion.nombre || ''}" required>
           </div>
-          <div class="col-lg-4">
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Dirección</label>
+            <input type="text" class="form-control" name="direccion" maxlength="150" value="${instalacion.direccion || ''}" required>
+          </div>
+          <div class="col-md-6">
             <label class="form-label">Teléfono</label>
             <input type="text" class="form-control" name="telefono" maxlength="15" value="${instalacion.telefono || ''}" required>
           </div>
         </div>
         <div class="row mb-3">
-          <div class="col-lg-6">
-            <label class="form-label">Dirección</label>
-            <input type="text" class="form-control" name="direccion" maxlength="150" value="${instalacion.direccion || ''}" required>
-          </div>
-          <div class="col-lg-6">
+          <div class="col-md-6">
             <label class="form-label">Correo</label>
             <input type="email" class="form-control" name="correo" maxlength="100" value="${instalacion.correo || ''}" required>
           </div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-lg-6">
+          <div class="col-md-6">
             <label class="form-label">Localidad</label>
             <select class="form-select" name="localidad" required>
               ${optionsHtml}
             </select>
           </div>
         </div>
-        <div class="text-center">
-          <button type="button" class="btn btn-primary btn-guardar-instalacion">
-            Guardar cambios
-          </button>
-        </div>
       `;
-
-      form.querySelector('.btn-guardar-instalacion').addEventListener('click', async () => {
-        const editId = form.querySelector('input[name="id_instalacion"]').value;
-        const data = {
-          nombre:    form.querySelector('input[name="nombre"]').value,
-          direccion: form.querySelector('input[name="direccion"]').value,
-          telefono:  form.querySelector('input[name="telefono"]').value,
-          correo:    form.querySelector('input[name="correo"]').value,
-          localidad: form.querySelector('select[name="localidad"]').value
-        };
-
-        // ── Validación ──
-        if (!validarInstalacion(data)) return;
-
-        try {
-          await InstalacionApi.update(editId, data);
-          await cargarInstalaciones();
-          bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
-          mostrarExito('Instalación actualizada correctamente');
-        } catch (error) {
-          if (error.message?.includes('Duplicate entry')) {
-            mostrarError('No se puede actualizar: ya existe una instalación con ese nombre');
-          } else {
-            mostrarError('Error al actualizar instalación: ' + error.message);
-          }
-        }
-      });
 
     } catch (error) {
       mostrarError('Error al cargar datos de la instalación');

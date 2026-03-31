@@ -223,10 +223,11 @@ function renderCarnets(carnets) {
     tbody.innerHTML = '';
     (carnets?.detalle || []).forEach(c => {
         const vencido = c.vigente == 0;
+        const grupo = c.grupo ?? c.categoria ?? 'Sin grupo';
         tbody.innerHTML += `
             <tr class="${vencido ? 'table-danger' : ''}">
                 <td>${c.nombre}</td>
-                <td><span class="badge bg-secondary">${c.grupo_nombre || '—'}</span></td>
+                <td><span class="badge bg-secondary">${grupo}</span></td>
                 <td>${formatearFecha(c.f_obtencion)}</td>
                 <td>${formatearFecha(c.f_vencimiento)}</td>
                 <td><span class="badge ${vencido ? 'bg-danger' : 'bg-success'}">${vencido ? 'Caducado' : 'Vigente'}</span></td>

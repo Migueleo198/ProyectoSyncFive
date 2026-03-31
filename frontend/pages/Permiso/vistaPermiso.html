@@ -40,36 +40,6 @@
                 <!-- MIGAS DE PAN -->
                 <div id="breadcrumb-placeholder"></div>
                 
-                <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h2 class="text-center mb-4">Solicitud de Permisos</h2>
-                    <form id="formInsertar" method="POST" class="mx-auto">
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Motivo</label>
-                                <select class="form-select" id="motivo" name="cod_motivo" required>
-                                    <option value="">Seleccione motivo...</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Hora inicio</label>
-                                <input type="time" class="form-control" name="h_inicio">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Hora fin</label>
-                                <input type="time" class="form-control" name="h_fin">
-                            </div>
-                            <div class="col-md-12 mt-3">
-                                <label class="form-label">Descripción</label>
-                                <input type="text" class="form-control" name="descripcion">
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-center gap-2">
-                            <button type="reset" class="btn btn-secondary">Limpiar</button>
-                            <button type="submit" class="btn btn-primary">Insertar</button>
-                        </div>
-                    </form>
-                </div>
-
                 <div class="container mt-4 p-0"> 
                     <h2 class="d-flex align-items-center">Permisos</h2>
 
@@ -87,7 +57,7 @@
                             </select>
                         </div>
                         <div class="col-lg-3 col-md-3 col-sm-12 d-flex align-items-center m-1">
-                            <label class="me-2 text-nowrap" for="filtroFecha">Fecha:</label>
+                            <label class="me-2 text-nowrap" for="filtroFecha">Inicio:</label>
                             <input type="date" class="form-control form-control-sm" id="filtroFecha">
                         </div>
                     </div>
@@ -98,12 +68,12 @@
                             <tr>
                                 <th class="d-none d-md-table-cell">ID Permiso</th>
                                 <th>Motivo</th>
-                                <th class="d-none d-md-table-cell">Fecha</th>
-                                <th>F_inicio</th>
-                                <th>F_fin</th>
+                                <th class="d-none d-lg-table-cell">Solicitante</th>
+                                <th>Inicio</th>
+                                <th>Fin</th>
                                 <th>Estado</th>
-                                <th class="d-none d-md-table-cell">Descripcion</th>
-                                <th>Accion</th>
+                                <th class="d-none d-md-table-cell">Descripción</th>
+                                <th>Acción</th>
                             </tr>
                         </thead>
 
@@ -112,33 +82,37 @@
                     <div id="pagination-permiso" class="mt-3"></div>
                 </div>
 
-                <!-- Contenedor insertar Usuario -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h2 class="text-center mb-4">Gestionar Permisos</h2>
-                    <form id="formGestionarEstado" class="mx-auto">
-                        <!-- Campos en la misma fila -->
+                    <h5 class="text-center mb-4">Solicitar permiso</h5>
+                    <form id="formInsertar" method="POST" class="mx-auto">
                         <div class="row mb-3">
-
-                            <div class="col-md-6 col-sm-12">
-                                <label for="id_permiso" class="m-2 form-label">ID_Permiso</label>
-                                <select class="form-select" id="permiso" name="id_permiso">
-                                    <option value="">Seleccione el ID del permiso...</option>
+                            <div class="col-md-4">
+                                <label class="form-label" for="motivo">Motivo</label>
+                                <select class="form-select" id="motivo" name="cod_motivo" required>
+                                    <option value="">Seleccione motivo...</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 col-sm-12">
-                                <label for="estado" class="m-2 form-label">Estado Permiso</label>
-                                <select class="form-select" id="estado" name="estado">
-                                    <option value="">Seleccione el estado permiso...</option>
-                                </select>
+                            <div class="col-md-4">
+                                <label class="form-label" for="fechaHoraInicio">Inicio efectivo</label>
+                                <input type="datetime-local" class="form-control" id="fechaHoraInicio" name="fecha_hora_inicio" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="fechaHoraFin">Fin efectivo</label>
+                                <input type="datetime-local" class="form-control" id="fechaHoraFin" name="fecha_hora_fin" data-auto-calculated="true" required>
+                                <div class="form-text">Se completa automaticamente segun los dias del motivo, pero puedes ajustarlo manualmente.</div>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <label class="form-label" for="descripcionPermiso">Descripción</label>
+                                <textarea class="form-control" id="descripcionPermiso" name="descripcion" rows="3" placeholder="Añade contexto si necesitas ampliar la solicitud"></textarea>
                             </div>
                         </div>
-                        <!-- Botones centrados debajo -->
                         <div class="d-flex justify-content-center gap-2">
                             <button type="reset" class="btn btn-secondary">Limpiar</button>
-                            <button type="submit" class="btn btn-primary" id="btnInsertar">Insertar</button>
+                            <button type="submit" class="btn btn-primary">Insertar</button>
                         </div>
                     </form>
                 </div>
+
             </main>
         </div>
     </div>
@@ -149,7 +123,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Editar Permiso</h5> <!-- ← era "Editar Rol" -->
+                <h5 class="modal-title">Editar permiso</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -163,11 +137,11 @@
 
     <!-- Modal de ver -->
     <div class="modal fade" id="modalVer" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalle del tipo</h5>
+                    <h5 class="modal-title">Detalle del permiso</h5>
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
