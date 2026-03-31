@@ -1,0 +1,406 @@
+import { authGuard } from '../helpers/authGuard.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
+
+let almacenes = [];
+let instalaciones = [];
+let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 5);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  sesionActual = await authGuard('almacenes');
+  if (!sesionActual) return;
+
+  cargarDatosIniciales();
+  bindFiltros();
+  bindModales();
+
+  if (sesionActual.puedeEscribir) {
+    bindCrearAlmacen();
+  }
+});
+
+// ================================
+// CARGAR DATOS INICIALES
+// ================================
+async function cargarDatosIniciales() {
+  try {
+    await Promise.all([cargarInstalaciones()]);
+    await cargarTodosLosAlmacenes();
+    poblarSelectInstalaciones();
+    pagination.setData(almacenes, () => {
+      renderTablaAlmacenes(almacenes);
+    });
+    pagination.render('pagination-almacen');
+    renderTablaAlmacenes(almacenes);
+  } catch (e) {
+    console.error('Error cargando datos:', e);
+    mostrarError('Error cargando datos: ' + e.message);
+  }
+}
+
+// ================================
+// CARGAR INSTALACIONES
+// ================================
+async function cargarInstalaciones() {
+  try {
+    const response = await fetch('/api/instalaciones');
+    const data = await response.json();
+    instalaciones = data.data || [];
+  } catch (e) {
+    console.error('Error cargando instalaciones:', e);
+    mostrarError('Error cargando instalaciones');
+  }
+}
+
+// ================================
+// CARGAR TODOS LOS ALMACENES
+// ================================
+async function cargarTodosLosAlmacenes() {
+  almacenes = [];
+  showTableLoading('#tabla tbody', 5);
+
+  try {
+    for (const inst of instalaciones) {
+      try {
+        const response = await fetch(`/api/instalaciones/${inst.id_instalacion}/almacenes`);
+        const data = await response.json();
+        const almacenesInst = data.data || [];
+
+        almacenesInst.forEach(a => {
+          if (!almacenes.some(alm => alm.id_almacen === a.id_almacen)) {
+            almacenes.push({
+              id_almacen: a.id_almacen,
+              nombre: a.nombre,
+              planta: a.planta,
+              id_instalacion: inst.id_instalacion,
+              nombre_instalacion: inst.nombre
+            });
+          }
+        });
+      } catch (e) {
+        console.error(`Error cargando almacenes de instalación ${inst.id_instalacion}:`, e);
+      }
+    }
+  } catch (e) {
+    console.error('Error cargando almacenes:', e);
+    renderTablaAlmacenes([]);
+  }
+}
+
+// ================================
+// POBLAR SELECT DE INSTALACIONES
+// ================================
+function poblarSelectInstalaciones() {
+  const selects = ['selectInstalacion', 'editInstalacion'];
+  selects.forEach(id => {
+    const select = document.getElementById(id);
+    if (select) {
+      select.innerHTML = '<option value="">Seleccione una instalación...</option>';
+      instalaciones.forEach(i => {
+        const option = document.createElement('option');
+        option.value = i.id_instalacion;
+        option.textContent = `${i.nombre} - ${i.localidad || ''}`;
+        select.appendChild(option);
+      });
+    }
+  });
+}
+
+// ================================
+// RENDER TABLA
+// ================================
+function renderTablaAlmacenes(lista) {
+  const tbody = document.querySelector('#tabla tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+
+  if (lista.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td colspan="5" class="text-center">No hay almacenes para mostrar</td>';
+    tbody.appendChild(tr);
+    return;
+  }
+
+  const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
+
+  itemsPagina.forEach(a => {
+    const tr = document.createElement('tr');
+    tr.dataset.id = a.id_almacen;
+
+    const botonesAccion = puedeEscribir
+      ? `<button type="button" class="btn p-0 btn-ver"
+                data-bs-toggle="modal" data-bs-target="#modalVer"
+                data-id="${a.id_almacen}"><i class="bi bi-eye"></i></button>
+         <button type="button" class="btn p-0 btn-editar"
+                data-bs-toggle="modal" data-bs-target="#modalEditar"
+                data-id="${a.id_almacen}"><i class="bi bi-pencil"></i></button>
+         <button type="button" class="btn p-0 btn-eliminar"
+                data-bs-toggle="modal" data-bs-target="#modalEliminar"
+                data-id="${a.id_almacen}"><i class="bi bi-trash3"></i></button>`
+      : `<button type="button" class="btn p-0 btn-ver"
+                data-bs-toggle="modal" data-bs-target="#modalVer"
+                data-id="${a.id_almacen}"><i class="bi bi-eye"></i></button>`;
+
+    tr.innerHTML = `
+      <td>${a.id_almacen}</td>
+      <td>${a.nombre || ''}</td>
+      <td>${a.nombre_instalacion || 'Desconocida'}</td>
+      <td class="d-none d-md-table-cell">${a.planta || ''}</td>
+      <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ================================
+// FILTROS
+// ================================
+function bindFiltros() {
+  const filtroPlanta = document.getElementById('planta');
+  const filtroNombre = document.getElementById('nombre');
+  if (filtroPlanta) filtroPlanta.addEventListener('change', aplicarFiltros);
+  if (filtroNombre) filtroNombre.addEventListener('input', aplicarFiltros);
+}
+
+// ================================
+// APLICAR FILTROS
+// ================================
+function aplicarFiltros() {
+  pagination.goToPage(0);
+  const filtroPlanta = document.getElementById('planta')?.value;
+  const filtroNombre = document.getElementById('nombre')?.value?.toLowerCase();
+
+  const filtrados = almacenes.filter(a => {
+    let cumple = true;
+    if (filtroPlanta && filtroPlanta !== '') cumple = cumple && a.planta == filtroPlanta;
+    if (filtroNombre && filtroNombre !== '') cumple = cumple && a.nombre?.toLowerCase().includes(filtroNombre);
+    return cumple;
+  });
+
+  pagination.setData(filtrados, () => {
+      renderTablaAlmacenes(filtrados);
+    });
+  pagination.render('pagination-almacen');
+  renderTablaAlmacenes(filtrados);
+}
+
+// ================================
+// VALIDAR CAMPOS DE ALMACÉN
+// Según DDL: nombre VARCHAR(100) NOT NULL, planta INT NOT NULL
+// ================================
+function validarCamposAlmacen(id_instalacion, nombre, planta) {
+  if (!id_instalacion) {
+    mostrarError('Debe seleccionar una instalación.');
+    return false;
+  }
+
+  if (!nombre?.trim()) {
+    mostrarError('El nombre es obligatorio.');
+    return false;
+  }
+  if (nombre.trim().length > 100) {
+    mostrarError('El nombre no puede superar los 100 caracteres.');
+    return false;
+  }
+
+  if (planta === '' || planta === null || planta === undefined) {
+    mostrarError('La planta es obligatoria.');
+    return false;
+  }
+  // planta INT: debe ser un entero (puede ser 0, -1, etc.)
+  if (!Number.isInteger(Number(planta)) || isNaN(Number(planta))) {
+    mostrarError('La planta debe ser un número entero.');
+    return false;
+  }
+
+  return true;
+}
+
+// ================================
+// CREAR ALMACÉN
+// ================================
+function bindCrearAlmacen() {
+  const form = document.getElementById('formInsertar');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const f = new FormData(form);
+    const id_instalacion = f.get('id_instalacion');
+    const nombre         = f.get('nombre');
+    const planta         = f.get('planta');
+
+    if (!validarCamposAlmacen(id_instalacion, nombre, planta)) return;
+
+    try {
+      const response = await fetch(`/api/instalaciones/${id_instalacion}/almacenes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nombre.trim(), planta: Number(planta) })
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        if (result.errors) throw new Error(Object.values(result.errors).flat().join(', '));
+        throw new Error(result.message || 'Error al crear');
+      }
+
+      await cargarDatosIniciales();
+      form.reset();
+      mostrarExito('Almacén creado correctamente');
+    } catch (err) {
+      mostrarError(err.message);
+    }
+  });
+}
+
+// ================================
+// MODALES
+// ================================
+function bindModales() {
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-ver');
+    if (!btn) return;
+
+    const almacen = almacenes.find(a => a.id_almacen == btn.dataset.id);
+    if (!almacen) return;
+
+    document.getElementById('modalVerBody').innerHTML = `
+      <p><strong>ID:</strong> ${almacen.id_almacen}</p>
+      <p><strong>Nombre:</strong> ${almacen.nombre}</p>
+      <p><strong>Planta:</strong> ${almacen.planta}</p>
+      <p><strong>Instalación:</strong> ${almacen.nombre_instalacion}</p>
+    `;
+  });
+
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-editar');
+    if (!btn) return;
+
+    const almacen = almacenes.find(a => a.id_almacen == btn.dataset.id);
+    if (!almacen) return;
+
+    const form = document.getElementById('formEditar');
+    form.innerHTML = `
+      <div class="mb-3">
+        <label class="form-label">ID</label>
+        <input type="text" class="form-control" value="${almacen.id_almacen}" readonly disabled>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <input type="text" class="form-control" id="editNombre" value="${almacen.nombre}" maxlength="100" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Planta</label>
+        <input type="number" step="1" class="form-control" id="editPlanta" value="${almacen.planta}" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Instalación</label>
+        <select class="form-select" id="editInstalacion" required>
+          <option value="">Seleccione una instalación...</option>
+        </select>
+      </div>
+    `;
+
+    const selectEdit = document.getElementById('editInstalacion');
+    instalaciones.forEach(i => {
+      const option = document.createElement('option');
+      option.value = i.id_instalacion;
+      option.textContent = `${i.nombre} - ${i.localidad || ''}`;
+      if (i.id_instalacion == almacen.id_instalacion) option.selected = true;
+      selectEdit.appendChild(option);
+    });
+  });
+
+  // GUARDAR CAMBIOS
+  document.getElementById('btnGuardarCambios')?.addEventListener('click', async function () {
+    const id             = document.querySelector('#modalEditar .modal-body input[readonly]').value;
+    const id_instalacion = document.getElementById('editInstalacion').value;
+    const nombre         = document.getElementById('editNombre').value;
+    const planta         = document.getElementById('editPlanta').value;
+
+    if (!validarCamposAlmacen(id_instalacion, nombre, planta)) return;
+
+    try {
+      const response = await fetch(`/api/instalaciones/${id_instalacion}/almacenes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nombre.trim(), planta: Number(planta) })
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        if (result.errors) throw new Error(Object.values(result.errors).flat().join(', '));
+        throw new Error(result.message || 'Error al actualizar');
+      }
+
+      await cargarDatosIniciales();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+      mostrarExito('Almacén actualizado correctamente');
+    } catch (error) {
+      mostrarError(error.message);
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-eliminar');
+    if (!btn) return;
+
+    const almacen = almacenes.find(a => a.id_almacen == btn.dataset.id);
+    const btnConfirm = document.getElementById('btnConfirmarEliminar');
+    btnConfirm.dataset.id = btn.dataset.id;
+    btnConfirm.dataset.instalacion = almacen?.id_instalacion;
+
+    const modalBody = document.querySelector('#modalEliminar .modal-body');
+    if (modalBody && almacen) {
+      modalBody.innerHTML = `
+        ¿Eliminar el almacén "${almacen.nombre}"?
+        <p class="text-muted">Esta acción no se puede deshacer.</p>
+        <p class="text-warning">Nota: Si tiene materiales o relaciones, no se podrá eliminar.</p>
+      `;
+    }
+  });
+
+  // CONFIRMAR ELIMINAR
+  document.getElementById('btnConfirmarEliminar')?.addEventListener('click', async function () {
+    const id = this.dataset.id;
+    const id_instalacion = this.dataset.instalacion;
+    if (!id || !id_instalacion) return;
+
+    try {
+      const response = await fetch(`/api/instalaciones/${id_instalacion}/almacenes/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        mostrarError('No se puede eliminar: el almacén tiene materiales o relaciones');
+        return;
+      }
+
+      await cargarDatosIniciales();
+      bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+      mostrarExito('Almacén eliminado correctamente');
+    } catch (error) {
+      mostrarError('No se puede eliminar: el almacén tiene materiales o relaciones');
+    }
+  });
+}
+
+// ================================
+// ALERTAS (importadas de utils.js)
+// ================================
+
+window.AlmacenController = { cargarAlmacenes: cargarTodosLosAlmacenes, refrescarAlmacenes: cargarDatosIniciales, aplicarFiltros };

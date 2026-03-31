@@ -38,13 +38,48 @@ export function validarRangoFechas(fechaInicio, fechaFin) {
     return fin > inicio;
 }
 
+// Teléfono español: 9 dígitos, empieza por 6, 7, 8 o 9
+export function validarTelefono(telefono) {
+    if (!telefono) return false;
+    const telRegex = /^[6789]\d{8}$/;
+    return telRegex.test(telefono.trim());
+}
 
 // CONTRASEÑA
-const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-
 export function validarPassword(password) {
     if (!password) return false;
+    const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,100}$/;
     return PASSWORD_REGEX.test(password);
+}
+
+// ID BOMBERO -> 1 letra + 3 números (ej: A123)
+export function validarIdBombero(id) {
+    if (!id) return false;
+
+    const regex = /^[A-Za-z]{1}[0-9]{3}$/;
+    return regex.test(id.trim());
+}
+
+// NUMERO FUNCIONARIO -> 17 caracteres alfanuméricos
+export function validarNumeroFuncionario(numero) {
+    if (!numero) return false;
+
+    const regex = /^[A-Za-z0-9]{17}$/;
+    return regex.test(numero.trim());
+}
+
+// MATRICULA ESPAÑOLA (NUEVA + ANTIGUA)
+export function validarMatriculaEspanola(matricula) {
+    if (!matricula) return false;
+
+    const m = matricula.replace(/\s+/g, '').toUpperCase();
+
+    // Nuevo formato (desde 2000): 4 dígitos + 3 letras (sin vocales ni Ñ)
+    const formatoNuevo = /^[0-9]{4}[BCDFGHJKLMNPRSTVWXYZ]{3}$/;
+    // Formato antiguo: 1-2 letras + 4 dígitos + 0-2 letras (sin vocales ni Ñ)
+    const formatoAntiguo = /^[BCDFGHJKLMNPRSTVWXYZ]{1,2}[0-9]{4}[BCDFGHJKLMNPRSTVWXYZ]{0,2}$/;
+
+    return formatoNuevo.test(m) || formatoAntiguo.test(m);
 }
 
 

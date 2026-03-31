@@ -7,6 +7,7 @@ use Models\IncidenciaModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class IncidenciaService
 {
@@ -15,6 +16,39 @@ class IncidenciaService
     public function __construct()
     {
         $this->model = new IncidenciaModel();
+    }
+
+    // Validar exclusión mutua: Material O Vehículo, no ambos
+    private function validarMaterialVehiculo(array $data): void
+    {
+        $tieneMaternal = !empty($data['id_material']);
+        $tieneVehiculo = !empty($data['matricula']);
+
+        if ($tieneMaternal && $tieneVehiculo) {
+            throw new ValidationException('No puedes asignar Material y Vehículo a la vez. Elige uno solo');
+        }
+        if (!$tieneMaternal && !$tieneVehiculo) {
+            throw new ValidationException('Debe asignarse al menos un Material o un Vehículo');
+        }
+    }
+
+    // Validar formato de matrícula española
+    private function validarFormatoMatricula(?string $matricula): void
+    {
+        if (empty($matricula)) {
+            return; // No es obligatoria
+        }
+
+        $m = preg_replace('/\s+/', '', strtoupper($matricula));
+
+        // Nuevo formato (desde 2000): 4 dígitos + 3 letras (sin vocales ni Ñ)
+        $formatoNuevo = '/^[0-9]{4}[BCDFGHJKLMNPRSTVWXYZ]{3}$/';
+        // Formato antiguo: 1-2 letras + 4 dígitos + 0-2 letras (sin vocales ni Ñ)
+        $formatoAntiguo = '/^[BCDFGHJKLMNPRSTVWXYZ]{1,2}[0-9]{4}[BCDFGHJKLMNPRSTVWXYZ]{0,2}$/';
+
+        if (!preg_match($formatoNuevo, $m) && !preg_match($formatoAntiguo, $m)) {
+            throw new ValidationException('La matrícula no tiene un formato válido (ej: 1234ABC o AB1234)');
+        }
     }
 
     // GET, /incidencias
@@ -32,13 +66,16 @@ class IncidenciaService
     {
         $data = Validator::validate($input, [
             'id_bombero' => 'required|integer|min:1',
-            'id_material' => 'integer|min:1',
-            'matricula' => 'string|max:15',
+            'id_material' => 'nullable|integer|min:1',
+            'matricula' => 'nullable|string|max:15',
             'fecha' => 'required|date',
             'asunto' => 'required|string|max:150',
             'estado' => 'required|string|in:ABIERTA,CERRADA',
             'tipo' => 'required|string|max:50'
         ]);
+
+        $this->validarFormatoMatricula($data['matricula'] ?? null);
+        $this->validarMaterialVehiculo($data);
 
         try {
             $id = $this->model->create($data);
@@ -53,18 +90,34 @@ class IncidenciaService
     {
         $data = Validator::validate($input, [
             'id_bombero' => 'required|integer|min:1',
-            'id_material' => 'integer|min:1',
-            'matricula' => 'string|max:15',
+            'id_material' => 'nullable|integer|min:1',
+            'matricula' => 'nullable|string|max:15',
             'fecha' => 'required|date',
             'asunto' => 'required|string|max:150',
             'estado' => 'required|string|in:ABIERTA,CERRADA',
             'tipo' => 'required|string|max:50'
         ]);
 
+        $this->validarFormatoMatricula($data['matricula'] ?? null);
+        $this->validarMaterialVehiculo($data);
+
         try {
             $existing = $this->model->find($id);
             if (!$existing) {
                 throw new \Exception("Incidencia no encontrada", 404);
+            }
+
+            // Comparar datos para detectar cambios
+            $hubosCambios = false;
+            foreach ($data as $campo => $valor) {
+                if ($existing[$campo] != $valor) {
+                    $hubosCambios = true;
+                    break;
+                }
+            }
+
+            if (!$hubosCambios) {
+                throw new \Exception("No hay cambios para guardar", 400);
             }
 
             $updated = $this->model->update($id, $data);
@@ -73,7 +126,7 @@ class IncidenciaService
             }
             return $this->model->find($id);
         } catch (Throwable $e) {
-            if ($e->getCode() === 404) {
+            if ($e->getCode() === 404 || $e->getCode() === 400) {
                 throw $e;
             }
             throw new \Exception("Error al actualizar incidencia: " . $e->getMessage(), 500);
@@ -85,8 +138,8 @@ class IncidenciaService
     {
         $data = Validator::validate($input, [
             'id_bombero' => 'integer|min:1',
-            'id_material' => 'integer|min:1',
-            'matricula' => 'string|max:15',
+            'id_material' => 'nullable|integer|min:1',
+            'matricula' => 'nullable|string|max:15',
             'fecha' => 'date',
             'asunto' => 'string|max:150',
             'estado' => 'string|in:ABIERTA,CERRADA',
@@ -105,6 +158,9 @@ class IncidenciaService
             }
 
             $updatedData = array_merge($existing, $data);
+            $this->validarFormatoMatricula($updatedData['matricula'] ?? null);
+            $this->validarMaterialVehiculo($updatedData);
+
             $updated = $this->model->update($id, $updatedData);
             if ($updated === 0) {
                 throw new \Exception("No se pudo actualizar la incidencia", 500);
@@ -131,6 +187,12 @@ class IncidenciaService
             if ($deleted === 0) {
                 throw new \Exception("No se pudo eliminar la incidencia", 500);
             }
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar esta incidencia porque hay registros asociados", 409);
+            }
+            throw new \Exception("Error al eliminar incidencia: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             if ($e->getCode() === 404) {
                 throw $e;

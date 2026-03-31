@@ -2,15 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avisos</title>
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-
-    <!-- Configuración y rutas absolutas -->
     <script src="/frontend/config/config.js"></script>
+<<<<<<< HEAD
 
     <!-- CSS del proyecto usando loadCSS() -->
     <script>
@@ -27,8 +20,11 @@
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+=======
+    <script>loadHead("Avisos")</script>
+    <script type="module" src="/frontend/javascript/controllers_f/AvisoController.js"></script>
+>>>>>>> main
 </head>
-
 <body class="bg-white text-dark d-flex flex-column">
     <!-- HEADER -->
     <div id="header-placeholder"></div>
@@ -43,17 +39,18 @@
             <!-- CONTENIDO PRINCIPAL -->
             <main class="col p-3 p-md-4 main-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 class="mb-0">Avisos</h1>
-                    <!-- Icono de ayuda que redirige a Notion -->
-                    <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
-                    class="text-dark" title="Abrir ayuda en Notion">
-                        <i class="bi bi-question-circle fs-3"></i>
+                    <div>
+                        <h1 class="mb-0 fw-bold">Avisos</h1>
+                        <small class="text-muted">Comunicados y notificaciones del sistema</small>
+                    </div>
+                    <a href="https://www.notion.so/10_Avisos-31b0bf35f60680b187b3f138d4e35b68" target="_blank" 
+                    class="text-muted" title="Ayuda">
+                        <i class="bi bi-question-circle fs-4"></i>
                     </a>
                 </div>
 
-                <div>
-                    <p>[Migas de pan]</p>
-                </div>
+                <!-- MIGAS DE PAN -->
+                <div id="breadcrumb-placeholder"></div>
 
                 <!-- Contenedor tabla con filtro-->
                 <div class="container mt-4 p-0"> 
@@ -66,9 +63,7 @@
                             <label class="m-2" for="remitente">Remitente:</label>
                             <select class="form-select form-select-sm mt-1 filtro" id="remitente" data-col="4">
                                 <option value="">Todos</option>
-                                <option>Diego</option>
-                                <option>Germán</option>
-                                <option>Javier</option>
+                                <!-- Se deberían cargar con datos reales -->
                             </select>
                         </div>
                     </div>
@@ -84,32 +79,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="d-none d-md-table-cell">INUR1</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->   
-                                <td>Incendio edificio</td>
-                                <td>Incendio urbano</td>
-                                <td class="d-none d-md-table-cell">Diego</td>
-                                <td class="d-none d-md-table-cell">Diego</td>
-                                <td class="d-flex justify-content-around">
-                                    
-                                    <button type="button" class="btn p-0 d-md-none btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-                                                            
-                                </td>
-                            </tr>
-
-                            <!-- Aquí puedes agregar más filas de datos -->
+                           
                         </tbody>
                     </table>
+                    <div id="pagination-aviso" class="mt-3"></div>
                 </div>
                 
                 <!-- Contenedor insertar -->
@@ -120,23 +93,42 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="insertAsunto" class="form-label">Asunto</label>
-                                <input type="text" class="form-control" id="insertAsunto" name="asunto" required>
+                                <input type="text" class="form-control" id="insertAsunto" name="asunto" minlength="3" maxlength="150" required>
                             </div>
                             <div class="col-md-6">
-                            
-                                <label for="insertDestinatario" class="form-label">Destinatario:</label>
-                                <select class="form-select" id="insertDestinatario">
-                                    <option value="">Todos</option>
-                                    <option>Diego</option>
-                                    <option>Germán</option>
-                                    <option>Javier</option>
+                                <label class="form-label">Destinatarios</label>
+                                <div class="btn-group w-100 mb-2" role="group">
+                                    <input type="radio" class="btn-check" name="destinatarioMode" id="modeTodos" value="todos">
+                                    <label class="btn btn-outline-primary btn-sm" for="modeTodos">Todos</label>
+                                    
+                                    <input type="radio" class="btn-check" name="destinatarioMode" id="modeUno" value="uno" checked>
+                                    <label class="btn btn-outline-primary btn-sm" for="modeUno">Uno</label>
+                                    
+                                    <input type="radio" class="btn-check" name="destinatarioMode" id="modeVarios" value="varios">
+                                    <label class="btn btn-outline-primary btn-sm" for="modeVarios">Varios</label>
+                                </div>
+                                
+                                <!-- Single select - show when "uno" -->
+                                <select id="destinatarioSelect" class="form-select">
+                                    <option value="">Seleccione un destinatario</option>
+                                    <!-- Se deberían cargar con datos reales -->
                                 </select>
+                                
+                                <!-- Multi select - show when "varios" -->
+                                <select id="destinatariosMultiSelect" class="form-select" multiple size="5" style="display:none">
+                                    <!-- Se deberían cargar con datos reales -->
+                                </select>
+                                
+                                <!-- Info text -->
+                                <small id="destinatarioInfo" class="form-text text-muted">
+                                    Seleccione un único destinatario
+                                </small>
                             </div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-12">
-                                <label for="insertNombre" class="form-label">Mensaje</label>
-                                <textarea class="form-control" id="insertNombre" name="nombre" rows="5" required></textarea>
+                                <label for="insertMensaje" class="form-label">Mensaje</label>
+                                <textarea class="form-control" id="insertMensaje" name="mensaje" rows="5" minlength="5" required></textarea>
                             </div>
                         </div>
                         <!-- Botones centrados debajo -->
@@ -228,7 +220,7 @@
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalle del tipo</h5>
+                    <h5 class="modal-title">Detalle del aviso</h5>
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
@@ -248,8 +240,7 @@
     <!-- FOOTER -->
     <div id="footer-placeholder" class="mt-auto"></div>
     <!-- ALERT-->
-    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
-
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
 
 </body>
 

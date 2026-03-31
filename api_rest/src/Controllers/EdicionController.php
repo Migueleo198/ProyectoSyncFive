@@ -20,15 +20,31 @@ class EdicionController
         $this->service = new EdicionService();
     }
 
-
     /**
-     * GET /ediciones/{id_formacion}
+     * GET /ediciones
      */
-    public function index(Request $req, Response $res, string $id_formacion): void
+    public function index(Request $req, Response $res): void
     {
         try {
-            $ediciones = $this->service->getEdicionesByFormacion((int) $id_formacion);
+            $ediciones = $this->service->getAllEdiciones();
             $res->status(200)->json($ediciones);
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+            return;
+        } catch (Throwable $e) {
+            $status = $e->getCode() === 404 ? 404 : 500;
+            $res->errorJson($e->getMessage(), $status);
+        }
+    }
+
+    /**
+     * GET /ediciones/{id_edicion}
+     */
+    public function show(Request $req, Response $res, string $id_formacion, string $id_edicion): void
+    {
+        try {
+            $edicion = $this->service->getEdicionesById((int) $id_formacion, (int) $id_edicion);
+            $res->status(200)->json($edicion);
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
             return;

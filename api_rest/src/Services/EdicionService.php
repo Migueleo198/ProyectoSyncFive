@@ -7,6 +7,7 @@ use Models\EdicionModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class EdicionService
 {
@@ -17,24 +18,36 @@ class EdicionService
         $this->model = new EdicionModel();
     }
 
-
-    public function getEdicionesByFormacion(int $id): array
+    public function getAllEdiciones(): array
     {
-        Validator::validate(['id_formacion' => $id], [
+        try {
+            return $this->model->all();
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+
+    public function getEdicionesById(int $id_formacion, int $id_edicion): array
+    {
+        Validator::validate(['id_edicion' => $id_edicion], [
+            'id_edicion' => 'required|int|min:1'
+        ]);
+
+        Validator::validate(['id_formacion' => $id_formacion], [
             'id_formacion' => 'required|int|min:1'
         ]);
 
         try {
-            $formacion = $this->model->find($id);
+            $edicion = $this->model->find($id_formacion, $id_edicion);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
-        if (!$formacion) {
+        if (!$edicion) {
             throw new \Exception("Formación no encontrada", 404);
         }
 
-        return $formacion;
+        return $edicion;
     }
 
 
@@ -115,6 +128,12 @@ class EdicionService
 
         try {
             $result = $this->model->delete($id_formacion, $id_edicion);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar esta edición porque hay personas asignadas", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -122,11 +141,6 @@ class EdicionService
         if ($result === 0) {
             // No existe el registro
             throw new \Exception("Edición no encontrada", 404);
-        }
-
-        if ($result === -1) {
-            // Conflicto por FK u otra restricción
-            throw new \Exception("No se puede eliminar la edición: el registro está en uso", 409);
         }
 
         // Eliminación exitosa → no retorna nada
@@ -181,12 +195,17 @@ class EdicionService
 
         try {
             $result = $this->model->deletePersonal($id_formacion, $id_edicion, $id_bombero);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar esta persona de la edición debido a restricciones", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
 
         if ($result === 0) throw new \Exception("Personal no encontrado en la edición", 404);
-        if ($result === -1) throw new \Exception("No se puede eliminar: restricciones en la base de datos", 409);
     }
     
 }

@@ -1,0 +1,526 @@
+import AvisoApi from '../api_f/AvisoApi.js';
+import PersonaApi from '../api_f/PersonaApi.js';
+import { authGuard } from '../helpers/authGuard.js';
+import { formatearFecha, truncar, mostrarExito, mostrarError } from '../helpers/utils.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
+
+let avisos = [];
+let personas = [];
+let sesionActual = null;
+let usuarioActual = null;
+let destinatarioModeBound = false;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 6);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  sesionActual = await authGuard('avisos');
+  if (!sesionActual) return;
+
+  usuarioActual = sesionActual.usuario;
+
+  await cargarPersonas();
+  await cargarAvisos();
+
+  bindFiltros();
+
+  if (sesionActual.puedeEscribir) {
+    bindCrearAviso();
+  }
+
+  bindModalVer();
+  bindModalEliminar();
+});
+
+// ================================
+// CARGAR PERSONAS
+// ================================
+async function cargarPersonas() {
+  try {
+    const response = await PersonaApi.getAll();
+    personas = response?.data || response || [];
+    poblarSelectDestinatarios(personas);
+    poblarSelectFiltroRemitente(personas);
+  } catch (e) {
+    console.error('Error cargando personas:', e.message);
+  }
+}
+
+function poblarSelectDestinatarios(lista) {
+  // Excluir al usuario actual de la lista de destinatarios
+  const personasFiltradas = lista.filter(p => 
+    !usuarioActual || String(p.id_bombero) !== String(usuarioActual.id_bombero)
+  );
+
+  // Ordenar alfabéticamente
+  const personasOrdenadas = [...personasFiltradas].sort((a, b) =>
+    `${a.nombre} ${a.apellidos}`.localeCompare(`${b.nombre} ${b.apellidos}`)
+  );
+
+  // Poblar select único (modo "uno")
+  const selectUnico = document.getElementById('destinatarioSelect');
+  if (selectUnico) {
+    selectUnico.innerHTML = '<option value="">Seleccione un destinatario</option>';
+    personasOrdenadas.forEach(p => {
+      const option = document.createElement('option');
+      option.value = p.id_bombero;
+      option.textContent = `${p.nombre} ${p.apellidos} (${p.nombre_usuario})`;
+      selectUnico.appendChild(option);
+    });
+  }
+
+  // Poblar select múltiple (modo "varios")
+  const selectMultiple = document.getElementById('destinatariosMultiSelect');
+  if (selectMultiple) {
+    selectMultiple.innerHTML = '';
+    personasOrdenadas.forEach(p => {
+      const option = document.createElement('option');
+      option.value = p.id_bombero;
+      option.textContent = `${p.nombre} ${p.apellidos} (${p.nombre_usuario})`;
+      selectMultiple.appendChild(option);
+    });
+  }
+
+  // Guardar lista de personas para el modo "todos"
+  window._personasParaAviso = personasOrdenadas.map(p => p.id_bombero);
+}
+
+function poblarSelectFiltroRemitente(lista) {
+  const select = document.getElementById('remitente');
+  if (!select) return;
+
+  select.innerHTML = '<option value="">Todos</option>';
+
+  const personasOrdenadas = [...lista].sort((a, b) =>
+    `${a.nombre} ${a.apellidos}`.localeCompare(`${b.nombre} ${b.apellidos}`)
+  );
+
+  personasOrdenadas.forEach(p => {
+    const option = document.createElement('option');
+    option.value = p.id_bombero;
+    option.textContent = `${p.nombre} ${p.apellidos} (${p.nombre_usuario})`;
+    select.appendChild(option);
+  });
+}
+
+// ================================
+// CARGAR AVISOS
+// ================================
+async function cargarAvisos() {
+  try {
+    showTableLoading('#tabla tbody', 6);
+    const response = await AvisoApi.getAll();
+    const todosLosAvisos = response?.data || response || [];
+    const misAvisos = await filtrarAvisosDelUsuario(todosLosAvisos);
+    avisos = misAvisos;
+    pagination.setData(avisos, () => {
+      renderTablaAvisos(avisos);
+    });
+    pagination.render('pagination-aviso');
+    renderTablaAvisos(avisos);
+  } catch (e) {
+    avisos = [];
+    pagination.setData([], () => {
+      renderTablaAvisos([]);
+    });
+    pagination.render('pagination-aviso');
+    renderTablaAvisos([]);
+  }
+}
+
+async function filtrarAvisosDelUsuario(lista) {
+  if (!usuarioActual) return lista;
+
+  const resultados = await Promise.allSettled(
+    lista.map(a => AvisoApi.getDestinatarios(a.id_aviso))
+  );
+
+  return lista.filter((aviso, index) => {
+    const esRemitente = String(aviso.remitente) === String(usuarioActual.id_bombero);
+    const resultado = resultados[index];
+    if (resultado.status !== 'fulfilled') return esRemitente;
+
+    const destinatarios = resultado.value.data ?? [];
+    const esDestinatario = destinatarios.some(d => String(d.id_bombero) === String(usuarioActual.id_bombero));
+    return esDestinatario || esRemitente;
+  });
+}
+
+function obtenerNombrePersona(idBombero, incluirUsuario = false) {
+  if (!idBombero) return '—';
+
+  const persona = personas.find(p => String(p.id_bombero) === String(idBombero));
+  if (!persona) return idBombero;
+
+  const nombreBase = `${persona.nombre} ${persona.apellidos}`.trim();
+  return incluirUsuario && persona.nombre_usuario
+    ? `${nombreBase} (${persona.nombre_usuario})`
+    : nombreBase;
+}
+
+// ================================
+// RENDER TABLA
+// ================================
+function renderTablaAvisos(lista) {
+  const tbody = document.querySelector('#tabla tbody');
+  tbody.innerHTML = '';
+
+  if (!lista.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-muted py-4">No hay avisos registrados</td>
+      </tr>`;
+    return;
+  }
+
+  const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
+
+  itemsPagina.forEach(a => {
+    const tr = document.createElement('tr');
+    const nombreRemitente = obtenerNombrePersona(a.remitente);
+
+    const botonesAccion = puedeEscribir
+      ? `<button type="button" class="btn p-0 btn-ver"
+              data-bs-toggle="modal" data-bs-target="#modalVer"
+              data-id="${a.id_aviso}" title="Ver detalle">
+            <i class="bi bi-eye"></i>
+         </button>
+         <button type="button" class="btn p-0 btn-eliminar"
+              data-bs-toggle="modal" data-bs-target="#modalEliminar"
+              data-id="${a.id_aviso}" title="Eliminar">
+            <i class="bi bi-trash3 text-danger"></i>
+         </button>`
+      : `<button type="button" class="btn p-0 btn-ver"
+              data-bs-toggle="modal" data-bs-target="#modalVer"
+              data-id="${a.id_aviso}" title="Ver detalle">
+            <i class="bi bi-eye"></i>
+         </button>`;
+
+    tr.innerHTML = `
+      <td class="d-none d-md-table-cell">${a.id_aviso}</td>
+      <td>${a.asunto ?? ''}</td>
+      <td>${truncar(a.mensaje, 60)}</td>
+      <td class="d-none d-md-table-cell">${formatearFecha(a.fecha)}</td>
+      <td class="d-none d-md-table-cell">${nombreRemitente}</td>
+      <td>
+        <div class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ================================
+// FILTROS
+// ================================
+function bindFiltros() {
+  document.getElementById('asunto')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('remitente')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  pagination.goToPage(0);
+  const filtroAsunto    = document.getElementById('asunto')?.value.toLowerCase().trim() ?? '';
+  const filtroRemitente = document.getElementById('remitente')?.value ?? '';
+
+  const filtrados = avisos.filter(a => {
+    const cumpleAsunto    = !filtroAsunto    || (a.asunto?.toLowerCase().includes(filtroAsunto));
+    const cumpleRemitente = !filtroRemitente || String(a.remitente) === String(filtroRemitente);
+    return cumpleAsunto && cumpleRemitente;
+  });
+  pagination.setData(filtrados, () => {
+      renderTablaAvisos(filtrados);
+    });
+  pagination.render('pagination-aviso');
+  renderTablaAvisos(filtrados);
+}
+
+// ================================
+// VALIDAR AVISO
+// Según DDL Aviso:
+//   asunto  VARCHAR(150) NOT NULL
+//   mensaje TEXT         NOT NULL
+// ================================
+function validarAviso(asunto, mensaje) {
+  if (!asunto) {
+    mostrarError('El asunto es obligatorio.');
+    return false;
+  }
+  if (asunto.length < 3) {
+    mostrarError('El asunto debe tener al menos 3 caracteres.');
+    return false;
+  }
+  if (asunto.length > 150) {
+    mostrarError('El asunto no puede superar los 150 caracteres.');
+    return false;
+  }
+
+  if (!mensaje) {
+    mostrarError('El mensaje es obligatorio.');
+    return false;
+  }
+  if (mensaje.length < 5) {
+    mostrarError('El mensaje debe tener al menos 5 caracteres.');
+    return false;
+  }
+
+  return true;
+}
+
+// ================================
+// TOGGLE MODO DESTINATARIOS
+// ================================
+function bindDestinatarioModeToggle() {
+  const radios = document.querySelectorAll('input[name="destinatarioMode"]');
+  const selectUnico = document.getElementById('destinatarioSelect');
+  const selectMultiple = document.getElementById('destinatariosMultiSelect');
+  const infoText = document.getElementById('destinatarioInfo');
+
+  if (!selectUnico || !selectMultiple || !infoText || !radios.length) return;
+
+  const aplicarModoDestinatario = (modo) => {
+    if (modo === 'todos') {
+      selectUnico.style.display = 'none';
+      selectMultiple.style.display = 'none';
+      selectUnico.value = '';
+      Array.from(selectMultiple.options).forEach(opt => {
+        opt.selected = false;
+      });
+      infoText.textContent = 'El aviso se enviara a todos los usuarios disponibles';
+      return;
+    }
+
+    if (modo === 'varios') {
+      selectUnico.style.display = 'none';
+      selectMultiple.style.display = 'block';
+      selectUnico.value = '';
+      infoText.textContent = 'Seleccione uno o varios destinatarios (mantenga Ctrl/Cmd para multiples)';
+      return;
+    }
+
+    selectUnico.style.display = 'block';
+    selectMultiple.style.display = 'none';
+    Array.from(selectMultiple.options).forEach(opt => {
+      opt.selected = false;
+    });
+    infoText.textContent = 'Seleccione un unico destinatario';
+  };
+
+  if (!destinatarioModeBound) {
+    radios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        aplicarModoDestinatario(radio.value);
+      });
+    });
+    destinatarioModeBound = true;
+  }
+
+  const modoActual = document.querySelector('input[name="destinatarioMode"]:checked')?.value || 'uno';
+  aplicarModoDestinatario(modoActual);
+}
+
+// ================================
+// CREAR AVISO
+// ================================
+function bindCrearAviso() {
+  bindDestinatarioModeToggle();
+
+  const form = document.getElementById('formInsertar');
+  if (!form) return;
+
+  form.addEventListener('reset', () => {
+    window.setTimeout(() => {
+      bindDestinatarioModeToggle();
+    }, 0);
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const asunto  = document.getElementById('insertAsunto').value.trim();
+    const mensaje = document.getElementById('insertMensaje').value.trim();
+
+    // ── Validación ──
+    if (!validarAviso(asunto, mensaje)) return;
+
+    // ── Obtener destinatarios según modo ──
+    const modo = document.querySelector('input[name="destinatarioMode"]:checked')?.value || 'uno';
+    let destinatarios = [];
+
+    if (modo === 'todos') {
+      // Modo "todos": todos los usuarios excepto el actual
+      destinatarios = window._personasParaAviso || [];
+    } else if (modo === 'uno') {
+      // Modo "uno": un solo destinatario
+      const selectUnico = document.getElementById('destinatarioSelect');
+      if (selectUnico?.value) {
+        destinatarios = [selectUnico.value];
+      }
+    } else if (modo === 'varios') {
+      // Modo "varios": múltiples destinatarios seleccionados
+      const selectMultiple = document.getElementById('destinatariosMultiSelect');
+      if (selectMultiple) {
+        destinatarios = Array.from(selectMultiple.selectedOptions).map(opt => opt.value);
+      }
+    }
+
+    // Validar que haya al menos un destinatario
+    if (destinatarios.length === 0) {
+      mostrarError('Debe seleccionar al menos un destinatario');
+      return;
+    }
+
+    try {
+      const response = await AvisoApi.create({
+        asunto,
+        mensaje,
+        fecha: new Date().toISOString().slice(0, 19).replace('T', ' ')
+      });
+
+      const idAviso = response?.data?.id ?? response?.id;
+      if (!idAviso) {
+        throw new Error('No se pudo obtener el identificador del aviso creado');
+      }
+
+      if (usuarioActual?.id_bombero) {
+        await AvisoApi.setRemitente(idAviso, usuarioActual.id_bombero);
+      }
+
+      for (const idBombero of destinatarios) {
+        await AvisoApi.setDestinatario(idAviso, idBombero);
+      }
+
+      await cargarAvisos();
+      form.reset();
+      
+      // Resetear modo a "uno" por defecto
+      const radioUno = document.getElementById('modeUno');
+      if (radioUno) radioUno.checked = true;
+      bindDestinatarioModeToggle();
+      
+      mostrarExito('Aviso creado correctamente');
+
+    } catch (err) {
+      if (err.errors) {
+        mostrarError(Object.values(err.errors).flat().join(', '));
+      } else {
+        mostrarError(err.message || 'Error creando aviso');
+      }
+    }
+  });
+}
+
+// ================================
+// MODAL VER
+// ================================
+function bindModalVer() {
+  document.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.btn-ver');
+    if (!btn) return;
+
+    const id    = btn.dataset.id;
+    const aviso = avisos.find(a => String(a.id_aviso) === String(id));
+    if (!aviso) return;
+
+    const modalBody = document.getElementById('modalVerBody');
+    modalBody.innerHTML = '<p class="text-muted text-center">Cargando...</p>';
+
+    const nombreRemitente = obtenerNombrePersona(aviso.remitente, true);
+
+    const campos = [
+      { label: 'ID',        valor: aviso.id_aviso },
+      { label: 'Asunto',    valor: aviso.asunto },
+      { label: 'Mensaje',   valor: aviso.mensaje },
+      { label: 'Fecha',     valor: formatearFecha(aviso.fecha) },
+      { label: 'Remitente', valor: nombreRemitente },
+    ];
+
+    modalBody.innerHTML = '';
+    campos.forEach(({ label, valor }) => {
+      const p = document.createElement('p');
+      p.innerHTML = `<strong>${label}:</strong> ${valor ?? ''}`;
+      modalBody.appendChild(p);
+    });
+
+    try {
+      const res     = await AvisoApi.getDestinatarios(id);
+      const destList = res.data ?? [];
+
+      modalBody.appendChild(document.createElement('hr'));
+      const titulo = document.createElement('p');
+      titulo.innerHTML = `<strong>Destinatarios:</strong>`;
+      modalBody.appendChild(titulo);
+
+      if (destList.length === 0) {
+        const vacio = document.createElement('p');
+        vacio.textContent = 'Sin destinatarios asignados';
+        vacio.className   = 'text-muted';
+        modalBody.appendChild(vacio);
+      } else {
+        const ul = document.createElement('ul');
+        ul.className = 'mb-0';
+        destList.forEach(d => {
+          const li = document.createElement('li');
+          const persona = personas.find(p => String(p.id_bombero) === String(d.id_bombero));
+          li.textContent = persona ? `${persona.nombre} ${persona.apellidos}` : d.id_bombero;
+          ul.appendChild(li);
+        });
+        modalBody.appendChild(ul);
+      }
+    } catch { /* no bloqueamos el modal */ }
+  });
+}
+
+// ================================
+// MODAL ELIMINAR
+// ================================
+function bindModalEliminar() {
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-eliminar');
+    if (!btn) return;
+    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+    if (btnConfirmar) {
+      btnConfirmar.dataset.id = btn.dataset.id;
+    }
+  });
+
+  const btnConfirmarEliminar = document.getElementById('btnConfirmarEliminar');
+  if (!btnConfirmarEliminar) return;
+
+  btnConfirmarEliminar.addEventListener('click', async function () {
+    const id = this.dataset.id;
+    if (!id) return;
+
+    try {
+      const resDest      = await AvisoApi.getDestinatarios(id);
+      const destinatarios = resDest.data ?? [];
+      for (const d of destinatarios) {
+        await AvisoApi.deleteDestinatario(id, d.id_bombero);
+      }
+
+      try {
+        const resRem   = await AvisoApi.getRemitente(id);
+        const remitente = resRem.data;
+        const idRemitente = remitente?.id_bombero ?? remitente?.remitente;
+        if (idRemitente) {
+          await AvisoApi.deleteRemitente(id, idRemitente);
+        }
+      } catch { /* sin remitente, continuamos */ }
+
+      await AvisoApi.remove(id);
+      await cargarAvisos();
+
+      bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+      mostrarExito('Aviso eliminado correctamente');
+
+    } catch (error) {
+      mostrarError(error.message || 'Error al eliminar el aviso');
+    }
+  });
+}

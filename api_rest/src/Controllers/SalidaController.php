@@ -35,6 +35,19 @@ class SalidaController
     }
 
     /**
+     * GET /salidas/id
+     */
+    public function show(Request $req, Response $res, string $id): void
+    {
+        try {
+            $salida = $this->service->getSalidaById((int)$id);
+            $res->status(200)->json($salida);
+        } catch (Throwable $e) {
+            $res->errorJson($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    /**
      * POST /salidas
      */
     public function store(Request $req, Response $res): void

@@ -7,6 +7,7 @@ use Models\SalidaModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class SalidaService
 {
@@ -28,14 +29,28 @@ class SalidaService
         }
     }
 
+    public function getSalidaById(int $id): array
+    {
+        Validator::validate(['id' => $id], [
+            'id' => 'required|int|min:1'
+        ]);
+
+        try {
+            return $this->model->find($id);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+    
     public function createSalida(array $input): array
     {
         $data = Validator::validate($input, [
-            'login'             => 'required|string|min:3|max:30',
-            'password'          => 'required|string|min:6|max:100',
-            'nombre_completo'   => 'string',
-            'email'             => 'required|email|max:120',
-            'id_rol'            => 'required|int|min:1'
+            'matricula'         => 'required|string|min:1|max:10',
+            'f_salida'        => 'required|datetime',
+            'f_regreso'         => 'required|datetime',
+            'km_inicio'         => 'required|int',
+            'km_fin'            => 'required|int',
+            'id_bombero'        => 'required|string|min:1|max:4'
         ]);
 
         try {
@@ -60,10 +75,11 @@ class SalidaService
 
         $data = Validator::validate($input, [
             'matricula'         => 'required|string|min:1|max:10',
-            'f_recogida'        => 'required|datetime',
-            'f_entrega'         => 'required|datetime',
+            'f_salida'        => 'required|datetime',
+            'f_regreso'         => 'required|datetime',
             'km_inicio'         => 'required|int',
-            'km_fin'            => 'required|int'
+            'km_fin'            => 'required|int',
+            'id_bombero'        => 'required|string|min:1|max:4'
         ]);
 
         try {
@@ -104,6 +120,12 @@ class SalidaService
 
         try {
             $result = $this->model->delete($id);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar esta salida porque hay personas asignadas", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
@@ -111,11 +133,6 @@ class SalidaService
         if ($result === 0) {
             // No existe el registro
             throw new \Exception("Salida no encontrada", 404);
-        }
-
-        if ($result === -1) {
-            // Conflicto por FK u otra restricción
-            throw new \Exception("No se puede eliminar la salida: el registro está en uso", 409);
         }
 
         // Eliminación exitosa → no retorna nada
@@ -152,6 +169,12 @@ class SalidaService
     {
         try {
             $result = $this->model->deletePersonaSalida($id_registro, $n_funcionario);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar esta persona de la salida debido a restricciones", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }

@@ -55,19 +55,9 @@ class PermisoController
             $data = $req->json();
 
             // Ahora puede incluir id_permiso (string)
-            $result = $this->service->registerPermiso($data);
+            $result = $this->service->createPermiso($data);
 
-            $res->status(201)->json(
-                [
-                    'id_permiso'    => $result['id_permiso'],    
-                    'fecha' => $result['fecha'],
-                    'estado' => $result['estado'],
-                    'hora_inicio' => $result['hora_inicio'],
-                    'hora_fin' => $result['hora_fin'],
-                    'descripcion' => $result['descripcion']
-                ],
-                "Permiso creado correctamente"
-            );
+        $res->status(201)->json($result, "Permiso creado correctamente"); 
 
         } catch (ValidationException $e) {
             $res->status(422)->json(
@@ -121,6 +111,21 @@ class PermisoController
 
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+
+    /**
+     * GET /Permiso/{id_permiso}/personas
+     * Obtiene las personas asociadas a un permiso
+     */
+    public function persons(Request $req, Response $res, string $id_permiso): void
+    {
+        try {
+            $personas = $this->service->getPersonsByPermiso($id_permiso);
+            $res->status(200)->json($personas, "Personas del permiso obtenidas correctamente");
         } catch (Throwable $e) {
             $code = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
             $res->errorJson($e->getMessage(), $code);

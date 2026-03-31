@@ -1,265 +1,211 @@
 import TipoEmergenciaApi from '../api_f/TipoEmergenciaApi.js';
+import { authGuard } from '../helpers/authGuard.js';
+import { mostrarError, mostrarExito } from '../helpers/utils.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
-let tiposEmergencia = []; // variable global para almacenar los tipos de emergencia
-
-document.addEventListener('DOMContentLoaded', () => {
-    cargarTiposEmergencia();
-    bindCrearTipoEmergencia();
+let tiposEmergencia = [];
+let sesionActual = null;
+const pagination = new PaginationHelper(15);
+pagination.setLoadingCallback((isLoading) => {
+    if (isLoading) {
+        showTableLoading('#tabla tbody', 4);
+    }
 });
 
-// ================================
-// CARGAR TIPOS EMERGENCIA
-// ================================
+const nombresCampos = ['Nombre', 'Grupo'];
+const camposBd      = ['nombre', 'grupo'];
+
+// CORRECCIÓN: lista de grupos válidos para validar en insertar y editar
+const GRUPOS_VALIDOS = ['Incendios', 'Accidentes', 'Emergencias médicas', 'Rescates'];
+
+document.addEventListener('DOMContentLoaded', async () => {
+  sesionActual = await authGuard('tiposEmergencia');
+  if (!sesionActual) return;
+
+  cargarTiposEmergencia();
+  bindFiltros();
+  bindModalVer();
+
+  if (sesionActual.puedeEscribir) {
+    bindCrearTipoEmergencia();
+    bindModalEditar();
+    bindModalEliminar();
+  }
+});
+
 async function cargarTiposEmergencia() {
   try {
-    const response = await TipoEmergenciaApi.getAll();
-    tiposEmergencia = response.data; // guardamos globalmente
+    showTableLoading('#tabla tbody', 4);
+    const r = await TipoEmergenciaApi.getAll();
+    tiposEmergencia = r?.data || r || [];
+    pagination.setData(tiposEmergencia, () => {
+      renderTablaTiposEmergencia(tiposEmergencia);
+    });
+    pagination.render('pagination-tipoEmergencia');
     renderTablaTiposEmergencia(tiposEmergencia);
+    poblarFiltroGrupo(tiposEmergencia);
   } catch (e) {
-    mostrarError(e.message || 'Error cargando tipos de emergencia');
+    tiposEmergencia = [];
+    pagination.setData([], () => {
+      renderTablaTiposEmergencia([]);
+    });
+    pagination.render('pagination-tipoEmergencia');
+    renderTablaTiposEmergencia([]);
   }
 }
 
-// ================================
-// RENDER TABLA
-// ================================
-function renderTablaTiposEmergencia(tiposEmergencia) {
+function poblarFiltroGrupo(lista) {
+  const select = document.getElementById('grupo');
+  if (!select) return;
+  const valorActual = select.value;
+  select.innerHTML = '<option value="">Todos</option>';
+  const gruposUnicos = [...new Set(lista.map(t => t.grupo).filter(Boolean))].sort();
+  gruposUnicos.forEach(grupo => {
+    const opt = document.createElement('option');
+    opt.value = grupo;
+    opt.textContent = grupo;
+    select.appendChild(opt);
+  });
+  select.value = valorActual;
+}
+
+function renderTablaTiposEmergencia(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
+  const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const itemsPagina = pagination.getPageItems(lista);
 
-  tiposEmergencia.forEach(e => {
+  itemsPagina.forEach(e => {
     const tr = document.createElement('tr');
-
-    tr.innerHTML = `
-      <td>${e.codigo_tipo}</td>
-      <td>${e.nombre}</td>
-      <td>${e.grupo ?? ''}</td>
-      <td class="d-flex justify-content-around">                     
-        <button type="button" class="btn p-0 btn-ver" 
-                data-bs-toggle="modal" 
-                data-bs-target="#modalVer"
-                data-id="${e.codigo_tipo}">
-            <i class="bi bi-eye"></i>
-        </button>
-
-        <button type="button" class="btn p-0 btn-editar" 
-                data-bs-toggle="modal" 
-                data-bs-target="#modalEditar" 
-                data-id="${e.codigo_tipo}">
-            <i class="bi bi-pencil"></i>
-        </button>
-
-        <button type="button" class="btn p-0 btn-eliminar" 
-                data-bs-toggle="modal"                                              BOTON ELIMINAR (AÑADIR SI SE REQUIERE) meter dentro del td de botones
-                data-bs-target="#modalEliminar" 
-                data-id="${e.codigo_tipo}">          
-            <i class="bi bi-trash3"></i>
-        </button>
-        
-      </td>  
-    `;
-        
-
+    const botonesAccion = puedeEscribir
+      ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${e.codigo_tipo}"><i class="bi bi-eye"></i></button>
+         <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${e.codigo_tipo}"><i class="bi bi-pencil"></i></button>
+         <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${e.codigo_tipo}"><i class="bi bi-trash3"></i></button>`
+      : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${e.codigo_tipo}"><i class="bi bi-eye"></i></button>`;
+    tr.innerHTML = `<td>${e.codigo_tipo}</td><td>${e.nombre}</td><td>${e.grupo??''}</td>
+    <td>
+        <div  class="d-flex justify-content-around">
+          ${botonesAccion}
+        </div>  
+      </td>`;
     tbody.appendChild(tr);
   });
 }
 
 // ================================
-// CREAR / INSERTAR TIPO EMERGENCIA
+// VALIDAR DATOS
 // ================================
-function bindCrearTipoEmergencia() {
-  const form = document.getElementById('formInsertar');
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const f = new FormData(form);
-
-    const data = {
-      nombre: f.get('nombre'),
-      grupo: f.get('grupo'),
-    }; 
-    try {
-      await TipoEmergenciaApi.create(data); // ← INSERT al backend
-      await cargarTiposEmergencia();        // ← refrescar tabla
-      form.reset();
-      alert('Tipo de emergencia creado correctamente');
-    } catch (err) {
-      mostrarError(err.message || 'Error creando tipo de emergencia');
-    }
-  });
+function validarDatosTipo(data) {
+  if (!data.nombre?.trim()) { mostrarError('El nombre es obligatorio'); return false; }
+  if (data.nombre.trim().length > 100) { mostrarError('El nombre no puede superar los 100 caracteres'); return false; }
+  // CORRECCIÓN: validar grupo contra lista de valores permitidos
+  if (!data.grupo?.trim()) { mostrarError('El grupo es obligatorio'); return false; }
+  if (!GRUPOS_VALIDOS.includes(data.grupo.trim())) {
+    mostrarError(`El grupo no es válido. Opciones: ${GRUPOS_VALIDOS.join(', ')}`); return false;
+  }
+  return true;
 }
 
 // ================================
-// MODAL EDITAR
+// FILTROS
 // ================================
-document.addEventListener('click', async function (e) {
-  const btn = e.target.closest('.btn-editar');
-  if (!btn) return;
+function bindFiltros() {
+  document.getElementById('nombre')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('grupo')?.addEventListener('change', aplicarFiltros);
+}
 
-  const id = btn.dataset.id;
+function aplicarFiltros() {
+  pagination.goToPage(0);
+  const filtroNombre = document.getElementById('nombre')?.value.toLowerCase().trim() ?? '';
+  const filtroGrupo  = document.getElementById('grupo')?.value ?? '';
 
-  try {
-    // Obtener datos del tipo de emergencia a editar
-    const response = await TipoEmergenciaApi.getById(id);
-    const tipoEmergencia = response.data;
-    if (!tipoEmergencia) return;
-
-    const form = document.getElementById('formEditar');
-    form.innerHTML = ''; // Limpiar contenido previo
-
-    // Insertar formulario
-    form.innerHTML = `
-      <div class="row mb-3">
-        <div class="col-lg-6">
-          <label class="form-label">Nombre</label>
-          <input 
-            type="text" 
-            class="form-control" 
-            name="nombre"
-            value="${tipoEmergencia.nombre || ''}" 
-          >
-        </div>
-
-        <div class="col-lg-6">
-          <label class="form-label">Grupo</label>
-          <select class="form-select" name="grupo">
-            <option value="Incendios" ${tipoEmergencia.grupo === 'Incendios' ? 'selected' : ''}>Incendios</option>
-            <option value="Accidentes" ${tipoEmergencia.grupo === 'Accidentes' ? 'selected' : ''}>Accidentes</option>
-            <option value="Emergencias médicas" ${tipoEmergencia.grupo === 'Emergencias médicas' ? 'selected' : ''}>Emergencias médicas</option>
-            <option value="Rescates" ${tipoEmergencia.grupo === 'Rescates' ? 'selected' : ''}>Rescates</option>
-          </select>
-        </div>
-
-      </div>
-
-      <div class="text-center">
-        <button type="button" id="btnGuardarCambios" class="btn btn-primary">
-          Guardar cambios
-        </button>
-      </div>
-    `;
-
-
-    // Guardar cambios
-    document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-      const data = {};
-
-      camposBd.forEach(campo => {
-        const input = form.querySelector(`[name="${campo}"]`);
-        if (input) data[campo] = input.value;
-      });
-
-      await TipoEmergenciaApi.update(id, data);             // Enviar datos al backend para actualizar la emergencia
-      await cargarTiposEmergencia();                        // Recargar tabla para mostrar cambios
-
-      const modal = bootstrap.Modal.getInstance(        // Cerrar modal
-        document.getElementById('modalEditar')
-      );
-      modal.hide();
-    });
-
-  } catch (error) {
-    console.error('Error al editar emergencia:', error);
-  }
-});
-
-// ================================
-// CAMPOS DE LA TABLA      estos arrays se usan para mostrar los campos en el modal ver (arriba como lo quieres ver, abajo como están en la base de datos, el orden debe coincidir)  
-// ================================
-  const nombresCampos = [
-    'Nombre',
-    'Grupo'
-  ];
-  const camposBd = [      //tambien se usan para el modal editar, para recoger los datos de los inputs y enviarlos al backend, por eso deben coincidir con los name de los inputs del formulario editar
-    'nombre',
-    'grupo'
-  ];
-
-// ================================
-// MODAL VER
-// ================================
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.btn-ver');
-  if (!btn) return;
-
-  const id = btn.dataset.id;
-
-  // Buscar la Tipo correspondiente
-  const tipoEmergencia = tiposEmergencia.find(t => t.codigo_tipo == id);
-  if (!tipoEmergencia) return;
-
-  const modalBody = document.getElementById('modalVerBody');
-
-  // Limpiar contenido previo
-  while (modalBody.firstChild) {
-    modalBody.removeChild(modalBody.firstChild);
-  }
-
-  nombresCampos.forEach((nombre, index) => {
-    const p = document.createElement('p');
-
-    const strong = document.createElement('strong');
-    strong.textContent = nombre + ': ';
-
-    const value = document.createTextNode(
-      tipoEmergencia[camposBd[index]] ?? ''
-    );
-
-    p.appendChild(strong);
-    p.appendChild(value);
-    modalBody.appendChild(p);
+  const filtrados = tiposEmergencia.filter(t => {
+    const cumpleNombre = !filtroNombre || t.nombre?.toLowerCase().includes(filtroNombre);
+    const cumpleGrupo  = !filtroGrupo  || t.grupo === filtroGrupo;
+    return cumpleNombre && cumpleGrupo;
   });
-});
+  pagination.setData(filtrados, () => {
+      renderTablaTiposEmergencia(filtrados);
+    });
+  pagination.render('pagination-tipoEmergencia');
+  renderTablaTiposEmergencia(filtrados);
+}
 
-// ================================
-// MODAL ELIMINAR (AÑADIR SI SE REQUIERE)   
-// ================================
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.btn-eliminar');
-  if (!btn) return;
+function bindCrearTipoEmergencia() {
+  const form = document.getElementById('formInsertar'); if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = new FormData(form);
+    const data = { nombre: f.get('nombre')?.trim(), grupo: f.get('grupo')?.trim() };
+    if (!data.nombre) { mostrarError('El nombre es obligatorio'); return; }
+    if (!data.grupo)  { mostrarError('El grupo es obligatorio'); return; }
+    try {
+      await TipoEmergenciaApi.create(data);
+      await cargarTiposEmergencia();
+      form.reset();
+      mostrarExito('Tipo de emergencia creado correctamente');
+    } catch (err) { mostrarError(err.message || 'Error creando tipo de emergencia'); }
+  });
+}
 
-  const id = btn.dataset.id;
+function bindModalVer() {
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-ver'); if (!btn) return;
+    const tipo = tiposEmergencia.find(t => t.codigo_tipo == btn.dataset.id); if (!tipo) return;
+    const modalBody = document.getElementById('modalVerBody');
+    modalBody.innerHTML = '';
+    nombresCampos.forEach((nombre, idx) => {
+      const p = document.createElement('p');
+      p.innerHTML = `<strong>${nombre}:</strong> ${tipo[camposBd[idx]]??''}`;
+      modalBody.appendChild(p);
+    });
+  });
+}
 
-  const btnConfirm = document.getElementById('btnConfirmarEliminar');
-  btnConfirm.dataset.id = id;
-});
+function bindModalEditar() {
+  document.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.btn-editar'); if (!btn) return;
+    const id = btn.dataset.id;
+    try {
+      const r = await TipoEmergenciaApi.getById(id);
+      const tipo = r?.data || r; if (!tipo) return;
+      const form = document.getElementById('formEditar');
+      form.innerHTML = `
+        <div class="row mb-3">
+          <div class="col-lg-6"><label class="form-label">Nombre</label><input type="text" class="form-control" name="nombre" value="${tipo.nombre||''}" maxlength="100"></div>
+          <div class="col-lg-6"><label class="form-label">Grupo</label>
+            <select class="form-select" name="grupo">
+              ${GRUPOS_VALIDOS.map(g => `<option value="${g}" ${tipo.grupo===g?'selected':''}>${g}</option>`).join('')}
+            </select></div>
+        </div>
+        <div class="text-center"><button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button></div>`;
+      document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
+        const data = {};
+        camposBd.forEach(campo => { const input = form.querySelector(`[name="${campo}"]`); if (input) data[campo] = input.value?.trim(); });
+        if (!validarDatosTipo(data)) return;
+        try {
+          await TipoEmergenciaApi.update(id, data);
+          await cargarTiposEmergencia();
+          bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+          mostrarExito('Tipo de emergencia actualizado correctamente');
+        } catch (err) { mostrarError(err.message || 'Error actualizando'); }
+      });
+    } catch (err) { console.error(err); }
+  });
+}
 
-document.getElementById('btnConfirmarEliminar')
-  .addEventListener('click', async function () {
-
-    const id = this.dataset.id;
-    if (!id) return;
-
+function bindModalEliminar() {
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-eliminar'); if (!btn) return;
+    document.getElementById('btnConfirmarEliminar').dataset.id = btn.dataset.id;
+  });
+  document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
+    const id = this.dataset.id; if (!id) return;
     try {
       await TipoEmergenciaApi.delete(id);
       await cargarTiposEmergencia();
-
-      // Cerrar modal
-      const modal = bootstrap.Modal.getInstance(
-        document.getElementById('modalEliminar')
-      );
-      modal.hide();
-
-    } catch (error) {
-      mostrarError('Este tipo de emergencia no se puede eliminar porque tiene emergencias asociadas');
-    }
-});
-
-
-// ================================
-// ERRORES
-// ================================
-function mostrarError(msg) {
-  const container = document.getElementById("alert-container");
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = `
-    <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-      <strong>Error:</strong> ${msg}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-
-  container.append(wrapper);
+      bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+      mostrarExito('Tipo de emergencia eliminado correctamente');
+    } catch (err) { mostrarError('Este tipo de emergencia no se puede eliminar porque tiene emergencias asociadas'); }
+  });
 }

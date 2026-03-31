@@ -1,0 +1,128 @@
+<?php
+declare(strict_types=1);
+
+namespace Services;
+
+use Models\InfraestructuraAguaModel;
+use Validation\Validator;
+use Validation\ValidationException;
+use Throwable;
+use PDOException;
+
+class InfraestructuraAguaService
+{
+    private InfraestructuraAguaModel $model;
+
+    public function __construct()
+    {
+        $this->model = new InfraestructuraAguaModel();
+    }
+
+
+    // ============================================================
+    // CONSULTAS
+    // ============================================================
+
+    public function getAllInfraestructuras(array $filtros = []): array
+    {
+        try {
+            return $this->model->all($filtros);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+
+    public function getInfraestructuraById(string $codigo): array
+    {
+        Validator::validate(['codigo' => $codigo], ['codigo' => 'required|string|min:1']);
+
+        try {
+            $item = $this->model->find($codigo);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+
+        if (!$item) {
+            throw new \Exception("Infraestructura no encontrada", 404);
+        }
+
+        return $item;
+    }
+
+
+    // ============================================================
+    // ESCRITURA
+    // ============================================================
+
+    public function createInfraestructura(array $input): array
+    {
+        $data = Validator::validate($input, [
+            'codigo'       => 'required|string|max:50',
+            'tipo'         => 'required|string|max:20',
+            'denominacion' => 'string|max:150',
+            'municipio'    => 'required|string|max:100',
+            'provincia'    => 'required|string|max:20',
+            'latitud'      => 'required',
+            'longitud'     => 'required',
+            'estado'       => 'string|max:20',
+        ]);
+
+        try {
+            $this->model->create($data);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+
+        return ['codigo' => $data['codigo']];
+    }
+
+    public function updateInfraestructura(string $codigo, array $input): array
+    {
+        Validator::validate(['codigo' => $codigo], ['codigo' => 'required|string|min:1']);
+
+        $data = Validator::validate($input, [
+            'codigo'       => 'required|string|max:50',
+            'tipo'         => 'required|string|max:20',
+            'denominacion' => 'string|max:150',
+            'municipio'    => 'required|string|max:100',
+            'provincia'    => 'required|string|max:20',
+            'latitud'      => 'required',
+            'longitud'     => 'required',
+            'estado'       => 'required|string|max:20',
+        ]);
+
+        try {
+            $result = $this->model->update($codigo, $data);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+
+        if ($result === 0) {
+            $exists = $this->model->find($codigo);
+            if (!$exists) throw new \Exception("Infraestructura no encontrada", 404);
+
+            return ['status' => 'no_changes', 'message' => 'No hubo cambios en la infraestructura'];
+        }
+
+        return ['status' => 'updated', 'message' => 'Infraestructura actualizada correctamente'];
+    }
+
+    public function deleteInfraestructura(string $codigo): void
+    {
+        Validator::validate(['codigo' => $codigo], ['codigo' => 'required|string|min:1']);
+
+        try {
+            $result = $this->model->delete($codigo);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar esta infraestructura de agua porque hay incidencias asociadas", 409);
+            }
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+
+        if ($result === 0) throw new \Exception("Infraestructura no encontrada", 404);
+    }
+}

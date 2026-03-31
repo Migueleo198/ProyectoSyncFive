@@ -18,9 +18,18 @@
         color: var(--blanco);
     }
 
-    header img {
+    header a.d-block img {
         width: 205px;
         min-width: 100px;
+    }
+
+    .header-profile-pic {
+        width: 36px !important;
+        min-width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        object-fit: cover !important;
+        flex-shrink: 0;
     }
 
     .gris{
@@ -34,6 +43,10 @@
     table td{
         border: 1px solid var(--negro);
         border-collapse: collapse;
+    }
+
+    #calendario th{
+        border: 1px solid var(--negro);
     }
 
     /* Footer siempre abajo - VERSIÓN MÁS SEGURA */
@@ -70,3 +83,22 @@
         padding-left: 0;
     }
 
+    .alerta-activa {
+        animation: parpadeo 1s infinite;
+        color: #ffc107 !important;
+        filter: drop-shadow(0 0 6px #ff4444);
+    }
+
+    @keyframes parpadeo {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+    /* Fix layout al hacer zoom */
+    .main-container {
+        min-width: 0;
+        overflow-x: auto;
+    }
+
+    .col {
+        min-width: 0;
+    }

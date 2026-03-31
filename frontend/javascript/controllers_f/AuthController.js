@@ -1,46 +1,336 @@
 import AuthApi from '../api_f/AuthApi.js';
+import * as Validaciones from '../helpers/validacion.js';
+import { mostrarError} from '../helpers/utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  bindLogin();
+    // ── Página login ──────────────────────────────────
+    if (document.querySelector('form#loginForm')) {
+        bindLogin();
+        bindRecoverPassword();
+    }
+
+    // ── Página cambiar contraseña ─────────────────────
+    if (document.querySelector('form#changePasswordForm')) {
+        bindChangePassword();
+    }
+
+    // ── Página activar cuenta ─────────────────────────
+    if (document.getElementById('activation-loading-state')) {
+        bindActivateAccount();
+    }
 });
 
 // ================================
 // LOGIN
 // ================================
 function bindLogin() {
-  const form = document.querySelector('form');
+  const form = document.querySelector('form#loginForm');
   if (!form) return;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const login = document.getElementById('username').value.trim();
+    const login    = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
 
+    // ── Validaciones ──
+    if (!login) {
+        mostrarError('El nombre de usuario es obligatorio.');
+        return;
+    }
+    // nombre_usuario VARCHAR(20) en BD
+    if (login.length > 20) {
+        mostrarError('El nombre de usuario no puede superar los 20 caracteres.');
+        return;
+    }
+    if (!password) {
+        mostrarError('La contraseña es obligatoria.');
+        return;
+    }
+
     try {
+        const response = await AuthApi.login({ login, password });
+        const user = response.data.user;
 
-      const response = await AuthApi.login({
-        login: login,
-        password: password
-      });
-
-      const user = response.data.user;
-
-      // Guardamos usuario en sessionStorage
-      sessionStorage.setItem('user', JSON.stringify(user));
-
-      // Redirigir a home
-      window.location.href = '/frontend/pages/home.html';
+        // Guardamos usuario en sessionStorage
+        sessionStorage.setItem('user', JSON.stringify(user));
+        // Redirigir a home
+        window.location.href = '/frontend/pages/home.html';
 
     } catch (error) {
-      mostrarError(error.message || 'Error al iniciar sesión');
+      mostrarError(error.message || 'Usuario o contraseña incorrectos.');
     }
   });
 }
 
 // ================================
-// ERROR
+// RECUPERAR CONTRASEÑA
 // ================================
-function mostrarError(msg) {
-  alert(msg);
+function bindRecoverPassword() {
+    const btn = document.getElementById('btnEnviarRecuperacion');
+    if (!btn) return;
+
+    btn.addEventListener('click', async () => {
+        const emailInput = document.getElementById('recoverEmail');
+        const errorDiv   = document.getElementById('recover-error');
+
+        // Limpiar error previo
+        errorDiv.classList.add('d-none');
+        errorDiv.textContent = '';
+
+        const correo = emailInput.value.trim();
+
+        // ── Validaciones ──
+        if (!correo) {
+            errorDiv.textContent = 'El correo electrónico es obligatorio.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+        if (!Validaciones.validarEmail(correo)) {
+            errorDiv.textContent = 'Introduce un correo electrónico válido.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+        // correo VARCHAR(100) en BD
+        if (correo.length > 100) {
+            errorDiv.textContent = 'El correo no puede superar los 100 caracteres.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+
+        // Mostrar spinner
+        setRecoverLoading(true);
+
+        try {
+            await AuthApi.recoverPassword({ correo });
+
+            // Mostrar estado de éxito (independientemente de si el correo existe)
+            document.getElementById('recover-form-state').classList.add('d-none');
+            document.getElementById('recover-success-state').classList.remove('d-none');
+            document.getElementById('recover-footer').classList.add('d-none');
+
+        } catch (error) {
+            errorDiv.textContent = error.message || 'Error al enviar el correo. Inténtalo de nuevo.';
+            errorDiv.classList.remove('d-none');
+        } finally {
+            setRecoverLoading(false);
+        }
+    });
+
+    // Limpiar estado del modal al cerrarlo
+    const modal = document.getElementById('modalRecuperarPassword');
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.getElementById('recoverEmail').value = '';
+        document.getElementById('recover-error').classList.add('d-none');
+        document.getElementById('recover-form-state').classList.remove('d-none');
+        document.getElementById('recover-success-state').classList.add('d-none');
+        document.getElementById('recover-footer').classList.remove('d-none');
+        setRecoverLoading(false);
+    });
+}
+
+function setRecoverLoading(loading) {
+    const btn     = document.getElementById('btnEnviarRecuperacion');
+    const text    = document.getElementById('btnRecuperarText');
+    const spinner = document.getElementById('btnRecuperarSpinner');
+
+    btn.disabled = loading;
+    text.classList.toggle('d-none', loading);
+    spinner.classList.toggle('d-none', !loading);
+}
+
+// ================================
+// CAMBIAR CONTRASEÑA (desde email)
+// ================================
+function bindChangePassword() {
+    const params = new URLSearchParams(window.location.search);
+    const token  = params.get('token');
+
+    // Si no hay token, mostrar error directamente
+    if (!token) {
+        document.getElementById('change-form-state').classList.add('d-none');
+        document.getElementById('token-error-state').classList.remove('d-none');
+        return;
+    }
+
+    const form = document.querySelector('form#changePasswordForm');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const newPassword     = document.getElementById('newPassword').value.trim();
+        const confirmPassword = document.getElementById('confirmPassword').value.trim();
+        const errorDiv        = document.getElementById('change-error');
+
+        // Limpiar error previo
+        errorDiv.classList.add('d-none');
+        errorDiv.textContent = '';
+
+        // ── Validaciones ──
+        if (!newPassword) {
+            errorDiv.textContent = 'La contraseña es obligatoria.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+        if (!Validaciones.validarPassword(newPassword)) {
+            errorDiv.textContent = 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            errorDiv.textContent = 'Las contraseñas no coinciden.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+
+        setChangeLoading(true);
+
+        try {
+            await AuthApi.changePassword({ token, password: newPassword });
+
+            document.getElementById('change-form-state').classList.add('d-none');
+            document.getElementById('change-success-state').classList.remove('d-none');
+
+        } catch (error) {
+            const code = error.code || error.status || 0;
+
+            if (code === 404 || code === 400) {
+                document.getElementById('change-form-state').classList.add('d-none');
+                document.getElementById('token-error-state').classList.remove('d-none');
+            } else {
+                errorDiv.textContent = error.message || 'Error al cambiar la contraseña.';
+                errorDiv.classList.remove('d-none');
+            }
+        } finally {
+            setChangeLoading(false);
+        }
+    });
+}
+
+function setChangeLoading(loading) {
+    const btn     = document.getElementById('btnCambiar');
+    const text    = document.getElementById('btnCambiarText');
+    const spinner = document.getElementById('btnCambiarSpinner');
+
+    btn.disabled = loading;
+    text.classList.toggle('d-none', loading);
+    spinner.classList.toggle('d-none', !loading);
+}
+
+// ================================
+// ACTIVAR CUENTA
+// ================================
+async function bindActivateAccount() {
+    const params = new URLSearchParams(window.location.search);
+    const token  = params.get('token');
+
+    if (!token) {
+        showActivationState('error', 'No se encontró ningún token de activación en el enlace.');
+        return;
+    }
+
+    try {
+        await AuthApi.activateAccount(token);
+        showActivationState('success');
+
+    } catch (error) {
+        const code = error.code || error.status || 0;
+        const msg  = (code === 404)
+            ? 'El enlace de activación no existe o ya fue utilizado.'
+            : (code === 400 || code === 410)
+                ? 'El enlace de activación ha expirado. Contacta con un administrador.'
+                : error.message || 'Error inesperado. Por favor, inténtalo de nuevo más tarde.';
+
+        showActivationState('error', msg);
+    }
+}
+
+function showActivationState(state, errorMsg = null) {
+    document.getElementById('activation-loading-state').classList.add('d-none');
+    document.getElementById('activation-success-state').classList.add('d-none');
+    document.getElementById('activation-error-state').classList.add('d-none');
+
+    if (state === 'success') {
+        document.getElementById('activation-success-state').classList.remove('d-none');
+    } else {
+        if (errorMsg) {
+            document.getElementById('activation-error-msg').textContent = errorMsg;
+        }
+        document.getElementById('activation-error-state').classList.remove('d-none');
+    }
+}
+
+// ================================
+// MOSTRAR NOMBRE DE USUARIO
+// ================================
+export function mostrarNombreUsuario() {
+  const userData = sessionStorage.getItem('user');
+  if (!userData) return;
+
+  const user = JSON.parse(userData);
+  document.querySelectorAll('.header-user span').forEach(span => {
+    span.textContent = user.nombre_usuario || user.login || 'Usuario';
+  });
+    
+  // Foto de perfil en el header (si existe)
+  if (user.foto_perfil) {
+    cargarFotoHeader(user.foto_perfil);
+  }
+}
+
+/**
+ * Carga la foto de perfil en el icono del header mediante fetch autenticado.
+ * Se llama desde mostrarNombreUsuario y desde header_footer.js tras cargar el header.
+ */
+async function cargarFotoHeader(fotoPerfil) {
+    try {
+        const { API_BASE_PATH } = await import('../../config/apiConfig.js');
+        const response = await fetch(`${API_BASE_PATH}/storage/fotos/${fotoPerfil}`, {
+            credentials: 'include'
+        });
+        if (!response.ok) return;
+
+        const blob      = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        const iconEl = document.querySelector('#header-placeholder .header-user .bi-person-circle');
+        if (iconEl) {
+            const img = document.createElement('img');
+            img.src = objectUrl;
+            img.alt = 'Foto de perfil';
+            img.className = 'header-profile-pic';
+            iconEl.replaceWith(img);
+        }
+    } catch (_) {
+        // Silencioso
+    }
+}
+
+// ================================
+// BIND LOGOUT BUTTONS
+// ================================
+export function bindLogoutButtons() {
+    // Seleccionar todos los enlaces/botones de logout
+    document.querySelectorAll('.logout-link').forEach(link => {
+        link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await cerrarSesion();
+        });
+    });
+}
+
+// ================================
+// CERRAR SESIÓN
+// ================================
+export async function cerrarSesion() {
+    try {
+        // Llamada al backend
+        await AuthApi.logout();
+    } catch (error) {
+        console.error("Error al cerrar sesión:", error);
+    } finally {
+        // Aunque falle el backend, limpiamos la sesión local
+        sessionStorage.removeItem('user');
+        window.location.href = '/frontend/pages/Login/login.html';
+    }
 }

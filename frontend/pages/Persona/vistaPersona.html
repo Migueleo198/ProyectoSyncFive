@@ -2,15 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal</title>
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-
-    <!-- Configuración y rutas absolutas -->
     <script src="/frontend/config/config.js"></script>
+<<<<<<< HEAD
 
     <!-- CSS del proyecto usando loadCSS() -->
     <script>
@@ -27,8 +20,11 @@
     
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+=======
+    <script>loadHead("Gestión de Personas")</script>
+    <script type="module" src="/frontend/javascript/controllers_f/PersonaController.js"></script>
+>>>>>>> main
 </head>
-
 <body class="bg-white text-dark d-flex flex-column">
 
     <!-- HEADER -->
@@ -43,169 +39,242 @@
             <!-- CONTENIDO PRINCIPAL -->
             <main class="col p-3 main-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 class="mb-0">Control de datos de trabajadores</h1>
-                    <!-- Icono de ayuda que redirige a Notion -->
-                    <a href="https://www.notion.so/TU_PAGINA" target="_blank" 
-                    class="text-dark" title="Abrir ayuda en Notion">
-                        <i class="bi bi-question-circle fs-3"></i>
-                    </a>
+                    <div>
+                        <h1 class="mb-0 fw-bold">Control de datos de trabajadores</h1>
+                        <small class="text-muted">Gestión del registro de trabajadores del servicio</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="/roles" 
+                           class="btn btn-outline-secondary btn-gestion" 
+                           data-permiso="roles">
+                            <i class="bi bi-gear me-1"></i> Gestionar Cargos
+                        </a>
+                        <a href="https://www.notion.so/16_Administracion-31b0bf35f606803885e5caf3dc9e960f" target="_blank" 
+                        class="text-muted" title="Ayuda">
+                            <i class="bi bi-question-circle fs-4"></i>
+                        </a>
+                    </div>
                 </div>
 
-                <div>
-                    <p>[Migas de pan]</p>
-                </div>
+                <!-- MIGAS DE PAN -->
+                <div id="breadcrumb-placeholder"></div>
 
                 <!-- Contenedor tabla con filtro-->
                 <div class="container mt-4 p-0"> 
 
                     <h2 class="d-flex">Trabajadores</h2>
 
-                    <div id="filtroTabla" class="m-0 row d-flex justify-content-between"> <!-- Filtro -->
-                        <div class="col-md-5 d-flex align-items-center m-1">
-                            <label class="m-2" for="buscar">Estado:</label>
-                            <select class="form-select form-select-sm mt-1 filtro" id="buscar" data-col="2">
-                                <option value="">Estado</option>
-                                <option>Incendio urbano</option>
-                                <option>Incendio forestal</option>
-                                <option>Accidente de tráfico</option>
+                    <div id="filtroTabla" class="m-0 row d-flex justify-content-around">
+                        <div class="col-lg-3 col-md-5 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap" for="filtroIDBombero">ID Bombero:</label>
+                            <input type="text" class="form-control form-control-sm" id="filtroIDBombero" placeholder="Buscar ID...">
+                        </div>
+                        <div class="col-lg-3 col-md-5 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap" for="filtroLocalidad">Localidad:</label>
+                            <select class="form-select form-select-sm" id="filtroLocalidad">
+                                <option value="">Todas</option>
                             </select>
-                            <label class="m-2" for="buscar">Buscar:</label>
-                            <select class="form-select form-select-sm mt-1 filtro" id="buscar" data-col="2">
-                                <option value="">ID_Carnet</option>
-                                <option>Incendio urbano</option>
-                                <option>Incendio forestal</option>
-                                <option>Accidente de tráfico</option>
+                        </div>
+                        <div class="col-lg-3 col-md-5 col-sm-12 d-flex align-items-center m-1">
+                            <label class="me-2 text-nowrap" for="filtroActivo">Estado:</label>
+                            <select class="form-select form-select-sm" id="filtroActivo">
+                                <option value="">Todos</option>
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
                             </select>
                         </div>
                     </div>
                     <table class="table table-bordered table-striped" id="tabla">
                         <thead class="table-dark">
                             <tr>
-                                <th>DNI</th>
-                                <th>Nombre entero</th>
-                                <th>Contacto</th>
-                                <th>Localidad</th>
-
-                                <th class="extra-col d-none">Fecha nacimiento</th>
-                                <th class="extra-col d-none">Fecha ingreso diputacion</th>
-                                <th class="extra-col d-none">Talla Arriba</th>
-                                <th class="extra-col d-none">Talla Abajo</th>
-                                <th class="extra-col d-none">Talla Calzado</th>
-
-                                <th>Acción</th>
+                                <th class="d-none d-md-table-cell">ID Bombero</th>
+                                <th class="d-none d-md-table-cell">Nº Funcionario</th>
+                                <th>Correo</th>
+                                <th>Teléfono</th>
+                                <th>Nombre</th>
+                                <th>Apellidos</th>
+                                <th class="d-none d-md-table-cell">Localidad</th>
+                                <th>Nombre de Usuario</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
-
-                        <tbody>
-                            <tr>
-                                <td class="d-none d-md-table-cell">INUR1</td> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->   
-                                <td>Incendio edificio</td>
-                                <td></td>
-                                <td></td>
-                                <td class="d-flex justify-content-around">                            
-                                    <button id="toggleColumns" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalVer">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEditar">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-
-                                    <button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#modalEliminar">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-                                </td>
-                            </tr>
-
-                            <!-- Aquí puedes agregar más filas de datos -->
-                        </tbody>
+                        <tbody></tbody>
                     </table>
+                    <div id="pagination-persona" class="mt-3"></div>
                 </div>
 
                 <!-- Contenedor insertar Usuario -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Insertar nuevo usuario</h5>
-                    <form id="formInsertar" class="mx-auto">
-                        <!-- Campos en la misma fila -->
-                        <div class="row mb-3">
-                            <div class="col-md-4 col-sm-6 ">
-                                <label class="m-2" for="DNI">DNI:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="DNI" data-col="2">   
-                            </div>
-                            <div class="col-md-4 col-sm-6 ">
-                                <label class="m-2" for="nombre">Nombre:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="nombre" data-col="2">
-                            </div>
-                            <div class="col-md-4 col-sm-6 ">
-                                <label class="m-2" for="apellido">Apellido:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="apellido" data-col="2">
-                            </div>
-                            <div class="col-md-4 col-sm-6 ">
-                                <label class="m-2" for="telefono">Telefono:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="telefono" data-col="2">
-                            </div>
-                            <div class="col-md-4 col-sm-6 ">
-                                <label class="m-2" for="Correo">Correo:</label>
-                                <input type="email" class="form-control form-control-sm mt-1 filtro" id="Correo" data-col="2">
-                            </div>
-                            <div class="col-md-4 col-sm-6 ">
-                                <label class="m-2" for="F_Ingreso">F_Ingreso_Diputacion:</label>
-                                <input type="date" class="form-control form-control-sm mt-1 filtro" id="F_Ingreso" data-col="2">
-                            </div>
-                            <div class="col-md-4 col-sm-6 ">
-                                <label for="T_Arriba" class="m-2 form-label">T_Arriba</label>
-                                <select class="form-select" id="T_Arriba">
-                                    <option value="">Seleccione talla...</option>
-                                    <option value="1">Vehículo 1</option>
-                                    <option value="2">Vehículo 2</option>
-                                </select>       
-                            </div>
-                            <div class="col-md-4 col-sm-6 ">
-                                <label for="T_Abajo" class=" m-2 form-label">T_Abajo</label>
-                                <select class="form-select" id="T_Abajo">
-                                    <option value="">Seleccione talla...</option>
-                                    <option value="1">Vehículo 1</option>
-                                    <option value="2">Vehículo 2</option>
-                                </select>    
-                            </div>
-                            <div class="col-md-4 col-sm-6 ">
-                                <label class="m-2" for="Localidad">Localidad:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="Localidad" data-col="2">
-                            </div>
-                            <div class="col-md-4 col-sm-6 ">
-                                <label for="provincia" class=" m-2 form-label">Provincia</label>
-                                <select class="form-select" id="provincia">
-                                    <option value="">Seleccione provincia...</option>
-                                    <option value="1">Vehículo 1</option>
-                                    <option value="2">Vehículo 2</option>
-                                </select>    
-                            </div>
-                            <div class="col-md-4 col-sm-6 ">
-                                <label class="m-2" for="domicilio">Domicilio:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="domicilio" data-col="2">
-                            </div>
-                            <div class="col-md-4 col-sm-6 ">
-                                <label class="m-2" for="T_Emergencia">Telefono_Emergecia:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="T_Emergencia" data-col="2">
-                            </div>
-                        </div>
-                        <!-- Botones centrados debajo -->
-                        <div class="d-flex justify-content-center gap-2">
-                            <button type="reset" class="btn btn-secondary">
-                                Limpiar
-                            </button>
-                            <button type="submit" class="btn btn-primary" id="btnInsertar">
-                                Insertar
-                            </button>
-                        </div>
-                    </form>
+                <h5 class="text-center mb-4">Insertar nuevo trabajador</h5>
+
+                <form id="formInsertarPersona" class="mx-auto">
+                    <div class="row mb-3">
+
+                    <!-- ID Bombero -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">ID Bombero <span class="text-danger">*</span></label>
+                        <input type="text" name="id_bombero" maxlength="4"
+                            class="form-control form-control-sm" required>
+                    </div>
+
+                    <!-- Nº Funcionario -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Nº Funcionario <span class="text-danger">*</span></label>
+                        <input type="text" name="n_funcionario" maxlength="17"
+                            class="form-control form-control-sm" required>
+                    </div>
+
+                    <!-- DNI -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">DNI <span class="text-danger">*</span></label>
+                        <input type="text" name="dni" maxlength="15"
+                            class="form-control form-control-sm" required>
+                    </div>
+
+                    <!-- Nombre -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre" maxlength="50"
+                            class="form-control form-control-sm" required>
+                    </div>
+
+                    <!-- Apellidos -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                        <input type="text" name="apellidos" maxlength="100"
+                            class="form-control form-control-sm" required>
+                    </div>
+
+                    <!-- Fecha Nacimiento -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Fecha Nacimiento <span class="text-danger">*</span></label>
+                        <input type="date" name="f_nacimiento"
+                            class="form-control form-control-sm" required>
+                    </div>
+
+                    <!-- Correo -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Correo <span class="text-danger">*</span></label>
+                        <input type="email" name="correo" maxlength="100"
+                            class="form-control form-control-sm" required>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                        <input type="tel" name="telefono" maxlength="15"
+                            class="form-control form-control-sm" required>
+                    </div>
+
+                    <!-- Teléfono Emergencia -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Teléfono Emergencia</label>
+                        <input type="tel" name="telefono_emergencia" maxlength="15"
+                            class="form-control form-control-sm">
+                    </div>
+
+                    <!-- Fecha Ingreso Diputación -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Fecha Ingreso Diputación <span class="text-danger">*</span></label>
+                        <input type="date" name="f_ingreso_diputacion"
+                            class="form-control form-control-sm" required>
+                    </div>
+
+                    <!-- Domicilio -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Domicilio</label>
+                        <input type="text" name="domicilio" maxlength="150"
+                            class="form-control form-control-sm">
+                    </div>
+
+                    <!-- Localidad -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Localidad</label>
+                        <input type="text" name="localidad" maxlength="100"
+                            class="form-control form-control-sm">
+                    </div>
+
+                    <!-- Talla Superior -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Talla Superior</label>
+                        <input type="text" name="talla_superior" maxlength="10"
+                            class="form-control form-control-sm">
+                    </div>
+
+                    <!-- Talla Inferior -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Talla Inferior</label>
+                        <input type="text" name="talla_inferior" maxlength="10"
+                            class="form-control form-control-sm">
+                    </div>
+
+                    <!-- Talla Calzado -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Talla Calzado</label>
+                        <input type="text" name="talla_calzado" maxlength="10"
+                            class="form-control form-control-sm">
+                    </div>
+
+                    <!-- Rol -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label for="id_rol" class="form-label">Rol <span class="text-danger">*</span></label>
+                        <!-- name="id_rol" para que f.get('id_rol') funcione -->
+                        <select name="id_rol" id="rol" class="form-select form-select-sm" required>
+                        <option value="">Seleccione rol...</option>
+                        </select>
+                    </div>
+
+                    <!-- Nombre Usuario -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Nombre Usuario <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre_usuario" maxlength="20"
+                            class="form-control form-control-sm" required>
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <label class="form-label">Contraseña <span class="text-danger">*</span></label>
+                        <input type="password" name="contrasenia" maxlength="255"
+                            class="form-control form-control-sm" required>
+                    </div>
+
+                    </div><!-- /row -->
+
+                    <div class="d-flex justify-content-center gap-2">
+                    <button type="reset"  class="btn btn-secondary">Limpiar</button>
+                    <button type="submit" class="btn btn-primary">Insertar</button>
+                    </div>
+                </form>
                 </div>
+
             </main>
-        </div>
         </div>
     </div>
 
 
+        <!-- Modal de ver -->
+    <div class="modal fade" id="modalVer" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalle de la persona</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body" id="modalVerBody">
+                   <!-- Body dinamico del modal-->
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
     <!-- Modal de edición -->
     <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -216,75 +285,11 @@
                 </div>
                 <div class="modal-body">
                     <form id="formEditar" class="mx-auto">
-                        <!-- Campos en la misma fila -->
-                        <div class="row mb-3">
-                            <div class="col-sm-12 ">
-                                <label class="m-2" for="nombre">Nombre:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="nombre" data-col="2">
-                            </div>
-                            <div class="col-sm-12 ">
-                                <label class="m-2" for="apellido">Apellido:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="apellido" data-col="2">
-                            </div>
-                            <div class="col-sm-12 ">
-                                <label class="m-2" for="telefono">Telefono:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="telefono" data-col="2">
-                            </div>
-                            <div class="col-sm-12 ">
-                                <label class="m-2" for="Correo">Correo:</label>
-                                <input type="email" class="form-control form-control-sm mt-1 filtro" id="Correo" data-col="2">
-                            </div>
-                            <div class="col-sm-12 ">
-                                <label class="m-2" for="F_Ingreso">F_Ingreso_Diputacion:</label>
-                                <input type="date" class="form-control form-control-sm mt-1 filtro" id="F_Ingreso" data-col="2">
-                            </div>
-                            <div class="col-sm-12 ">
-                                <label for="T_Arriba" class="m-2 form-label">T_Arriba</label>
-                                <select class="form-select" id="T_Arriba">
-                                    <option value="">Seleccione talla...</option>
-                                    <option value="1">Vehículo 1</option>
-                                    <option value="2">Vehículo 2</option>
-                                </select>       
-                            </div>
-                            <div class="col-sm-12 ">
-                                <label for="T_Abajo" class=" m-2 form-label">T_Abajo</label>
-                                <select class="form-select" id="T_Abajo">
-                                    <option value="">Seleccione talla...</option>
-                                    <option value="1">Vehículo 1</option>
-                                    <option value="2">Vehículo 2</option>
-                                </select>    
-                            </div>
-                            <div class="col-sm-12 ">
-                                <label class="m-2" for="Localidad">Localidad:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="Localidad" data-col="2">
-                            </div>
-                            <div class="col-sm-12 ">
-                                <label for="provincia" class=" m-2 form-label">Provincia</label>
-                                <select class="form-select" id="provincia">
-                                    <option value="">Seleccione provincia...</option>
-                                    <option value="1">Vehículo 1</option>
-                                    <option value="2">Vehículo 2</option>
-                                </select>    
-                            </div>
-                            <div class="col-sm-12 ">
-                                <label class="m-2" for="domicilio">Domicilio:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="domicilio" data-col="2">
-                            </div>
-                            <div class="col-sm-12 ">
-                                <label class="m-2" for="T_Emergencia">Telefono_Emergecia:</label>
-                                <input type="text" class="form-control form-control-sm mt-1 filtro" id="T_Emergencia" data-col="2">
-                            </div>
-                        </div>
+                        
                     </form>
                 </div>
             </div>
-            <div class="d-flex justify-content-center gap-2 modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    Cancelar
-                </button>
-                <button type="button" class="btn btn-primary" id="btnGuardarCambios">
-                    Guardar cambios
-                </button>
+               
             </div>
         </div>
     </div>
@@ -311,33 +316,10 @@
         </div>
     </div>
 
-    <!-- Modal de ver -->
-    <div class="modal fade" id="modalVer" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalle del tipo</h5>
-                    <button class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body" id="modalVerBody">
-                   <!-- Body dinamico del modal-->
-                </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cerrar
-                    </button>
-                </div>
-
-            </div>
-        </div>
-    </div>
     <!-- FOOTER -->
     <div id="footer-placeholder" class="mt-auto"></div>
     <!-- ALERT-->
-    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
 
 
 </body>

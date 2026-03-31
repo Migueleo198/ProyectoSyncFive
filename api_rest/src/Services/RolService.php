@@ -7,6 +7,7 @@ use Models\RolModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
+use PDOException;
 
 class RolService
 {
@@ -121,6 +122,15 @@ class RolService
 
         try {
             $result = $this->model->delete($id);
+        } catch (PDOException $e) {
+            // Verificar si es una violación de clave foránea
+            if ($e->getCode() === '23000' || strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                throw new \Exception("No se puede eliminar este rol porque hay personas que lo tienen asignado", 409);
+            }
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
         } catch (Throwable $e) {
             throw new \Exception(
                 "Error interno en la base de datos: " . $e->getMessage(),
@@ -132,33 +142,26 @@ class RolService
             throw new \Exception("Rol no encontrado", 404);
         }
 
-        if ($result === -1) {
-            throw new \Exception(
-                "No se puede eliminar el rol: el registro está en uso",
-                409
-            );
-        }
-
         // Eliminación exitosa → no retorna nada
     }
         /**
      * Obtener todas las personas asociadas a un Rol
      */
-    public function getPersonsByRol(int $ID_Rol): array
+    public function getPersonsByRol(int $id_rol): array
     {
-        Validator::validate(['ID_Rol' => $ID_Rol], [
-            'ID_Rol' => 'required|int|min:1'
+        Validator::validate(['id_Rol' => $id_rol], [
+            'ID_rol' => 'required|int|min:1'
         ]);
 
         try {
             // verificamos que el rol exista primero
-            $exists = $this->model->find($ID_Rol);
+            $exists = $this->model->find($id_Rol);
 
             if (!$exists) {
                 throw new \Exception("Rol no encontrado", 404);
             }
 
-            return $this->model->getPersonsByRol($ID_Rol);
+            return $this->model->getPersonsByRol($id_Rol);
 
         } catch (Throwable $e) {
             throw new \Exception(
@@ -173,19 +176,19 @@ class RolService
     public function assignRolToPerson(array $input): array
     {
         $data = Validator::validate($input, [
-            'n_funcionario' => 'required|string',
-            'ID_Rol'     => 'required|int|min:1'
+            'id_bombero' => 'required|string',
+            'id_rol'     => 'required|int|min:1' 
         ]);
 
         try {
-            $exists = $this->model->find($data['ID_Rol']);
+            $exists = $this->model->find($data['id_rol']);
             if (!$exists) {
                 throw new \Exception("Rol no encontrado", 404);
             }
 
             $result = $this->model->assignToPerson(
-                $data['n_funcionario'],
-                $data['ID_Rol']
+                $data['id_bombero'],  // ← era n_funcionario
+                $data['id_rol']       // ← era ID_Rol
             );
 
         } catch (Throwable $e) {
