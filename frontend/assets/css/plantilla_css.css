@@ -12,6 +12,161 @@
     }
 
     /* ══════════════════════════════════════════════════════════
+       TABLE ACTION BUTTONS
+    ══════════════════════════════════════════════════════════ */
+
+    .celda-acciones {
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .acciones-tabla {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 0.45rem;
+        width: max-content;
+        max-width: 100%;
+        margin-inline: auto;
+        white-space: nowrap;
+    }
+
+    .btn-ver,
+    .btn-editar,
+    .btn-eliminar,
+    .btn-eliminar-compacto,
+    .btn-eliminar-persona,
+    .btn-eliminar-relacion-carnet,
+    .btn-desasignar-persona {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 2.2rem;
+        height: 2.2rem;
+        padding: 0 !important;
+        border: 1px solid transparent;
+        border-radius: 0.8rem;
+        background-color: transparent;
+        text-decoration: none;
+        transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .btn-ver i,
+    .btn-editar i,
+    .btn-eliminar i,
+    .btn-eliminar-compacto i,
+    .btn-eliminar-persona i,
+    .btn-eliminar-relacion-carnet i,
+    .btn-desasignar-persona i {
+        font-size: 1rem;
+        transition: color 0.18s ease;
+    }
+
+    .btn-ver {
+        background-color: rgba(13, 110, 253, 0.1);
+        border-color: rgba(13, 110, 253, 0.2);
+        color: #0d6efd;
+    }
+
+    .btn-editar {
+        background-color: rgba(255, 193, 7, 0.18);
+        border-color: rgba(255, 193, 7, 0.32);
+        color: #9a6700;
+    }
+
+    .btn-eliminar,
+    .btn-eliminar-compacto,
+    .btn-eliminar-persona,
+    .btn-eliminar-relacion-carnet,
+    .btn-desasignar-persona {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-color: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+
+    .btn-ver:hover,
+    .btn-ver:focus-visible,
+    .btn-editar:hover,
+    .btn-editar:focus-visible,
+    .btn-eliminar:hover,
+    .btn-eliminar:focus-visible,
+    .btn-eliminar-compacto:hover,
+    .btn-eliminar-compacto:focus-visible,
+    .btn-eliminar-persona:hover,
+    .btn-eliminar-persona:focus-visible,
+    .btn-eliminar-relacion-carnet:hover,
+    .btn-eliminar-relacion-carnet:focus-visible,
+    .btn-desasignar-persona:hover,
+    .btn-desasignar-persona:focus-visible {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(38, 34, 35, 0.12);
+    }
+
+    .btn-ver:hover,
+    .btn-ver:focus-visible {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+    }
+
+    .btn-editar:hover,
+    .btn-editar:focus-visible {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #3d2b00;
+    }
+
+    .btn-eliminar:hover,
+    .btn-eliminar:focus-visible,
+    .btn-eliminar-compacto:hover,
+    .btn-eliminar-compacto:focus-visible,
+    .btn-eliminar-persona:hover,
+    .btn-eliminar-persona:focus-visible,
+    .btn-eliminar-relacion-carnet:hover,
+    .btn-eliminar-relacion-carnet:focus-visible,
+    .btn-desasignar-persona:hover,
+    .btn-desasignar-persona:focus-visible {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: #fff;
+    }
+
+    .btn-ver:focus-visible,
+    .btn-editar:focus-visible,
+    .btn-eliminar:focus-visible,
+    .btn-eliminar-compacto:focus-visible,
+    .btn-eliminar-persona:focus-visible,
+    .btn-eliminar-relacion-carnet:focus-visible,
+    .btn-desasignar-persona:focus-visible {
+        outline: none;
+    }
+
+    .btn-eliminar-compacto,
+    .btn-eliminar-persona,
+    .btn-eliminar-relacion-carnet,
+    .btn-desasignar-persona {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.7rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .acciones-tabla {
+            gap: 0.35rem;
+        }
+
+        .btn-ver,
+        .btn-editar,
+        .btn-eliminar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.7rem;
+        }
+    }
+
+    /* ══════════════════════════════════════════════════════════
        PAGINATION - CENTERED ON PAGE
     ══════════════════════════════════════════════════════════ */
     

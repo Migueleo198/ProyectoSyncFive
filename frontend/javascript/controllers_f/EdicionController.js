@@ -95,8 +95,8 @@ function renderTablaEdiciones(lista) {
       <td>${formatearFecha(e.f_inicio)}</td>
       <td>${formatearFecha(e.f_fin)}</td>
       <td>${e.horas}</td>
-      <td>
-        <div  class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>

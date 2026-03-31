@@ -12,6 +12,7 @@ import {
 import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let personas = [];
+let rolesDisponibles = [];
 let sesionActual = null;
 const pagination = new PaginationHelper(15);
 pagination.setLoadingCallback((isLoading) => {
@@ -109,15 +110,29 @@ function aplicarFiltros() {
 async function cargarSelectRoles() {
   const select = document.getElementById('rol'); if (!select) return;
   try {
-    const res = await RolApi.getAll();
-    select.innerHTML = '<option value="">Seleccione rol...</option>';
-    (res?.data || res || []).forEach(r => {
-      const o = document.createElement('option');
-      o.value = r.id_rol;
-      o.textContent = r.nombre;
-      select.appendChild(o);
-    });
+    rolesDisponibles = await obtenerRolesDisponibles();
+    poblarOpcionesRol(select, rolesDisponibles);
   } catch (e) { mostrarError(e.message || 'Error cargando roles'); }
+}
+
+async function obtenerRolesDisponibles() {
+  if (rolesDisponibles.length) return rolesDisponibles;
+  const res = await RolApi.getAll();
+  rolesDisponibles = res?.data || res || [];
+  return rolesDisponibles;
+}
+
+function poblarOpcionesRol(select, roles, selectedValue = '') {
+  if (!select) return;
+
+  select.innerHTML = '<option value="">Seleccione rol...</option>';
+  roles.forEach((rol) => {
+    const option = document.createElement('option');
+    option.value = String(rol.id_rol);
+    option.textContent = rol.nombre;
+    option.selected = String(rol.id_rol) === String(selectedValue ?? '');
+    select.appendChild(option);
+  });
 }
 
 // ================================
@@ -145,8 +160,8 @@ function renderTablaPersonas(lista) {
       <td>${p.apellidos}</td>
       <td class="d-none d-md-table-cell">${p.localidad}</td>
       <td>${p.nombre_usuario}</td>
-      <td>
-        <div  class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>  
       </td>`;
@@ -310,6 +325,7 @@ function bindModalEditar() {
     try {
       const r = await PersonaApiApi.getById(id);
       const persona = r?.data || r; if (!persona) return;
+      const roles = await obtenerRolesDisponibles();
       const form = document.getElementById('formEditar');
       form.innerHTML = `
         <div class="row mb-3">
@@ -333,7 +349,7 @@ function bindModalEditar() {
           <div class="col-lg-4"><label class="form-label">Localidad</label><input type="text" class="form-control" name="localidad" value="${persona.localidad||''}"></div>
         </div>
         <div class="row mb-3">
-          <div class="col-lg-4"><label class="form-label">ID Rol</label><input type="text" class="form-control" name="id_rol" value="${persona.id_rol||''}"></div>
+          <div class="col-lg-4"><label class="form-label" for="editIdRol">Rol</label><select class="form-select" id="editIdRol" name="id_rol"><option value="">Seleccione rol...</option></select></div>
           <div class="col-lg-4"><label class="form-label">Activo</label>
             <select class="form-select" name="activo">
               <option value="1" ${persona.activo==1?'selected':''}>Sí</option>
@@ -345,12 +361,14 @@ function bindModalEditar() {
         <div class="text-center">
           <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
         </div>`;
+      poblarOpcionesRol(form.querySelector('[name="id_rol"]'), roles, persona.id_rol);
       document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
         const data = {};
         camposBd.forEach(campo => {
           const input = form.querySelector(`[name="${campo}"]`); if (!input) return;
           let value = input.value;
           if (campo === 'activo') value = value === '1';
+          if (campo === 'id_rol' && value !== '') value = Number(value);
           if (campo === 'talla_calzado' && value !== '') value = Number(value);
           if (value !== '' && value !== null && value !== undefined) data[campo] = value;
         });

@@ -134,8 +134,8 @@ function renderTablaVehiculos(lista) {
       <td>${v.disponibilidad == 1 ? 'Disponible' : 'No disponible'}</td>
       <td class="d-none d-md-table-cell">${v.nombre_instalacion ?? 'Sin asignar'}</td>
       <td class="d-none d-md-table-cell">${v.marca ?? ''} ${v.modelo ?? ''}</td>
-      <td>
-        <div  class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>  
       </td>

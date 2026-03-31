@@ -82,8 +82,8 @@ function renderTablaFormaciones(lista) {
       <td>${f.id_formacion}</td>
       <td>${f.nombre}</td>
       <td>${f.descripcion}</td>
-      <td>
-        <div  class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>

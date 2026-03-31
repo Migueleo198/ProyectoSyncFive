@@ -386,7 +386,14 @@ async function cargarHTML(id, fileName) {
             throw new Error(`Error al cargar ${url}: ${res.status}`);
         }
 
-        container.innerHTML = await res.text();
+        let html = await res.text();
+
+        if (fileName === 'header.html') {
+            guardarLayoutCacheado(LAYOUT_CACHE_KEYS.header, html);
+            html = prepararHeaderHTML(html);
+        }
+
+        container.innerHTML = html;
 
         container.querySelectorAll('img[data-resize]').forEach(img => {
             img.style.height = img.dataset.height || 'auto';
@@ -396,7 +403,6 @@ async function cargarHTML(id, fileName) {
         if (fileName === 'header.html') {
             mostrarNombreUsuario();
             mostrarEmergenciasHeader();
-            cargarFotoHeader();
         }
 
         if (fileName === 'sidebar.html') {
@@ -446,8 +452,8 @@ async function cargarFotoHeader() {
             img.className = 'header-profile-pic';
             iconEl.replaceWith(img);
         }
-    } catch (_) {
-        // Si falla silenciosamente, el icono por defecto permanece
+
+        container.innerHTML = `<div class="alert alert-danger">Error al cargar ${fileName}</div>`;
     }
 }
 

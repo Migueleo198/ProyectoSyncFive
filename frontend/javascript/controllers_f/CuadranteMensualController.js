@@ -191,6 +191,47 @@ function normalizarEstadoPermiso(estado) {
 }
 
 
+function extraerFechaIso(valor) {
+   return valor ? String(valor).substring(0, 10) : '';
+}
+
+
+function getFechaInicioPermiso(permiso) {
+   return extraerFechaIso(permiso.fecha_hora_inicio || permiso.fecha);
+}
+
+
+function getFechaFinPermiso(permiso) {
+   return extraerFechaIso(permiso.fecha_hora_fin || permiso.fecha_hora_inicio || permiso.fecha);
+}
+
+
+function cubreFechaPermiso(permiso, fecha) {
+   const inicio = getFechaInicioPermiso(permiso);
+   const fin = getFechaFinPermiso(permiso);
+   if (!inicio || !fin) return false;
+   return fecha >= inicio && fecha <= fin;
+}
+
+
+function getPermisosEnFecha(idBombero, fecha) {
+   return permisos.filter(p => p.id_bombero == idBombero && cubreFechaPermiso(p, fecha));
+}
+
+
+function formatearFechaHoraPermiso(valor) {
+   if (!valor) return '—';
+   const [fecha, horaCompleta = ''] = String(valor).split(' ');
+   const hora = horaCompleta.substring(0, 5);
+   return hora ? `${fecha} ${hora}` : fecha;
+}
+
+
+function formatearRangoPermiso(permiso) {
+   return `${formatearFechaHoraPermiso(permiso.fecha_hora_inicio || permiso.fecha)} - ${formatearFechaHoraPermiso(permiso.fecha_hora_fin || permiso.fecha_hora_inicio || permiso.fecha)}`;
+}
+
+
 async function cargarDatosCuadrante() {
    const selectBombero   = document.getElementById('selectBombero');
    const idBomberoFiltro = modoVista === 'individual'
@@ -405,19 +446,12 @@ function tieneBomberoRefuerzoEnFecha(idBombero, fecha) {
 
 
 function tieneBomberoPermisoAceptadoEnFecha(idBombero, fecha) {
-   return permisos.some(p =>
-       (p.fecha || '').substring(0, 10) === fecha &&
-       p.id_bombero == idBombero &&
-       p.estado === 'ACEPTADO'  // CORRECCIÓN: ya normalizado, sin toUpperCase redundante
-   );
+   return getPermisosEnFecha(idBombero, fecha).some(p => p.estado === 'ACEPTADO');
 }
 
 
 function getPermisoEnFecha(idBombero, fecha) {
-   return permisos.find(p =>
-       (p.fecha || '').substring(0, 10) === fecha &&
-       p.id_bombero == idBombero
-   ) || null;
+   return getPermisosEnFecha(idBombero, fecha)[0] || null;
 }
 
 
@@ -519,7 +553,7 @@ function mostrarDetalleDia(idBombero, fecha) {
    const nombreBombero = bombero ? `${bombero.nombre} ${bombero.apellidos || ''}`.trim() : idBombero;
 
    const guardiasDelDia  = guardias.filter(g  => (g.fecha    || '').substring(0, 10) === fecha && g.id_bombero == idBombero);
-   const permisosDelDia  = permisos.filter(p  => (p.fecha    || '').substring(0, 10) === fecha && p.id_bombero == idBombero);
+   const permisosDelDia  = getPermisosEnFecha(idBombero, fecha);
    const refuerzosDelDia = refuerzos.filter(r => (r.f_inicio || '').substring(0, 10) === fecha && r.id_bombero == idBombero);
 
    const toastContainer = document.getElementById('toastContainer') || crearToastContainer();
@@ -582,18 +616,19 @@ function generarContenidoDetalle(guardiasDelDia, permisosDelDia, refuerzosDelDia
            </div>`;
    });
 
-   permisosDelDia.forEach(p => {
-       // CORRECCIÓN: comparar contra valores del DDL (ya normalizados al cargar)
-       const badge = p.estado === 'ACEPTADO' ? 'bg-primary'
-                   : p.estado === 'REVISION'  ? 'bg-warning text-dark'
-                   : 'bg-danger';
+    permisosDelDia.forEach(p => {
+        // CORRECCIÓN: comparar contra valores del DDL (ya normalizados al cargar)
+        const badge = p.estado === 'ACEPTADO' ? 'bg-primary'
+                    : p.estado === 'REVISION'  ? 'bg-warning text-dark'
+                    : 'bg-danger';
        html += `
-           <div class="mb-2 pb-2 border-bottom">
-               <span class="badge ${badge} me-2">Permiso</span>
-               <span>${p.estado}</span>
-               ${p.descripcion ? `<div class="text-muted small mt-1">${p.descripcion}</div>` : ''}
-           </div>`;
-   });
+            <div class="mb-2 pb-2 border-bottom">
+                <span class="badge ${badge} me-2">Permiso</span>
+                <span>${p.estado}</span>
+                <div class="text-muted small mt-1">${formatearRangoPermiso(p)}</div>
+                ${p.descripcion ? `<div class="text-muted small mt-1">${p.descripcion}</div>` : ''}
+            </div>`;
+    });
 
    return html;
 }
