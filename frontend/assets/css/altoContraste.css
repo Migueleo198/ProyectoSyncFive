@@ -379,6 +379,27 @@ body.high-contrast .bg-transparent {
     background-color: transparent !important;
 }
 
+body.high-contrast .card-bombero {
+    background-color: #111111 !important;
+    border-color: #ffe66d !important;
+    color: #ffffff !important;
+}
+
+body.high-contrast .card-bombero .text-dark,
+body.high-contrast .card-bombero .fw-semibold,
+body.high-contrast .card-bombero .text-truncate {
+    color: #ffffff !important;
+}
+
+body.high-contrast .card-bombero .rounded-circle.bg-secondary {
+    background-color: #ffe66d !important;
+    border: 1px solid #ffffff !important;
+}
+
+body.high-contrast .card-bombero .rounded-circle.bg-secondary .text-white {
+    color: #111111 !important;
+}
+
 body.high-contrast .text-muted,
 body.high-contrast small.text-muted,
 body.high-contrast .form-text.text-muted {
@@ -592,6 +613,13 @@ body.high-contrast .profile-picture-container {
 body.high-contrast .bg-success.bg-opacity-10,
 body.high-contrast .kpi-exitosas {
     border-color: #7ff0b0 !important;
+}
+
+body.high-contrast .stat-badge.bg-success.bg-opacity-10 .text-success,
+body.high-contrast .section-header .bi-calendar2-week.text-success,
+body.high-contrast #stat-guardias-anio,
+body.high-contrast #stat-horas-guardia {
+    color: #ffe66d !important;
 }
 
 body.high-contrast .bg-primary.bg-opacity-10,
