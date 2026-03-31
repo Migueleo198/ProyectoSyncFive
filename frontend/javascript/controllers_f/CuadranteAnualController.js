@@ -239,6 +239,68 @@ function normalizarEstadoPermiso(estado) {
 }
 
 
+function extraerFechaIso(valor) {
+   return valor ? String(valor).substring(0, 10) : '';
+}
+
+
+function getFechaInicioPermiso(permiso) {
+   return extraerFechaIso(permiso.fecha_hora_inicio || permiso.fecha);
+}
+
+
+function getFechaFinPermiso(permiso) {
+   return extraerFechaIso(permiso.fecha_hora_fin || permiso.fecha_hora_inicio || permiso.fecha);
+}
+
+
+function cubreFechaPermiso(permiso, fecha) {
+   const inicio = getFechaInicioPermiso(permiso);
+   const fin = getFechaFinPermiso(permiso);
+   if (!inicio || !fin) return false;
+   return fecha >= inicio && fecha <= fin;
+}
+
+
+function crearFechaUtc(fechaIso) {
+   const [anio, mes, dia] = fechaIso.split('-').map(Number);
+   return new Date(Date.UTC(anio, mes - 1, dia));
+}
+
+
+function iterarFechasPermiso(permiso, callback) {
+   const inicio = getFechaInicioPermiso(permiso);
+   const fin = getFechaFinPermiso(permiso);
+   if (!inicio || !fin) return;
+
+   const actual = crearFechaUtc(inicio);
+   const limite = crearFechaUtc(fin);
+
+   while (actual <= limite) {
+      callback(actual.toISOString().substring(0, 10));
+      actual.setUTCDate(actual.getUTCDate() + 1);
+   }
+}
+
+
+function getPermisosEnFecha(fecha) {
+   return permisos.filter(p => cubreFechaPermiso(p, fecha));
+}
+
+
+function formatearFechaHoraPermiso(valor) {
+   if (!valor) return '—';
+   const [fecha, horaCompleta = ''] = String(valor).split(' ');
+   const hora = horaCompleta.substring(0, 5);
+   return hora ? `${fecha} ${hora}` : fecha;
+}
+
+
+function formatearRangoPermiso(permiso) {
+   return `${formatearFechaHoraPermiso(permiso.fecha_hora_inicio || permiso.fecha)} - ${formatearFechaHoraPermiso(permiso.fecha_hora_fin || permiso.fecha_hora_inicio || permiso.fecha)}`;
+}
+
+
 function renderCalendario() {
    const container = document.getElementById('calendar');
    if (!container) return;
@@ -273,13 +335,12 @@ function construirMapaDias() {
    };
 
    guardias.forEach(g => add(g.fecha, 'guardia'));
-   permisos.forEach(p => {
-       // CORRECCIÓN: comparar contra valores del DDL (ya normalizados)
-       const tipo = p.estado === 'ACEPTADO' ? 'permiso_aceptado'
-                  : p.estado === 'REVISION' ? 'permiso_revision'
-                  : 'permiso_denegado';
-       add(p.fecha, tipo);
-   });
+    permisos.forEach(p => {
+        const tipo = p.estado === 'ACEPTADO' ? 'permiso_aceptado'
+                   : p.estado === 'REVISION' ? 'permiso_revision'
+                   : 'permiso_denegado';
+        iterarFechasPermiso(p, fecha => add(fecha, tipo));
+    });
    refuerzos.forEach(r => add(r.f_inicio ? r.f_inicio.substring(0, 10) : null, 'refuerzo'));
 
    return mapa;
@@ -348,7 +409,7 @@ function mostrarDetalleDia(td) {
    if (!fecha) return;
 
    const guardiasDelDia  = guardias.filter(g  => (g.fecha    || '').substring(0, 10) === fecha);
-   const permisosDelDia  = permisos.filter(p  => (p.fecha    || '').substring(0, 10) === fecha);
+    const permisosDelDia  = getPermisosEnFecha(fecha);
    const refuerzosDelDia = refuerzos.filter(r => (r.f_inicio || '').substring(0, 10) === fecha);
 
    const toastContainer = document.getElementById('toastContainer') || crearToastContainer();
@@ -410,18 +471,19 @@ function generarContenidoDetalle(guardiasD, permisosD, refuerzosD) {
            </div>`;
    });
 
-   permisosD.forEach(p => {
-       // CORRECCIÓN: comparar contra valores del DDL (ya normalizados)
-       const badge = p.estado === 'ACEPTADO' ? 'bg-primary'
-                   : p.estado === 'REVISION'  ? 'bg-warning text-dark'
-                   : 'bg-danger';
+    permisosD.forEach(p => {
+        // CORRECCIÓN: comparar contra valores del DDL (ya normalizados)
+        const badge = p.estado === 'ACEPTADO' ? 'bg-primary'
+                    : p.estado === 'REVISION'  ? 'bg-warning text-dark'
+                    : 'bg-danger';
        html += `
-           <div class="mb-2 pb-2 border-bottom">
-               <span class="badge ${badge} me-2">Permiso</span>
-               <span>${p.estado}</span>
-               ${p.descripcion ? `<div class="text-muted small mt-1">${p.descripcion}</div>` : ''}
-           </div>`;
-   });
+            <div class="mb-2 pb-2 border-bottom">
+                <span class="badge ${badge} me-2">Permiso</span>
+                <span>${p.estado}</span>
+                <div class="text-muted small mt-1">${formatearRangoPermiso(p)}</div>
+                ${p.descripcion ? `<div class="text-muted small mt-1">${p.descripcion}</div>` : ''}
+            </div>`;
+    });
 
    return html;
 }

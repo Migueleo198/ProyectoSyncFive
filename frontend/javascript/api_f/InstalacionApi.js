@@ -16,14 +16,9 @@ const InstalacionApi = {
   update(id_Instalacion, data) {
     return ApiClient.put(`/instalaciones/${id_Instalacion}`, data);
   },
-  
 
   delete(id_Instalacion) {
     return ApiClient.delete(`/instalaciones/${id_Instalacion}`);
-  },
-
-  getLocalidades() {
-    return ApiClient.get('/instalaciones/localidades');
   }
 };
 
