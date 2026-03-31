@@ -3,64 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <script src="/frontend/config/config.js"></script>
-<<<<<<< HEAD
-    <script src="/frontend/javascript/header_footer.js" defer></script>
-
-    <script>
-        // Cargar CSS del proyecto
-        loadCSS("plantilla_css.css");
-        loadCSS("header_footer.css");
-        loadCSS("altoContraste.css");
-        // Cargar favicon dinámicamente
-        loadFavicon("favicon.png");
-    </script>
-    
-    <style>
-        /* Prevenir scroll horizontal */
-        body {
-            overflow-x: hidden;
-        }
-        
-        .quick-access-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-            height: 100%;
-        }
-        .quick-access-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .stat-card {
-            border-left: 4px solid;
-        }
-        .stat-card.emergency {
-            border-color: #dc3545;
-        }
-        .stat-card.personnel {
-            border-color: #0d6efd;
-        }
-        .stat-card.vehicles {
-            border-color: #198754;
-        }
-        .stat-card.materials {
-            border-color: #ffc107;
-        }
-        .section-title {
-            font-weight: 600;
-            color: #212529;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        /* Ajustes para el layout con sidebar */
-        .main-container {
-            min-height: calc(100vh - 120px); /* Ajustar según altura de header/footer */
-        }
-    </style>
-=======
     <script>loadHead("Dashboard - SIGEBO", { filtroTabla: false })</script>
->>>>>>> main
 </head>
 <body class="bg-white text-dark d-flex flex-column">
 
@@ -71,7 +14,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- SIDEBAR -->
-            <div id="sidebar-placeholder" class="col-auto p-0"></div>
+            <div id="sidebar-placeholder" class="sidebar-bg col-auto p-0"></div>
 
             <!-- CONTENIDO PRINCIPAL -->
             <main class="col p-3 p-md-4 main-container">
@@ -96,15 +39,10 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-<<<<<<< HEAD
-                                        <p class="text-muted mb-1 small top">Emergencias Activas</p>
-                                        <h3 class="mb-0">2</h3>
-=======
                                         <p class="text-muted mb-1 small">Emergencias Activas</p>
                                         <h3 class="mb-0" id="stat-emergencias">
                                             <span class="spinner-border spinner-border-sm text-danger"></span>
                                         </h3>
->>>>>>> main
                                     </div>
                                     <i class="bi bi-fire fs-1 text-danger opacity-25"></i>
                                 </div>
@@ -117,15 +55,10 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-<<<<<<< HEAD
-                                        <p class="text-muted mb-1 small top">Personal de Guardia</p>
-                                        <h3 class="mb-0">12</h3>
-=======
                                         <p class="text-muted mb-1 small">Personal de Guardia</p>
                                         <h3 class="mb-0" id="stat-personal">
                                             <span class="spinner-border spinner-border-sm text-primary"></span>
                                         </h3>
->>>>>>> main
                                     </div>
                                     <i class="bi bi-people fs-1 text-primary opacity-25"></i>
                                 </div>
@@ -138,15 +71,10 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-<<<<<<< HEAD
-                                        <p class="text-muted mb-1 small top">Vehículos Operativos</p>
-                                        <h3 class="mb-0">8/10</h3>
-=======
                                         <p class="text-muted mb-1 small">Vehículos Operativos</p>
                                         <h3 class="mb-0" id="stat-vehiculos">
                                             <span class="spinner-border spinner-border-sm text-success"></span>
                                         </h3>
->>>>>>> main
                                     </div>
                                     <i class="bi bi-truck fs-1 text-success opacity-25"></i>
                                 </div>
@@ -159,15 +87,10 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-<<<<<<< HEAD
-                                        <p class="text-muted mb-1 small top">Avisos Pendientes</p>
-                                        <h3 class="mb-0">5</h3>
-=======
                                         <p class="text-muted mb-1 small">Total Avisos</p>
                                         <h3 class="mb-0" id="stat-avisos">
                                             <span class="spinner-border spinner-border-sm text-warning"></span>
                                         </h3>
->>>>>>> main
                                     </div>
                                     <i class="bi bi-bell fs-1 text-warning opacity-25"></i>
                                 </div>
@@ -330,39 +253,9 @@
                                 </a>
                             </div>
                             <div class="card-body">
-<<<<<<< HEAD
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item px-0">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1 ignoreHighlight">Rescate en altura</h6>
-                                                <small class="text-muted">Instructor: J. García</small>
-                                            </div>
-                                            <span class="badge bg-primary">15/02/2026</span>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item px-0">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1 ignoreHighlight">Primeros auxilios avanzados</h6>
-                                                <small class="text-muted">Instructor: M. López</small>
-                                            </div>
-                                            <span class="badge bg-primary">20/02/2026</span>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item px-0">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1 ignoreHighlight">Manejo de materiales peligrosos</h6>
-                                                <small class="text-muted">Instructor: A. Ruiz</small>
-                                            </div>
-                                            <span class="badge bg-primary">25/02/2026</span>
-                                        </div>
-=======
                                 <ul class="list-group list-group-flush" id="list-formaciones">
                                     <li class="list-group-item px-0 text-center text-muted">
                                         <span class="spinner-border spinner-border-sm me-2"></span>Cargando...
->>>>>>> main
                                     </li>
                                 </ul>
                             </div>
@@ -381,13 +274,6 @@
                                     Ver mapa completo
                                 </a>
                             </div>
-<<<<<<< HEAD
-                            <div class="card-body d-flex align-items-center justify-content-center bg-light">
-                                <div class="text-center text-muted">
-                                    <i id="geoIcon" class="bi bi-geo-alt fs-1 mb-2"></i>
-                                    <p class="mb-0">Mapa de salidas recientes</p>
-                                    <small>Click en "Ver mapa completo" para detalles</small>
-=======
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table class="table table-hover mb-0">
@@ -406,7 +292,6 @@
                                             </tr>
                                         </tbody>
                                     </table>
->>>>>>> main
                                 </div>
                             </div>
                         </div>

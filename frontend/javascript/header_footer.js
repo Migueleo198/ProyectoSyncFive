@@ -1,83 +1,29 @@
-// Carga HTML en un contenedor usando getPath de config.js
-async function cargarHTML(id, fileName) {
-    const container = document.getElementById(id);
-    if (!container) return;
-
-    try {
-        const url = getPath("includes", fileName);
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`Error al cargar ${url}: ${res.status}`);
-        container.innerHTML = await res.text();
-
-        // Redimensiona imágenes con atributos data-resize
-        container.querySelectorAll("img[data-resize]").forEach(img => {
-            img.style.height = img.dataset.height || "auto";
-            img.style.width = img.dataset.width || "auto";
-        });
-    } catch (err) {
-        console.error(err);
-        container.innerHTML = `<div class="alert alert-danger">Error al cargar ${fileName}</div>`;
-    }
-}
-
-// Ejecutar al cargar el DOM
-document.addEventListener("DOMContentLoaded", () => {
-    cargarHTML("header-placeholder", "header.html");
-    cargarHTML("sidebar-placeholder", "sidebar.html");
-    cargarHTML("footer-placeholder", "footer.html");
-
-    //HIGH CONTRAST
-
-
-
-    document.addEventListener("click", function (e) {
-        if (e.target.classList.contains("highContrastButton")) {
-            toggleContrast();
-            if (document.getElementById("geoIcon") != null) {
-                document.getElementById("geoIcon").classList.remove("text-secondary");
-                document.getElementById("geoIcon").classList.add("text-dark");
-            }
-        }
-    });
-
-    function toggleContrast() {
-        console.log('click');
-        document.body.classList.toggle("high-contrast");
+(function () {
+    if (window.__s5LegacyAccessibilityWrapperLoaded) {
+        return;
     }
 
-    setTimeout(() => {
-        const INCREASE_TXT_SIZE = document.querySelector('.increaseTxtSize');
-        const DECREASE_TXT_SIZE = document.querySelector('.decreaseTxtSize');
-        const TEXT_SIZE = document.querySelector('.TextSizeCounter');
+    window.__s5LegacyAccessibilityWrapperLoaded = true;
 
-        if (!INCREASE_TXT_SIZE || !DECREASE_TXT_SIZE || !TEXT_SIZE) return;
-
-        const html = document.documentElement;
-
-        let firstSize = parseFloat(getComputedStyle(html).fontSize);
-        TEXT_SIZE.textContent = firstSize;
-
-        INCREASE_TXT_SIZE.addEventListener('click', increaseSize);
-        DECREASE_TXT_SIZE.addEventListener('click', decreaseSize);
-
-        function increaseSize() {
-            let currentSize = parseFloat(getComputedStyle(html).fontSize);
-            let newSize = currentSize + 1;
-
-            html.style.fontSize = newSize + "px";
-            TEXT_SIZE.textContent = newSize;
+    function tryInitAccessibility(container) {
+        if (typeof window.initAccessibilityControls !== 'function') {
+            return;
         }
 
-        function decreaseSize() {
-            let currentSize = parseFloat(getComputedStyle(html).fontSize);
-            let newSize = currentSize - 1;
+        window.initAccessibilityControls(container || document);
+    }
 
-            html.style.fontSize = newSize + "px";
-            TEXT_SIZE.textContent = newSize;
-        }
+    function handleFooterLoaded(event) {
+        tryInitAccessibility(event.detail && event.detail.container);
+    }
 
-    }, 500);
+    document.addEventListener('s5:footer-loaded', handleFooterLoaded);
 
-
-});
-
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            tryInitAccessibility(document.getElementById('footer-placeholder') || document);
+        }, { once: true });
+    } else {
+        tryInitAccessibility(document.getElementById('footer-placeholder') || document);
+    }
+})();
