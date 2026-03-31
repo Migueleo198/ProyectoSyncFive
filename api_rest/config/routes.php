@@ -240,6 +240,13 @@ $router->protectedSession('PUT', '/carnets/{id_carnet}', 'Controllers\\CarnetCon
 $router->protectedSession('DELETE', '/carnets/{id_carnet}/personas/{id_bombero}', 'Controllers\\CarnetController@unassign', [4,5]);
 $router->protectedSession('DELETE', '/carnets/{id_carnet}', 'Controllers\\CarnetController@delete', [5]);
 
+//++++++++++++++++++++++++++++++ GRUPOS DE CARNET ++++++++++++++++++++++++++++++
+$router->protectedSession('GET', '/grupos', 'Controllers\\GrupoController@index', [1,2,3,4,5]);
+$router->protectedSession('GET', '/grupos/{id}', 'Controllers\\GrupoController@show', [1,2,3,4,5]);
+$router->protectedSession('POST', '/grupos', 'Controllers\\GrupoController@store', [4,5]);
+$router->protectedSession('PUT', '/grupos/{id}', 'Controllers\\GrupoController@update', [4,5]);
+$router->protectedSession('DELETE', '/grupos/{id}', 'Controllers\\GrupoController@delete', [5]);
+
 
 //++++++++++++++++++++++++++++++ MÉRITOS ++++++++++++++++++++++++++++++
 $router->protectedSession('GET', '/meritos', 'Controllers\\MeritoController@index', [1,2,3,4,5]);

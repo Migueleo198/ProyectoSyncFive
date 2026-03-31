@@ -1,5 +1,6 @@
 import CarnetApi from '../api_f/CarnetApi.js';
 import PersonaApi from '../api_f/PersonaApi.js';
+import GrupoApi from '../api_f/GrupoApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { PERMISOS } from '/frontend/config/permissions.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
@@ -7,6 +8,7 @@ import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
 import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let carnets = [];
+let gruposCarnet = [];
 let sesionActual = null;
 const pagination = new PaginationHelper(15);
 const modalVerPagination = new PaginationHelper(5);
@@ -66,6 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await Promise.all([
     cargarCarnets(),
+    cargarGruposCarnet(),
     cargarCarnetsDisponibles(null, 'seleccionarCarnet'),
     cargarBomberosDisponibles(null, 'id_bombero')
   ]);
@@ -102,7 +105,7 @@ function poblarFiltroGrupo(lista) {
   const valorActual = select.value;
   select.innerHTML = '<option value="">Todos</option>';
 
-  const grupos = [...new Set(lista.map((c) => c.grupo ?? c.categoria).filter(Boolean))].sort();
+  const grupos = [...new Set(lista.map((c) => obtenerNombreGrupo(c, '')).filter(Boolean))].sort();
   grupos.forEach((grupo) => {
     const option = document.createElement('option');
     option.value = grupo;
@@ -111,6 +114,40 @@ function poblarFiltroGrupo(lista) {
   });
 
   select.value = grupos.includes(valorActual) ? valorActual : '';
+}
+
+async function cargarGruposCarnet() {
+  try {
+    const response = await GrupoApi.getAll();
+    gruposCarnet = response?.data || response || [];
+  } catch (_error) {
+    gruposCarnet = [];
+  }
+
+  poblarSelectGrupos('grupo');
+}
+
+function poblarSelectGrupos(idSelect, valorActual = '') {
+  const select = document.getElementById(idSelect);
+  if (!select) return;
+
+  const valorNormalizado = String(valorActual ?? '').trim();
+  const options = gruposCarnet.map((grupo) => {
+    const idGrupo = String(grupo.id_grupo ?? '').trim();
+    const selected = idGrupo === valorNormalizado ? ' selected' : '';
+    return `<option value="${idGrupo}"${selected}>${escapeHtml(grupo.nombre ?? '')}</option>`;
+  });
+
+  select.innerHTML = ['<option value="">Seleccione grupo...</option>', ...options].join('');
+}
+
+function escapeHtml(valor) {
+  return String(valor ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 function bindFiltros() {
@@ -124,7 +161,7 @@ function aplicarFiltros() {
   const filtroGrupo = document.getElementById('filtroGrupo')?.value ?? '';
 
   const filtrados = carnets.filter((carnet) => {
-    const grupo = carnet.grupo ?? carnet.categoria ?? '';
+    const grupo = obtenerNombreGrupo(carnet, '');
     const cumpleNombre = !filtroNombre || String(carnet.nombre ?? '').toLowerCase().includes(filtroNombre);
     const cumpleGrupo = !filtroGrupo || grupo === filtroGrupo;
     return cumpleNombre && cumpleGrupo;
@@ -150,7 +187,7 @@ function renderTablaCarnets(lista) {
   const puedeEliminar = puedeEliminarCarnets();
 
   itemsPagina.forEach((carnet) => {
-    const grupo = carnet.grupo ?? carnet.categoria ?? 'Sin grupo';
+    const grupo = obtenerNombreGrupo(carnet);
     const botones = [`<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${carnet.id_carnet}" title="Ver detalle"><i class="bi bi-eye"></i></button>`];
 
     if (puedeEditar) {
@@ -173,7 +210,7 @@ function renderTablaCarnets(lista) {
   });
 }
 
-function validarCarnet(nombre, grupo, duracionMeses) {
+function validarCarnet(nombre, idGrupo, duracionMeses) {
   if (!nombre || !nombre.trim()) {
     mostrarError('El nombre del carnet es obligatorio.');
     return false;
@@ -184,13 +221,8 @@ function validarCarnet(nombre, grupo, duracionMeses) {
     return false;
   }
 
-  if (!grupo || !grupo.trim()) {
+  if (!idGrupo || !String(idGrupo).trim()) {
     mostrarError('El grupo es obligatorio.');
-    return false;
-  }
-
-  if (grupo.trim().length > 20) {
-    mostrarError('El grupo no puede superar los 20 caracteres.');
     return false;
   }
 
@@ -239,15 +271,15 @@ function bindCrearCarnet() {
     e.preventDefault();
     const formData = new FormData(form);
     const nombre = String(formData.get('nombre') ?? '').trim();
-    const grupo = String(formData.get('grupo') ?? '').trim();
+    const idGrupo = String(formData.get('id_grupo') ?? '').trim();
     const duracionMeses = String(formData.get('duracion_meses') ?? '').trim();
 
-    if (!validarCarnet(nombre, grupo, duracionMeses)) return;
+    if (!validarCarnet(nombre, idGrupo, duracionMeses)) return;
 
     try {
       await CarnetApi.create({
         nombre,
-        grupo,
+        id_grupo: Number(idGrupo),
         duracion_meses: Number(duracionMeses)
       });
 
@@ -321,7 +353,7 @@ function bindModalEditar() {
         </div>
         <div class="col-md-4">
           <label class="form-label" for="editGrupo">Grupo</label>
-          <input type="text" class="form-control" id="editGrupo" name="grupo" maxlength="20" value="${carnet.grupo ?? carnet.categoria ?? ''}">
+          <select class="form-select" id="editGrupo" name="id_grupo" required></select>
         </div>
         <div class="col-md-4">
           <label class="form-label" for="editDuracionMeses">Duracion (meses)</label>
@@ -333,6 +365,8 @@ function bindModalEditar() {
         <button type="button" class="btn btn-primary" id="btnGuardarCambiosCarnet">Guardar cambios</button>
       </div>
     `;
+
+    poblarSelectGrupos('editGrupo', String(carnet.id_grupo ?? '').trim());
 
     try {
       const response = await CarnetApi.getPersonsByCarnet(idCarnet);
@@ -348,15 +382,15 @@ function bindModalEditar() {
       try {
         const data = {
           nombre: String(form.querySelector('[name="nombre"]')?.value ?? '').trim(),
-          grupo: String(form.querySelector('[name="grupo"]')?.value ?? '').trim(),
+          id_grupo: String(form.querySelector('[name="id_grupo"]')?.value ?? '').trim(),
           duracion_meses: String(form.querySelector('[name="duracion_meses"]')?.value ?? '').trim()
         };
 
-        if (!validarCarnet(data.nombre, data.grupo, data.duracion_meses)) return;
+        if (!validarCarnet(data.nombre, data.id_grupo, data.duracion_meses)) return;
 
         await CarnetApi.update(idCarnet, {
           nombre: data.nombre,
-          grupo: data.grupo,
+          id_grupo: Number(data.id_grupo),
           duracion_meses: Number(data.duracion_meses)
         });
 
@@ -398,7 +432,7 @@ function bindModalVer() {
     try {
       const response = await CarnetApi.getPersonsByCarnet(idCarnet);
       const personas = response?.data || response || [];
-      const grupo = carnet.grupo ?? carnet.categoria ?? 'Sin grupo';
+      const grupo = obtenerNombreGrupo(carnet);
 
       modalBody.innerHTML = `
         <p><strong>ID:</strong> ${carnet.id_carnet}</p>
@@ -412,7 +446,7 @@ function bindModalVer() {
       modalBody.innerHTML = `
         <p><strong>ID:</strong> ${carnet.id_carnet}</p>
         <p><strong>Nombre:</strong> ${carnet.nombre ?? ''}</p>
-        <p><strong>Grupo:</strong> ${carnet.grupo ?? carnet.categoria ?? 'Sin grupo'}</p>
+        <p><strong>Grupo:</strong> ${obtenerNombreGrupo(carnet)}</p>
         <p><strong>Duracion:</strong> ${carnet.duracion_meses ?? ''} meses</p>
       `;
       renderSinResultadosTablaPersonasCarnet(contexto, 'No se pudieron cargar las personas asociadas.');
@@ -549,7 +583,7 @@ async function cargarCarnetsDisponibles(carnetSeleccionado, idSelect) {
     lista.forEach((carnet) => {
       const option = document.createElement('option');
       option.value = carnet.id_carnet;
-      option.textContent = `${carnet.nombre} - ${carnet.grupo ?? carnet.categoria} (${carnet.duracion_meses} meses)`;
+      option.textContent = `${carnet.nombre} - ${obtenerNombreGrupo(carnet)} (${carnet.duracion_meses} meses)`;
       if (String(carnetSeleccionado ?? '') === String(carnet.id_carnet)) {
         option.selected = true;
       }
@@ -650,4 +684,9 @@ function sumarMeses(fechaIso, meses) {
   const mm = String(mesObjetivo).padStart(2, '0');
   const dd = String(diaObjetivo).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
+}
+
+function obtenerNombreGrupo(carnet, fallback = 'Sin grupo') {
+  const grupo = String(carnet?.grupo ?? '').trim();
+  return grupo || fallback;
 }

@@ -72,6 +72,11 @@ export const PERMISOS = {
     rolesEditar:    [4, 5],
     rolesEliminar:  [5],
   },
+  grupos: {
+    rolesLectura:   [1, 2, 3, 4, 5],
+    rolesEscritura: [4, 5],
+    rolesEliminar:  [5],
+  },
   permisos: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [1, 2, 3, 4, 5], // cualquiera puede solicitar

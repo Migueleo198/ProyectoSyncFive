@@ -623,12 +623,13 @@ class PersonaModel
             ->query("
                 SELECT
                     c.nombre,
-                    c.categoria AS grupo,
+                    g.nombre AS grupo,
                     cp.f_obtencion,
                     cp.f_vencimiento,
                     CASE WHEN cp.f_vencimiento >= CURDATE() THEN 1 ELSE 0 END AS vigente
                 FROM Carnet_Persona cp
                 JOIN Carnet c ON c.id_carnet = cp.id_carnet
+                LEFT JOIN Grupo g ON g.id_grupo = c.id_grupo
                 WHERE cp.id_bombero = :id
                 ORDER BY cp.f_vencimiento ASC
             ")
