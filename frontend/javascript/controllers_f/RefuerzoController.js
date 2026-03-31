@@ -139,8 +139,8 @@ function renderTablaRefuerzos(lista) {
             <td>${r.f_inicio}</td>
             <td>${r.f_fin}</td>
             <td>${r.horas || ''}</td>
-            <td>
-                <div class="d-flex justify-content-around">
+            <td class="celda-acciones">
+                <div class="acciones-tabla">
                 ${botonesAccion}
                 </div>
             </td>

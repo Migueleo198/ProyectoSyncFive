@@ -1,5 +1,6 @@
 import AreaPersonalApi from '../api_f/AreaPersonalApi.js';
 import { authGuard } from '../helpers/authGuard.js';
+import { actualizarAvatarHeader } from './AuthController.js';
 import { mostrarError, mostrarExito, formatearFecha } from '../helpers/utils.js';
 import { validarEmail, validarTelefono } from '../helpers/validacion.js';
 
@@ -417,17 +418,19 @@ async function bindFotoPerfil() {
         if (!idBomberoActual) return;
         try {
             const result = await AreaPersonalApi.uploadFotoPerfil(idBomberoActual, file);
+            if (statsData?.persona) {
+                statsData.persona.foto_perfil = result.data.foto_perfil;
+            }
+
+            const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+            user.foto_perfil = result.data.foto_perfil;
+            sessionStorage.setItem('user', JSON.stringify(user));
+            actualizarAvatarHeader(result.data.foto_perfil);
+
             const objectUrl = await AreaPersonalApi.getFotoPerfil(result.data.foto_perfil);
             if (objectUrl) {
                 const img = document.getElementById('profilePic');
                 if (img) { if (img.dataset.objectUrl) URL.revokeObjectURL(img.dataset.objectUrl); img.src = objectUrl; img.dataset.objectUrl = objectUrl; }
-                const user = JSON.parse(sessionStorage.getItem('user') || '{}');
-                user.foto_perfil = result.data.foto_perfil;
-                sessionStorage.setItem('user', JSON.stringify(user));
-                const headerIcon = document.querySelector('#header-placeholder .header-user .bi-person-circle');
-                const headerImg  = document.querySelector('#header-placeholder .header-user img.rounded-circle');
-                if (headerImg) { URL.revokeObjectURL(headerImg.src); headerImg.src = objectUrl; }
-                else if (headerIcon) { const newImg = document.createElement('img'); newImg.src = objectUrl; newImg.alt = 'Foto de perfil'; newImg.className = 'header-profile-pic'; headerIcon.replaceWith(newImg); }
             }
             mostrarExito('Foto de perfil actualizada');
         } catch (err) { mostrarError(err.message || 'Error al subir la foto'); }

@@ -59,8 +59,8 @@ function renderTablaRoles(lista) {
          <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${r.id_rol}"><i class="bi bi-trash3"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_rol}"><i class="bi bi-eye"></i></button>`;
     tr.innerHTML = `<td class="d-none d-md-table-cell">${r.id_rol}</td><td>${r.nombre??''}</td><td class="d-none d-md-table-cell">${truncar(r.descripcion,80)}</td>
-    <td>
-        <div  class="d-flex justify-content-around">
+    <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>`;

@@ -1,7 +1,73 @@
 // Recibimos el nombre de usuario y logouts
-import { mostrarNombreUsuario, bindLogoutButtons } from '../controllers_f/AuthController.js';
+import { mostrarNombreUsuario, bindLogoutButtons, getHeaderAvatarSrc, getStoredSessionUser } from '../controllers_f/AuthController.js';
 import { mostrarEmergenciasHeader } from '../controllers_f/EmergenciasActivasController.js';
-import ApiClient from '../api_f/ApiClient.js';
+
+const LAYOUT_CACHE_KEYS = {
+    header: 'layout-cache:header.html'
+};
+
+function obtenerLayoutCacheado(cacheKey) {
+    try {
+        return sessionStorage.getItem(cacheKey);
+    } catch (_) {
+        return null;
+    }
+}
+
+function guardarLayoutCacheado(cacheKey, html) {
+    try {
+        sessionStorage.setItem(cacheKey, html);
+    } catch (_) {
+        // Ignoramos errores de quota o acceso al storage.
+    }
+}
+
+function prepararHeaderHTML(html) {
+    const user = getStoredSessionUser();
+    if (!user) return html;
+
+    const template = document.createElement('template');
+    template.innerHTML = html.trim();
+
+    const userNameEl = template.content.querySelector('#header-user-name');
+    if (userNameEl) {
+        userNameEl.textContent = user.nombre_usuario || user.login || 'Usuario';
+    }
+
+    const avatarImgEl = template.content.querySelector('#header-user-avatar');
+    const avatarFallbackEl = template.content.querySelector('#header-user-avatar-fallback');
+    const avatarSrc = getHeaderAvatarSrc(user.foto_perfil);
+
+    if (!avatarImgEl || !avatarFallbackEl) {
+        return template.innerHTML;
+    }
+
+    if (!avatarSrc) {
+        avatarImgEl.classList.add('d-none');
+        avatarFallbackEl.classList.remove('d-none');
+        return template.innerHTML;
+    }
+
+    avatarImgEl.src = avatarSrc;
+    avatarImgEl.decoding = 'async';
+    avatarImgEl.classList.remove('d-none');
+    avatarFallbackEl.classList.add('d-none');
+
+    return template.innerHTML;
+}
+
+function renderizarHeaderCacheado() {
+    const container = document.getElementById('header-placeholder');
+    if (!container) return false;
+
+    const cachedHtml = obtenerLayoutCacheado(LAYOUT_CACHE_KEYS.header);
+    if (!cachedHtml) return false;
+
+    container.innerHTML = prepararHeaderHTML(cachedHtml);
+    mostrarNombreUsuario();
+    mostrarEmergenciasHeader();
+    return true;
+}
 
 // Carga HTML en un contenedor usando getPath de config.js
 async function cargarHTML(id, fileName) {
@@ -14,7 +80,14 @@ async function cargarHTML(id, fileName) {
         
         if (!res.ok) throw new Error(`Error al cargar ${url}: ${res.status}`);
 
-        container.innerHTML = await res.text();
+        let html = await res.text();
+
+        if (fileName === 'header.html') {
+            guardarLayoutCacheado(LAYOUT_CACHE_KEYS.header, html);
+            html = prepararHeaderHTML(html);
+        }
+
+        container.innerHTML = html;
 
         // Redimensiona imágenes con atributos data-resize
         container.querySelectorAll("img[data-resize]").forEach(img => {
@@ -26,7 +99,6 @@ async function cargarHTML(id, fileName) {
         if (fileName === 'header.html') {
             mostrarNombreUsuario();
             mostrarEmergenciasHeader();
-            cargarFotoHeader();
         }
         
         if (fileName === 'sidebar.html') {
@@ -35,45 +107,18 @@ async function cargarHTML(id, fileName) {
 
     } catch (err) {
         console.error(err);
-        container.innerHTML = `<div class="alert alert-danger">Error al cargar ${fileName}</div>`;
-    }
-}
 
-/**
- * Carga la foto de perfil del usuario logueado en el header.
- * Si no tiene foto usa el icono por defecto (no hace nada).
- */
-async function cargarFotoHeader() {
-    const user = JSON.parse(sessionStorage.getItem('user') || 'null');
-    if (!user?.foto_perfil) return;
-
-    try {
-        // Reutilizamos el mismo endpoint protegido que usa el área personal
-        const { API_BASE_PATH } = await import('../../config/apiConfig.js');
-        const response = await fetch(`${API_BASE_PATH}/storage/fotos/${user.foto_perfil}`, {
-            credentials: 'include'
-        });
-        if (!response.ok) return;
-
-        const blob      = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
-
-        // Sustituir el icono por la foto en el header
-        const iconEl = document.querySelector('#header-placeholder .header-user .bi-person-circle');
-        if (iconEl) {
-            const img = document.createElement('img');
-            img.src = objectUrl;
-            img.alt = 'Foto de perfil';
-            img.className = 'header-profile-pic';
-            iconEl.replaceWith(img);
+        if (fileName === 'header.html' && container.innerHTML.trim()) {
+            return;
         }
-    } catch (_) {
-        // Si falla silenciosamente, el icono por defecto permanece
+
+        container.innerHTML = `<div class="alert alert-danger">Error al cargar ${fileName}</div>`;
     }
 }
 
 // Ejecutar al cargar el DOM
 async function initLayout() {
+    renderizarHeaderCacheado();
     await cargarHTML("header-placeholder", "header.html");
     await cargarHTML("sidebar-placeholder", "sidebar.html");
     await cargarHTML("footer-placeholder", "footer.html");

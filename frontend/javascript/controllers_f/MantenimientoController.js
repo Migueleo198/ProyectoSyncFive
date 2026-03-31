@@ -132,8 +132,8 @@ function renderTabla(lista) {
       <td>${m.recurso||'-'}</td><td class="d-none d-md-table-cell">${m.estado??''}</td>
       <td class="d-none d-xl-table-cell">${m.descripcion||'-'}</td>
       <td class="d-none d-md-table-cell">${m.f_inicio||'-'}</td><td class="d-none d-lg-table-cell">${m.f_fin||'-'}</td>
-      <td>
-        <div class="d-flex justify-content-center gap-2">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>`;

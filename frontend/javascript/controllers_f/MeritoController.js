@@ -94,11 +94,11 @@ function renderTablaMeritos(lista) {
     const tr = document.createElement('tr');
     const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_merito}"><i class="bi bi-eye"></i></button>
-         <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.id_merito}"><i class="bi bi-trash3 text-danger"></i></button>`
+         <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.id_merito}"><i class="bi bi-trash3"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_merito}"><i class="bi bi-eye"></i></button>`;
     tr.innerHTML = `<td>${m.id_merito}</td><td>${m.nombre??''}</td><td class="d-none d-md-table-cell">${truncar(m.descripcion,80)}</td>
-      <td>
-        <div  class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>`;
@@ -205,7 +205,7 @@ function bindModalVer() {
       personsData.forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${p.id_bombero}</td><td>${p.n_funcionario}</td><td>${p.nombre} ${p.apellidos}</td>
-          <td><button class="btn btn-sm btn-danger btn-desasignar-persona" data-id-bombero="${p.id_bombero}" data-id-merito="${id}"><i class="bi bi-person-dash"></i></button></td>`;
+          <td><button class="btn btn-sm btn-eliminar-compacto btn-desasignar-persona" data-id-bombero="${p.id_bombero}" data-id-merito="${id}"><i class="bi bi-person-dash"></i></button></td>`;
         tbody.appendChild(tr);
       });
     } catch (err) { tbody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">${err.message||'Error'}</td></tr>`; }

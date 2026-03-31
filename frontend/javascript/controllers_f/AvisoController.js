@@ -190,6 +190,11 @@ function renderTablaAvisos(lista) {
               data-bs-toggle="modal" data-bs-target="#modalVer"
               data-id="${a.id_aviso}" title="Ver detalle">
             <i class="bi bi-eye"></i>
+         </button>
+         <button type="button" class="btn p-0 btn-eliminar"
+              data-bs-toggle="modal" data-bs-target="#modalEliminar"
+              data-id="${a.id_aviso}" title="Eliminar">
+            <i class="bi bi-trash3"></i>
          </button>`
       : `<button type="button" class="btn p-0 btn-ver"
               data-bs-toggle="modal" data-bs-target="#modalVer"
@@ -208,8 +213,8 @@ function renderTablaAvisos(lista) {
       <td>${truncar(a.mensaje, 60)}</td>
       <td class="d-none d-md-table-cell">${formatearFecha(a.fecha)}</td>
       <td class="d-none d-md-table-cell">${nombreRemitente}</td>
-      <td>
-        <div class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>

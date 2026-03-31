@@ -1,6 +1,22 @@
 import AuthApi from '../api_f/AuthApi.js';
 import * as Validaciones from '../helpers/validacion.js';
 import { mostrarError} from '../helpers/utils.js';
+import { API_BASE_PATH } from '../../config/apiConfig.js';
+
+const HEADER_USER_NAME_SELECTOR = '#header-user-name';
+const HEADER_USER_AVATAR_SELECTOR = '#header-user-avatar';
+const HEADER_USER_AVATAR_FALLBACK_SELECTOR = '#header-user-avatar-fallback';
+
+export function getStoredSessionUser() {
+    const userData = sessionStorage.getItem('user');
+    if (!userData) return null;
+
+    try {
+        return JSON.parse(userData);
+    } catch (_) {
+        return null;
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     // ── Página login ──────────────────────────────────
@@ -264,45 +280,64 @@ function showActivationState(state, errorMsg = null) {
 // MOSTRAR NOMBRE DE USUARIO
 // ================================
 export function mostrarNombreUsuario() {
-  const userData = sessionStorage.getItem('user');
-  if (!userData) return;
+  const user = getStoredSessionUser();
+  if (!user) return;
 
-  const user = JSON.parse(userData);
-  document.querySelectorAll('.header-user span').forEach(span => {
-    span.textContent = user.nombre_usuario || user.login || 'Usuario';
-  });
-    
-  // Foto de perfil en el header (si existe)
-  if (user.foto_perfil) {
-    cargarFotoHeader(user.foto_perfil);
+  const userNameEl = document.querySelector(HEADER_USER_NAME_SELECTOR);
+  if (userNameEl) {
+    userNameEl.textContent = user.nombre_usuario || user.login || 'Usuario';
   }
+
+  actualizarAvatarHeader(user.foto_perfil);
 }
 
-/**
- * Carga la foto de perfil en el icono del header mediante fetch autenticado.
- * Se llama desde mostrarNombreUsuario y desde header_footer.js tras cargar el header.
- */
-async function cargarFotoHeader(fotoPerfil) {
-    try {
-        const { API_BASE_PATH } = await import('../../config/apiConfig.js');
-        const response = await fetch(`${API_BASE_PATH}/storage/fotos/${fotoPerfil}`, {
-            credentials: 'include'
-        });
-        if (!response.ok) return;
+export function getHeaderAvatarSrc(fotoPerfil) {
+    if (!fotoPerfil) return null;
+    return `${API_BASE_PATH}/storage/fotos/${encodeURIComponent(fotoPerfil)}`;
+}
 
-        const blob      = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
+function mostrarFallbackAvatar(imgEl, fallbackEl) {
+    if (imgEl) {
+        imgEl.classList.add('d-none');
+        imgEl.removeAttribute('src');
+    }
 
-        const iconEl = document.querySelector('#header-placeholder .header-user .bi-person-circle');
-        if (iconEl) {
-            const img = document.createElement('img');
-            img.src = objectUrl;
-            img.alt = 'Foto de perfil';
-            img.className = 'header-profile-pic';
-            iconEl.replaceWith(img);
+    if (fallbackEl) {
+        fallbackEl.classList.remove('d-none');
+    }
+}
+
+export function actualizarAvatarHeader(fotoPerfil) {
+    const imgEl = document.querySelector(HEADER_USER_AVATAR_SELECTOR);
+    const fallbackEl = document.querySelector(HEADER_USER_AVATAR_FALLBACK_SELECTOR);
+    if (!imgEl || !fallbackEl) return;
+
+    const avatarSrc = getHeaderAvatarSrc(fotoPerfil);
+    if (!avatarSrc) {
+        mostrarFallbackAvatar(imgEl, fallbackEl);
+        return;
+    }
+
+    imgEl.onerror = () => mostrarFallbackAvatar(imgEl, fallbackEl);
+    imgEl.onload = () => {
+        imgEl.classList.remove('d-none');
+        fallbackEl.classList.add('d-none');
+    };
+
+    if (imgEl.getAttribute('src') !== avatarSrc) {
+        imgEl.classList.add('d-none');
+        fallbackEl.classList.remove('d-none');
+        imgEl.src = avatarSrc;
+        return;
+    }
+
+    if (imgEl.complete) {
+        if (imgEl.naturalWidth > 0) {
+            imgEl.classList.remove('d-none');
+            fallbackEl.classList.add('d-none');
+        } else {
+            mostrarFallbackAvatar(imgEl, fallbackEl);
         }
-    } catch (_) {
-        // Silencioso
     }
 }
 

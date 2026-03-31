@@ -218,8 +218,8 @@ function renderTablaSalidas(lista) {
       <td>${s.matricula}</td><td class="d-none d-md-table-cell">${s.id_bombero??''}</td>
       <td>${formatearFechaHora(s.f_salida)??''}</td><td class="d-none d-md-table-cell">${formatearFechaHora(s.f_regreso)??''}</td>
       <td class="d-none d-md-table-cell">${s.km_inicio??''}</td><td class="d-none d-md-table-cell">${s.km_fin??''}</td>
-      <td>
-        <div  class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>  
       </td>`;

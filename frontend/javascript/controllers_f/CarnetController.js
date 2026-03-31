@@ -268,38 +268,37 @@ function bindModalEditar() {
 
     const idCarnet = btn.dataset.id;
 
-    try {
-      const [carnetResponse, personsResponse] = await Promise.all([
-        CarnetApi.getById(idCarnet),
-        CarnetApi.getPersonsByCarnet(idCarnet)
-      ]);
+    const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+    const puedeEliminar = sesionActual?.puedeEliminar ?? false;
+    const itemsPagina = pagination.getPageItems(lista);
 
-      const carnet = carnetResponse?.data || carnetResponse;
-      const personas = personsResponse?.data || personsResponse || [];
-      const grupo = carnet.grupo ?? carnet.categoria ?? '';
-      const form = document.getElementById('formEditar');
-      if (!form || !carnet) return;
+    itemsPagina.forEach(carnet => {
+        const tr = document.createElement('tr');
+        const grupoNombre = obtenerNombreGrupo(carnet);
 
-      form.innerHTML = `
-        <div class="row g-3 mb-4">
-          <div class="col-lg-4">
-            <label class="form-label">Nombre</label>
-            <input type="text" class="form-control" name="nombre" maxlength="50" value="${carnet.nombre ?? ''}">
-          </div>
-          <div class="col-lg-4">
-            <label class="form-label">Grupo</label>
-            <input type="text" class="form-control" name="grupo" maxlength="20" value="${grupo}">
-          </div>
-          <div class="col-lg-4">
-            <label class="form-label">Duracion (meses)</label>
-            <input type="number" min="1" step="1" class="form-control" name="duracion_meses" value="${carnet.duracion_meses ?? ''}">
-          </div>
-        </div>
-        ${renderPersonasAsociadas(personas, idCarnet, true)}
-        <div class="text-center mt-4">
-          <button type="button" id="btnGuardarCambiosCarnet" class="btn btn-primary">Guardar cambios</button>
-        </div>
-      `;
+        const botonesAccion = puedeEscribir
+            ? `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${carnet.id_carnet}"><i class="bi bi-eye"></i></button>
+               <button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${carnet.id_carnet}"><i class="bi bi-pencil"></i></button>
+               ${puedeEliminar
+                   ? `<button type="button" class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${carnet.id_carnet}" data-nombre="${carnet.nombre ?? ''}"><i class="bi bi-trash3"></i></button>`
+                   : ''}`
+            : `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${carnet.id_carnet}"><i class="bi bi-eye"></i></button>`;
+
+        tr.innerHTML = `
+            <td class="d-none d-md-table-cell">${carnet.id_carnet ?? ''}</td>
+            <td>${carnet.nombre ?? ''}</td>
+            <td class="d-none d-md-table-cell">${grupoNombre}</td>
+            <td>${carnet.duracion_meses ?? ''}</td>
+            <td class="celda-acciones">
+                <div class="acciones-tabla">
+                    ${botonesAccion}
+                </div>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+}
 
       document.getElementById('btnGuardarCambiosCarnet')?.addEventListener('click', async () => {
         const data = {
