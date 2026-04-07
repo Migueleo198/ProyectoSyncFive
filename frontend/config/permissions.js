@@ -87,11 +87,6 @@ export const PERMISOS = {
     rolesEditar:    [5],
     rolesEliminar:  [5],
   },
-  meritos: {
-    rolesLectura:   [1, 2, 3, 4, 5],
-    rolesEscritura: [4, 5],
-    rolesEliminar:  [5],
-  },
 
   // ── RECURSOS ─────────────────────────────────────────────────
   vehiculos: {
