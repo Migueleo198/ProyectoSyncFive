@@ -23,21 +23,70 @@ function pagePath(fileName) {
     return getPath("pages", fileName);
 }
 
-// Cargar CSS dinámicamente
-function loadCSS(fileName) {
+function normalizeUrl(url) {
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    return anchor.href;
+}
+
+function ensureStylesheet(href) {
+    const normalizedHref = normalizeUrl(href);
+    const existing = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).find(link => {
+        return normalizeUrl(link.href) === normalizedHref;
+    });
+
+    if (existing) {
+        return existing;
+    }
+
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = getPath("css", fileName);
+    link.href = href;
     document.head.appendChild(link);
+    return link;
+}
+
+function ensureScript(src, options = {}) {
+    const normalizedSrc = normalizeUrl(src);
+    const existing = Array.from(document.scripts).find(script => normalizeUrl(script.src) === normalizedSrc);
+
+    if (existing) {
+        return existing;
+    }
+
+    const script = document.createElement('script');
+    script.src = src;
+
+    if (options.type) {
+        script.type = options.type;
+    }
+
+    if (options.defer) {
+        script.defer = true;
+    }
+
+    document.head.appendChild(script);
+    return script;
+}
+
+// Cargar CSS dinámicamente
+function loadCSS(fileName) {
+    return ensureStylesheet(getPath("css", fileName));
 }
 
 // Cargar favicon dinámicamente
 function loadFavicon(faviconPath) {
-    const link = document.createElement('link');
-    link.rel = 'icon';
-    link.type = 'image/png';
-    link.href = `${BASE_PATH}/assets/img/${faviconPath}`;
-    document.head.appendChild(link);
+    const href = `${BASE_PATH}/assets/img/${faviconPath}`;
+    let link = document.querySelector('link[rel="icon"]');
+
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        document.head.appendChild(link);
+    }
+
+    link.href = href;
 }
 
 
@@ -50,6 +99,7 @@ function imgPath(fileName) {
 // loadHead(): inyecta todo lo común del <head>
 // Opciones disponibles:
 //   layout:       boolean (default: true)  → carga header_footer.css, plantilla_css.css y header_footer.js
+//   accessibility:boolean (default: false) → restaura alto contraste/tamano en paginas sin layout
 //   filtroTabla:  boolean (default: true)  → carga script_filtro_tabla.js
 //   extraCSS:     string[]  (default: [])  → CSS adicionales del proyecto (nombre de archivo)
 //   fullcalendar: boolean (default: false) → carga FullCalendar CSS + JS
@@ -58,6 +108,7 @@ function loadHead(title, options = {}) {
 
     const cfg = {
         layout:       true,
+        accessibility:false,
         filtroTabla:  true,
         extraCSS:     [],
         fullcalendar: false,
@@ -77,41 +128,32 @@ function loadHead(title, options = {}) {
     }
 
     // ── Bootstrap CSS
-    const bsCss = document.createElement('link');
-    bsCss.rel  = 'stylesheet';
-    bsCss.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css';
-    document.head.appendChild(bsCss);
+    ensureStylesheet('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
 
     // ── Bootstrap Icons
-    const bsIcons = document.createElement('link');
-    bsIcons.rel  = 'stylesheet';
-    bsIcons.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css';
-    document.head.appendChild(bsIcons);
+    ensureStylesheet('https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css');
 
     // ── Bootstrap Bundle JS
-    const bsJs = document.createElement('script');
-    bsJs.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js';
-    document.head.appendChild(bsJs);
+    ensureScript('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js');
 
     // ── Favicon
     loadFavicon('favicon.png');
 
     // ── CSS y scripts del layout (header, sidebar, footer)
+    const shouldLoadAccessibility = cfg.layout || cfg.accessibility;
+
     if (cfg.layout) {
         loadCSS('header_footer.css');
         loadCSS('plantilla_css.css');
         loadCSS('view-custom.css');
 
-        const hf = document.createElement('script');
-        hf.type = 'module';
-        hf.src  = '/frontend/javascript/helpers/header_footer.js';
-        document.head.appendChild(hf);
-
         // ── Breadcrumb
-        const bc = document.createElement('script');
-        bc.type = 'module';
-        bc.src  = '/frontend/javascript/helpers/breadcrumb.js';
-        document.head.appendChild(bc);
+        ensureScript('/frontend/javascript/helpers/breadcrumb.js', { type: 'module' });
+    }
+
+    if (shouldLoadAccessibility) {
+        loadCSS('altoContraste.css');
+        ensureScript('/frontend/javascript/helpers/header_footer.js', { type: 'module' });
     }
 
     // ── CSS extra opcionales del proyecto
@@ -119,33 +161,18 @@ function loadHead(title, options = {}) {
 
     // ── script_filtro_tabla.js
     if (cfg.filtroTabla) {
-        const filtro = document.createElement('script');
-        filtro.src   = '/frontend/javascript/helpers/script_filtro_tabla.js';
-        filtro.defer = true;
-        document.head.appendChild(filtro);
+        ensureScript('/frontend/javascript/helpers/script_filtro_tabla.js', { defer: true });
     }
 
     // ── FullCalendar
     if (cfg.fullcalendar) {
-        const fcCss = document.createElement('link');
-        fcCss.rel  = 'stylesheet';
-        fcCss.href = 'https://cdn.jsdelivr.net/npm/fullcalendar@latest/main.min.css';
-        document.head.appendChild(fcCss);
-
-        const fcJs = document.createElement('script');
-        fcJs.src = 'https://cdn.jsdelivr.net/npm/fullcalendar@latest/index.global.min.js';
-        document.head.appendChild(fcJs);
+        ensureStylesheet('https://cdn.jsdelivr.net/npm/fullcalendar@latest/main.min.css');
+        ensureScript('https://cdn.jsdelivr.net/npm/fullcalendar@latest/index.global.min.js');
     }
 
     // ── Leaflet
     if (cfg.leaflet) {
-        const lfCss = document.createElement('link');
-        lfCss.rel  = 'stylesheet';
-        lfCss.href = 'https://unpkg.com/leaflet/dist/leaflet.css';
-        document.head.appendChild(lfCss);
-
-        const lfJs = document.createElement('script');
-        lfJs.src = 'https://unpkg.com/leaflet/dist/leaflet.js';
-        document.head.appendChild(lfJs);
+        ensureStylesheet('https://unpkg.com/leaflet/dist/leaflet.css');
+        ensureScript('https://unpkg.com/leaflet/dist/leaflet.js');
     }
 }

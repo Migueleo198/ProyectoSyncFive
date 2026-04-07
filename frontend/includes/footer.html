@@ -1,9 +1,67 @@
 <footer class="container-fluid mt-auto py-3 px-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3">
         <span class="footer-text">© 2026 Parque de Bomberos - Sistema de Gestión Interna</span>
-        <div class="d-flex gap-3">
-            <span class="footer-text">Teléfono interno: 1234</span>
+        <div class="d-flex flex-column flex-md-row gap-2 gap-md-3 text-center text-md-start">
+            <span class="footer-text">Telefono interno: 1234</span>
             <span class="footer-text">Email: gestion@gmail.com</span>
         </div>
+        <section
+            class="accessibility-controls"
+            data-accessibility-controls
+            aria-labelledby="accessibility-controls-title"
+        >
+            <span id="accessibility-controls-title" class="accessibility-label">Accesibilidad</span>
+            <button
+                type="button"
+                class="access-btn"
+                data-accessibility-action="contrast"
+                aria-pressed="false"
+                aria-controls="app-font-size"
+                aria-label="Activar alto contraste"
+            >
+                Contraste
+            </button>
+            <div class="text-size-group" role="group" aria-label="Tamano del texto">
+                <button
+                    type="button"
+                    class="access-btn"
+                    data-accessibility-action="decrease"
+                    aria-controls="app-font-size"
+                    aria-label="Reducir tamano del texto"
+                >
+                    A-
+                </button>
+                <span
+                    class="access-counter"
+                    data-accessibility-counter
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
+                    aria-valuemin="14"
+                    aria-valuemax="20"
+                    aria-valuenow="16"
+                >
+                    16px
+                </span>
+                <button
+                    type="button"
+                    class="access-btn"
+                    data-accessibility-action="increase"
+                    aria-controls="app-font-size"
+                    aria-label="Aumentar tamano del texto"
+                >
+                    A+
+                </button>
+            </div>
+            <button
+                type="button"
+                class="access-btn access-btn-secondary"
+                data-accessibility-action="reset"
+                aria-controls="app-font-size"
+                aria-label="Restablecer preferencias de accesibilidad"
+            >
+                Reset
+            </button>
+        </section>
     </div>
 </footer>

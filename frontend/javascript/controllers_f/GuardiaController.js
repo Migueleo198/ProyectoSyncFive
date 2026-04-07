@@ -175,8 +175,8 @@ function renderTablaGuardias(lista) {
             <td>${g.h_inicio}</td>
             <td>${g.h_fin}</td>
             <td class="d-none d-md-table-cell">${g.notas || ''}</td>
-            <td>
-                <div  class="d-flex justify-content-around">
+            <td class="celda-acciones">
+                <div class="acciones-tabla">
                     ${botonesAccion}
                 </div>  
             </td>

@@ -62,6 +62,11 @@ function renderTablaGrupos(lista) {
   const tbody = document.querySelector('#tabla tbody');
   tbody.innerHTML = '';
 
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No hay grupos registrados</td></tr>';
+    return;
+  }
+
   const itemsPagina = pagination.getPageItems(lista);
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
@@ -98,8 +103,8 @@ function renderTablaGrupos(lista) {
       <td class="d-none d-md-table-cell">${g.id_grupo}</td>
       <td>${g.nombre ?? ''}</td>
       <td>${g.descripcion ?? ''}</td>
-      <td>
-        <div class="d-flex justify-content-around">
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>

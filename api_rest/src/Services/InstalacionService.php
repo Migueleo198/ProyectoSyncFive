@@ -53,10 +53,10 @@ class InstalacionService
     {
         $data = Validator::validate($input, [
             'nombre'            => 'required|string|max:100',
-            'direccion'         => 'required|string|max:255',
+            'direccion'         => 'required|string|max:150',
             'localidad'         => 'required|string|max:100',
-            'telefono'          => 'string|max:20',
-            'correo'            => 'required|string|max:120'
+            'telefono'          => 'required|string|max:15|phone',
+            'correo'            => 'required|string|max:100|email'
         ]);
 
         try {
@@ -81,10 +81,10 @@ class InstalacionService
 
         $data = Validator::validate($input, [
             'nombre'            => 'required|string|max:100',
-            'direccion'         => 'required|string|max:255',
+            'direccion'         => 'required|string|max:150',
             'localidad'         => 'required|string|max:100',
-            'telefono'          => 'string|max:20',
-            'correo'            => 'required|string|max:120'
+            'telefono'          => 'required|string|max:15|phone',
+            'correo'            => 'required|string|max:100|email'
         ]);
 
 

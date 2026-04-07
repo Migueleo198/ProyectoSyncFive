@@ -32,9 +32,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindFiltros();
 
   if (sesionActual.puedeEscribir) {
-    bindCrearMantenimientoVehiculo();
-    bindCrearMantenimientoMaterial();
-    bindModalesEscritura();
+    bindCrearMantenimiento();
+    bindModalEditar();
+  }
+
+  if (sesionActual.puedeEliminar) {
+    bindModalEliminar();
   }
 
   bindModalVer();
@@ -81,7 +84,7 @@ async function cargarMantenimientos() {
 // POBLAR SELECTS
 // ================================
 function poblarSelectPersonas() {
-  ['selectBomberoVeh','selectBomberoMat','editBombero'].forEach(id => {
+  ['selectBomberoInsert','editBombero'].forEach(id => {
     const sel = document.getElementById(id);
     if (!sel) return;
     sel.innerHTML = '<option value="">Seleccione un responsable...</option>';
@@ -90,13 +93,13 @@ function poblarSelectPersonas() {
 }
 
 function poblarSelectVehiculos() {
-  const sel = document.getElementById('selectVehiculoVeh'); if (!sel) return;
+  const sel = document.getElementById('selectVehiculoInsert'); if (!sel) return;
   sel.innerHTML = '<option value="">Seleccione un vehículo...</option>';
   vehiculos.forEach(v => { const o = document.createElement('option'); o.value = v.matricula; o.textContent = `${v.nombre||''} (${v.matricula})`; sel.appendChild(o); });
 }
 
 function poblarSelectMateriales() {
-  const sel = document.getElementById('selectMaterialMat'); if (!sel) return;
+  const sel = document.getElementById('selectMaterialInsert'); if (!sel) return;
   sel.innerHTML = '<option value="">Seleccione un material...</option>';
   materiales.forEach(m => { const o = document.createElement('option'); o.value = m.id_material; o.textContent = m.nombre||m.id_material; sel.appendChild(o); });
 }
@@ -108,9 +111,10 @@ function renderTabla(lista) {
   const tbody = document.querySelector('#tabla tbody');
   if (!tbody) return;
   tbody.innerHTML = '';
-  if (!lista?.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay mantenimientos para mostrar</td></tr>'; return; }
+  if (!lista?.length) { tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">No hay mantenimientos registrados</td></tr>'; return; }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const puedeEliminar = sesionActual?.puedeEliminar ?? false;
   const itemsPagina = pagination.getPageItems(lista);
 
   itemsPagina.forEach(m => {
@@ -118,16 +122,18 @@ function renderTabla(lista) {
     const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.cod_mantenimiento}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.cod_mantenimiento}"><i class="bi bi-pencil"></i></button>
-         <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.cod_mantenimiento}"><i class="bi bi-trash3"></i></button>`
+         ${puedeEliminar
+           ? `<button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.cod_mantenimiento}"><i class="bi bi-trash3"></i></button>`
+           : ''}`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.cod_mantenimiento}"><i class="bi bi-eye"></i></button>`;
     tr.innerHTML = `
       <td class="d-none d-md-table-cell">${m.cod_mantenimiento??''}</td>
       <td>${m.nombre_bombero||''}</td><td class="d-none d-lg-table-cell">${m.tipo||'-'}</td>
       <td>${m.recurso||'-'}</td><td class="d-none d-md-table-cell">${m.estado??''}</td>
-      <td class="d-none d-lg-table-cell">${m.descripcion||'-'}</td>
-      <td class="d-none d-md-table-cell">${m.f_inicio||'-'}</td><td class="d-none d-md-table-cell">${m.f_fin||'-'}</td>
-      <td>
-        <div class="d-flex justify-content-around">
+      <td class="d-none d-xl-table-cell">${m.descripcion||'-'}</td>
+      <td class="d-none d-md-table-cell">${m.f_inicio||'-'}</td><td class="d-none d-lg-table-cell">${m.f_fin||'-'}</td>
+      <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>`;
@@ -185,6 +191,14 @@ function validarMantenimiento(id_bombero, estado, f_inicio, f_fin = null) {
     mostrarError('La fecha de inicio es obligatoria.');
     return false;
   }
+  if (estado === 'REALIZADO' && !f_fin) {
+    mostrarError('Antes de marcar el mantenimiento como REALIZADO, debes añadir la fecha de fin.');
+    return false;
+  }
+  if (estado !== 'REALIZADO' && f_fin) {
+    mostrarError('La fecha de fin solo puede informarse cuando el mantenimiento está en estado REALIZADO.');
+    return false;
+  }
   // CHECK (f_fin >= f_inicio) solo si f_fin tiene valor
   if (f_fin && !validarRangoFechas(f_inicio, f_fin)) {
     mostrarError('La fecha de fin debe ser igual o posterior a la fecha de inicio.');
@@ -193,56 +207,109 @@ function validarMantenimiento(id_bombero, estado, f_inicio, f_fin = null) {
   return true;
 }
 
+function sincronizarRequerimientoFechaFin(selectEstado, inputFechaFin) {
+  if (!selectEstado || !inputFechaFin) return;
+
+  const actualizarRequerido = () => {
+    inputFechaFin.required = selectEstado.value === 'REALIZADO';
+    inputFechaFin.setCustomValidity('');
+  };
+
+  selectEstado.addEventListener('change', actualizarRequerido);
+  actualizarRequerido();
+}
+
 // ================================
 // CREAR MANTENIMIENTO
 // ================================
 async function crearMantenimiento(form, tipo) {
   const f = new FormData(form);
   const id_bombero  = f.get('id_bombero');
-  const estado      = f.get('estado');
+  const estado      = 'ABIERTO';
   const f_inicio    = f.get('f_inicio');
-  const f_fin       = f.get('f_fin') || null;
   const descripcion = f.get('descripcion')?.trim() || null;
+  const matricula   = f.get('matricula') || null;
+  const id_material = f.get('id_material') || null;
 
   // ── Validación ──
-  if (!validarMantenimiento(id_bombero, estado, f_inicio, f_fin)) return;
+  if (!validarMantenimiento(id_bombero, estado, f_inicio)) return;
+  if (!['vehiculo', 'material'].includes(tipo)) {
+    mostrarError('Seleccione si el mantenimiento es sobre un vehículo o un material.');
+    return;
+  }
+  if (tipo === 'vehiculo' && !matricula) {
+    mostrarError('Seleccione un vehículo.');
+    return;
+  }
+  if (tipo === 'material' && !id_material) {
+    mostrarError('Seleccione un material.');
+    return;
+  }
 
   try {
     const r = await fetch('/api/mantenimientos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_bombero, estado, f_inicio, f_fin, descripcion })
+      body: JSON.stringify({ id_bombero, estado, f_inicio, descripcion, tipo_recurso: tipo, matricula, id_material })
     });
     const result = await r.json();
     if (!r.ok) throw new Error(result.message || 'Error al crear');
 
-    const cod = result.data?.cod_mantenimiento;
-    if (cod && tipo === 'vehiculo') {
-      const mat = form.querySelector('[name="matricula"]')?.value;
-      if (mat) await fetch(`/api/mantenimientos/${cod}/vehiculos/${encodeURIComponent(mat)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-    }
-    if (cod && tipo === 'material') {
-      const mat = form.querySelector('[name="id_material"]')?.value;
-      if (mat) await fetch(`/api/mantenimientos/${cod}/materiales/${mat}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-    }
-
     await cargarMantenimientos();
     renderTabla(mantenimientos);
     form.reset();
+    actualizarSelectorTipo(form);
     mostrarExito('Mantenimiento creado correctamente');
   } catch (err) { mostrarError(err.message); }
 }
 
-function bindCrearMantenimientoVehiculo() {
-  const form = document.getElementById('formInsertarVehiculo');
+function actualizarSelectorTipo(form) {
   if (!form) return;
-  form.addEventListener('submit', e => { e.preventDefault(); crearMantenimiento(form, 'vehiculo'); });
+
+  const selectTipo = form.querySelector('[name="tipo_recurso"]');
+  const labelRecurso = document.getElementById('labelRecursoInsert');
+  const contVacio = document.getElementById('contenedorRecursoVacio');
+  const contVehiculo = document.getElementById('contenedorVehiculoInsert');
+  const contMaterial = document.getElementById('contenedorMaterialInsert');
+  const selectVehiculo = document.getElementById('selectVehiculoInsert');
+  const selectMaterial = document.getElementById('selectMaterialInsert');
+
+  if (!selectTipo || !contVacio || !contVehiculo || !contMaterial || !selectVehiculo || !selectMaterial) return;
+
+  const tipo = selectTipo.value;
+  const esVehiculo = tipo === 'vehiculo';
+  const esMaterial = tipo === 'material';
+
+  contVacio.classList.toggle('d-none', esVehiculo || esMaterial);
+  contVehiculo.classList.toggle('d-none', !esVehiculo);
+  contMaterial.classList.toggle('d-none', !esMaterial);
+
+  selectVehiculo.required = esVehiculo;
+  selectMaterial.required = esMaterial;
+  selectVehiculo.disabled = !esVehiculo;
+  selectMaterial.disabled = !esMaterial;
+
+  if (labelRecurso) {
+    labelRecurso.textContent = esVehiculo ? 'Vehiculo' : esMaterial ? 'Material' : 'Vehiculo/Material';
+    labelRecurso.setAttribute('for', esMaterial ? 'selectMaterialInsert' : 'selectVehiculoInsert');
+  }
+
+  if (!esVehiculo) selectVehiculo.value = '';
+  if (!esMaterial) selectMaterial.value = '';
 }
 
-function bindCrearMantenimientoMaterial() {
-  const form = document.getElementById('formInsertarMaterial');
+function bindCrearMantenimiento() {
+  const form = document.getElementById('formInsertarMantenimiento');
   if (!form) return;
-  form.addEventListener('submit', e => { e.preventDefault(); crearMantenimiento(form, 'material'); });
+  form.querySelector('[name="tipo_recurso"]')?.addEventListener('change', () => actualizarSelectorTipo(form));
+  actualizarSelectorTipo(form);
+  form.addEventListener('reset', () => {
+    window.requestAnimationFrame(() => actualizarSelectorTipo(form));
+  });
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    crearMantenimiento(form, form.querySelector('[name="tipo_recurso"]')?.value);
+  });
 }
 
 // ================================
@@ -271,7 +338,9 @@ function bindModalVer() {
 // ================================
 // MODALES DE ESCRITURA
 // ================================
-function bindModalesEscritura() {
+function bindModalEditar() {
+  sincronizarRequerimientoFechaFin(document.getElementById('editEstado'), document.getElementById('editFFin'));
+
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
@@ -282,7 +351,10 @@ function bindModalesEscritura() {
     document.getElementById('editFFin').value = mant.f_fin || '';
     document.getElementById('editDescripcion').value = mant.descripcion || '';
     const selEstado = document.getElementById('editEstado');
-    if (selEstado) selEstado.value = mant.estado;
+    if (selEstado) {
+      selEstado.value = mant.estado;
+      selEstado.dispatchEvent(new Event('change'));
+    }
     const selBombero = document.getElementById('editBombero');
     if (selBombero) {
       selBombero.innerHTML = '<option value="">Seleccione un responsable...</option>';
@@ -316,6 +388,9 @@ function bindModalesEscritura() {
     } catch (err) { mostrarError(err.message); }
   });
 
+}
+
+function bindModalEliminar() {
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar');
     if (!btn) return;

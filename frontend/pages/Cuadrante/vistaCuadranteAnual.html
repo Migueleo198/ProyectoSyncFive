@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <script src="/frontend/config/config.js"></script>
-    <script>loadHead("Cuadrante Anual")</script> <!-- Cambiado de "Almacenes" -->
+    <script>loadHead("Cuadrante Anual", { filtroTabla: false, extraCSS: ["vistaCuadranteAnual.css"] })</script>
     <!-- Carga UNA SOLA VEZ el script -->
-    <script type="module" src="/frontend/javascript/controllers_f/CuadranteAnualController.js"></script></head>
-<body class="text-dark d-flex flex-column">
+    <script type="module" src="/frontend/javascript/controllers_f/CuadranteAnualController.js"></script>
+</head>
+<body class="bg-white text-dark d-flex flex-column">
 
     <div id="header-placeholder"></div>
 

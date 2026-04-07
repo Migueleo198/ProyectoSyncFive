@@ -1,11 +1,13 @@
 import MotivoApi from '../api_f/MotivoApi.js';
 import { authGuard } from '../helpers/authGuard.js';
+import { PERMISOS } from '/frontend/config/permissions.js';
 import { truncar, mostrarError, mostrarExito } from '../helpers/utils.js';
 import { validarNumero } from '../helpers/validacion.js';
 import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let motivos = [];
 let sesionActual = null;
+let filtroInicializado = false;
 const pagination = new PaginationHelper(15);
 pagination.setLoadingCallback((isLoading) => {
     if (isLoading) {
@@ -19,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   cargarMotivos();
   bindModalVer();
+  bindFiltroNombre();
 
   if (sesionActual.puedeEscribir) {
     bindCrearMotivo();
@@ -36,10 +39,10 @@ async function cargarMotivos() {
     const r = await MotivoApi.getAll();
     motivos = r?.data || r || [];
     pagination.setData(motivos, () => {
-      renderTablaMotivos(motivos);
+      renderTablaMotivos(obtenerMotivosFiltrados());
     });
     pagination.render('pagination-motivo');
-    renderTablaMotivos(motivos);
+    renderTablaMotivos(obtenerMotivosFiltrados());
   } catch (e) {
     motivos = [];
     pagination.setData([], () => {
@@ -59,23 +62,53 @@ function renderTablaMotivos(lista) {
   if (!lista.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No hay motivos registrados</td></tr>'; return; }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const puedeEditar = PERMISOS.motivos.rolesEditar.includes(sesionActual?.rol ?? 0);
+  const puedeEliminar = PERMISOS.motivos.rolesEliminar.includes(sesionActual?.rol ?? 0);
   const itemsPagina = pagination.getPageItems(lista);
 
   itemsPagina.forEach(m => {
     const tr = document.createElement('tr');
     const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.cod_motivo}"><i class="bi bi-eye"></i></button>
-         <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.cod_motivo}"><i class="bi bi-pencil text-primary"></i></button>
-         <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.cod_motivo}"><i class="bi bi-trash3 text-danger"></i></button>`
+         <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.cod_motivo}"><i class="bi bi-pencil"></i></button>
+         <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.cod_motivo}"><i class="bi bi-trash3"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.cod_motivo}"><i class="bi bi-eye"></i></button>`;
+    const botonesGestion = `${puedeEditar ? `<button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${m.cod_motivo}"><i class="bi bi-pencil text-primary"></i></button>` : ''}${puedeEliminar ? `<button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${m.cod_motivo}"><i class="bi bi-trash3 text-danger"></i></button>` : ''}`;
     tr.innerHTML = `<td class="d-none d-md-table-cell">${m.cod_motivo}</td><td>${m.nombre??''}</td><td class="d-none d-md-table-cell">${m.dias??''}</td>
-    <td>
-        <div  class="d-flex justify-content-around">
+    <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>`;
     tbody.appendChild(tr);
   });
+}
+
+function bindFiltroNombre() {
+  if (filtroInicializado) return;
+
+  document.getElementById('filtroNombre')?.addEventListener('input', aplicarFiltroNombre);
+  filtroInicializado = true;
+}
+
+function obtenerMotivosFiltrados() {
+  const termino = document.getElementById('filtroNombre')?.value?.trim().toLowerCase() ?? '';
+  if (!termino) return motivos;
+
+  return motivos.filter((motivo) => (
+    String(motivo.cod_motivo).includes(termino)
+    || String(motivo.nombre ?? '').toLowerCase().includes(termino)
+    || String(motivo.dias ?? '').includes(termino)
+  ));
+}
+
+function aplicarFiltroNombre() {
+  const filtrados = obtenerMotivosFiltrados();
+  pagination.setData(filtrados, () => {
+    renderTablaMotivos(filtrados);
+  });
+  pagination.render('pagination-motivo');
+  renderTablaMotivos(filtrados);
 }
 
 // ================================
@@ -142,6 +175,8 @@ function bindModalVer() {
 // MODAL EDITAR
 // ================================
 function bindModalEditar() {
+  if (!PERMISOS.motivos.rolesEditar.includes(sesionActual?.rol ?? 0)) return;
+
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-editar'); if (!btn) return;
     const id = btn.dataset.id;
@@ -175,6 +210,8 @@ function bindModalEditar() {
 // MODAL ELIMINAR
 // ================================
 function bindModalEliminar() {
+  if (!PERMISOS.motivos.rolesEliminar.includes(sesionActual?.rol ?? 0)) return;
+
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.btn-eliminar'); if (!btn) return;
     document.getElementById('btnConfirmarEliminar').dataset.id = btn.dataset.id;

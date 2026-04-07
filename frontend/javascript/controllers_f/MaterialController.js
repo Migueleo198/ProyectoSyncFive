@@ -177,8 +177,8 @@ function renderTablaMateriales(lista) {
             <td class="d-none d-md-table-cell">${m.descripcion ?? ''}</td>
             <td><span class="badge ${m.estado === 'ALTA' ? 'bg-success' : 'bg-danger'}">${m.estado ?? ''}</span></td>
             <td class="d-none d-md-table-cell">${m.categoria_nombre ?? ''}</td>
-            <td>
-                <div class="d-flex justify-content-around">
+            <td class="celda-acciones">
+                <div class="acciones-tabla">
                     ${botonesAccion}
                 </div>
             </td>
@@ -588,7 +588,7 @@ function renderTablaVehiculos(asignaciones) {
     tbody.innerHTML = '';
     asignaciones.forEach(a => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${a.identificador||a.matricula||'-'}</td><td>${a.elemento||a.matricula||'-'}</td><td>${a.unidades||'-'}</td><td>${a.numero_serie||a.nserie||'-'}</td><td><button type="button" class="btn btn-sm btn-danger" data-matricula="${a.identificador||a.matricula}"><i class="bi bi-trash"></i></button></td>`;
+        tr.innerHTML = `<td>${a.identificador||a.matricula||'-'}</td><td>${a.elemento||a.matricula||'-'}</td><td>${a.unidades||'-'}</td><td>${a.numero_serie||a.nserie||'-'}</td><td><button type="button" class="btn btn-sm btn-eliminar-compacto" data-matricula="${a.identificador||a.matricula}"><i class="bi bi-trash"></i></button></td>`;
         tr.querySelector('button').addEventListener('click', async function (e) {
             e.preventDefault(); e.stopPropagation();
             if (!confirm('¿Eliminar asignación de este vehículo?')) return;
@@ -612,7 +612,7 @@ function renderTablaPersonas(asignaciones) {
     asignaciones.forEach(a => {
         const idNum = extraerNumeroId(a.identificador || a.id_bombero);
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${a.identificador||a.id_bombero||'-'}</td><td>${a.elemento||a.nombre||'-'}</td><td>${a.n_funcionario||'-'}</td><td>${a.numero_serie||a.nserie||'-'}</td><td><button type="button" class="btn btn-sm btn-danger" data-id="${idNum}"><i class="bi bi-trash"></i></button></td>`;
+        tr.innerHTML = `<td>${a.identificador||a.id_bombero||'-'}</td><td>${a.elemento||a.nombre||'-'}</td><td>${a.n_funcionario||'-'}</td><td>${a.numero_serie||a.nserie||'-'}</td><td><button type="button" class="btn btn-sm btn-eliminar-compacto" data-id="${idNum}"><i class="bi bi-trash"></i></button></td>`;
         tr.querySelector('button').addEventListener('click', async function (e) {
             e.preventDefault(); e.stopPropagation();
             if (!confirm('¿Eliminar asignación de esta persona?')) return;
@@ -636,7 +636,7 @@ function renderTablaAlmacenes(asignaciones) {
     asignaciones.forEach(a => {
         const idAlmacen = a.identificador || a.id_almacen;
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${a.nombre_instalacion||a.instalacion||a.id_instalacion||'-'}</td><td>${a.elemento||a.nombre_almacen||a.id_almacen||'-'}</td><td>${a.planta||'-'}</td><td>${a.unidades||'-'}</td><td>${a.numero_serie||a.n_serie||'-'}</td><td><button type="button" class="btn btn-sm btn-danger" data-id="${idAlmacen}"><i class="bi bi-trash"></i></button></td>`;
+        tr.innerHTML = `<td>${a.nombre_instalacion||a.instalacion||a.id_instalacion||'-'}</td><td>${a.elemento||a.nombre_almacen||a.id_almacen||'-'}</td><td>${a.planta||'-'}</td><td>${a.unidades||'-'}</td><td>${a.numero_serie||a.n_serie||'-'}</td><td><button type="button" class="btn btn-sm btn-eliminar-compacto" data-id="${idAlmacen}"><i class="bi bi-trash"></i></button></td>`;
         tr.querySelector('button').addEventListener('click', async function (e) {
             e.preventDefault(); e.stopPropagation();
             if (!confirm('¿Eliminar asignación de este almacén?')) return;

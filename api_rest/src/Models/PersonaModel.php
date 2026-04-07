@@ -9,6 +9,16 @@ class PersonaModel
 {
     private DB $db;
 
+    private const SQL_DIAS_PERMISO_RANGO_REAL = "
+        CASE
+            WHEN p.fecha_hora_inicio IS NOT NULL
+                AND p.fecha_hora_fin IS NOT NULL
+            THEN GREATEST(TIMESTAMPDIFF(MINUTE, p.fecha_hora_inicio, p.fecha_hora_fin), 0) / 1440
+            WHEN m.dias > 0 THEN m.dias
+            ELSE 0
+        END
+    ";
+
     public function __construct()
     {
         $this->db = new DB();
@@ -32,19 +42,6 @@ class PersonaModel
         $result = $this->db
             ->query("SELECT * FROM Persona WHERE id_bombero = :id_bombero")
             ->bind(':id_bombero', $id_bombero)
-            ->fetch();
-
-        return $result ?: null;
-    }
-
-    /**
-     * Buscar persona por id_bombero o n_funcionario
-     */
-    public function findByIdentifier(string $identifier): ?array
-    {
-        $result = $this->db
-            ->query("SELECT * FROM Persona WHERE id_bombero = :identifier OR n_funcionario = :identifier")
-            ->bind(':identifier', $identifier)
             ->fetch();
 
         return $result ?: null;
@@ -136,6 +133,7 @@ class PersonaModel
                 correo = :correo,
                 telefono = :telefono,
                 telefono_emergencia = :telefono_emergencia,
+                id_rol = :id_rol,
                 nombre_usuario = :nombre_usuario,
                 activo = :activo
             WHERE id_bombero = :id_bombero
@@ -149,6 +147,7 @@ class PersonaModel
         ->bind(':correo', $data['correo'] ?? null)
         ->bind(':telefono', $data['telefono'] ?? null)
         ->bind(':telefono_emergencia', $data['telefono_emergencia'] ?? null)
+        ->bind(':id_rol', $data['id_rol'] ?? null)
         ->bind(':nombre_usuario', $data['nombre_usuario'] ?? null)
         ->bind(':activo', $data['activo'] ?? null)
         ->execute();
@@ -624,14 +623,13 @@ class PersonaModel
             ->query("
                 SELECT
                     c.nombre,
-                    c.id_grupo,
-                    g.nombre AS grupo_nombre,
+                    g.nombre AS grupo,
                     cp.f_obtencion,
                     cp.f_vencimiento,
                     CASE WHEN cp.f_vencimiento >= CURDATE() THEN 1 ELSE 0 END AS vigente
                 FROM Carnet_Persona cp
                 JOIN Carnet c ON c.id_carnet = cp.id_carnet
-                JOIN Grupo g ON g.id_grupo = c.id_grupo
+                LEFT JOIN Grupo g ON g.id_grupo = c.id_grupo
                 WHERE cp.id_bombero = :id
                 ORDER BY cp.f_vencimiento ASC
             ")
@@ -674,29 +672,17 @@ class PersonaModel
                 SUM(CASE WHEN p.estado = 'DENEGADO' THEN 1 ELSE 0 END)             AS denegados,
                 SUM(CASE WHEN p.estado = 'REVISION' THEN 1 ELSE 0 END)             AS en_revision,
 
-                -- Días totales aceptados (suma de todas las categorías)
+                -- Dias totales aceptados usando el rango real del permiso
                 ROUND(SUM(
                     CASE WHEN p.estado = 'ACEPTADO'
-                    THEN
-                        CASE
-                            WHEN m.dias > 0 THEN m.dias
-                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
-                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
-                            ELSE 0
-                        END
+                    THEN " . self::SQL_DIAS_PERMISO_RANGO_REAL . "
                     ELSE 0 END
                 ), 1)                                                               AS total_dias,
 
                 -- Asuntos propios
                 ROUND(SUM(
                     CASE WHEN m.nombre LIKE '%propios%' AND p.estado = 'ACEPTADO'
-                    THEN
-                        CASE
-                            WHEN m.dias > 0 THEN m.dias
-                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
-                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
-                            ELSE 0
-                        END
+                    THEN " . self::SQL_DIAS_PERMISO_RANGO_REAL . "
                     ELSE 0 END
                 ), 1)                                                               AS dias_asuntos_propios,
 
@@ -704,26 +690,14 @@ class PersonaModel
                 ROUND(SUM(
                     CASE WHEN (m.nombre LIKE '%Enfermedad%' OR m.nombre LIKE '%accidente no%')
                             AND p.estado = 'ACEPTADO'
-                    THEN
-                        CASE
-                            WHEN m.dias > 0 THEN m.dias
-                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
-                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
-                            ELSE 0
-                        END
+                    THEN " . self::SQL_DIAS_PERMISO_RANGO_REAL . "
                     ELSE 0 END
                 ), 1)                                                               AS dias_enfermedad,
 
                 -- Accidente laboral
                 ROUND(SUM(
                     CASE WHEN m.nombre LIKE '%Accidente laboral%' AND p.estado = 'ACEPTADO'
-                    THEN
-                        CASE
-                            WHEN m.dias > 0 THEN m.dias
-                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
-                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
-                            ELSE 0
-                        END
+                    THEN " . self::SQL_DIAS_PERMISO_RANGO_REAL . "
                     ELSE 0 END
                 ), 1)                                                               AS dias_accidente_laboral,
 
@@ -731,13 +705,7 @@ class PersonaModel
                 ROUND(SUM(
                     CASE WHEN (m.nombre LIKE '%grado%' OR m.nombre LIKE '%fallec%')
                             AND p.estado = 'ACEPTADO'
-                    THEN
-                        CASE
-                            WHEN m.dias > 0 THEN m.dias
-                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
-                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
-                            ELSE 0
-                        END
+                    THEN " . self::SQL_DIAS_PERMISO_RANGO_REAL . "
                     ELSE 0 END
                 ), 1)                                                               AS dias_fallecimiento,
 
@@ -750,18 +718,12 @@ class PersonaModel
                             AND m.nombre NOT LIKE '%grado%'
                             AND m.nombre NOT LIKE '%fallec%'
                             AND p.estado = 'ACEPTADO'
-                    THEN
-                        CASE
-                            WHEN m.dias > 0 THEN m.dias
-                            WHEN p.h_inicio IS NOT NULL AND p.h_fin IS NOT NULL
-                            THEN TIME_TO_SEC(TIMEDIFF(p.h_fin, p.h_inicio)) / 86400.0
-                            ELSE 0
-                        END
+                    THEN " . self::SQL_DIAS_PERMISO_RANGO_REAL . "
                     ELSE 0 END
                 ), 1)                                                               AS dias_otros,
 
                 -- Permisos aceptados en el año en curso (sigue siendo COUNT para referencia)
-                SUM(CASE WHEN YEAR(p.fecha) = YEAR(CURDATE())
+                SUM(CASE WHEN YEAR(p.fecha_hora_inicio) = YEAR(CURDATE())
                             AND p.estado = 'ACEPTADO'
                         THEN 1 ELSE 0 END)                                         AS permisos_anio_actual
             FROM Permiso p
@@ -777,16 +739,19 @@ class PersonaModel
                 SELECT
                     p.id_permiso,
                     m.nombre  AS motivo,
-                    p.fecha,
-                    p.h_inicio,
-                    p.h_fin,
+                    p.fecha_solicitud,
+                    p.fecha_hora_inicio,
+                    p.fecha_hora_fin,
+                    DATE(p.fecha_hora_inicio) AS fecha,
+                    TIME_FORMAT(p.fecha_hora_inicio, '%H:%i:%s') AS h_inicio,
+                    TIME_FORMAT(p.fecha_hora_fin, '%H:%i:%s') AS h_fin,
                     p.estado,
                     p.descripcion
                 FROM Permiso p
                 JOIN Motivo m ON m.cod_motivo = p.cod_motivo
                 WHERE p.id_bombero = :id
-                AND p.fecha >= CURDATE()
-                ORDER BY p.fecha ASC
+                AND p.fecha_hora_fin >= NOW()
+                ORDER BY p.fecha_hora_inicio ASC
                 LIMIT 5
             ")
             ->bind(':id', $id_bombero)

@@ -25,10 +25,15 @@
                         <h1 class="mb-0 fw-bold">Carnets</h1>
                         <small class="text-muted">Gestión de carnets y acreditaciones</small>
                     </div>
-                    <a href="https://www.notion.so/08_Formacion_Carnets-31b0bf35f606808681e7d73df8325c6b" target="_blank" 
-                    class="text-muted" title="Ayuda">
-                        <i class="bi bi-question-circle fs-4"></i>
-                    </a>
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="/grupos" class="btn btn-outline-secondary btn-gestion" data-permiso="grupos">
+                            <i class="bi bi-gear me-1"></i> Administrar Grupos
+                        </a>
+                        <a href="https://www.notion.so/08_Formacion_Carnets-31b0bf35f606808681e7d73df8325c6b" target="_blank"
+                        class="text-muted" title="Ayuda">
+                            <i class="bi bi-question-circle fs-4"></i>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- MIGAS DE PAN -->
@@ -36,9 +41,6 @@
 
                 <!-- Contenedor tabla con filtro-->
                 <div class="container mt-4 p-0"> 
-                    
-                    <h2 class="d-flex align-items-center">Lista de Carnets</h2>
-
                     <div id="filtroTabla" class="m-0 row d-flex justify-content-center g-2">
                         <div class="col-lg-3 col-md-4 col-sm-12 d-flex align-items-center m-1">
                             <label class="me-2 text-nowrap" for="filtroNombre">Nombre:</label>
@@ -58,7 +60,7 @@
                                 <th>Nombre</th>
                                 <th class="d-none d-md-table-cell">Grupo</th>
                                 <th>Duración</th>
-                                <th>Acción</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -94,8 +96,8 @@
 
                             <div class="col-md-6">
                                 <label class="form-label" for="f_vencimiento">Fecha Vencimiento:</label>
-                                <input type="date" class="form-control" id="f_vencimiento" name="f_vencimiento" readonly required>
-                                <div class="form-text">Se calcula automaticamente segun la fecha de obtencion y la duracion del carnet.</div>
+                                <input type="date" class="form-control" id="f_vencimiento" name="f_vencimiento" required>
+                                <small class="text-muted">Se calcula automaticamente segun la duracion del carnet seleccionado.</small>
                             </div>
                         </div>
 
@@ -117,14 +119,14 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label for="insertIdGrupo" class="form-label">Grupo:</label>
-                                <select class="form-select" id="insertIdGrupo" name="id_grupo" required>
-                                    <option value="">Seleccione un grupo...</option>
+                                <label for="grupo" class="form-label">Grupo:</label>
+                                <select class="form-select" id="grupo" name="id_grupo" required>
+                                    <option value="">Seleccione grupo...</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <label for="duracion_meses" class="form-label">Duración (meses):</label>
-                                <input type="number" min="1" step="1" class="form-control" id="duracion_meses" name="duracion_meses" required>
+                                <input type="text" class="form-control" id="duracion_meses" name="duracion_meses" required>
                             </div>
                         </div>
 
@@ -146,7 +148,7 @@
  
     <!-- Modal de ver -->
     <div class="modal fade" id="modalVer" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
 
                 <div class="modal-header">
@@ -155,7 +157,25 @@
                 </div>
 
                 <div class="modal-body" id="modalVerBody">
-                   <!-- Body dinamico del modal-->
+                    <!-- Body dinamico del modal-->
+                </div>
+
+                <div class="px-3 pb-2">
+                    <h6 class="fw-bold">Personas con este carnet</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mb-0" id="tablaPersonasCarnet">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID Bombero</th>
+                                    <th>Nombre</th>
+                                    <th>Obtención</th>
+                                    <th>Vencimiento</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="pagination-modal-ver-carnet" class="mt-3"></div>
                 </div>
 
                 <div class="modal-footer">
@@ -172,32 +192,38 @@
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
+                    <h5 class="modal-title" id="modalEditarLabel">Editar carnet</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="formEditar">
+                    <form id="formEditar" class="mx-auto">
                         <!-- Los campos del formulario se generarán dinámicamente -->
                     </form>
                 </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="modalEliminarRelacionCarnetPersona" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmar eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+                <div class="px-3 pb-2">
+                    <h6 class="fw-bold">Personas con este carnet</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mb-0" id="tablaPersonasCarnetEditar">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID Bombero</th>
+                                    <th>Nombre</th>
+                                    <th>Obtención</th>
+                                    <th>Vencimiento</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="pagination-modal-editar-carnet" class="mt-3"></div>
                 </div>
-                <div class="modal-body">
-                    <p class="mb-2" id="textoEliminarRelacionCarnetPersona">¿Estás seguro de que deseas eliminar esta relación persona-carnet?</p>
-                    <p class="text-muted mb-0">Si fue un error, podrás volver a asignar el carnet desde el formulario.</p>
-                </div>
-                <div class="modal-footer">
+
+                <div class="modal-footer justify-content-center gap-3">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminarRelacionCarnetPersona">Eliminar</button>
+                    <button type="submit" class="btn btn-primary" form="formEditar">Guardar cambios</button>
                 </div>
+
             </div>
         </div>
     </div>
@@ -231,4 +257,4 @@
 
 </body>
 
-</html> 
+</html>

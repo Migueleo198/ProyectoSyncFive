@@ -91,7 +91,7 @@ export async function authGuard(clavePagina) {
   // ── 5. Ocultar botones de gestión según permisos de sub-páginas ─
   aplicarPermisosSubPaginas(rolUsuario);
 
-  return { usuario, rol: rolUsuario, puedeEscribir };
+  return { usuario, rol: rolUsuario, puedeEscribir, puedeEliminar };
 }
 
 // ────────────────────────────────────────────────────────────────

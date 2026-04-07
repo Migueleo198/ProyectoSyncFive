@@ -12,10 +12,8 @@
  * 
  * Cada entrada define:
  *   - rolesLectura:   roles que pueden acceder y VER la página
- *   - rolesEscritura: roles que pueden INSERT / EDIT
+ *   - rolesEscritura: roles que pueden INSERT / EDIT / DELETE
  *                     (deben ser subconjunto de rolesLectura)
- *   - rolesEliminar:  roles que pueden DELETE
- *                     (si no se define, hereda rolesEscritura)
  */
 
 export const PERMISOS = {
@@ -32,6 +30,7 @@ export const PERMISOS = {
   avisos: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [2, 3, 4, 5],
+    rolesEliminar:  [5],
   },
 
   // ── PERSONAL ─────────────────────────────────────────────────
@@ -70,6 +69,7 @@ export const PERMISOS = {
   carnets: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
+    rolesEditar:    [4, 5],
     rolesEliminar:  [5],
   },
   grupos: {
@@ -84,6 +84,8 @@ export const PERMISOS = {
   motivos: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
+    rolesEditar:    [5],
+    rolesEliminar:  [5],
   },
 
   // ── RECURSOS ─────────────────────────────────────────────────

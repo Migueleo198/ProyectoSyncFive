@@ -1,9 +1,16 @@
 import RolesApi from '../api_f/RolApi.js';
-import PersonaApi from '../api_f/PersonaApi.js';
 import { authGuard } from '../helpers/authGuard.js';
+import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 
 let roles = [];
 let sesionActual = null;
+const modalVerPagination = new PaginationHelper(5);
+
+modalVerPagination.setLoadingCallback((isLoading) => {
+  if (isLoading) {
+    showTableLoading('#tablaPersonasRol tbody', 4);
+  }
+});
 
 // ================================
 // CONSTANTES
@@ -19,13 +26,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   cargarRoles();
   bindModalVer();
-  cargarSelectRoles();
-  cargarSelectPersonas(null, 'n_funcionario');
 
   if (sesionActual.puedeEscribir) {
     bindCrearRol();
     bindModalEditar();
-    bindAsignarRol();
+    bindModalEliminar();
   }
 });
 
@@ -35,30 +40,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function cargarRoles() {
   try { const r = await RolesApi.getAll(); roles = r.data; renderTablaRoles(roles); }
   catch (e) { mostrarAlerta(e.message || 'Error cargando roles', 'danger'); }
-}
-
-// ================================
-// POBLAR SELECT ROLES
-// ================================
-async function cargarSelectRoles() {
-  const select = document.getElementById('rol'); if (!select) return;
-  try {
-    const res = await RolesApi.getAll();
-    select.innerHTML = '<option value="">Seleccione rol...</option>';
-    res.data.forEach(r => { const o = document.createElement('option'); o.value = r.id_rol; o.textContent = r.nombre; select.appendChild(o); });
-  } catch (e) { mostrarError(e.message || 'Error cargando roles'); }
-}
-
-// ================================
-// POBLAR SELECT PERSONAS
-// ================================
-async function cargarSelectPersonas(seleccionado, id_select) {
-  const select = document.getElementById(id_select); if (!select) return;
-  try {
-    const res = await PersonaApi.getAll();
-    select.innerHTML = '<option value="">Seleccione persona...</option>';
-    res.data.forEach(p => { const o = document.createElement('option'); o.value = p.id_bombero; o.textContent = `${p.n_funcionario} - ${p.nombre} ${p.apellidos}`; if (seleccionado && p.n_funcionario === seleccionado) o.selected = true; select.appendChild(o); });
-  } catch (e) { mostrarError(e.message || 'Error cargando personas'); }
 }
 
 // ================================
@@ -75,18 +56,17 @@ function renderTablaRoles(lista) {
     const botonesAccion = puedeEscribir
       ? `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_rol}"><i class="bi bi-eye"></i></button>
          <button class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${r.id_rol}"><i class="bi bi-pencil"></i></button>
-         <button class="btn p-0 btn-eliminar" data-id="${r.id_rol}"><i class="bi bi-trash3"></i></button>`
+         <button class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${r.id_rol}"><i class="bi bi-trash3"></i></button>`
       : `<button class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${r.id_rol}"><i class="bi bi-eye"></i></button>`;
     tr.innerHTML = `<td class="d-none d-md-table-cell">${r.id_rol}</td><td>${r.nombre??''}</td><td class="d-none d-md-table-cell">${truncar(r.descripcion,80)}</td>
-    <td>
-        <div  class="d-flex justify-content-around">
+    <td class="celda-acciones">
+        <div class="acciones-tabla">
           ${botonesAccion}
         </div>
       </td>`;
     tbody.appendChild(tr);
   });
 
-  if (puedeEscribir) bindEliminarRol();
 }
 
 // ================================
@@ -127,36 +107,80 @@ function bindCrearRol() {
 }
 
 // ================================
-// ASIGNAR ROL
-// ================================
-function bindAsignarRol() {
-  const form = document.getElementById('formAsignarRol'); if (!form) return;
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const f = new FormData(form);
-    const data = { id_bombero: f.get('n_funcionario'), id_rol: f.get('rol') };
-
-    if (!data.id_bombero) { mostrarAlerta('Seleccione una persona.', 'danger'); return; }
-    if (!data.id_rol)     { mostrarAlerta('Seleccione un rol.', 'danger'); return; }
-
-    try { await RolesApi.assignToPerson(data); mostrarAlerta('Rol asignado correctamente', 'success'); form.reset(); }
-    catch (err) { mostrarAlerta(err.message || 'Error asignando rol', 'danger'); }
-  });
-}
-
-// ================================
 // MODAL VER
 // ================================
 function bindModalVer() {
-  document.addEventListener('click', function (e) {
+  document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-ver'); if (!btn) return;
     const rol = roles.find(r => String(r.id_rol) === String(btn.dataset.id)); if (!rol) return;
     const modalBody = document.getElementById('modalVerBody');
+    const tbody = document.querySelector('#tablaPersonasRol tbody');
+    const paginationContainer = document.getElementById('pagination-modal-ver-rol');
+    if (!modalBody || !tbody || !paginationContainer) return;
+
     modalBody.innerHTML = '';
     [{ label:'ID', valor:rol.id_rol },{ label:'Nombre', valor:rol.nombre },{ label:'Descripción', valor:rol.descripcion??'—' }].forEach(({label,valor}) => {
       const p = document.createElement('p'); p.innerHTML = `<strong>${label}:</strong> ${valor}`; modalBody.appendChild(p);
     });
+
+    showTableLoading('#tablaPersonasRol tbody', 4);
+    paginationContainer.innerHTML = '';
+
+    try {
+      const response = await RolesApi.getPersonsByRole(rol.id_rol);
+      const personas = response?.data || [];
+
+      actualizarTablaPersonasRol(personas);
+    } catch (err) {
+      renderSinResultadosTabla('#tablaPersonasRol tbody', 4, err.message || 'Error cargando personas');
+      paginationContainer.innerHTML = '';
+    }
   });
+}
+
+function actualizarTablaPersonasRol(personas) {
+  const paginationContainer = document.getElementById('pagination-modal-ver-rol');
+  if (!paginationContainer) return;
+
+  modalVerPagination.setData(personas, () => {
+    renderTablaPersonasRol(personas);
+  });
+  modalVerPagination.render('pagination-modal-ver-rol');
+  renderTablaPersonasRol(personas);
+}
+
+function renderTablaPersonasRol(personas) {
+  const tbody = document.querySelector('#tablaPersonasRol tbody');
+  const paginationContainer = document.getElementById('pagination-modal-ver-rol');
+  if (!tbody || !paginationContainer) return;
+
+  tbody.innerHTML = '';
+
+  if (!personas.length) {
+    renderSinResultadosTabla('#tablaPersonasRol tbody', 4, 'No hay personas con este rol');
+    paginationContainer.innerHTML = '';
+    return;
+  }
+
+  const itemsPagina = modalVerPagination.getPageItems(personas);
+  tbody.innerHTML = itemsPagina.map((persona) => `
+    <tr>
+      <td>${persona.id_bombero ?? '—'}</td>
+      <td>${persona.n_funcionario ?? '—'}</td>
+      <td>${obtenerNombreCompleto(persona)}</td>
+      <td>${persona.correo ?? '—'}</td>
+    </tr>
+  `).join('');
+}
+
+function renderSinResultadosTabla(selector, colspan, mensaje) {
+  const tbody = document.querySelector(selector);
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-center text-muted py-4">${mensaje}</td></tr>`;
+}
+
+function obtenerNombreCompleto(persona) {
+  return `${persona.nombre ?? ''} ${persona.apellidos ?? ''}`.trim() || '—';
 }
 
 // ================================
@@ -192,16 +216,28 @@ function bindModalEditar() {
 }
 
 // ================================
-// ELIMINAR ROL
+// MODAL ELIMINAR
 // ================================
-function bindEliminarRol() {
-  document.querySelectorAll('.btn-eliminar').forEach(btn => {
-    btn.addEventListener('click', async function () {
-      if (!confirm('¿Estás seguro de eliminar este rol? Esta acción no se puede deshacer.')) return;
-      try {
-        await RolesApi.delete(this.dataset.id); await cargarRoles(); mostrarAlerta('Rol eliminado correctamente', 'success');
-      } catch (err) { mostrarAlerta(err.status===409 ? 'No se puede eliminar: el rol está asignado a usuarios' : err.message || 'Error al eliminar', 'danger'); }
-    });
+function bindModalEliminar() {
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-eliminar');
+    if (!btn) return;
+
+    document.getElementById('btnConfirmarEliminar').dataset.id = btn.dataset.id;
+  });
+
+  document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
+    const id = this.dataset.id;
+    if (!id) return;
+
+    try {
+      await RolesApi.delete(id);
+      await cargarRoles();
+      bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+      mostrarAlerta('Rol eliminado correctamente', 'success');
+    } catch (err) {
+      mostrarAlerta(err.status===409 ? 'No se puede eliminar: el rol está asignado a usuarios' : err.message || 'Error al eliminar', 'danger');
+    }
   });
 }
 
@@ -217,5 +253,3 @@ function mostrarAlerta(msg, tipo = 'info') {
   container.appendChild(div);
   setTimeout(() => { const el = document.getElementById(id); if (el) el.remove(); }, 4000);
 }
-
-function mostrarError(msg) { mostrarAlerta(msg, 'danger'); }

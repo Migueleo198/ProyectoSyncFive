@@ -22,9 +22,11 @@ class CarnetModel
         return $this->db
             ->query("
                 SELECT
-                    c.*,
-                    g.nombre AS grupo_nombre,
-                    g.descripcion AS grupo_descripcion
+                    c.id_carnet,
+                    c.id_grupo,
+                    c.nombre,
+                    c.duracion_meses,
+                    g.nombre AS grupo
                 FROM Carnet c
                 INNER JOIN Grupo g ON g.id_grupo = c.id_grupo
                 ORDER BY c.id_carnet ASC
@@ -63,32 +65,20 @@ class CarnetModel
     {
         $this->db->query("
             UPDATE Carnet SET
-                id_grupo = :id_grupo,
                 nombre = :nombre,
+                id_grupo = :id_grupo,
                 duracion_meses = :duracion_meses
             WHERE id_carnet = :id_carnet
         ")
         ->bind(':id_carnet', $id_carnet)
-        ->bind(':id_grupo', $data['id_grupo'] ?? null)
         ->bind(':nombre', $data['nombre'] ?? null)
+        ->bind(':id_grupo', $data['id_grupo'] ?? null)
         ->bind(':duracion_meses', $data['duracion_meses'] ?? null)
         ->execute();
 
         return $this->db
             ->query("SELECT ROW_COUNT() AS affected")
             ->fetch()['affected'];
-    }
-
-    public function refreshPersonExpirationDates(int $id_carnet, int $duracionMeses): void
-    {
-        $this->db
-            ->query("
-                UPDATE Carnet_Persona
-                SET f_vencimiento = DATE_ADD(f_obtencion, INTERVAL {$duracionMeses} MONTH)
-                WHERE id_carnet = :id_carnet
-            ")
-            ->bind(':id_carnet', $id_carnet)
-            ->execute();
     }
 
     /**
@@ -122,9 +112,15 @@ class CarnetModel
             ->query("
                 SELECT 
                     p.*,
+                    c.nombre AS carnet_nombre,
+                    g.nombre AS grupo,
                     pc.f_obtencion,
                     pc.f_vencimiento
                 FROM Carnet_Persona pc
+                INNER JOIN Carnet c
+                    ON c.id_carnet = pc.id_carnet
+                LEFT JOIN Grupo g
+                    ON g.id_grupo = c.id_grupo
                 INNER JOIN Persona p 
                     ON p.id_bombero = pc.id_bombero
                 WHERE pc.ID_Carnet = :id_carnet
@@ -133,34 +129,6 @@ class CarnetModel
             ->bind(':id_carnet', $id_carnet)
             ->fetchAll();
     }
-
-    /**
-     * Obtener todos los carnets asociados a una persona
-     */
-    public function getCarnetsByPerson(string $id_bombero): array
-    {
-        return $this->db
-            ->query("
-                SELECT
-                    c.id_carnet,
-                    c.nombre,
-                    c.id_grupo,
-                    c.duracion_meses,
-                    g.nombre AS grupo_nombre,
-                    g.descripcion AS grupo_descripcion,
-                    cp.f_obtencion,
-                    cp.f_vencimiento,
-                    CASE WHEN cp.f_vencimiento >= CURDATE() THEN 1 ELSE 0 END AS vigente
-                FROM Carnet_Persona cp
-                INNER JOIN Carnet c ON c.id_carnet = cp.id_carnet
-                INNER JOIN Grupo g ON g.id_grupo = c.id_grupo
-                WHERE cp.id_bombero = :id_bombero
-                ORDER BY cp.f_vencimiento ASC, c.id_carnet ASC
-            ")
-            ->bind(':id_bombero', $id_bombero)
-            ->fetchAll();
-    }
-
 /**
  * Obtener carnet por ID
  */
@@ -169,9 +137,11 @@ public function findById(int $id_carnet): array|false
     return $this->db
         ->query("
             SELECT
-                c.*,
-                g.nombre AS grupo_nombre,
-                g.descripcion AS grupo_descripcion
+                c.id_carnet,
+                c.id_grupo,
+                c.nombre,
+                c.duracion_meses,
+                g.nombre AS grupo
             FROM Carnet c
             INNER JOIN Grupo g ON g.id_grupo = c.id_grupo
             WHERE c.id_carnet = :id_carnet

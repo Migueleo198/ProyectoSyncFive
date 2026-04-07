@@ -39,6 +39,18 @@ class Session
     }
 
 
+    public static function updateUser(array $data): void
+    {
+        self::start();
+
+        if (!isset($_SESSION["user"]) || !is_array($_SESSION["user"])) {
+            return;
+        }
+
+        $_SESSION["user"] = array_merge($_SESSION["user"], $data);
+    }
+
+
     public static function get(string $key, mixed $default = null): mixed
     {
         self::start();
