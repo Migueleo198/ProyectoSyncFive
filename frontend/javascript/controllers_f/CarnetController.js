@@ -191,11 +191,11 @@ function renderTablaCarnets(lista) {
     const botones = [`<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${carnet.id_carnet}" title="Ver detalle"><i class="bi bi-eye"></i></button>`];
 
     if (puedeEditar) {
-      botones.push(`<button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${carnet.id_carnet}" title="Editar"><i class="bi bi-pencil text-primary"></i></button>`);
+      botones.push(`<button type="button" class="btn p-0 btn-editar" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id="${carnet.id_carnet}" title="Editar"><i class="bi bi-pencil"></i></button>`);
     }
 
     if (puedeEliminar) {
-      botones.push(`<button type="button" class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${carnet.id_carnet}" title="Eliminar"><i class="bi bi-trash3 text-danger"></i></button>`);
+      botones.push(`<button type="button" class="btn p-0 btn-eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id="${carnet.id_carnet}" title="Eliminar"><i class="bi bi-trash3"></i></button>`);
     }
 
     const tr = document.createElement('tr');
@@ -204,7 +204,7 @@ function renderTablaCarnets(lista) {
       <td>${carnet.nombre ?? ''}</td>
       <td class="d-none d-md-table-cell">${grupo}</td>
       <td>${carnet.duracion_meses ?? ''}</td>
-      <td><div class="d-flex justify-content-around">${botones.join('')}</div></td>
+      <td class="celda-acciones"><div class="acciones-tabla">${botones.join('')}</div></td>
     `;
     tbody.appendChild(tr);
   });
@@ -360,10 +360,6 @@ function bindModalEditar() {
           <input type="number" class="form-control" id="editDuracionMeses" name="duracion_meses" min="1" step="1" value="${carnet.duracion_meses ?? ''}">
         </div>
       </div>
-      <div class="d-flex justify-content-end gap-2 mt-4 pt-2 border-top">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btnGuardarCambiosCarnet">Guardar cambios</button>
-      </div>
     `;
 
     poblarSelectGrupos('editGrupo', String(carnet.id_grupo ?? '').trim());
@@ -378,7 +374,9 @@ function bindModalEditar() {
       mostrarError(error.message || 'Error cargando personas asociadas al carnet');
     }
 
-    document.getElementById('btnGuardarCambiosCarnet')?.addEventListener('click', async () => {
+    form.onsubmit = async (event) => {
+      event.preventDefault();
+
       try {
         const data = {
           nombre: String(form.querySelector('[name="nombre"]')?.value ?? '').trim(),
@@ -404,7 +402,7 @@ function bindModalEditar() {
       } catch (error) {
         mostrarError(error.message || 'Error al editar carnet');
       }
-    });
+    };
   });
 }
 
@@ -484,7 +482,7 @@ function actualizarColumnaAccionTablaPersonasCarnet(contexto) {
 
   const thAccion = headRow.querySelector('.th-accion-carnet');
   if (contexto.permiteEliminar && !thAccion) {
-    headRow.insertAdjacentHTML('beforeend', '<th class="text-end th-accion-carnet">Accion</th>');
+    headRow.insertAdjacentHTML('beforeend', '<th class="th-accion-carnet">Acción</th>');
     return;
   }
 
@@ -516,7 +514,7 @@ function renderTablaPersonasCarnet(contextoKey) {
       <td>${obtenerNombreCompleto(persona)}</td>
       <td>${persona.f_obtencion ?? '—'}</td>
       <td>${persona.f_vencimiento ?? '—'}</td>
-      ${contexto.permiteEliminar ? `<td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-carnet" data-contexto="${contextoKey}" data-id-carnet="${contexto.carnetId}" data-id-bombero="${persona.id_bombero}" title="Desasignar carnet"><i class="bi bi-trash3"></i><span class="visually-hidden">Desasignar carnet</span></button></td>` : ''}
+      ${contexto.permiteEliminar ? `<td class="celda-acciones"><div class="acciones-tabla"><button type="button" class="btn btn-sm btn-eliminar-compacto btn-desasignar-persona" data-contexto="${contextoKey}" data-id-carnet="${contexto.carnetId}" data-id-bombero="${persona.id_bombero}" title="Desasignar carnet"><i class="bi bi-trash"></i><span class="visually-hidden">Desasignar carnet</span></button></div></td>` : ''}
     </tr>
   `).join('');
 }
@@ -533,7 +531,7 @@ function obtenerNombreCompleto(persona) {
 
 function bindDesasignarPersona() {
   document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('.btn-desasignar-carnet');
+    const btn = e.target.closest('.btn-desasignar-persona');
     if (!btn || !puedeEditarCarnets()) return;
 
     const idCarnet = btn.dataset.idCarnet;
