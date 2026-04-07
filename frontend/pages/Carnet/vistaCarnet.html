@@ -41,9 +41,6 @@
 
                 <!-- Contenedor tabla con filtro-->
                 <div class="container mt-4 p-0"> 
-                    
-                    <h2 class="d-flex align-items-center">Lista de Carnets</h2>
-
                     <div id="filtroTabla" class="m-0 row d-flex justify-content-center g-2">
                         <div class="col-lg-3 col-md-4 col-sm-12 d-flex align-items-center m-1">
                             <label class="me-2 text-nowrap" for="filtroNombre">Nombre:</label>
@@ -63,7 +60,7 @@
                                 <th>Nombre</th>
                                 <th class="d-none d-md-table-cell">Grupo</th>
                                 <th>Duración</th>
-                                <th>Acción</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -159,28 +156,26 @@
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body">
-                    <div id="modalVerBody">
-                       <!-- Body dinamico del modal-->
-                    </div>
+                <div class="modal-body" id="modalVerBody">
+                    <!-- Body dinamico del modal-->
+                </div>
 
-                    <div class="mt-4">
-                        <h6 class="fw-bold">Personas con este carnet</h6>
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped mb-0" id="tablaPersonasCarnet">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Bombero</th>
-                                        <th>Nombre</th>
-                                        <th>Obtencion</th>
-                                        <th>Vencimiento</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        <div id="pagination-modal-ver-carnet" class="mt-3"></div>
+                <div class="px-3 pb-2">
+                    <h6 class="fw-bold">Personas con este carnet</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mb-0" id="tablaPersonasCarnet">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID Bombero</th>
+                                    <th>Nombre</th>
+                                    <th>Obtención</th>
+                                    <th>Vencimiento</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
+                    <div id="pagination-modal-ver-carnet" class="mt-3"></div>
                 </div>
 
                 <div class="modal-footer">
@@ -197,32 +192,38 @@
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
+                    <h5 class="modal-title" id="modalEditarLabel">Editar carnet</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="formEditar">
+                    <form id="formEditar" class="mx-auto">
                         <!-- Los campos del formulario se generarán dinámicamente -->
                     </form>
-
-                    <div class="mt-4">
-                        <h6 class="fw-bold">Personas con este carnet</h6>
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped mb-0" id="tablaPersonasCarnetEditar">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Bombero</th>
-                                        <th>Nombre</th>
-                                        <th>Obtencion</th>
-                                        <th>Vencimiento</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        <div id="pagination-modal-editar-carnet" class="mt-3"></div>
-                    </div>
                 </div>
+
+                <div class="px-3 pb-2">
+                    <h6 class="fw-bold">Personas con este carnet</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mb-0" id="tablaPersonasCarnetEditar">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID Bombero</th>
+                                    <th>Nombre</th>
+                                    <th>Obtención</th>
+                                    <th>Vencimiento</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="pagination-modal-editar-carnet" class="mt-3"></div>
+                </div>
+
+                <div class="modal-footer justify-content-center gap-3">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" form="formEditar">Guardar cambios</button>
+                </div>
+
             </div>
         </div>
     </div>
