@@ -1,47 +1,28 @@
 import ApiClient from './ApiClient.js';
 
 const AlmacenApi = {
-  // CRUD básico
   getAll() {
     return ApiClient.get('/almacenes');
   },
 
-  getById(id) {
-    return ApiClient.get(`/almacenes/${id}`);
+  getById(id_instalacion, id_almacen) {
+    return ApiClient.get(`/instalaciones/${id_instalacion}/almacenes/${id_almacen}`);
   },
 
-  create(data) {
-    return ApiClient.post('/almacenes', data);
+  create(id_instalacion, data) {
+    return ApiClient.post(`/instalaciones/${id_instalacion}/almacenes`, data);
   },
 
-  update(id, data) {
-    return ApiClient.put(`/almacenes/${id}`, data);
+  update(id_instalacion, id_almacen, data) {
+    return ApiClient.put(`/instalaciones/${id_instalacion}/almacenes/${id_almacen}`, data);
   },
 
-  delete(id) {
-    return ApiClient.delete(`/almacenes/${id}`);
+  delete(id_instalacion, id_almacen) {
+    return ApiClient.delete(`/instalaciones/${id_instalacion}/almacenes/${id_almacen}`);
   },
 
-  // Obtener almacenes por instalación
   getByInstalacion(id_instalacion) {
     return ApiClient.get(`/instalaciones/${id_instalacion}/almacenes`);
-  },
-
-  // Material en almacén
-  getMateriales(id_almacen) {
-    return ApiClient.get(`/almacenes/${id_almacen}/material`);
-  },
-
-  addMaterial(id_almacen, data) {
-    return ApiClient.post(`/almacenes/${id_almacen}/material`, data);
-  },
-
-  updateMaterial(id_almacen, id_material, data) {
-    return ApiClient.put(`/almacenes/${id_almacen}/material/${id_material}`, data);
-  },
-
-  removeMaterial(id_almacen, id_material, data) {
-    return ApiClient.delete(`/almacenes/${id_almacen}/material/${id_material}`, { data });
   }
 };
 

@@ -63,6 +63,15 @@ class RefuerzoService
      */
     public function createRefuerzo(array $input): array
     {
+        if (isset($input['f_inicio']) && isset($input['f_fin'])) {
+            $fInicio = strtotime($input['f_inicio']);
+            $fFin = strtotime($input['f_fin']);
+            if ($fInicio !== false && $fFin !== false) {
+                $diff = $fFin - $fInicio;
+                $input['horas'] = (int) ceil($diff / 3600);
+            }
+        }
+
         $data = Validator::validate($input, [
             'f_inicio' => 'required|string',
             'f_fin'    => 'required|string',
@@ -95,6 +104,15 @@ class RefuerzoService
         Validator::validate(['id_turno_refuerzo' => $id_turno_refuerzo], [
             'id_turno_refuerzo' => 'required|string'
         ]);
+
+        if (isset($input['f_inicio']) && isset($input['f_fin'])) {
+            $fInicio = strtotime($input['f_inicio']);
+            $fFin = strtotime($input['f_fin']);
+            if ($fInicio !== false && $fFin !== false) {
+                $diff = $fFin - $fInicio;
+                $input['horas'] = (int) ceil($diff / 3600);
+            }
+        }
 
         $data = Validator::validate($input, [
             'f_inicio'   => 'required|string',

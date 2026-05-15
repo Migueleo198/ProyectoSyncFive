@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <script src="/frontend/config/config.js"></script>
+    <script src="/ProyectoSyncFive-main/frontend/config/config.js"></script>
     <script>loadHead("Materiales")</script>
-    <script type="module" src="/frontend/javascript/controllers_f/MaterialController.js"></script>
+    <script type="module" src="/ProyectoSyncFive-main/frontend/javascript/controllers_f/MaterialController.js"></script>
 </head>
 <body class="bg-white text-dark d-flex flex-column">
 
@@ -26,7 +26,7 @@
                         <small class="text-muted">Catálogo de materiales y equipos</small>
                     </div>
                     <div class="d-flex align-items-center gap-3">
-                        <a href="/categorias/material" 
+                        <a href="/ProyectoSyncFive-main/categorias/material" 
                            class="btn btn-outline-secondary btn-gestion" 
                            data-permiso="categorias">
                             <i class="bi bi-gear me-1"></i> Administrar Categorías
@@ -61,7 +61,7 @@
                     <table class="table table-bordered table-striped" id="tabla">
                         <thead class="table-dark">
                             <tr>
-                                <th class="d-none d-md-table-cell">ID</th>
+                                <th>ID</th>
                                 <th>Nombre</th>
                                 <th class="d-none d-md-table-cell">Descripción</th>
                                 <th>Estado</th>
@@ -166,6 +166,25 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--  MODAL ELIMINAR RELACIÓN (ASIGNACIÓN) -->
+    <div class="modal fade" id="modalEliminarRelacion" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar eliminación de relación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalEliminarRelacionBody">
+                    ¿Estás seguro de que deseas eliminar esta asignación?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminarRelacion">Eliminar</button>
                 </div>
             </div>
         </div>

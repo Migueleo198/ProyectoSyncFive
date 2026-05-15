@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <script src="/frontend/config/config.js"></script>
+    <script src="/ProyectoSyncFive-main/frontend/config/config.js"></script>
     <script>loadHead("Categorías")</script>
-    <script type="module" src="/frontend/javascript/controllers_f/CategoriaController.js"></script>
+    <script type="module"
+        src="/ProyectoSyncFive-main/frontend/javascript/controllers_f/CategoriaController.js"></script>
 </head>
+
 <body class="bg-white text-dark d-flex flex-column">
 
     <!-- HEADER -->
@@ -25,11 +28,11 @@
                         <small class="text-muted">Clasificación de materiales por categorías</small>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/materiales" class="btn btn-outline-secondary btn-gestion">
+                        <a href="/ProyectoSyncFive-main/materiales" class="btn btn-outline-secondary btn-gestion">
                             <i class="bi bi-gear me-1"></i> Gestionar Materiales
                         </a>
-                        <a href="https://www.notion.so/11_Materiales-31b0bf35f60680dd840aca0da6b216ca" target="_blank" 
-                        class="text-muted" title="Ayuda">
+                        <a href="https://www.notion.so/11_Materiales-31b0bf35f60680dd840aca0da6b216ca" target="_blank"
+                            class="text-muted" title="Ayuda">
                             <i class="bi bi-question-circle fs-4"></i>
                         </a>
                     </div>
@@ -39,38 +42,41 @@
                 <div id="breadcrumb-placeholder"></div>
 
                 <!-- Contenedor tabla con filtro-->
-                <div class="container mt-4 p-0"> 
+                <div class="container mt-4 p-0">
                     <div id="filtroTabla" class="m-0 row d-flex justify-content-center"> <!-- Filtro -->
-                        <div class="col-md-3 offset-1 d-flex align-items-center m-1"> <!-- Cada campo del filtro será un col-md-x (ajustar) -->
-                            <label class="m-2" for="nombre">Nombre:</label>
-                            <input placeholder="Nombre" id="nombre" type="text" class="form-control form-control-sm mt-1 filtro" data-col="1">
+                        <div class="col-md-3 offset-1 d-flex align-items-center m-1">
+                            <!-- Cada campo del filtro será un col-md-x (ajustar) -->
+                            <label class="m-2" for="filtroNombre">Nombre:</label>
+                            <input placeholder="Nombre" id="filtroNombre" type="text"
+                                class="form-control form-control-sm mt-1 filtro" data-col="1">
                         </div>
                         <div class="col-md-5 d-flex align-items-center m-1">
-                            <label class="m-2" for="Inventariable">Inventariable:</label>
-                            <select class="form-select form-select-sm mt-1 filtro" id="grupo" data-col="2">
+                            <label class="m-2" for="filtroInventariable">Inventariable:</label>
+                            <select class="form-select form-select-sm mt-1 filtro" id="filtroInventariable" data-col="2">
                                 <option value="">Todos</option>
-                                <option>Sí</option>
-                                <option>No</option>
+                                <option value="1">Sí</option>
+                                <option value="0">No</option>
                             </select>
                         </div>
                     </div>
                     <table class="table table-bordered table-striped" id="tabla">
                         <thead class="table-dark">
                             <tr> <!-- Cabecera de la tabla -->
-                                <th>Identificador Categoria</th> <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
+                                <th>Identificador Categoria</th>
+                                <!-- Usar la clase "d-none d-md-table-cell" para las columnas que desaparezcan en TABLET-->
                                 <th>Nombre</th>
-                                <th>Inventariable</th>
+                                <th class="d-none d-md-table-cell">Inventariable</th>
                                 <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
-                            
+
                             <!-- Aquí puedes agregar más filas de datos -->
                         </tbody>
                     </table>
                     <div id="pagination-categoria" class="mt-3"></div>
                 </div>
-                
+
                 <!-- Contenedor insertar -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
                     <h5 class="text-center mb-4">Insertar Categoria</h5>
@@ -125,7 +131,7 @@
                         Eliminar
                     </button>
                 </div>
-            </div> 
+            </div>
         </div>
     </div>
 
@@ -176,7 +182,7 @@
                 </div>
 
                 <div class="modal-body" id="modalVerBody">
-                   <!-- Body dinamico del modal-->
+                    <!-- Body dinamico del modal-->
                 </div>
 
                 <div class="modal-footer">

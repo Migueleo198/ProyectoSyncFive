@@ -1,3 +1,4 @@
+import ApiClient from '../api_f/ApiClient.js';
 import MaterialApi from '../api_f/MaterialApi.js';
 import CategoriaApi from '../api_f/CategoriaApi.js';
 import InstalacionApi from '../api_f/InstalacionApi.js';
@@ -114,6 +115,7 @@ async function cargarMateriales() {
         materiales.forEach(m => {
             const cat = categorias.find(c => c.id_categoria == m.id_categoria);
             m.categoria_nombre = cat ? cat.nombre : 'Sin categoría';
+            m.inventariable = cat ? (Number(cat.inventariable) === 1) : false;
         });
         pagination.setData(materiales, () => {
       renderTablaMateriales(materiales);
@@ -172,7 +174,7 @@ function renderTablaMateriales(lista) {
             : `<button type="button" class="btn p-0 btn-ver" data-bs-toggle="modal" data-bs-target="#modalVer" data-id="${m.id_material}"><i class="bi bi-eye"></i></button>`;
 
         tr.innerHTML = `
-            <td class="d-none d-md-table-cell">${m.id_material ?? ''}</td>
+            <td>${m.id_material ?? ''}</td>
             <td>${m.nombre ?? ''}</td>
             <td class="d-none d-md-table-cell">${m.descripcion ?? ''}</td>
             <td><span class="badge ${m.estado === 'ALTA' ? 'bg-success' : 'bg-danger'}">${m.estado ?? ''}</span></td>
@@ -280,8 +282,8 @@ function bindCrearMaterial() {
 async function obtenerAsignacionesMaterial(idMaterial) {
     if (asignacionesCache.has(idMaterial)) return asignacionesCache.get(idMaterial);
     try {
-        const response = await fetch('/api/materiales/completo');
-        const data = await response.json();
+        const response = await MaterialApi.getCompleto();
+        const data = response;
         const todos = Array.isArray(data) ? data : (data.data || []);
         const filtrados = todos.filter(m => m.id_material == idMaterial);
         const resultado = {
@@ -492,6 +494,37 @@ function bindModalesEscritura() {
                     </div>
                 </div>`;
 
+            // ── Lógica de UX Inteligente para Asignaciones ──
+            const isInventariable = material.inventariable;
+            
+            const uxVehSerie = form.querySelector('#asigVehiculoNserie');
+            const uxVehUnidades = form.querySelector('#asigVehiculoUnidades');
+            const uxAlmSerie = form.querySelector('#asigAlmacenNserie');
+            const uxAlmUnidades = form.querySelector('#asigAlmacenUnidades');
+
+            if (isInventariable) {
+                // Si es inventariable, las unidades se fijan en 1 y se bloquean.
+                if (uxVehUnidades) { uxVehUnidades.value = 1; uxVehUnidades.disabled = true; }
+                if (uxAlmUnidades) { uxAlmUnidades.value = 1; uxAlmUnidades.disabled = true; }
+            } else {
+                // Si no lo es, unidades y número de serie son mutuamente excluyentes en la UI.
+                [
+                    { s: uxVehSerie, u: uxVehUnidades },
+                    { s: uxAlmSerie, u: uxAlmUnidades }
+                ].forEach(({s, u}) => {
+                    if (s && u) {
+                        s.addEventListener('input', () => {
+                            if (s.value.trim() !== '') { u.value = ''; u.disabled = true; }
+                            else { u.disabled = false; u.value = 1; }
+                        });
+                        u.addEventListener('input', () => {
+                            if (u.value !== '' && Number(u.value) > 0) { s.value = ''; s.disabled = true; }
+                            else { s.disabled = false; }
+                        });
+                    }
+                });
+            }
+
             const asignaciones = await obtenerAsignacionesMaterial(currentMaterialId);
             renderTablaVehiculos(asignaciones.vehiculos);
             renderTablaPersonas(asignaciones.personas);
@@ -517,12 +550,21 @@ function bindModalesEscritura() {
 
             form.querySelector('#btnAsignarVehiculo').addEventListener('click', async () => {
                 const matricula = form.querySelector('#asigVehiculoSelect').value;
-                const unidades = parseInt(form.querySelector('#asigVehiculoUnidades').value);
+                const unidadesValue = form.querySelector('#asigVehiculoUnidades').value;
                 const nserie = form.querySelector('#asigVehiculoNserie').value.trim() || null;
+                
                 if (!matricula) return mostrarError('Seleccione un vehículo.');
-                if (unidades < 1) return mostrarError('Las unidades deben ser mayor que 0.');
+                
+                const data = {};
+                if (nserie) {
+                    data.nserie = nserie;
+                } else {
+                    data.unidades = parseInt(unidadesValue) || 1;
+                    if (data.unidades < 1) return mostrarError('Las unidades deben ser mayor que 0.');
+                }
+
                 try {
-                    await MaterialApi.assignToVehiculo(matricula, currentMaterialId, { nserie, unidades });
+                    await MaterialApi.assignToVehiculo(matricula, currentMaterialId, data);
                     asignacionesCache.delete(currentMaterialId);
                     renderTablaVehiculos((await obtenerAsignacionesMaterial(currentMaterialId)).vehiculos);
                     form.querySelector('#asigVehiculoSelect').value = '';
@@ -533,12 +575,12 @@ function bindModalesEscritura() {
             });
 
             form.querySelector('#btnAsignarPersona').addEventListener('click', async () => {
-                const id_bombero_num = extraerNumeroId(form.querySelector('#asigPersonaSelect').value);
+                const id_bombero_str = form.querySelector('#asigPersonaSelect').value;
                 const nserie = form.querySelector('#asigPersonaNserie').value.trim();
-                if (!id_bombero_num) return mostrarError('Seleccione una persona.');
+                if (!id_bombero_str) return mostrarError('Seleccione una persona.');
                 if (!nserie) return mostrarError('El número de serie es obligatorio.');
                 try {
-                    await MaterialApi.assignToPersona(id_bombero_num, currentMaterialId, nserie);
+                    await MaterialApi.assignToPersona(id_bombero_str, currentMaterialId, nserie);
                     asignacionesCache.delete(currentMaterialId);
                     renderTablaPersonas((await obtenerAsignacionesMaterial(currentMaterialId)).personas);
                     form.querySelector('#asigPersonaSelect').value = '';
@@ -554,13 +596,22 @@ function bindModalesEscritura() {
             form.querySelector('#btnAsignarAlmacen').addEventListener('click', async () => {
                 const id_instalacion = parseInt(form.querySelector('#asigInstalacionSelect').value);
                 const id_almacen = parseInt(form.querySelector('#asigAlmacenSelect').value);
-                const unidades = parseInt(form.querySelector('#asigAlmacenUnidades').value);
+                const unidadesValue = form.querySelector('#asigAlmacenUnidades').value;
                 const n_serie = form.querySelector('#asigAlmacenNserie').value.trim() || null;
+
                 if (!id_instalacion) return mostrarError('Seleccione una instalación.');
                 if (!id_almacen)     return mostrarError('Seleccione un almacén.');
-                if (unidades < 1)    return mostrarError('Las unidades deben ser mayor que 0.');
+                
+                const data = { id_material: parseInt(currentMaterialId) };
+                if (n_serie) {
+                    data.n_serie = n_serie;
+                } else {
+                    data.unidades = parseInt(unidadesValue) || 1;
+                    if (data.unidades < 1) return mostrarError('Las unidades deben ser mayor que 0.');
+                }
+
                 try {
-                    await MaterialApi.assignToAlmacen(id_almacen, { id_material: parseInt(currentMaterialId), id_instalacion, n_serie, unidades });
+                    await MaterialApi.assignToAlmacen(id_instalacion, id_almacen, data);
                     asignacionesCache.delete(currentMaterialId);
                     renderTablaAlmacenes((await obtenerAsignacionesMaterial(currentMaterialId)).almacenes);
                     form.querySelector('#asigInstalacionSelect').value = '';
@@ -589,16 +640,15 @@ function renderTablaVehiculos(asignaciones) {
     asignaciones.forEach(a => {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${a.identificador||a.matricula||'-'}</td><td>${a.elemento||a.matricula||'-'}</td><td>${a.unidades||'-'}</td><td>${a.numero_serie||a.nserie||'-'}</td><td><button type="button" class="btn btn-sm btn-eliminar-compacto" data-matricula="${a.identificador||a.matricula}"><i class="bi bi-trash"></i></button></td>`;
-        tr.querySelector('button').addEventListener('click', async function (e) {
+        tr.querySelector('button').addEventListener('click', function (e) {
             e.preventDefault(); e.stopPropagation();
-            if (!confirm('¿Eliminar asignación de este vehículo?')) return;
-            const btn = this; btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-            try {
-                await MaterialApi.removeFromVehiculo(this.dataset.matricula, currentMaterialId);
+            const matricula = this.dataset.matricula;
+            abrirModalConfirmacionRelacion(`¿Eliminar asignación del vehículo <strong>${matricula}</strong>?`, async () => {
+                await MaterialApi.removeFromVehiculo(matricula, currentMaterialId);
                 asignacionesCache.delete(currentMaterialId);
                 renderTablaVehiculos((await obtenerAsignacionesMaterial(currentMaterialId)).vehiculos);
                 mostrarExito('Asignación eliminada');
-            } catch (e) { mostrarError('Error al eliminar: ' + (e.message || '')); btn.disabled = false; btn.innerHTML = '<i class="bi bi-trash"></i>'; }
+            });
         });
         tbody.appendChild(tr);
     });
@@ -610,19 +660,18 @@ function renderTablaPersonas(asignaciones) {
     if (!asignaciones?.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center">Sin asignaciones</td></tr>'; return; }
     tbody.innerHTML = '';
     asignaciones.forEach(a => {
-        const idNum = extraerNumeroId(a.identificador || a.id_bombero);
+        const idBombero = a.identificador || a.id_bombero;
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${a.identificador||a.id_bombero||'-'}</td><td>${a.elemento||a.nombre||'-'}</td><td>${a.n_funcionario||'-'}</td><td>${a.numero_serie||a.nserie||'-'}</td><td><button type="button" class="btn btn-sm btn-eliminar-compacto" data-id="${idNum}"><i class="bi bi-trash"></i></button></td>`;
-        tr.querySelector('button').addEventListener('click', async function (e) {
+        tr.innerHTML = `<td>${idBombero||'-'}</td><td>${a.elemento||a.nombre||'-'}</td><td>${a.n_funcionario||'-'}</td><td>${a.numero_serie||a.nserie||'-'}</td><td><button type="button" class="btn btn-sm btn-eliminar-compacto" data-id="${idBombero}"><i class="bi bi-trash"></i></button></td>`;
+        tr.querySelector('button').addEventListener('click', function (e) {
             e.preventDefault(); e.stopPropagation();
-            if (!confirm('¿Eliminar asignación de esta persona?')) return;
-            const btn = this; btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-            try {
-                await MaterialApi.removeFromPersona(this.dataset.id, currentMaterialId);
+            const idBombero = this.dataset.id;
+            abrirModalConfirmacionRelacion(`¿Eliminar asignación de esta persona?`, async () => {
+                await MaterialApi.removeFromPersona(idBombero, currentMaterialId);
                 asignacionesCache.delete(currentMaterialId);
                 renderTablaPersonas((await obtenerAsignacionesMaterial(currentMaterialId)).personas);
                 mostrarExito('Asignación eliminada');
-            } catch (e) { mostrarError('Error al eliminar: ' + (e.message || '')); btn.disabled = false; btn.innerHTML = '<i class="bi bi-trash"></i>'; }
+            });
         });
         tbody.appendChild(tr);
     });
@@ -636,19 +685,17 @@ function renderTablaAlmacenes(asignaciones) {
     asignaciones.forEach(a => {
         const idAlmacen = a.identificador || a.id_almacen;
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${a.nombre_instalacion||a.instalacion||a.id_instalacion||'-'}</td><td>${a.elemento||a.nombre_almacen||a.id_almacen||'-'}</td><td>${a.planta||'-'}</td><td>${a.unidades||'-'}</td><td>${a.numero_serie||a.n_serie||'-'}</td><td><button type="button" class="btn btn-sm btn-eliminar-compacto" data-id="${idAlmacen}"><i class="bi bi-trash"></i></button></td>`;
-        tr.querySelector('button').addEventListener('click', async function (e) {
+        const idInstalacion = a.id_instalacion;
+        tr.innerHTML = `<td>${a.nombre_instalacion||a.instalacion||a.id_instalacion||'-'}</td><td>${a.elemento||a.nombre_almacen||a.id_almacen||'-'}</td><td>${a.planta||'-'}</td><td>${a.unidades||'-'}</td><td>${a.numero_serie||a.n_serie||'-'}</td><td><button type="button" class="btn btn-sm btn-eliminar-compacto" data-id_almacen="${idAlmacen}" data-id_instalacion="${idInstalacion}"><i class="bi bi-trash"></i></button></td>`;
+        tr.querySelector('button').addEventListener('click', function (e) {
             e.preventDefault(); e.stopPropagation();
-            if (!confirm('¿Eliminar asignación de este almacén?')) return;
-            const btn = this; btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-            try {
-                const r = await fetch(`/api/almacenes/${this.dataset.id}/material/${currentMaterialId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
-                const text = await r.text();
-                if (!r.ok) { try { throw new Error(JSON.parse(text).message); } catch { throw new Error(text.substring(0, 100)); } }
+            const { id_almacen, id_instalacion } = this.dataset;
+            abrirModalConfirmacionRelacion(`¿Eliminar asignación de este almacén?`, async () => {
+                await MaterialApi.removeFromAlmacen(id_instalacion, id_almacen, currentMaterialId);
                 asignacionesCache.delete(currentMaterialId);
                 renderTablaAlmacenes((await obtenerAsignacionesMaterial(currentMaterialId)).almacenes);
                 mostrarExito('Asignación eliminada');
-            } catch (e) { mostrarError('Error al eliminar: ' + (e.message || '')); btn.disabled = false; btn.innerHTML = '<i class="bi bi-trash"></i>'; }
+            });
         });
         tbody.appendChild(tr);
     });
@@ -663,9 +710,8 @@ async function cargarAlmacenesEnSelect(id_instalacion) {
     if (!id_instalacion) { sel.innerHTML = '<option value="">Primero seleccione instalación</option>'; sel.disabled = true; return; }
     sel.innerHTML = '<option value="">Cargando...</option>'; sel.disabled = true;
     try {
-        const res = await fetch(`/api/instalaciones/${id_instalacion}/almacenes`);
-        const data = await res.json();
-        const almacenes = Array.isArray(data) ? data : (data.data || []);
+        const response = await ApiClient.get(`/instalaciones/${id_instalacion}/almacenes`);
+        const almacenes = response?.data || response || [];
         if (!almacenes.length) { sel.innerHTML = '<option value="">No hay almacenes</option>'; return; }
         sel.innerHTML = '<option value="">Seleccione un almacén...</option>';
         almacenes.forEach(a => { const opt = document.createElement('option'); opt.value = a.id_almacen; opt.textContent = `${a.nombre} - Planta ${a.planta || ''}`; sel.appendChild(opt); });
@@ -688,6 +734,44 @@ function mostrarExito(msg) {
     const w = document.createElement('div');
     w.innerHTML = `<div class="alert alert-success alert-dismissible fade show shadow" role="alert"><strong>Éxito:</strong> ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
     container.appendChild(w); setTimeout(() => w.remove(), 3000);
+}
+
+// ================================
+// MODAL CONFIRMACIÓN RELACIONES
+// ================================
+function abrirModalConfirmacionRelacion(mensaje, onConfirm) {
+  const modalEl = document.getElementById('modalEliminarRelacion');
+  if (!modalEl) {
+    if (confirm(mensaje)) onConfirm();
+    return;
+  }
+
+  const modalBody = document.getElementById('modalEliminarRelacionBody');
+  if (modalBody) modalBody.innerHTML = mensaje;
+
+  const btn = document.getElementById('btnConfirmarEliminarRelacion');
+  
+  // Clonar para limpiar eventos previos
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  
+  newBtn.addEventListener('click', async () => {
+    newBtn.disabled = true;
+    newBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Eliminando...';
+    try {
+      await onConfirm();
+      modal.hide();
+    } catch (e) {
+      mostrarError(e.message || 'Error al eliminar');
+    } finally {
+      newBtn.disabled = false;
+      newBtn.innerHTML = 'Eliminar';
+    }
+  });
+
+  modal.show();
 }
 
 window.refrescarMateriales = async function () { datosCargados = false; asignacionesCache.clear(); await cargarDatosIniciales(); mostrarExito('Datos actualizados'); };

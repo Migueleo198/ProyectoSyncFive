@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!sesionActual) return;
 
   cargarCategorias();
+  bindFiltros();
 
   if (sesionActual.puedeEscribir) {
     bindCrearCategoria();
@@ -49,14 +50,50 @@ async function cargarCategorias() {
 }
 
 // ================================
+// FILTROS
+// ================================
+function bindFiltros() {
+  document.getElementById('filtroNombre')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('filtroInventariable')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  pagination.goToPage(0);
+  const nombreFiltro = document.getElementById('filtroNombre')?.value?.toLowerCase();
+  const inventariableFiltro = document.getElementById('filtroInventariable')?.value;
+
+  const filtrados = categorias.filter(c => {
+    let cumple = true;
+    if (nombreFiltro) {
+      cumple = cumple && c.nombre?.toLowerCase().includes(nombreFiltro);
+    }
+    if (inventariableFiltro !== "" && inventariableFiltro !== undefined && inventariableFiltro !== null) {
+      cumple = cumple && Number(c.inventariable) === Number(inventariableFiltro);
+    }
+    return cumple;
+  });
+
+  pagination.setData(filtrados, () => {
+    renderTablaCategorias(filtrados);
+  });
+  pagination.render('pagination-categoria');
+  renderTablaCategorias(filtrados);
+}
+
+// ================================
 // RENDER TABLA
 // ================================
 function renderTablaCategorias(lista) {
   const tbody = document.querySelector('#tabla tbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
-  const itemsPagina = pagination.getPageItems(lista);
+  if (!lista || lista.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay categorías para mostrar</td></tr>';
+    return;
+  }
 
+  const itemsPagina = pagination.getPageItems(lista);
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
 
   itemsPagina.forEach(c => {
@@ -70,10 +107,16 @@ function renderTablaCategorias(lista) {
          </button>`
       : '';
 
+    const isInventariable = Number(c.inventariable) === 1;
+    const badgeClass = isInventariable ? 'bg-primary' : 'bg-secondary';
+    const badgeText = isInventariable ? 'Sí' : 'No';
+
     tr.innerHTML = `
       <td>${c.id_categoria}</td>
       <td>${c.nombre}</td>
-      <td>${Number(c.inventariable) === 1 ? 'Sí' : 'No'}</td>
+      <td class="d-none d-md-table-cell text-center">
+        <span class="badge ${badgeClass}">${badgeText}</span>
+      </td>
       <td class="celda-acciones">
         <div class="acciones-tabla">
           ${botonesAccion}

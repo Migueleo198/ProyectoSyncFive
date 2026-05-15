@@ -79,7 +79,7 @@ class MaterialService
         ]);
 
         $data = Validator::validate($input, [
-            'id_categoria'      => 'required||min:1',
+            'id_categoria'      => 'required|int|min:1',
             'nombre'            => 'required|string|max:100',
             'descripcion'       => 'required|string|max:300',
             'estado'            => 'required|string'

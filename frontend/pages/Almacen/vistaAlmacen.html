@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <script src="/frontend/config/config.js"></script>
+    <script src="/ProyectoSyncFive-main/frontend/config/config.js"></script>
     <script>loadHead("Almacenes")</script>
-    <script type="module" src="/frontend/javascript/controllers_f/AlmacenController.js"></script>
+    <script type="module" src="/ProyectoSyncFive-main/frontend/javascript/controllers_f/AlmacenController.js"></script>
 </head>
+
 <body class="bg-white text-dark d-flex flex-column">
     <!-- HEADER -->
     <div id="header-placeholder"></div>
@@ -24,8 +26,8 @@
                         <h1 class="mb-0 fw-bold">Control de Almacenes</h1>
                         <small class="text-muted">Inventario y gestión de almacenes</small>
                     </div>
-                    <a href="https://www.notion.so/13_Almacenes_Instalaciones-31f0bf35f606809fa788d1fa1c05c2e9" target="_blank" 
-                        class="text-muted" title="Ayuda">
+                    <a href="https://www.notion.so/13_Almacenes_Instalaciones-31f0bf35f606809fa788d1fa1c05c2e9"
+                        target="_blank" class="text-muted" title="Ayuda">
                         <i class="bi bi-question-circle fs-4"></i>
                     </a>
                 </div>
@@ -34,11 +36,12 @@
                 <div id="breadcrumb-placeholder"></div>
 
                 <!-- Contenedor tabla con filtro-->
-                <div class="container mt-4 p-0"> 
+                <div class="container mt-4 p-0">
                     <div id="filtroTabla" class="m-0 row d-flex justify-content-around">
                         <div class="col-md-5 d-flex align-items-center m-1">
                             <label class="m-2" for="nombre">Nombre:</label>
-                            <input placeholder="Nombre" id="nombre" type="text" class="form-control m-1 filtro" data-col="1">
+                            <input placeholder="Nombre" id="nombre" type="text" class="form-control m-1 filtro"
+                                data-col="1">
                         </div>
                         <div class="col-md-3 d-flex align-items-center m-1">
                             <label class="m-2" for="planta">Planta:</label>
@@ -56,7 +59,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Nombre</th>
-                                <th>Instalación</th>
+                                <th class="d-none d-md-table-cell">Instalación</th>
                                 <th class="d-none d-md-table-cell">Planta</th>
                                 <th>Acción</th>
                             </tr>
@@ -67,7 +70,7 @@
                     </table>
                     <div id="pagination-almacen" class="mt-3"></div>
                 </div>
-                
+
                 <!-- Contenedor insertar -->
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
                     <h5 class="text-center mb-4">Insertar Almacén</h5>
@@ -95,7 +98,7 @@
                             <button type="submit" class="btn btn-primary">Insertar</button>
                         </div>
                     </form>
-                </div>     
+                </div>
             </main>
         </div>
     </div>
@@ -116,7 +119,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
                 </div>
-            </div> 
+            </div>
         </div>
     </div>
 
@@ -173,11 +176,12 @@
             </div>
         </div>
     </div>
-    
+
     <!-- FOOTER -->
     <div id="footer-placeholder" class="mt-auto"></div>
-    
+
     <!-- ALERT -->
     <div id="alert-container" class="position-fixed top-0 end-0 p-3"></div>
 </body>
+
 </html>

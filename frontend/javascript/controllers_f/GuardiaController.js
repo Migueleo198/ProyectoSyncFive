@@ -20,8 +20,8 @@ const cargos = [
     "OFICIAL1", "OFICIAL2", "CONDUCTOR1", "CONDUCTOR2"
 ];
 
-const nombresCampos = ['Fecha', 'Hora Inicio', 'Hora Fin', 'Notas'];
-const camposBd      = ['fecha', 'h_inicio', 'h_fin', 'notas'];
+const nombresCampos = ['ID Guardia', 'Fecha', 'Hora Inicio', 'Hora Fin', 'Notas'];
+const camposBd      = ['id_guardia', 'fecha', 'h_inicio', 'h_fin', 'notas'];
 
 // ================================
 // INICIALIZACIÓN
@@ -39,11 +39,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     bindFiltros();
     bindModalVer();
     bindModalEditar();
-
-    if (sesionActual.puedeEscribir) {
-        bindCrearGuardia();
-        bindAsignarGuardia();
-    }
 });
 
 // ================================
@@ -173,8 +168,8 @@ function renderTablaGuardias(lista) {
             <td class="d-none d-md-table-cell">${g.id_guardia}</td>
             <td>${g.fecha}</td>
             <td>${g.h_inicio}</td>
-            <td>${g.h_fin}</td>
-            <td class="d-none d-md-table-cell">${g.notas || ''}</td>
+            <td class="d-none d-md-table-cell">${g.h_fin}</td>
+            <td class="d-none d-lg-table-cell">${g.notas || ''}</td>
             <td class="celda-acciones">
                 <div class="acciones-tabla">
                     ${botonesAccion}
@@ -336,16 +331,22 @@ function bindModalEditar() {
             </div>`;
         document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
             const data = {};
-            camposBd.forEach(c => {
+            // Recoger solo los campos editables (excluir id_guardia que no tiene input)
+            const camposEditables = ['fecha', 'h_inicio', 'h_fin', 'notas'];
+            camposEditables.forEach(c => {
                 const input = form.querySelector(`[name="${c}"]`);
                 if (input) data[c] = input.value;
             });
-            // CORRECCIÓN: validar antes de guardar
             if (!validarDatosGuardia(data)) return;
-            await GuardiaApi.update(id, data);
-            await cargarGuardias();
-            bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
-            mostrarExito('Guardia actualizada correctamente');
+            try {
+                await GuardiaApi.update(id, data);
+                await cargarGuardias();
+                await cargarSelectGuardias(null, 'seleccionarGuardia');
+                bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+                mostrarExito('Guardia actualizada correctamente');
+            } catch (err) {
+                mostrarError(err.message || 'Error actualizando guardia');
+            }
         });
     });
 }

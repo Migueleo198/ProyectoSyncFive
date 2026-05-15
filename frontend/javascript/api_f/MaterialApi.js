@@ -53,20 +53,20 @@ const MaterialApi = {
   },
 
   // MATERIAL EN ALMACÉN
-  getMaterialByAlmacen(id_almacen, id_instalacion) {
-    return ApiClient.get(`/almacenes/${id_almacen}/material?instalacion=${id_instalacion}`);
+  getMaterialByAlmacen(id_instalacion, id_almacen) {
+    return ApiClient.get(`/instalaciones/${id_instalacion}/almacenes/${id_almacen}/materiales`);
   },
 
-  assignToAlmacen(id_almacen, data) {
-    return ApiClient.post(`/almacenes/${id_almacen}/material`, data);
+  assignToAlmacen(id_instalacion, id_almacen, data) {
+    return ApiClient.post(`/instalaciones/${id_instalacion}/almacenes/${id_almacen}/materiales`, data);
   },
 
-  updateMaterialInAlmacen(id_almacen, id_material, data) {
-    return ApiClient.put(`/almacenes/${id_almacen}/material/${id_material}`, data);
+  updateMaterialInAlmacen(id_instalacion, id_almacen, id_material, data) {
+    return ApiClient.put(`/instalaciones/${id_instalacion}/almacenes/${id_almacen}/materiales/${id_material}`, data);
   },
 
-  removeFromAlmacen(id_almacen, id_material) {
-    return ApiClient.delete(`/almacenes/${id_almacen}/material/${id_material}`);
+  removeFromAlmacen(id_instalacion, id_almacen, id_material) {
+    return ApiClient.delete(`/instalaciones/${id_instalacion}/almacenes/${id_almacen}/materiales/${id_material}`);
   },
   
   getCompleto() {
