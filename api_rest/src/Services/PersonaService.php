@@ -103,18 +103,27 @@ class PersonaService
         $data['fecha_exp_token_activacion'] = (new \DateTimeImmutable('+24 hours'))->format('Y-m-d H:i:s');
         $data['activo'] = 0;
 
-        $id_bombero = $this->model->create($data);
+        $pdo = \Core\Database::getConnection();
+        $pdo->beginTransaction();
 
-        if ($id_bombero === false) {
-            throw new \Exception("No se pudo crear la persona", 500);
+        try {
+            $id_bombero = $this->model->create($data);
+
+            if ($id_bombero === false) {
+                throw new \Exception("No se pudo crear la persona", 500);
+            }
+
+            $this->mailer->sendActivationEmail(
+                $data['correo'],
+                $data['nombre'],
+                $data['token_activacion']
+            );
+
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
         }
-
-        // Enviar email de activación
-        $this->mailer->sendActivationEmail(
-            $data['correo'],
-            $data['nombre'],
-            $data['token_activacion']
-        );
 
         // Devolver token y datos principales
         return [

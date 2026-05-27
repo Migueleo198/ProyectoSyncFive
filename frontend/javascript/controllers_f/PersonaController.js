@@ -205,7 +205,7 @@ function validarDatosPersonaCrear(data) {
     mostrarError('El número de funcionario es obligatorio'); return false;
   }
   if (!validarNumeroFuncionario(data.n_funcionario)) {
-    mostrarError('El número de funcionario no tiene un formato válido (ej: DGA-2024-0001)'); return false;
+    mostrarError('El número de funcionario no tiene un formato válido (17 caracteres alfanuméricos, ej: DGA20080001ABCDE12)'); return false;
   }
   // CORRECCIÓN: validar DNI con función de validacion.js
   if (!data.DNI) {
@@ -301,8 +301,10 @@ function bindCrearPersona() {
       contrasenia:          f.get('contrasenia'),
     };
 
-    // CORRECCIÓN: validar todos los campos antes de enviar
     if (!validarDatosPersonaCrear(data)) return;
+
+    const btn = form.querySelector('[type="submit"]');
+    btn.disabled = true;
 
     try {
       await PersonaApiApi.create(data);
@@ -311,6 +313,8 @@ function bindCrearPersona() {
       mostrarExito('Persona creada correctamente');
     } catch (err) {
       mostrarError(err.message || 'Error creando persona');
+    } finally {
+      btn.disabled = false;
     }
   });
 }
