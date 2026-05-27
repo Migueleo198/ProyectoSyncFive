@@ -17,9 +17,8 @@ const GuardiaApi = {
     return ApiClient.put(`/guardias/${idGuardia}`, data);
   },
 
-  // GuardiaApi.js
   assignToPerson(data) {
-      return ApiClient.post('/personas/{id_bombero}/guardias', {
+      return ApiClient.post(`/personas/${encodeURIComponent(data.id_bombero)}/guardias`, {
           id_bombero: data.id_bombero,
           id_guardia: data.id_guardia,
           cargo: data.cargo
@@ -38,12 +37,16 @@ const GuardiaApi = {
     return ApiClient.get(`/guardias/${id_guardia}/personas`);
   },
 
+  unassignFromPerson(id_bombero, id_guardia) {
+    return ApiClient.post('/guardias/desasignar', { id_bombero, id_guardia });
+  },
+
   updateNotas(id_guardia, notas) {
     return ApiClient.patch(`/guardias/${id_guardia}`, { notas });
   },
 
   getTurnoRefuerzoByFecha(fecha) {
-    return ApiClient.get(`/turnos-refuerzo/fecha/${fecha}`);
+    return ApiClient.get(`/refuerzos/fecha/${fecha}`);
   }
 };
 

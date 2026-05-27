@@ -1,4 +1,5 @@
 import ApiClient from './ApiClient.js';
+import AlmacenApi from './AlmacenApi.js';
 
 const MaterialApi = {
   // CRUD básico de materiales
@@ -11,7 +12,7 @@ const MaterialApi = {
   },
 
   create(data) {
-    return ApiClient.post('/materiales', data);
+    return ApiClient.post('/materiales', { ...data, estado: 'ALTA' });
   },
 
   update(id_material, data) {
@@ -24,15 +25,15 @@ const MaterialApi = {
 
   // MATERIAL ASIGNADO A PERSONAS
   getMaterialByPersona(id_bombero) {
-    return ApiClient.get(`/personas/${id_bombero}/material`);
+    return ApiClient.get(`/personas/${encodeURIComponent(id_bombero)}/material`);
   },
 
   assignToPersona(id_bombero, id_material, nserie) {
-    return ApiClient.post(`/personas/${id_bombero}/material/${id_material}/${nserie}`);
+    return ApiClient.post(`/personas/${encodeURIComponent(id_bombero)}/material/${id_material}/${encodeURIComponent(nserie)}`);
   },
 
   removeFromPersona(id_bombero, id_material) {
-    return ApiClient.delete(`/personas/${id_bombero}/material/${id_material}`);
+    return ApiClient.delete(`/personas/${encodeURIComponent(id_bombero)}/material/${id_material}`);
   },
 
   // MATERIAL CARGADO EN VEHÍCULOS
@@ -53,20 +54,20 @@ const MaterialApi = {
   },
 
   // MATERIAL EN ALMACÉN
-  getMaterialByAlmacen(id_almacen, id_instalacion) {
-    return ApiClient.get(`/almacenes/${id_almacen}/material?instalacion=${id_instalacion}`);
+  getMaterialByAlmacen(id_instalacion, id_almacen) {
+    return AlmacenApi.getMateriales(id_instalacion, id_almacen);
   },
 
-  assignToAlmacen(id_almacen, data) {
-    return ApiClient.post(`/almacenes/${id_almacen}/material`, data);
+  assignToAlmacen(id_instalacion, id_almacen, data) {
+    return AlmacenApi.addMaterial(id_instalacion, id_almacen, data);
   },
 
-  updateMaterialInAlmacen(id_almacen, id_material, data) {
-    return ApiClient.put(`/almacenes/${id_almacen}/material/${id_material}`, data);
+  updateMaterialInAlmacen(id_instalacion, id_almacen, id_material, data) {
+    return AlmacenApi.updateMaterial(id_instalacion, id_almacen, id_material, data);
   },
 
-  removeFromAlmacen(id_almacen, id_material) {
-    return ApiClient.delete(`/almacenes/${id_almacen}/material/${id_material}`);
+  removeFromAlmacen(id_instalacion, id_almacen, id_material, n_serie = null) {
+    return AlmacenApi.removeMaterial(id_instalacion, id_almacen, id_material, n_serie);
   },
   
   getCompleto() {

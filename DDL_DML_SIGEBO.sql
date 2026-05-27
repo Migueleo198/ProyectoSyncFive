@@ -1,3 +1,5 @@
+SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 /* =======================
    1. FORMACION
    ======================= */
@@ -558,44 +560,26 @@ CREATE TABLE Infraestructuras_Agua (
 /* =======================
    Función para obtener id_edicion automático
    ======================= */
-DELIMITER $$
-
 CREATE FUNCTION siguiente_id_edicion(p_id_formacion INT)
 RETURNS INT
 READS SQL DATA
-BEGIN
-    DECLARE v_id_edicion INT;
-    
+RETURN (
     SELECT COALESCE(MAX(id_edicion), 0) + 1
-    INTO v_id_edicion
     FROM Edicion
-    WHERE id_formacion = p_id_formacion;
-    
-    RETURN v_id_edicion;
-END$$
-
-DELIMITER ;
+    WHERE id_formacion = p_id_formacion
+);
 
 /* =======================
    Función para obtener id_almacen automático
    ======================= */
-DELIMITER $$
-
 CREATE FUNCTION siguiente_id_almacen(p_id_instalacion INT)
 RETURNS INT
 READS SQL DATA
-BEGIN
-    DECLARE v_id_almacen INT;
-
+RETURN (
     SELECT COALESCE(MAX(id_almacen), 0) + 1
-    INTO v_id_almacen
     FROM Almacen
-    WHERE id_instalacion = p_id_instalacion;
-
-    RETURN v_id_almacen;
-END$$
-
-DELIMITER ;
+    WHERE id_instalacion = p_id_instalacion
+);
 
 /* =======================
    DATOS DE EJEMPLO

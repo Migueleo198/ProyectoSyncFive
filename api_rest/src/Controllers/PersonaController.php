@@ -180,7 +180,7 @@ class PersonaController
      * GET /personas/{id_bombero}/material
      */
 
-    public function getMaterial(Request $req, Response $res, int $id_bombero): void
+    public function getMaterial(Request $req, Response $res, string $id_bombero): void
     {
         try {
             $material = $this->service->getMaterial($id_bombero);

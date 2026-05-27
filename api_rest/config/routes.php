@@ -52,7 +52,9 @@ $router->protectedSession('DELETE', '/personas/{id_bombero}/turnos', 'Controller
 $router->protectedSession('GET', '/guardias/{id_guardia}/personas', 'Controllers\\GuardiaController@persons', [1,2,3,4,5]); 
 $router->protectedSession('GET', '/personas/guardias/fecha/{fecha}', 'Controllers\\GuardiaController@getGuardiaByFecha', [1,2,3,4,5]); 
 $router->protectedSession('POST', '/personas/{id_bombero}/guardias', 'Controllers\\GuardiaController@assign', [4,5]);
+$router->protectedSession('POST', '/guardias/desasignar', 'Controllers\\GuardiaController@unassign', [4,5]);
 $router->protectedSession('PATCH', '/personas/{id_bombero}/guardias/{id_guardia}', 'Controllers\\GuardiaController@updateCargo', [2,3,4,5]);
+$router->protectedSession('DELETE', '/personas/{id_bombero}/guardias/{id_guardia}', 'Controllers\\GuardiaController@unassignFromPath', [4,5]);
 
 // ESTADÍSTICAS DE LA PERSONA
 $router->protectedSession('GET', '/personas/{id_bombero}/stats', 'Controllers\\PersonaController@getStats', [1,2,3,4,5]);
@@ -84,8 +86,10 @@ $router->protectedSession('GET',    '/refuerzos', 'Controllers\\RefuerzoControll
 $router->protectedSession('POST',   '/refuerzos', 'Controllers\\RefuerzoController@store',          [4,5]);
 $router->protectedSession('GET',    '/refuerzos/fecha/{fecha}', 'Controllers\\RefuerzoController@getTurnoByFecha',[1,2,3,4,5]);
 $router->protectedSession('GET',    '/refuerzos/{id_turno_refuerzo}', 'Controllers\\RefuerzoController@show',           [1,2,3,4,5]);
+$router->protectedSession('GET',    '/refuerzos/{id_turno_refuerzo}/personas', 'Controllers\\RefuerzoController@persons', [1,2,3,4,5]);
 $router->protectedSession('PUT',    '/refuerzos/{id_turno_refuerzo}', 'Controllers\\RefuerzoController@update',         [4,5]);
 $router->protectedSession('DELETE', '/refuerzos/{id_turno_refuerzo}', 'Controllers\\RefuerzoController@delete',         [5]);
+$router->protectedSession('POST',   '/refuerzos/desasignar', 'Controllers\\RefuerzoController@unassign', [3,4,5]);
 
 
 
@@ -151,16 +155,18 @@ $router->protectedSession('DELETE', '/instalaciones/{id_instalacion}', 'Controll
 
 
 //++++++++++++++++++++++++++++++ ALMACENES ++++++++++++++++++++++++++++++
+$router->protectedSession('GET', '/almacenes', 'Controllers\\AlmacenController@all', [1,2,3,4,5]);
 $router->protectedSession('GET', '/instalaciones/{id_instalacion}/almacenes', 'Controllers\\AlmacenController@index', [1,2,3,4,5]);
+$router->protectedSession('GET', '/instalaciones/{id_instalacion}/almacenes/{id_almacen}', 'Controllers\\AlmacenController@show', [1,2,3,4,5]);
 $router->protectedSession('POST', '/instalaciones/{id_instalacion}/almacenes', 'Controllers\\AlmacenController@store', [4,5]);
 $router->protectedSession('PUT', '/instalaciones/{id_instalacion}/almacenes/{id_almacen}', 'Controllers\\AlmacenController@update', [4,5]);
 $router->protectedSession('DELETE', '/instalaciones/{id_instalacion}/almacenes/{id_almacen}', 'Controllers\\AlmacenController@delete', [5]);
 
 // MATERIAL EN ALMACÉN
-$router->protectedSession('GET', '/almacenes/{id_almacen}/material', 'Controllers\\AlmacenController@getMaterial', [1,2,3,4,5]);
-$router->protectedSession('POST', '/almacenes/{id_almacen}/material', 'Controllers\\AlmacenController@setMaterial', [4,5]);
-$router->protectedSession('PUT', '/almacenes/{id_almacen}/material/{id_material}', 'Controllers\\AlmacenController@updateMaterial', [4,5]);
-$router->protectedSession('DELETE', '/almacenes/{id_almacen}/material/{id_material}', 'Controllers\\AlmacenController@deleteMaterial', [5]);
+$router->protectedSession('GET', '/instalaciones/{id_instalacion}/almacenes/{id_almacen}/materiales', 'Controllers\\AlmacenController@getMaterial', [1,2,3,4,5]);
+$router->protectedSession('POST', '/instalaciones/{id_instalacion}/almacenes/{id_almacen}/materiales', 'Controllers\\AlmacenController@setMaterial', [4,5]);
+$router->protectedSession('PUT', '/instalaciones/{id_instalacion}/almacenes/{id_almacen}/materiales/{id_material}', 'Controllers\\AlmacenController@updateMaterial', [4,5]);
+$router->protectedSession('DELETE', '/instalaciones/{id_instalacion}/almacenes/{id_almacen}/materiales/{id_material}', 'Controllers\\AlmacenController@deleteMaterial', [5]);
 
 
 //++++++++++++++++++++++++++++++ CATEGORÍA ++++++++++++++++++++++++++++++

@@ -157,7 +157,23 @@ class GuardiaController
     {
         try {
             $data = $req->json();
-            $result = $this->service->unassignGuardiaFromPerson($data['n_funcionario'], $data['ID_Guardia']);
+            $id_bombero = $data['id_bombero'] ?? $data['n_funcionario'] ?? '';
+            $id_guardia = $data['id_guardia'] ?? $data['ID_Guardia'] ?? '';
+
+            $result = $this->service->unassignGuardiaFromPerson($id_bombero, $id_guardia);
+            $res->status(200)->json($result, $result['message']);
+        } catch (ValidationException $e) {
+            $res->status(422)->json(['errors' => $e->errors], "Errores de validación");
+        } catch (Throwable $e) {
+            $code = $e->getCode() >= 400 ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+
+    public function unassignFromPath(Request $req, Response $res, string $id_bombero, string $id_guardia): void
+    {
+        try {
+            $result = $this->service->unassignGuardiaFromPerson($id_bombero, $id_guardia);
             $res->status(200)->json($result, $result['message']);
         } catch (ValidationException $e) {
             $res->status(422)->json(['errors' => $e->errors], "Errores de validación");

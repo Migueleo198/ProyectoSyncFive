@@ -31,18 +31,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!sesionActual) return;
 
     cargarGuardias();
-    cargarSelectGuardias(null, 'seleccionarGuardia');
-    cargarSelectPersonas(null, 'n_funcionario');
-    cargarSelectCargos();
-    bindCrearGuardia();
-    bindAsignarGuardia();
     bindFiltros();
     bindModalVer();
     bindModalEditar();
+    bindDiaCompletoGuardia(document.getElementById('formInsertarGuardia'));
 
     if (sesionActual.puedeEscribir) {
         bindCrearGuardia();
-        bindAsignarGuardia();
     }
 });
 
@@ -95,60 +90,13 @@ function aplicarFiltros() {
 }
 
 // ================================
-// CARGAR SELECTS
-// ================================
-async function cargarSelectGuardias(seleccionado, id_select) {
-    const select = document.getElementById(id_select);
-    if (!select) return;
-    try {
-        const res = await GuardiaApi.getAll();
-        select.innerHTML = '<option value="">Seleccione guardia...</option>';
-        res.data.forEach(g => {
-            const option = document.createElement('option');
-            option.value = g.id_guardia;
-            option.textContent = `${g.id_guardia} - ${g.fecha} (${g.h_inicio} - ${g.h_fin})`;
-            if (seleccionado && g.id_guardia === seleccionado) option.selected = true;
-            select.appendChild(option);
-        });
-    } catch (e) {
-        mostrarError(e.message || 'Error cargando guardias');
-    }
-}
-
-// ================================
-// POBLAR SELECT PERSONAS
-// ================================
-async function cargarSelectPersonas(seleccionado, id_select) {
-    const select = document.getElementById(id_select);
-    if (!select) return;
-    try {
-        const res = await PersonaApi.getAll();
-        select.innerHTML = '<option value="">Seleccione persona...</option>';
-        res.data.forEach(p => {
-            const option = document.createElement('option');
-            option.value = p.id_bombero;
-            option.textContent = `${p.n_funcionario} - ${p.nombre} ${p.apellidos}`;
-            if (seleccionado && p.n_funcionario === seleccionado) option.selected = true;
-            select.appendChild(option);
-        });
-    } catch (e) {
-        mostrarError(e.message || 'Error cargando personas');
-    }
-}
-
-// ================================
 // POBLAR SELECT CARGOS
 // ================================
-function cargarSelectCargos() {
-    const select = document.getElementById('cargo');
-    if (!select) return;
-    select.innerHTML = '<option value="">Seleccione cargo...</option>';
-    cargos.forEach(c => {
-        const option = document.createElement('option');
-        option.value = c;
-        option.textContent = c;
-        select.appendChild(option);
-    });
+function crearOptionsCargos(seleccionado = '') {
+    return '<option value="">Cargo...</option>' + cargos.map(c => {
+        const selected = c === seleccionado ? ' selected' : '';
+        return `<option value="${c}"${selected}>${c}</option>`;
+    }).join('');
 }
 
 // ================================
@@ -216,6 +164,118 @@ function validarDatosGuardia(data) {
     return true;
 }
 
+function bindDiaCompletoGuardia(form) {
+    if (!form) return;
+
+    const checkbox = form.querySelector('[name="dia_completo"]');
+    const hInicio = form.querySelector('[name="h_inicio"]');
+    const hFin = form.querySelector('[name="h_fin"]');
+
+    if (!checkbox || !hInicio || !hFin) return;
+
+    const aplicarDiaCompleto = () => {
+        if (checkbox.checked) {
+            aplicarHorasDiaCompleto(form);
+            hInicio.readOnly = true;
+            hFin.readOnly = true;
+        } else {
+            hInicio.readOnly = false;
+            hFin.readOnly = false;
+        }
+    };
+
+    checkbox.addEventListener('change', aplicarDiaCompleto);
+    form.addEventListener('reset', () => setTimeout(aplicarDiaCompleto, 0));
+    aplicarDiaCompleto();
+}
+
+function aplicarHorasDiaCompleto(form) {
+    const hInicio = form?.querySelector('[name="h_inicio"]');
+    const hFin = form?.querySelector('[name="h_fin"]');
+
+    if (!hInicio || !hFin) return;
+
+    hInicio.value = '08:00';
+    hFin.value = '08:00';
+}
+
+function normalizarDiaCompletoAntesDeEnviar(form, data) {
+    const diaCompleto = form?.querySelector('[name="dia_completo"]')?.checked ?? false;
+
+    if (!diaCompleto) return;
+
+    aplicarHorasDiaCompleto(form);
+    data.h_inicio = '08:00';
+    data.h_fin = '08:00';
+}
+
+function escaparHtml(valor) {
+    return String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function esGuardiaDiaCompleto(guardia) {
+    return (guardia.h_inicio || '').substring(0, 5) === '08:00'
+        && (guardia.h_fin || '').substring(0, 5) === '08:00';
+}
+
+async function obtenerPersonasGuardia(idGuardia) {
+    const res = await GuardiaApi.getPersonsGuardia(idGuardia);
+    return res?.data || res || [];
+}
+
+function nombrePersonaAsignada(a) {
+    const nombre = `${a.nombre || ''} ${a.apellidos || ''}`.trim();
+    return nombre || a.id_bombero || '-';
+}
+
+function crearTablaPersonasGuardia(asignaciones, editable = false) {
+    const accionHeader = editable ? '<th class="text-center">Acción</th>' : '';
+    const colspan = editable ? 5 : 4;
+
+    let html = `
+        <div class="mt-4">
+            <h6 class="fw-bold">Personas asignadas</h6>
+            <table class="table table-bordered table-striped table-sm">
+                <thead class="table-dark">
+                    <tr><th>ID</th><th>Nombre</th><th>Nº Funcionario</th><th>Cargo</th>${accionHeader}</tr>
+                </thead>
+                <tbody>`;
+
+    if (!asignaciones.length) {
+        html += `<tr><td colspan="${colspan}" class="text-center text-muted">Sin personas asignadas</td></tr>`;
+    } else {
+        asignaciones.forEach(a => {
+            const accion = editable
+                ? `<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-guardia" data-id-bombero="${a.id_bombero}" title="Desasignar persona"><i class="bi bi-trash"></i></button></td>`
+                : '';
+            html += `
+                <tr>
+                    <td>${a.id_bombero || '-'}</td>
+                    <td>${nombrePersonaAsignada(a)}</td>
+                    <td>${a.n_funcionario || '-'}</td>
+                    <td>${a.cargo || '-'}</td>
+                    ${accion}
+                </tr>`;
+        });
+    }
+
+    html += '</tbody></table></div>';
+    return html;
+}
+
+async function crearOptionsPersonasAsignables() {
+    const res = await PersonaApi.getAll();
+    const personas = res?.data || res || [];
+
+    return '<option value="">Persona...</option>' + personas.map(p => {
+        const nombre = `${p.nombre || ''} ${p.apellidos || ''}`.trim();
+        return `<option value="${p.id_bombero}">${p.n_funcionario || p.id_bombero} - ${nombre}</option>`;
+    }).join('');
+}
+
 // ================================
 // CREAR GUARDIA
 // ================================
@@ -231,49 +291,16 @@ function bindCrearGuardia() {
             h_fin:    f.get('h_fin'),
             notas:    f.get('notas') || ''
         };
+        normalizarDiaCompletoAntesDeEnviar(form, data);
         // CORRECCIÓN: validar antes de enviar
         if (!validarDatosGuardia(data)) return;
         try {
             await GuardiaApi.create(data);
             await cargarGuardias();
             form.reset();
-            mostrarExito('Guardia creada correctamente');
+            mostrarExito('Guardia creada correctamente. Abre el lápiz para asignar personas y que aparezca en el cuadrante.');
         } catch (err) {
             mostrarError(err.message || 'Error creando guardia');
-        }
-    });
-}
-
-// ================================
-// ASIGNAR PERSONA A GUARDIA
-// ================================
-function bindAsignarGuardia() {
-    const form = document.getElementById('formAsignarGuardia');
-    if (!form) return;
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const f = new FormData(form);
-        const data = {
-            id_bombero: f.get('n_funcionario'),
-            id_guardia: f.get('id_guardia'),
-            cargo:      f.get('cargo')
-        };
-        if (!data.id_bombero || !data.id_guardia || !data.cargo) {
-            mostrarError('Seleccione guardia, persona y cargo');
-            return;
-        }
-        // CORRECCIÓN: validar que el cargo sea uno de los valores permitidos
-        if (!cargos.includes(data.cargo)) {
-            mostrarError('El cargo seleccionado no es válido');
-            return;
-        }
-        try {
-            await GuardiaApi.assignToPerson(data);
-            mostrarExito('Persona asignada a la guardia correctamente');
-            form.reset();
-            await cargarGuardias();
-        } catch (err) {
-            mostrarError(err.message || 'Error asignando persona a guardia');
         }
     });
 }
@@ -282,7 +309,7 @@ function bindAsignarGuardia() {
 // MODAL VER
 // ================================
 function bindModalVer() {
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', async function (e) {
         const btn = e.target.closest('.btn-ver');
         if (!btn) return;
         const guardia = guardias.find(g => g.id_guardia == btn.dataset.id);
@@ -297,6 +324,12 @@ function bindModalVer() {
             p.appendChild(document.createTextNode(guardia[camposBd[i]] || ''));
             modalBody.appendChild(p);
         });
+        try {
+            const asignaciones = await obtenerPersonasGuardia(guardia.id_guardia);
+            modalBody.insertAdjacentHTML('beforeend', crearTablaPersonasGuardia(asignaciones));
+        } catch (error) {
+            modalBody.insertAdjacentHTML('beforeend', '<p class="text-danger mt-3">Error cargando personas asignadas</p>');
+        }
     });
 }
 
@@ -312,6 +345,10 @@ function bindModalEditar() {
         const guardia = response.data;
         if (!guardia) return;
         const form = document.getElementById('formEditar');
+        const [personasOptions, asignaciones] = await Promise.all([
+            crearOptionsPersonasAsignables(),
+            obtenerPersonasGuardia(id)
+        ]);
         form.innerHTML = `
             <div class="row mb-3">
                 <div class="col-lg-4">
@@ -326,20 +363,96 @@ function bindModalEditar() {
                     <label class="form-label">Hora fin</label>
                     <input type="time" class="form-control" name="h_fin" value="${guardia.h_fin || ''}">
                 </div>
-                <div class="col-lg-12">
+                <div class="col-12 mt-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="editar_dia_completo" name="dia_completo" ${esGuardiaDiaCompleto(guardia) ? 'checked' : ''}>
+                        <label class="form-check-label" for="editar_dia_completo">Día completo (08:00 a 08:00 del día siguiente)</label>
+                    </div>
+                </div>
+                <div class="col-12 mt-2">
                     <label class="form-label">Notas</label>
-                    <input type="text" class="form-control" name="notas" value="${guardia.notas || ''}">
+                    <textarea class="form-control" name="notas" rows="4" maxlength="500" style="resize: vertical;">${escaparHtml(guardia.notas)}</textarea>
                 </div>
             </div>
             <div class="text-center">
                 <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
+            </div>
+
+            <hr class="my-4">
+            <h6 class="fw-bold">Personas asignadas a esta guardia</h6>
+            <div class="row g-2 align-items-end mb-3">
+                <div class="col-md-5">
+                    <label class="form-label" for="asigGuardiaPersona">Persona</label>
+                    <select class="form-select" id="asigGuardiaPersona">${personasOptions}</select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label" for="asigGuardiaCargo">Cargo</label>
+                    <select class="form-select" id="asigGuardiaCargo">${crearOptionsCargos()}</select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-success w-100" id="btnAsignarPersonaGuardia">Asignar</button>
+                </div>
+            </div>
+            <div id="tablaPersonasGuardia">
+                ${crearTablaPersonasGuardia(asignaciones, true)}
             </div>`;
+        bindDiaCompletoGuardia(form);
+
+        const refrescarPersonasGuardia = async () => {
+            const actualizadas = await obtenerPersonasGuardia(id);
+            form.querySelector('#tablaPersonasGuardia').innerHTML = crearTablaPersonasGuardia(actualizadas, true);
+        };
+
+        form.querySelector('#btnAsignarPersonaGuardia').addEventListener('click', async () => {
+            const id_bombero = form.querySelector('#asigGuardiaPersona').value;
+            const cargo = form.querySelector('#asigGuardiaCargo').value;
+
+            if (!id_bombero || !cargo) {
+                mostrarError('Seleccione persona y cargo');
+                return;
+            }
+
+            try {
+                await GuardiaApi.assignToPerson({ id_bombero, id_guardia: id, cargo });
+                form.querySelector('#asigGuardiaPersona').value = '';
+                form.querySelector('#asigGuardiaCargo').value = '';
+                await refrescarPersonasGuardia();
+                await cargarGuardias();
+                mostrarExito('Persona asignada correctamente');
+            } catch (error) {
+                mostrarError(error.message || 'Error asignando persona a guardia');
+            }
+        });
+
+        form.querySelector('#tablaPersonasGuardia').addEventListener('click', async (event) => {
+            const boton = event.target.closest('.btn-desasignar-guardia');
+            if (!boton) return;
+
+            const idBombero = boton.dataset.idBombero;
+            if (!idBombero) {
+                mostrarError('No se pudo identificar la persona a desasignar');
+                return;
+            }
+
+            try {
+                boton.disabled = true;
+                await GuardiaApi.unassignFromPerson(idBombero, id);
+                await refrescarPersonasGuardia();
+                await cargarGuardias();
+                mostrarExito('Persona desasignada correctamente');
+            } catch (error) {
+                boton.disabled = false;
+                mostrarError(error.message || 'Error desasignando persona de guardia');
+            }
+        });
+
         document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
             const data = {};
             camposBd.forEach(c => {
                 const input = form.querySelector(`[name="${c}"]`);
                 if (input) data[c] = input.value;
             });
+            normalizarDiaCompletoAntesDeEnviar(form, data);
             // CORRECCIÓN: validar antes de guardar
             if (!validarDatosGuardia(data)) return;
             await GuardiaApi.update(id, data);

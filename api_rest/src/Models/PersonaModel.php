@@ -378,7 +378,7 @@ class PersonaModel
 
     //++++++++++++++++++++ Persona material ++++++++++++++++++++++
 
-    public function getMaterialByBombero(int $id_bombero): array
+    public function getMaterialByBombero(string $id_bombero): array
     {
         return $this->db
             ->query("

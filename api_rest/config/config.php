@@ -45,10 +45,11 @@ define('BASE_PATH', '/api');
 // ----------------------------------------------------
 // DATABASE
 // ----------------------------------------------------
-define('DB_HOST', 'localhost:3306');
-define('DB_NAME', 'syncfive');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_PORT', getenv('DB_PORT') ?: '3306');
+define('DB_NAME', getenv('DB_NAME') ?: 'syncfive');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 
@@ -88,11 +89,11 @@ function app_debug(): bool { return APP_DEBUG; }
 // ----------------------------------------------------
 // EMAIL / SMTP (PHPMailer)
 // ----------------------------------------------------
-define('MAIL_HOST', 'mail.cpifpbajoaragon.info');
-define('MAIL_PORT', 465);
-define('MAIL_USERNAME', 'syncfive@cpifpbajoaragon.info');
-define('MAIL_PASSWORD', 'q2vEoL-kqW(W@h_q');
-define('MAIL_ENCRYPTION', 'ssl');
+define('MAIL_HOST', getenv('MAIL_HOST') ?: 'mail.cpifpbajoaragon.info');
+define('MAIL_PORT', (int)(getenv('MAIL_PORT') ?: 465));
+define('MAIL_USERNAME', getenv('MAIL_USERNAME') ?: 'syncfive@cpifpbajoaragon.info');
+define('MAIL_PASSWORD', getenv('MAIL_PASSWORD') ?: '');
+define('MAIL_ENCRYPTION', getenv('MAIL_ENCRYPTION') ?: 'ssl');
 
-define('MAIL_FROM_EMAIL', 'syncfive@cpifpbajoaragon.info');
-define('MAIL_FROM_NAME', 'SIGEBO');
+define('MAIL_FROM_EMAIL', getenv('MAIL_FROM_EMAIL') ?: 'syncfive@cpifpbajoaragon.info');
+define('MAIL_FROM_NAME', getenv('MAIL_FROM_NAME') ?: 'SIGEBO');

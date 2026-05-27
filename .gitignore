@@ -1,2 +1,4 @@
 # Configuración sensible
 api_rest/config/config.php
+.env
+api_rest/storage/rate_limit/*.json

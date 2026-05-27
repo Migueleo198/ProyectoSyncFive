@@ -192,13 +192,6 @@ public function createGuardia(array $input): array
         ]);
 
         try {
-            // Verificar que la guardia exista
-            $exists = $this->model->getPersonsByGuardia($id_guardia);
-
-            if (!$exists) {
-                throw new \Exception("Guardia sin personas asignadas.", 404);
-            }
-
             return $this->model->getPersonsByGuardia($id_guardia);
 
         } catch (Throwable $e) {
@@ -207,7 +200,34 @@ public function createGuardia(array $input): array
                 500
             );
         }
-    } 
+    }
+
+    public function unassignGuardiaFromPerson(string $id_bombero, string $id_guardia): array
+    {
+        Validator::validate(
+            ['id_bombero' => $id_bombero, 'id_guardia' => $id_guardia],
+            [
+                'id_bombero' => 'required|string',
+                'id_guardia' => 'required|string'
+            ]
+        );
+
+        try {
+            $affected = $this->model->unassignFromPerson($id_bombero, $id_guardia);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+
+        if ($affected === 0) {
+            throw new \Exception("La persona no estaba asignada a esta guardia", 404);
+        }
+
+        return [
+            'status' => 'unassigned',
+            'message' => 'Persona desasignada de la guardia correctamente'
+        ];
+    }
+
         /**
          *  POST /Guardia/assign
          */

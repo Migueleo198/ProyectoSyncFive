@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Services;
 
 use Models\AlmacenModel;
+use Models\MaterialModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
@@ -18,6 +19,19 @@ class AlmacenService
     {
         $this->model         = new AlmacenModel();
         $this->materialModel = new MaterialModel();
+    }
+
+    private function ensureAlmacenPerteneceAInstalacion(int $id_almacen, int $id_instalacion): void
+    {
+        try {
+            $exists = $this->model->almacenPerteneceAInstalacion($id_almacen, $id_instalacion);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+
+        if (!$exists) {
+            throw new \Exception("Almacén no encontrado en la instalación especificada", 404);
+        }
     }
 
     // ========== ALMACENES ==========
@@ -58,7 +72,7 @@ class AlmacenService
     public function createAlmacen(array $input, int $id_instalacion): array
     {
         $data = Validator::validate($input, [
-            'planta' => 'required|string|max:100',
+            'planta' => 'required|int',
             'nombre' => 'required|string|max:100'
         ]);
 
@@ -78,7 +92,7 @@ class AlmacenService
     public function updateAlmacen(int $id_almacen, int $id_instalacion, array $input): array
     {
         $data = Validator::validate($input, [
-            'planta' => 'required|string|max:100',
+            'planta' => 'required|int',
             'nombre' => 'required|string|max:100'
         ]);
 
@@ -117,28 +131,26 @@ class AlmacenService
 
     // ========== MATERIAL EN ALMACÉN ==========
 
-    public function getMaterialesEnAlmacen(int $id_almacen): array
+    public function getMaterialesEnAlmacen(int $id_almacen, int $id_instalacion): array
     {
+        $this->ensureAlmacenPerteneceAInstalacion($id_almacen, $id_instalacion);
+
         try {
-            if (!$this->model->findById($id_almacen)) {
-                throw new \Exception("Almacén no encontrado", 404);
-            }
-            return $this->model->getMaterialesEnAlmacen($id_almacen);
-        } catch (\Exception $e) {
-            throw $e;
+            return $this->model->getMaterialesEnAlmacen($id_almacen, $id_instalacion);
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
         }
     }
 
     /**
-     * POST /almacenes/{id_almacen}/material
-     * Body: { id_instalacion, id_material, unidades } O { id_instalacion, id_material, n_serie }
+     * POST /instalaciones/{id_instalacion}/almacenes/{id_almacen}/materiales
+     * Body: { id_material, unidades } O { id_material, n_serie }
      */
-    public function setMaterialToAlmacen(int $id_almacen, array $input): array
+    public function setMaterialToAlmacen(int $id_almacen, int $id_instalacion, array $input): array
     {
+        $this->ensureAlmacenPerteneceAInstalacion($id_almacen, $id_instalacion);
+
         $data = Validator::validate($input, [
-            'id_instalacion' => 'required|int|min:1',
             'id_material'    => 'required|int|min:1',
             'unidades'       => 'optional|int|min:1',
             'n_serie'        => 'optional|string|max:50',
@@ -154,26 +166,22 @@ class AlmacenService
             throw new \Exception("No puede especificar unidades y número de serie a la vez", 400);
         }
 
-        if (!$this->model->almacenPerteneceAInstalacion($id_almacen, $data['id_instalacion'])) {
-            throw new \Exception("El almacén no está asociado a esta instalación", 400);
-        }
-
         if (!$this->materialModel->find($data['id_material'])) {
             throw new \Exception("Material no encontrado", 404);
         }
 
         try {
             if ($tieneUnidades) {
-                $existe = $this->model->getMaterialUnidades($id_almacen, $data['id_instalacion'], $data['id_material']);
+                $existe = $this->model->getMaterialUnidades($id_almacen, $id_instalacion, $data['id_material']);
                 if ($existe) {
                     throw new \Exception("Este material ya está asignado por unidades en este almacén. Use la edición para modificar las unidades.", 409);
                 }
                 $affected = $this->model->addMaterialUnidades(
-                    $id_almacen, $data['id_instalacion'], $data['id_material'], $data['unidades']
+                    $id_almacen, $id_instalacion, $data['id_material'], $data['unidades']
                 );
             } else {
                 $affected = $this->model->addMaterialSerie(
-                    $id_almacen, $data['id_instalacion'], $data['id_material'], $data['n_serie']
+                    $id_almacen, $id_instalacion, $data['id_material'], $data['n_serie']
                 );
             }
 
@@ -183,7 +191,7 @@ class AlmacenService
 
             return [
                 'id_almacen'     => $id_almacen,
-                'id_instalacion' => $data['id_instalacion'],
+                'id_instalacion' => $id_instalacion,
                 'id_material'    => $data['id_material'],
             ];
         } catch (\Exception $e) {
@@ -194,24 +202,25 @@ class AlmacenService
     }
 
     /**
-     * PUT /almacenes/{id_almacen}/material/{id_material}
+     * PUT /instalaciones/{id_instalacion}/almacenes/{id_almacen}/materiales/{id_material}
      * Solo actualiza unidades (no hay update de serie — se borra y se inserta).
      */
-    public function updateMaterialInAlmacen(int $id_almacen, int $id_material, array $input): array
+    public function updateMaterialInAlmacen(int $id_almacen, int $id_instalacion, int $id_material, array $input): array
     {
+        $this->ensureAlmacenPerteneceAInstalacion($id_almacen, $id_instalacion);
+
         $data = Validator::validate($input, [
-            'id_instalacion' => 'required|int|min:1',
             'unidades'       => 'required|int|min:1',
         ]);
 
-        $existe = $this->model->getMaterialUnidades($id_almacen, $data['id_instalacion'], $id_material);
+        $existe = $this->model->getMaterialUnidades($id_almacen, $id_instalacion, $id_material);
         if (!$existe) {
             throw new \Exception("Material no encontrado por unidades en este almacén/instalación", 404);
         }
 
         try {
             $affected = $this->model->updateMaterialUnidades(
-                $id_almacen, $data['id_instalacion'], $id_material, $data['unidades']
+                $id_almacen, $id_instalacion, $id_material, $data['unidades']
             );
         } catch (Throwable $e) {
             throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
@@ -225,31 +234,25 @@ class AlmacenService
     }
 
     /**
-     * DELETE /almacenes/{id_almacen}/material/{id_material}
-     * Busca en unidades y en serie, elimina donde encuentre.
+     * DELETE /instalaciones/{id_instalacion}/almacenes/{id_almacen}/materiales/{id_material}
+     * Query opcional: n_serie para eliminar una asignación por serie concreta.
      */
-    public function deleteMaterialFromAlmacen(int $id_almacen, int $id_material): void
+    public function deleteMaterialFromAlmacen(int $id_almacen, int $id_instalacion, int $id_material, ?string $n_serie = null): void
     {
+        $this->ensureAlmacenPerteneceAInstalacion($id_almacen, $id_instalacion);
+
         try {
-            if (!$this->model->findById($id_almacen)) {
-                throw new \Exception("Almacén no encontrado", 404);
+            if ($n_serie !== null && trim($n_serie) !== '') {
+                $affectedS = $this->model->deleteMaterialSerie($id_almacen, $id_instalacion, $id_material, trim($n_serie));
+                if ($affectedS === 0) {
+                    throw new \Exception("No existe la asignación del material con ese número de serie en este almacén", 404);
+                }
+                return;
             }
 
-            $instalaciones = $this->model->getInstalacionesDeAlmacen($id_almacen);
-            $eliminado = false;
-
-            foreach ($instalaciones as $inst) {
-                $id_instalacion = $inst['id_instalacion'];
-
-                $affectedU = $this->model->deleteMaterialUnidades($id_almacen, $id_instalacion, $id_material);
-                if ($affectedU > 0) { $eliminado = true; break; }
-
-                $affectedS = $this->model->deleteMaterialSerie($id_almacen, $id_instalacion, $id_material);
-                if ($affectedS > 0) { $eliminado = true; break; }
-            }
-
-            if (!$eliminado) {
-                throw new \Exception("No existe la asignación del material en este almacén", 404);
+            $affectedU = $this->model->deleteMaterialUnidades($id_almacen, $id_instalacion, $id_material);
+            if ($affectedU === 0) {
+                throw new \Exception("No existe asignación por unidades. Para eliminar material por serie debe indicarse el número de serie", 400);
             }
         } catch (PDOException $e) {
             // Verificar si es una violación de clave foránea
