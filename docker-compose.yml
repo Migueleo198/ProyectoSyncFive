@@ -1,10 +1,53 @@
-version: "3.9"
-
 services:
   apache:
     build: .
-    container_name: miguel-apache
+    container_name: sigebo-apache
     ports:
       - "8081:80"
     volumes:
       - ./:/var/www/html
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-prueba}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      MAIL_HOST: ${MAIL_HOST:-smtp.example.com}
+      MAIL_PORT: ${MAIL_PORT:-465}
+      MAIL_USERNAME: ${MAIL_USERNAME:-user@example.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-ssl}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL:-user@example.com}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-SIGEBO}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - sigebo-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: sigebo-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-prueba}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - sigebo-mysql-data:/var/lib/mysql
+      - ./DDL_DML_SIGEBO.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sigebo-net
+
+volumes:
+  sigebo-mysql-data:
+
+networks:
+  sigebo-net:

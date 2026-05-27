@@ -144,6 +144,7 @@ class MaterialController
                     NULL            AS numero_serie,
                     NULL            AS n_funcionario,
                     NULL            AS nombre_instalacion,
+                    NULL            AS id_instalacion,
                     NULL            AS id_almacen,
                     NULL            AS planta
                 FROM Material m
@@ -176,6 +177,7 @@ class MaterialController
                     NULL            AS numero_serie,
                     NULL            AS n_funcionario,
                     NULL            AS nombre_instalacion,
+                    NULL            AS id_instalacion,
                     NULL            AS id_almacen,
                     NULL            AS planta
                 FROM Material m
@@ -199,6 +201,7 @@ class MaterialController
                     vcs.nserie      AS numero_serie,
                     NULL            AS n_funcionario,
                     NULL            AS nombre_instalacion,
+                    NULL            AS id_instalacion,
                     NULL            AS id_almacen,
                     NULL            AS planta
                 FROM Material m
@@ -222,6 +225,7 @@ class MaterialController
                     pm.nserie                           AS numero_serie,
                     p.n_funcionario,
                     NULL                                AS nombre_instalacion,
+                    NULL                                AS id_instalacion,
                     NULL                                AS id_almacen,
                     NULL                                AS planta
                 FROM Material m
@@ -245,6 +249,7 @@ class MaterialController
                     NULL                                AS numero_serie,
                     NULL                                AS n_funcionario,
                     i.nombre                            AS nombre_instalacion,
+                    i.id_instalacion,
                     amu.id_almacen,
                     a.planta
                 FROM Material m
@@ -269,6 +274,7 @@ class MaterialController
                     ams.n_serie                         AS numero_serie,
                     NULL                                AS n_funcionario,
                     i.nombre                            AS nombre_instalacion,
+                    i.id_instalacion,
                     ams.id_almacen,
                     a.planta
                 FROM Material m

@@ -118,9 +118,21 @@ class RefuerzoController
             $res->errorJson($e->getMessage(), $code);
         }
     }
+
+    public function persons(Request $req, Response $res, string $id_turno_refuerzo): void
+    {
+        try {
+            $persons = $this->service->getPersonsByRefuerzo($id_turno_refuerzo);
+            $res->status(200)->json($persons, "Personas asociadas al refuerzo obtenidas correctamente");
+        } catch (Throwable $e) {
+            $code = ($e->getCode() >= 400) ? $e->getCode() : 500;
+            $res->errorJson($e->getMessage(), $code);
+        }
+    }
+
     /**
  * POST /Refuerzo/assign
- */
+  */
 public function assign(Request $req, Response $res, string $id_bombero): void
 {
     try {

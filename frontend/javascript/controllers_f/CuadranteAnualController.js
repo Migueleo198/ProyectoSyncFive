@@ -24,6 +24,7 @@ const ESTADOS_PERMISO_VALIDOS = ['ACEPTADO', 'REVISION', 'DENEGADO'];
 let year            = new Date().getFullYear();
 let modoVista       = 'individual';
 let idBomberoActual = null;
+let idBomberoEnVista = null;
 let personas        = [];
 let guardias        = [];
 let permisos        = [];
@@ -34,6 +35,8 @@ document.addEventListener('DOMContentLoaded', async () => {
    const sesion = await authGuard('cuadrantes');
    if (!sesion) return;
 
+   idBomberoActual = sesion.usuario?.id_bombero || sesion.usuario?.user?.id_bombero || null;
+
    construirControles();
    construirLeyenda();
    await cargarDatosIniciales();
@@ -43,23 +46,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function cargarDatosIniciales() {
    try {
-       detectarBomberoLogueado();
        await cargarPersonas();
        configurarEventosVista();
        configurarBotones();
        await cargarDatosCuadrante();
    } catch (e) {
        mostrarError('Error al cargar los datos iniciales');
-   }
-}
-
-
-function detectarBomberoLogueado() {
-   try {
-       const usuario = JSON.parse(sessionStorage.getItem('user') || 'null');
-       idBomberoActual = usuario?.id_bombero || null;
-   } catch {
-       idBomberoActual = null;
    }
 }
 
@@ -158,12 +150,14 @@ function configurarEventosVista() {
 
 
 async function cargarDatosCuadrante(idBomberoFiltro = null) {
-   const idFiltro = idBomberoFiltro || (modoVista === 'individual' ? idBomberoActual : null);
+   const idFiltro = idBomberoFiltro || (modoVista === 'individual' ? getIdBomberoDemo() : null);
 
    if (idFiltro) {
-       try {
-           const res = await ApiClient.get(`/cuadrante/${idFiltro}/guardias`);
-           guardias = res.data || res || [];
+        idBomberoEnVista = idFiltro;
+
+        try {
+            const res = await ApiClient.get(`/cuadrante/${idFiltro}/guardias`);
+            guardias = res.data || res || [];
        } catch {
            mostrarError('Error cargando guardias');
            guardias = [];
@@ -188,14 +182,23 @@ async function cargarDatosCuadrante(idBomberoFiltro = null) {
            const res = await ApiClient.get(`/cuadrante/${idFiltro}/refuerzos`);
            refuerzos = res.data || res || [];
        } catch {
-           mostrarError('Error cargando refuerzos');
-           refuerzos = [];
-       }
+            mostrarError('Error cargando refuerzos');
+            refuerzos = [];
+        }
 
-   } else {
-       try {
-           const res = await ApiClient.get('/cuadrante/guardias');
-           guardias = res.data || res || [];
+        if (!idBomberoFiltro && modoVista === 'individual' && !hayEventosCargados()) {
+            const idConDatos = await buscarPrimerBomberoConDatos(idFiltro);
+            if (idConDatos && idConDatos != idFiltro) {
+                await cargarDatosCuadrante(idConDatos);
+            }
+        }
+
+    } else {
+        idBomberoEnVista = null;
+
+        try {
+            const res = await ApiClient.get('/cuadrante/guardias');
+            guardias = res.data || res || [];
        } catch {
            mostrarError('Error cargando guardias');
            guardias = [];
@@ -221,6 +224,51 @@ async function cargarDatosCuadrante(idBomberoFiltro = null) {
            mostrarError('Error cargando refuerzos');
            refuerzos = [];
        }
+   }
+}
+
+
+function getIdBomberoDemo() {
+   if (idBomberoActual) return idBomberoActual;
+
+   const primerBomberoConDatos = personas.find(p =>
+       guardias.some(g => g.id_bombero == p.id_bombero) ||
+       refuerzos.some(r => r.id_bombero == p.id_bombero) ||
+       permisos.some(per => per.id_bombero == p.id_bombero)
+   );
+
+   return primerBomberoConDatos?.id_bombero || personas[0]?.id_bombero || null;
+}
+
+
+function hayEventosCargados() {
+   return guardias.length > 0 || permisos.length > 0 || refuerzos.length > 0;
+}
+
+
+async function buscarPrimerBomberoConDatos(idActual) {
+   try {
+       const [guardiasRes, permisosRes, refuerzosRes] = await Promise.all([
+           ApiClient.get('/cuadrante/guardias'),
+           PermisoApi.getAll(),
+           ApiClient.get('/cuadrante/refuerzos')
+       ]);
+
+       const guardiasGlobales = guardiasRes.data || guardiasRes || [];
+       const permisosGlobales = permisosRes.data || permisosRes || [];
+       const refuerzosGlobales = refuerzosRes.data || refuerzosRes || [];
+
+       const personaConDatos = personas.find(p =>
+           p.id_bombero != idActual && (
+               guardiasGlobales.some(g => g.id_bombero == p.id_bombero) ||
+               permisosGlobales.some(per => per.id_bombero == p.id_bombero) ||
+               refuerzosGlobales.some(r => r.id_bombero == p.id_bombero)
+           )
+       );
+
+       return personaConDatos?.id_bombero || null;
+   } catch {
+       return null;
    }
 }
 
@@ -412,35 +460,35 @@ function mostrarDetalleDia(td) {
     const permisosDelDia  = getPermisosEnFecha(fecha);
    const refuerzosDelDia = refuerzos.filter(r => (r.f_inicio || '').substring(0, 10) === fecha);
 
-   const toastContainer = document.getElementById('toastContainer') || crearToastContainer();
-   const toastId = 'toast-' + Date.now();
-
-   toastContainer.insertAdjacentHTML('beforeend', `
-       <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="8000">
-           <div class="toast-header bg-primary text-white">
-               <strong class="me-auto">Detalles del día</strong>
-               <small>${fecha}</small>
-               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-           </div>
-           <div class="toast-body">
-               ${generarContenidoDetalle(guardiasDelDia, permisosDelDia, refuerzosDelDia)}
-           </div>
-       </div>
-   `);
-
-   const toastElement = document.getElementById(toastId);
-   new bootstrap.Toast(toastElement).show();
-   toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+   const modal = getOrCreateDetalleModal();
+   modal.querySelector('.modal-title').textContent = `Detalles del día · ${fecha}`;
+   modal.querySelector('.modal-body').innerHTML = generarContenidoDetalle(guardiasDelDia, permisosDelDia, refuerzosDelDia);
+   bootstrap.Modal.getOrCreateInstance(modal).show();
 }
 
 
-function crearToastContainer() {
-   const c = document.createElement('div');
-   c.id           = 'toastContainer';
-   c.className    = 'toast-container position-fixed bottom-0 end-0 p-3';
-   c.style.zIndex = '2000';
-   document.body.appendChild(c);
-   return c;
+function getOrCreateDetalleModal() {
+   let modal = document.getElementById('modalDetalleCuadrante');
+   if (modal) return modal;
+
+   document.body.insertAdjacentHTML('beforeend', `
+        <div class="modal fade" id="modalDetalleCuadrante" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Detalles del día</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body" style="max-height:70vh; overflow-y:auto;"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+   `);
+
+   return document.getElementById('modalDetalleCuadrante');
 }
 
 
@@ -513,10 +561,10 @@ function actualizarTablaDetalles() {
            <td class="text-center"><span class="badge bg-primary">${permisos.filter(p => p.estado === 'ACEPTADO').length}</span></td>
        </tr>
        <tr class="table-light">
-           <td colspan="5" class="text-muted small px-3 py-2">
-               Año ${year}
-               ${modoVista === 'individual' && idBomberoActual ? ` · ID: ${idBomberoActual}` : ' · Vista global'}
-           </td>
+            <td colspan="4" class="text-muted small px-3 py-2">
+                Año ${year}
+                ${modoVista === 'individual' && idBomberoEnVista ? ` · ID: ${idBomberoEnVista}` : ' · Vista global'}
+            </td>
        </tr>
    `;
 }
@@ -525,7 +573,7 @@ function actualizarTablaDetalles() {
 async function cambiarAnio(delta) {
    year += delta;
    const selectBombero   = document.getElementById('selectBombero');
-   const idBomberoFiltro = modoVista === 'global' ? (selectBombero?.value || null) : idBomberoActual;
+   const idBomberoFiltro = modoVista === 'global' ? (selectBombero?.value || null) : null;
    await cargarDatosCuadrante(idBomberoFiltro);
    renderCalendario();
 }

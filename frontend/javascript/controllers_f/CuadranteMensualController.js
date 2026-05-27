@@ -37,6 +37,8 @@ document.addEventListener('DOMContentLoaded', async () => {
    const sesion = await authGuard('cuadrantes');
    if (!sesion) return;
 
+   idBomberoActual = sesion.usuario?.id_bombero || sesion.usuario?.user?.id_bombero || null;
+
    construirControles();
    actualizarTituloMes();
    construirLeyenda();
@@ -47,23 +49,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function cargarDatosIniciales() {
    try {
-       detectarBomberoLogueado();
        await cargarPersonas();
        configurarBotones();
        configurarEventosVista();
        await cargarDatosCuadrante();
    } catch (e) {
        mostrarError('Error al cargar los datos iniciales');
-   }
-}
-
-
-function detectarBomberoLogueado() {
-   try {
-       const sesion = JSON.parse(sessionStorage.getItem('user') || 'null');
-       idBomberoActual = sesion?.id_bombero || null;
-   } catch {
-       idBomberoActual = null;
    }
 }
 
@@ -556,36 +547,35 @@ function mostrarDetalleDia(idBombero, fecha) {
    const permisosDelDia  = getPermisosEnFecha(idBombero, fecha);
    const refuerzosDelDia = refuerzos.filter(r => (r.f_inicio || '').substring(0, 10) === fecha && r.id_bombero == idBombero);
 
-   const toastContainer = document.getElementById('toastContainer') || crearToastContainer();
-   const toastId        = 'toast-' + Date.now();
-
-   toastContainer.insertAdjacentHTML('beforeend', `
-       <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true"
-            data-bs-autohide="true" data-bs-delay="8000">
-           <div class="toast-header bg-primary text-white">
-               <strong class="me-auto">${nombreBombero}</strong>
-               <small>${fecha}</small>
-               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-           </div>
-           <div class="toast-body">
-               ${generarContenidoDetalle(guardiasDelDia, permisosDelDia, refuerzosDelDia)}
-           </div>
-       </div>
-   `);
-
-   const toastElement = document.getElementById(toastId);
-   new bootstrap.Toast(toastElement).show();
-   toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+   const modal = getOrCreateDetalleModal();
+   modal.querySelector('.modal-title').textContent = `${nombreBombero} · ${fecha}`;
+   modal.querySelector('.modal-body').innerHTML = generarContenidoDetalle(guardiasDelDia, permisosDelDia, refuerzosDelDia);
+   bootstrap.Modal.getOrCreateInstance(modal).show();
 }
 
 
-function crearToastContainer() {
-   const c = document.createElement('div');
-   c.id           = 'toastContainer';
-   c.className    = 'toast-container position-fixed bottom-0 end-0 p-3';
-   c.style.zIndex = '2000';
-   document.body.appendChild(c);
-   return c;
+function getOrCreateDetalleModal() {
+   let modal = document.getElementById('modalDetalleCuadranteMensual');
+   if (modal) return modal;
+
+   document.body.insertAdjacentHTML('beforeend', `
+        <div class="modal fade" id="modalDetalleCuadranteMensual" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Detalles del día</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body" style="max-height:70vh; overflow-y:auto;"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+   `);
+
+   return document.getElementById('modalDetalleCuadranteMensual');
 }
 
 

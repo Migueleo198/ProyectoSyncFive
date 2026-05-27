@@ -12,8 +12,9 @@
  * 
  * Cada entrada define:
  *   - rolesLectura:   roles que pueden acceder y VER la página
- *   - rolesEscritura: roles que pueden INSERT / EDIT / DELETE
+ *   - rolesEscritura: roles que pueden INSERT / EDIT
  *                     (deben ser subconjunto de rolesLectura)
+ *   - rolesEliminar:  roles que pueden DELETE (opcional; por defecto rolesEscritura)
  */
 
 export const PERMISOS = {
@@ -57,6 +58,7 @@ export const PERMISOS = {
   turnoRefuerzos: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [3, 4, 5],
+    rolesEliminar:  [5],
   },
   formaciones: {
     rolesLectura:   [1, 2, 3, 4, 5],
@@ -105,6 +107,7 @@ export const PERMISOS = {
   materiales: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
+    rolesEliminar:  [5],
   },
   mantenimiento: {
     rolesLectura:   [1, 2, 3, 4, 5],
@@ -117,10 +120,12 @@ export const PERMISOS = {
   categorias: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
+    rolesEliminar:  [5],
   },
   almacenes: {
     rolesLectura:   [1, 2, 3, 4, 5],
     rolesEscritura: [4, 5],
+    rolesEliminar:  [5],
   },
   instalaciones: {
     rolesLectura:   [1, 2, 3, 4, 5],

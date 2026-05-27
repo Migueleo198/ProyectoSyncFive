@@ -155,8 +155,17 @@ public function create(array $data): int|false
     {
         return $this->db
             ->query("
-                SELECT * from Persona_Hace_Guardia
-                WHERE id_guardia = :id_guardia 
+                SELECT
+                    phg.id_bombero,
+                    phg.id_guardia,
+                    phg.cargo,
+                    p.n_funcionario,
+                    p.nombre,
+                    p.apellidos
+                FROM Persona_Hace_Guardia phg
+                INNER JOIN Persona p ON phg.id_bombero = p.id_bombero
+                WHERE phg.id_guardia = :id_guardia
+                ORDER BY phg.cargo ASC, p.apellidos ASC, p.nombre ASC
             ")
             ->bind(':id_guardia', $id_guardia)
             ->fetchAll();

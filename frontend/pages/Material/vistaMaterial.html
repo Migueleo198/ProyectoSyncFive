@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <script src="/frontend/config/config.js"></script>
     <script>loadHead("Materiales")</script>
-    <script type="module" src="/frontend/javascript/controllers_f/MaterialController.js"></script>
+    <script type="module" src="/frontend/javascript/controllers_f/MaterialController.js?v=20260525-2"></script>
 </head>
 <body class="bg-white text-dark d-flex flex-column">
 
@@ -81,24 +81,17 @@
                     <h5 class="text-center mb-4">Insertar Material</h5>
                     <form id="formInsertar" class="mx-auto">
                         <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label for="insertCategoria" class="form-label">Categoría <span class="text-danger">*</span></label>
                                 <select class="form-select" id="insertCategoria" name="id_categoria" required>
                                     <option value="">Seleccione una categoría...</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label for="insertNombre" class="form-label">Nombre <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="insertNombre" name="nombre" required>
                             </div>
-                            <div class="col-md-4">
-                                <label for="insertEstado" class="form-label">Estado <span class="text-danger">*</span></label>
-                                <select class="form-select" id="insertEstado" name="estado" required>
-                                    <option value="">Seleccione...</option>
-                                    <option value="ALTA">ALTA</option>
-                                    <option value="BAJA">BAJA</option>
-                                </select>
-                            </div>
+                            <input type="hidden" id="insertEstado" name="estado" value="ALTA">
                         </div>
                         <div class="row mb-3">
                             <div class="col-12">

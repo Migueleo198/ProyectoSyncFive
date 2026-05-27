@@ -10,14 +10,18 @@ const RefuerzoApi = {
 
     getByFecha(fecha)     { return ApiClient.get(`/refuerzos/fecha/${fecha}`); },
 
+    getPersonsRefuerzo(id_turno_refuerzo) {
+        return ApiClient.get(`/refuerzos/${encodeURIComponent(id_turno_refuerzo)}/personas`);
+    },
+
     assignToPerson(id_bombero, id_turno_refuerzo) {
-        return ApiClient.post(`/personas/${id_bombero}/turnos`, { id_bombero, id_turno_refuerzo });
+        return ApiClient.post(`/personas/${encodeURIComponent(id_bombero)}/turnos`, { id_bombero, id_turno_refuerzo });
     },
     unassignFromPerson(id_bombero, id_turno_refuerzo) {
-        return ApiClient.delete(`/personas/${id_bombero}/turnos`, { id_bombero, id_turno_refuerzo });
+        return ApiClient.post('/refuerzos/desasignar', { id_bombero, id_turno_refuerzo });
     },
     getByPersona(id_bombero) {
-        return ApiClient.get(`/personas/${id_bombero}/turnos`);
+        return ApiClient.get(`/personas/${encodeURIComponent(id_bombero)}/turnos`);
     }
 };
 

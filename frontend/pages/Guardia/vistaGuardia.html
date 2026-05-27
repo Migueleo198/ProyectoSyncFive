@@ -76,9 +76,15 @@
                                 <label class="m-2" for="h_fin">Hora fin:</label>
                                 <input type="time" class="form-control form-control-sm mt-1" id="h_fin" name="h_fin">
                             </div>
-                            <div class="col-md-4 col-sm-6">
+                            <div class="col-12 mt-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="dia_completo" name="dia_completo">
+                                    <label class="form-check-label" for="dia_completo">Día completo (08:00 a 08:00 del día siguiente)</label>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-2">
                                 <label class="m-2" for="notas">Notas:</label>
-                                <input type="text" class="form-control form-control-sm" id="notas" name="notas">
+                                <textarea class="form-control form-control-sm" id="notas" name="notas" rows="3" maxlength="500" style="resize: vertical;"></textarea>
                             </div>
                         </div>
                         <div class="d-flex justify-content-center gap-2">
@@ -88,36 +94,6 @@
                     </form>
                 </div>
 
-                <!-- Asignar usuario a guardia -->
-                <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Insertar usuario a guardia</h5>
-                    <form id="formAsignarGuardia" class="mx-auto">
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label for="seleccionarGuardia" class="m-2 form-label">ID Guardia</label>
-                                <select class="form-select" id="seleccionarGuardia" name="id_guardia">
-                                    <option value="">Seleccione guardia...</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="n_funcionario" class="m-2 form-label">Persona</label>
-                                <select class="form-select" id="n_funcionario" name="n_funcionario">
-                                    <option value="">Seleccione persona...</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="cargo" class="m-2 form-label">Cargo</label>
-                                <select class="form-select" id="cargo" name="cargo">
-                                    <option value="">Seleccione cargo...</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-center gap-2">
-                            <button type="reset" class="btn btn-secondary">Limpiar</button>
-                            <button type="submit" class="btn btn-primary" id="btnInsertarUsuario">Insertar</button>
-                        </div>
-                    </form>
-                </div>
             </main>
         </div>
     </div>

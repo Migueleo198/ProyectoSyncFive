@@ -22,6 +22,24 @@ class PersonaService
         $this->mailer = new EmailService();
     }
 
+    private function normalizarIdBombero(string $id_bombero): string
+    {
+        $id_bombero = trim($id_bombero);
+
+        if ($id_bombero !== '' && $this->model->find($id_bombero)) {
+            return $id_bombero;
+        }
+
+        if (ctype_digit($id_bombero)) {
+            $idNormalizado = 'B' . str_pad($id_bombero, 3, '0', STR_PAD_LEFT);
+            if ($this->model->find($idNormalizado)) {
+                return $idNormalizado;
+            }
+        }
+
+        throw new \Exception("Persona no encontrada", 404);
+    }
+
     /**
      * Obtener todas las personas
      */
@@ -286,11 +304,13 @@ class PersonaService
 
     //+++++++++++++++ Persona material +++++++++++++++
 
-    public function getMaterial(int $id_bombero): array
+    public function getMaterial(string $id_bombero): array
     {
         Validator::validate(['id_bombero' => $id_bombero], [
-            'id_bombero' => 'required|int|min:1'
+            'id_bombero' => 'required|string'
         ]);
+
+        $id_bombero = $this->normalizarIdBombero($id_bombero);
 
         try {
             $material = $this->model->getMaterialByBombero($id_bombero);
@@ -315,6 +335,9 @@ class PersonaService
         Validator::validate(['nserie' => $nserie], [
             'nserie' => 'required|string|max:50'
         ]);
+
+        $id_bombero = $this->normalizarIdBombero($id_bombero);
+
         try {
             $this->model->addMaterialToBombero($id_bombero,  $id_material, $nserie);
         } catch (Throwable $e) {
@@ -333,6 +356,8 @@ class PersonaService
         Validator::validate(['id_material' => $id_material], [
             'id_material' => 'required|int|min:1'
         ]);
+
+        $id_bombero = $this->normalizarIdBombero($id_bombero);
 
         try {
             $result = $this->model->removeMaterialBombero($id_bombero, $id_material);

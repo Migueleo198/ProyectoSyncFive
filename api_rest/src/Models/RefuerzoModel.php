@@ -132,16 +132,18 @@ class RefuerzoModel
         return $this->db
             ->query("
                 SELECT 
-                    p.*,
-                    pc.f_obtencion,
-                    pc.f_vencimiento
+                    pc.id_turno,
+                    p.id_bombero,
+                    p.n_funcionario,
+                    p.nombre,
+                    p.apellidos
                 FROM Persona_Turno pc
                 INNER JOIN Persona p 
                     ON p.id_bombero = pc.id_bombero
                 WHERE pc.id_turno = :id_turno
-                ORDER BY p.id_bombero ASC
+                ORDER BY p.apellidos ASC, p.nombre ASC
             ")
-            ->bind(':id_turno', $id_turno)
+            ->bind(':id_turno', $id_turno_refuerzo)
             ->fetchAll();
     }
 
@@ -154,7 +156,7 @@ class RefuerzoModel
             ->query("
                 DELETE FROM Persona_Turno
                 WHERE id_bombero = :id_bombero
-                AND id_turno_refuerzo = :id_turno_refuerzo
+                AND id_turno = :id_turno_refuerzo
             ")
             ->bind(':id_bombero', $id_bombero)
             ->bind(':id_turno_refuerzo', $id_turno_refuerzo)

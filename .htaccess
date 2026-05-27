@@ -1,4 +1,6 @@
 Options -Indexes
+AddDefaultCharset UTF-8
+AddCharset UTF-8 .html .css .js .json
 
 ErrorDocument 403 /frontend/errores/err403.html
 ErrorDocument 404 /frontend/errores/err404.html

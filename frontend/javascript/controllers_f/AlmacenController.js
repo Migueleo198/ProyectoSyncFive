@@ -1,3 +1,5 @@
+import AlmacenApi from '../api_f/AlmacenApi.js';
+import InstalacionApi from '../api_f/InstalacionApi.js';
 import { authGuard } from '../helpers/authGuard.js';
 import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.js';
 import { mostrarError, mostrarExito } from '../helpers/utils.js';
@@ -49,9 +51,8 @@ async function cargarDatosIniciales() {
 // ================================
 async function cargarInstalaciones() {
   try {
-    const response = await fetch('/api/instalaciones');
-    const data = await response.json();
-    instalaciones = data.data || [];
+    const response = await InstalacionApi.getAll();
+    instalaciones = response?.data || response || [];
   } catch (e) {
     console.error('Error cargando instalaciones:', e);
     mostrarError('Error cargando instalaciones');
@@ -62,33 +63,21 @@ async function cargarInstalaciones() {
 // CARGAR TODOS LOS ALMACENES
 // ================================
 async function cargarTodosLosAlmacenes() {
-  almacenes = [];
   showTableLoading('#tabla tbody', 5);
 
   try {
-    for (const inst of instalaciones) {
-      try {
-        const response = await fetch(`/api/instalaciones/${inst.id_instalacion}/almacenes`);
-        const data = await response.json();
-        const almacenesInst = data.data || [];
-
-        almacenesInst.forEach(a => {
-          if (!almacenes.some(alm => alm.id_almacen === a.id_almacen)) {
-            almacenes.push({
-              id_almacen: a.id_almacen,
-              nombre: a.nombre,
-              planta: a.planta,
-              id_instalacion: inst.id_instalacion,
-              nombre_instalacion: inst.nombre
-            });
-          }
-        });
-      } catch (e) {
-        console.error(`Error cargando almacenes de instalación ${inst.id_instalacion}:`, e);
-      }
-    }
+    const response = await AlmacenApi.getAll();
+    const data = response?.data || response || [];
+    almacenes = data.map(a => {
+      const instalacion = instalaciones.find(i => i.id_instalacion == a.id_instalacion);
+      return {
+        ...a,
+        nombre_instalacion: a.nombre_instalacion || instalacion?.nombre || 'Desconocida'
+      };
+    });
   } catch (e) {
     console.error('Error cargando almacenes:', e);
+    almacenes = [];
     renderTablaAlmacenes([]);
   }
 }
@@ -129,25 +118,28 @@ function renderTablaAlmacenes(lista) {
   }
 
   const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const puedeEliminar = sesionActual?.puedeEliminar ?? false;
   const itemsPagina = pagination.getPageItems(lista);
 
   itemsPagina.forEach(a => {
     const tr = document.createElement('tr');
-    tr.dataset.id = a.id_almacen;
+    tr.dataset.idAlmacen = a.id_almacen;
+    tr.dataset.idInstalacion = a.id_instalacion;
 
-    const botonesAccion = puedeEscribir
-      ? `<button type="button" class="btn p-0 btn-ver"
+    const botonVer = `<button type="button" class="btn p-0 btn-ver"
                 data-bs-toggle="modal" data-bs-target="#modalVer"
-                data-id="${a.id_almacen}"><i class="bi bi-eye"></i></button>
-         <button type="button" class="btn p-0 btn-editar"
+                data-id-almacen="${a.id_almacen}" data-id-instalacion="${a.id_instalacion}"><i class="bi bi-eye"></i></button>`;
+    const botonEditar = puedeEscribir
+      ? `<button type="button" class="btn p-0 btn-editar"
                 data-bs-toggle="modal" data-bs-target="#modalEditar"
-                data-id="${a.id_almacen}"><i class="bi bi-pencil"></i></button>
-         <button type="button" class="btn p-0 btn-eliminar"
+                data-id-almacen="${a.id_almacen}" data-id-instalacion="${a.id_instalacion}"><i class="bi bi-pencil"></i></button>`
+      : '';
+    const botonEliminar = puedeEliminar
+      ? `<button type="button" class="btn p-0 btn-eliminar"
                 data-bs-toggle="modal" data-bs-target="#modalEliminar"
-                data-id="${a.id_almacen}"><i class="bi bi-trash3"></i></button>`
-      : `<button type="button" class="btn p-0 btn-ver"
-                data-bs-toggle="modal" data-bs-target="#modalVer"
-                data-id="${a.id_almacen}"><i class="bi bi-eye"></i></button>`;
+                data-id-almacen="${a.id_almacen}" data-id-instalacion="${a.id_instalacion}"><i class="bi bi-trash3"></i></button>`
+      : '';
+    const botonesAccion = `${botonVer}${botonEditar}${botonEliminar}`;
 
     tr.innerHTML = `
       <td>${a.id_almacen}</td>
@@ -246,18 +238,7 @@ function bindCrearAlmacen() {
     if (!validarCamposAlmacen(id_instalacion, nombre, planta)) return;
 
     try {
-      const response = await fetch(`/api/instalaciones/${id_instalacion}/almacenes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: nombre.trim(), planta: Number(planta) })
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        if (result.errors) throw new Error(Object.values(result.errors).flat().join(', '));
-        throw new Error(result.message || 'Error al crear');
-      }
-
+      await AlmacenApi.create(id_instalacion, { nombre: nombre.trim(), planta: Number(planta) });
       await cargarDatosIniciales();
       form.reset();
       mostrarExito('Almacén creado correctamente');
@@ -275,7 +256,9 @@ function bindModales() {
     const btn = e.target.closest('.btn-ver');
     if (!btn) return;
 
-    const almacen = almacenes.find(a => a.id_almacen == btn.dataset.id);
+    const almacen = almacenes.find(a =>
+      a.id_almacen == btn.dataset.idAlmacen && a.id_instalacion == btn.dataset.idInstalacion
+    );
     if (!almacen) return;
 
     document.getElementById('modalVerBody').innerHTML = `
@@ -290,10 +273,14 @@ function bindModales() {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
 
-    const almacen = almacenes.find(a => a.id_almacen == btn.dataset.id);
+    const almacen = almacenes.find(a =>
+      a.id_almacen == btn.dataset.idAlmacen && a.id_instalacion == btn.dataset.idInstalacion
+    );
     if (!almacen) return;
 
     const form = document.getElementById('formEditar');
+    form.dataset.idAlmacen = almacen.id_almacen;
+    form.dataset.idInstalacion = almacen.id_instalacion;
     form.innerHTML = `
       <div class="mb-3">
         <label class="form-label">ID</label>
@@ -309,9 +296,10 @@ function bindModales() {
       </div>
       <div class="mb-3">
         <label class="form-label">Instalación</label>
-        <select class="form-select" id="editInstalacion" required>
+        <select class="form-select" id="editInstalacion" required disabled>
           <option value="">Seleccione una instalación...</option>
         </select>
+        <div class="form-text">La instalación del almacén no se puede cambiar desde esta edición.</div>
       </div>
     `;
 
@@ -327,26 +315,16 @@ function bindModales() {
 
   // GUARDAR CAMBIOS
   document.getElementById('btnGuardarCambios')?.addEventListener('click', async function () {
-    const id             = document.querySelector('#modalEditar .modal-body input[readonly]').value;
-    const id_instalacion = document.getElementById('editInstalacion').value;
+    const form           = document.getElementById('formEditar');
+    const id             = form.dataset.idAlmacen;
+    const id_instalacion = form.dataset.idInstalacion;
     const nombre         = document.getElementById('editNombre').value;
     const planta         = document.getElementById('editPlanta').value;
 
     if (!validarCamposAlmacen(id_instalacion, nombre, planta)) return;
 
     try {
-      const response = await fetch(`/api/instalaciones/${id_instalacion}/almacenes/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: nombre.trim(), planta: Number(planta) })
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        if (result.errors) throw new Error(Object.values(result.errors).flat().join(', '));
-        throw new Error(result.message || 'Error al actualizar');
-      }
-
+      await AlmacenApi.update(id_instalacion, id, { nombre: nombre.trim(), planta: Number(planta) });
       await cargarDatosIniciales();
       bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
       mostrarExito('Almacén actualizado correctamente');
@@ -359,9 +337,11 @@ function bindModales() {
     const btn = e.target.closest('.btn-eliminar');
     if (!btn) return;
 
-    const almacen = almacenes.find(a => a.id_almacen == btn.dataset.id);
+    const almacen = almacenes.find(a =>
+      a.id_almacen == btn.dataset.idAlmacen && a.id_instalacion == btn.dataset.idInstalacion
+    );
     const btnConfirm = document.getElementById('btnConfirmarEliminar');
-    btnConfirm.dataset.id = btn.dataset.id;
+    btnConfirm.dataset.idAlmacen = btn.dataset.idAlmacen;
     btnConfirm.dataset.instalacion = almacen?.id_instalacion;
 
     const modalBody = document.querySelector('#modalEliminar .modal-body');
@@ -376,20 +356,12 @@ function bindModales() {
 
   // CONFIRMAR ELIMINAR
   document.getElementById('btnConfirmarEliminar')?.addEventListener('click', async function () {
-    const id = this.dataset.id;
+    const id = this.dataset.idAlmacen;
     const id_instalacion = this.dataset.instalacion;
     if (!id || !id_instalacion) return;
 
     try {
-      const response = await fetch(`/api/instalaciones/${id_instalacion}/almacenes/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        mostrarError('No se puede eliminar: el almacén tiene materiales o relaciones');
-        return;
-      }
-
+      await AlmacenApi.delete(id_instalacion, id);
       await cargarDatosIniciales();
       bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
       mostrarExito('Almacén eliminado correctamente');

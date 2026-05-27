@@ -35,10 +35,6 @@
                             <label class="m-2" for="filtroFecha">Fecha inicio:</label>
                             <input type="date" class="form-control m-1" id="filtroFecha">
                         </div>
-                        <div class="col-md-4 d-flex align-items-center m-1">
-                            <label class="m-2" for="filtroHoras">Horas:</label>
-                            <input type="number" class="form-control m-1" id="filtroHoras" placeholder="Nº horas">
-                        </div>
                     </div>
 
                     <table class="table table-bordered table-striped" id="tabla">
@@ -60,18 +56,14 @@
                 <div class="contenedorInsertar container mt-5 p-4 border rounded">
                     <h5 class="text-center mb-4">Insertar nuevo Turno de Refuerzo</h5>
                     <form id="formInsertarTurnoRefuerzo" class="mx-auto">
-                        <div class="row mb-3">
-                            <div class="col-md-4 col-sm-6">
+                        <div class="row mb-3 justify-content-center">
+                            <div class="col-md-5 col-sm-6">
                                 <label class="m-2" for="f_inicio">Fecha inicio:</label>
-                                <input type="date" class="form-control form-control-sm mt-1" id="f_inicio" name="f_inicio">
+                                <input type="datetime-local" class="form-control form-control-sm mt-1" id="f_inicio" name="f_inicio">
                             </div>
-                            <div class="col-md-4 col-sm-6">
+                            <div class="col-md-5 col-sm-6">
                                 <label class="m-2" for="f_fin">Fecha fin:</label>
-                                <input type="date" class="form-control" id="f_fin" name="f_fin">
-                            </div>
-                            <div class="col-md-4 col-sm-6">
-                                <label class="m-2" for="horas">Horas:</label>
-                                <input type="number" class="form-control form-control-sm mt-1" id="horas" name="horas">
+                                <input type="datetime-local" class="form-control" id="f_fin" name="f_fin">
                             </div>
                         </div>
                         <div class="d-flex justify-content-center gap-2">
@@ -81,37 +73,13 @@
                     </form>
                 </div>
 
-                <!-- Asignar persona a Turno de Refuerzo -->
-                <div class="contenedorInsertar container mt-5 p-4 border rounded">
-                    <h5 class="text-center mb-4">Asignar persona a Turno de Refuerzo</h5>
-                    <form id="formInsertarUsuario" class="mx-auto">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="ID_Turno_Refuerzo" class="m-2 form-label">ID Turno Refuerzo</label>
-                                <select class="form-select" id="ID_Turno_Refuerzo" name="ID_Turno_Refuerzo">
-                                    <option value="">Seleccione turno de refuerzo...</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="ID_persona" class="m-2 form-label">Persona</label>
-                                <select class="form-select" id="ID_persona" name="ID_persona">
-                                    <option value="">Seleccione persona...</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-center gap-2">
-                            <button type="reset" class="btn btn-secondary">Limpiar</button>
-                            <button type="submit" class="btn btn-primary" id="btnInsertarUsuario">Asignar</button>
-                        </div>
-                    </form>
-                </div>
             </main>
         </div>
     </div>
 
     <!-- Modal editar -->
     <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
@@ -135,6 +103,26 @@
                 <div class="modal-body" id="modalVerBody"></div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Eliminar -->
+    <div class="modal fade" id="modalEliminar" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que deseas eliminar este turno de refuerzo?</p>
+                    <small class="text-muted">No se podrá eliminar si tiene personas asignadas.</small>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
                 </div>
             </div>
         </div>

@@ -17,9 +17,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!sesionActual) return;
 
   cargarCategorias();
+  bindFiltros();
 
   if (sesionActual.puedeEscribir) {
     bindCrearCategoria();
+  }
+
+  if (sesionActual.puedeEliminar) {
     bindModalEliminar();
   }
 });
@@ -49,20 +53,58 @@ async function cargarCategorias() {
 }
 
 // ================================
+// FILTROS
+// ================================
+function bindFiltros() {
+  document.getElementById('nombre')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('grupo')?.addEventListener('change', aplicarFiltros);
+}
+
+function aplicarFiltros() {
+  pagination.goToPage(0);
+  const nombreFiltro = document.getElementById('nombre')?.value?.toLowerCase();
+  const inventariableFiltro = document.getElementById('grupo')?.value;
+
+  const filtrados = categorias.filter(c => {
+    let cumple = true;
+    if (nombreFiltro) {
+      cumple = cumple && c.nombre?.toLowerCase().includes(nombreFiltro);
+    }
+    if (inventariableFiltro) {
+      const inventariableTexto = Number(c.inventariable) === 1 ? 'Sí' : 'No';
+      cumple = cumple && inventariableTexto === inventariableFiltro;
+    }
+    return cumple;
+  });
+
+  pagination.setData(filtrados, () => {
+    renderTablaCategorias(filtrados);
+  });
+  pagination.render('pagination-categoria');
+  renderTablaCategorias(filtrados);
+}
+
+// ================================
 // RENDER TABLA
 // ================================
 function renderTablaCategorias(lista) {
   const tbody = document.querySelector('#tabla tbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
+
+  if (!lista || lista.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay categorías para mostrar</td></tr>';
+    return;
+  }
 
   const itemsPagina = pagination.getPageItems(lista);
 
-  const puedeEscribir = sesionActual?.puedeEscribir ?? false;
+  const puedeEliminar = sesionActual?.puedeEliminar ?? false;
 
   itemsPagina.forEach(c => {
     const tr = document.createElement('tr');
 
-    const botonesAccion = puedeEscribir
+    const botonesAccion = puedeEliminar
       ? `<button type="button" class="btn p-0 btn-eliminar"
               data-bs-toggle="modal" data-bs-target="#modalEliminar"
               data-id="${c.id_categoria}">

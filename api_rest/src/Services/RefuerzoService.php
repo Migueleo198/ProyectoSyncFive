@@ -63,10 +63,13 @@ class RefuerzoService
      */
     public function createRefuerzo(array $input): array
     {
+        $input = $this->normalizarFechas($input);
+        $input['horas'] = $this->calcularHoras($input['f_inicio'] ?? null, $input['f_fin'] ?? null);
+
         $data = Validator::validate($input, [
             'f_inicio' => 'required|string',
             'f_fin'    => 'required|string',
-            'horas'    => 'int'
+            'horas'    => 'required|int|min:1'
         ]);
 
         try {
@@ -96,10 +99,13 @@ class RefuerzoService
             'id_turno_refuerzo' => 'required|string'
         ]);
 
+        $input = $this->normalizarFechas($input);
+        $input['horas'] = $this->calcularHoras($input['f_inicio'] ?? null, $input['f_fin'] ?? null);
+
         $data = Validator::validate($input, [
             'f_inicio'   => 'required|string',
             'f_fin'      => 'required|string',
-            'horas'      => 'int'
+            'horas'      => 'required|int|min:1'
         ]);
 
         if (empty($data)) {
@@ -143,6 +149,33 @@ class RefuerzoService
         ];
     }
 
+    private function calcularHoras(?string $f_inicio, ?string $f_fin): int
+    {
+        if (!$f_inicio || !$f_fin) {
+            return 0;
+        }
+
+        $inicio = strtotime($f_inicio);
+        $fin = strtotime($f_fin);
+
+        if ($inicio === false || $fin === false || $fin <= $inicio) {
+            return 0;
+        }
+
+        return (int) ceil(($fin - $inicio) / 3600);
+    }
+
+    private function normalizarFechas(array $input): array
+    {
+        foreach (['f_inicio', 'f_fin'] as $campo) {
+            if (isset($input[$campo]) && is_string($input[$campo])) {
+                $input[$campo] = str_replace('T', ' ', $input[$campo]);
+            }
+        }
+
+        return $input;
+    }
+
     /**
      * Eliminar un refuerzo
      */
@@ -174,9 +207,23 @@ class RefuerzoService
             throw new \Exception("Refuerzo no encontrado", 404);
         }
     }
+
+    public function getPersonsByRefuerzo(string $id_turno_refuerzo): array
+    {
+        Validator::validate(['id_turno_refuerzo' => $id_turno_refuerzo], [
+            'id_turno_refuerzo' => 'required|string'
+        ]);
+
+        try {
+            return $this->model->getPersonsByRefuerzo($id_turno_refuerzo);
+        } catch (Throwable $e) {
+            throw new \Exception("Error interno en la base de datos: " . $e->getMessage(), 500);
+        }
+    }
+
     /**
  * Asignar un refuerzo a una persona
- */
+  */
 public function assignRefuerzoToPerson(array $input): array
 {
     $data = Validator::validate($input, [
