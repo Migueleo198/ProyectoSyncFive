@@ -14,6 +14,11 @@ pagination.setLoadingCallback((isLoading) => {
     }
 });
 
+const paginacionVerRefuerzo = new PaginationHelper(8);
+const paginacionEditRefuerzo = new PaginationHelper(8);
+let personasVerRefuerzo = [];
+let personasEditRefuerzo = [];
+
 const nombresCampos = ['ID Turno', 'Fecha Inicio', 'Fecha Fin', 'Horas'];
 const camposBd = ['id_turno_refuerzo', 'f_inicio', 'f_fin', 'horas'];
 
@@ -157,38 +162,54 @@ function nombrePersonaAsignada(a) {
     return nombre || a.id_bombero || '-';
 }
 
-function crearTablaPersonasRefuerzo(asignaciones, editable = false) {
+function crearArmazonPersonasRefuerzo(editable, tbodyId, paginacionId) {
     const accionHeader = editable ? '<th class="text-center">Acción</th>' : '';
-    const colspan = editable ? 4 : 3;
-
-    let html = `
+    return `
         <div class="mt-4">
             <h6 class="fw-bold">Personas asignadas</h6>
             <table class="table table-bordered table-striped table-sm">
                 <thead class="table-dark">
                     <tr><th>ID</th><th>Nombre</th><th>Nº Funcionario</th>${accionHeader}</tr>
                 </thead>
-                <tbody>`;
+                <tbody id="${tbodyId}"></tbody>
+            </table>
+            <div id="${paginacionId}" class="mt-2"></div>
+        </div>`;
+}
 
-    if (!asignaciones.length) {
-        html += `<tr><td colspan="${colspan}" class="text-center text-muted">Sin personas asignadas</td></tr>`;
-    } else {
-        asignaciones.forEach(a => {
-            const accion = editable
-                ? `<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-refuerzo" data-id-bombero="${a.id_bombero}" title="Desasignar persona"><i class="bi bi-trash"></i></button></td>`
-                : '';
-            html += `
-                <tr>
-                    <td>${a.id_bombero || '-'}</td>
-                    <td>${nombrePersonaAsignada(a)}</td>
-                    <td>${a.n_funcionario || '-'}</td>
-                    ${accion}
-                </tr>`;
-        });
+function filaPersonaRefuerzo(a, editable) {
+    const accion = editable
+        ? `<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-refuerzo" data-id-bombero="${a.id_bombero}" title="Desasignar persona"><i class="bi bi-trash"></i></button></td>`
+        : '';
+    return `
+        <tr>
+            <td>${a.id_bombero || '-'}</td>
+            <td>${nombrePersonaAsignada(a)}</td>
+            <td>${a.n_funcionario || '-'}</td>
+            ${accion}
+        </tr>`;
+}
+
+function renderFilasVerRefuerzo() {
+    const tbody = document.getElementById('tbodyPersonasVerRefuerzo');
+    if (!tbody) return;
+    if (!personasVerRefuerzo.length) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Sin personas asignadas</td></tr>';
+        return;
     }
+    tbody.innerHTML = paginacionVerRefuerzo.getPageItems(personasVerRefuerzo)
+        .map(a => filaPersonaRefuerzo(a, false)).join('');
+}
 
-    html += '</tbody></table></div>';
-    return html;
+function renderFilasEditRefuerzo() {
+    const tbody = document.getElementById('tbodyPersonasEditRefuerzo');
+    if (!tbody) return;
+    if (!personasEditRefuerzo.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Sin personas asignadas</td></tr>';
+        return;
+    }
+    tbody.innerHTML = paginacionEditRefuerzo.getPageItems(personasEditRefuerzo)
+        .map(a => filaPersonaRefuerzo(a, true)).join('');
 }
 
 async function crearOptionsPersonasAsignables() {
@@ -247,8 +268,11 @@ function bindModalVer() {
             modalBody.appendChild(p);
         });
         try {
-            const asignaciones = await obtenerPersonasRefuerzo(refuerzo.id_turno_refuerzo);
-            modalBody.insertAdjacentHTML('beforeend', crearTablaPersonasRefuerzo(asignaciones));
+            modalBody.insertAdjacentHTML('beforeend', crearArmazonPersonasRefuerzo(false, 'tbodyPersonasVerRefuerzo', 'pagination-ver-refuerzo'));
+            personasVerRefuerzo = await obtenerPersonasRefuerzo(refuerzo.id_turno_refuerzo);
+            paginacionVerRefuerzo.setData(personasVerRefuerzo, () => renderFilasVerRefuerzo());
+            paginacionVerRefuerzo.render('pagination-ver-refuerzo');
+            renderFilasVerRefuerzo();
         } catch (error) {
             modalBody.insertAdjacentHTML('beforeend', '<p class="text-danger mt-3">Error cargando personas asignadas</p>');
         }
@@ -268,10 +292,7 @@ function bindModalEditar() {
         if (!refuerzo) return;
 
         const form = document.getElementById('formEditar');
-        const [personasOptions, asignaciones] = await Promise.all([
-            crearOptionsPersonasAsignables(),
-            obtenerPersonasRefuerzo(id)
-        ]);
+        const personasOptions = await crearOptionsPersonasAsignables();
 
         form.innerHTML = `
             <div class="row mb-3">
@@ -300,14 +321,17 @@ function bindModalEditar() {
                 </div>
             </div>
             <div id="tablaPersonasRefuerzo">
-                ${crearTablaPersonasRefuerzo(asignaciones, true)}
+                ${crearArmazonPersonasRefuerzo(true, 'tbodyPersonasEditRefuerzo', 'pagination-edit-refuerzo')}
             </div>
         `;
 
         const refrescarPersonasRefuerzo = async () => {
-            const actualizadas = await obtenerPersonasRefuerzo(id);
-            form.querySelector('#tablaPersonasRefuerzo').innerHTML = crearTablaPersonasRefuerzo(actualizadas, true);
+            personasEditRefuerzo = await obtenerPersonasRefuerzo(id);
+            paginacionEditRefuerzo.setData(personasEditRefuerzo, () => renderFilasEditRefuerzo());
+            paginacionEditRefuerzo.render('pagination-edit-refuerzo');
+            renderFilasEditRefuerzo();
         };
+        await refrescarPersonasRefuerzo();
 
         form.querySelector('#btnAsignarPersonaRefuerzo').addEventListener('click', async () => {
             const id_bombero = form.querySelector('#asigRefuerzoPersona').value;
