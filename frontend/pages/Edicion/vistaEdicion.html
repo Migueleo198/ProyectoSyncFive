@@ -74,24 +74,28 @@
                     <h5 class="text-center mb-4">Insertar edición</h5>
                     <form id="formInsertar" class="mx-auto">
 
-                    <!-- Fila 1 -->
+                    <!-- Fila 1: Nombre y Horas -->
                     <div class="row mb-3">
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="nombre" class="form-label">Nombre</label>
+                        <div class="col-md-6">
+                            <label for="nombreFormacion" class="form-label">Nombre</label>
                             <select class="form-select" id="nombreFormacion" name="id_formacion">
                             </select>
                         </div>
-                        <div class="col-mg-6 col-lg-4">
+                        <div class="col-md-6">
+                            <label for="horas" class="form-label">Horas</label>
+                            <input type="number" class="form-control" id="horas" name="horas">
+                        </div>
+                    </div>
+
+                    <!-- Fila 2: Fechas -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
                             <label for="f_inicio" class="form-label">f_Inicio</label>
                             <input type="date" class="form-control" id="f_inicio" name="f_inicio" required>
                         </div>
-                        <div class="col-mg-6 col-lg-4">
+                        <div class="col-md-6">
                             <label for="f_fin" class="form-label">f_fin</label>
                             <input type="date" class="form-control" id="f_fin" name="f_fin" required>
-                        </div>
-                        <div class="col-mg-6 col-lg-4">
-                            <label for="horas" class="form-label">Horas</label>
-                            <input type="number" class="form-control" id="horas" name="horas">
                         </div>
                     </div>
 
@@ -106,46 +110,6 @@
 
                     </form>
 
-                </div>
-
-                <!-- Contenedor tabla personas en edición -->
-                <div class="container mt-5 p-0">
-                <h5 class="text-center mb-4">Bomberos apuntados a ediciones</h5>
-                <table class="table table-bordered table-striped" id="tablaPersonas">
-                    <thead class="table-dark">
-                    <tr>
-                        <th>Nombre Formación</th>
-                        <th>Fecha Inicio</th>
-                        <th>ID Bombero</th>
-                        <th>Acción</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <!-- Filas dinámicas -->
-                    </tbody>
-                </table>
-                </div>
-
-                <!-- Contenedor insertar persona en edición -->
-                <div class="contenedorInsertar container mt-3 p-4 border rounded">
-                <h5 class="text-center mb-4">Apuntar bombero a edición</h5>
-                <form id="formInsertarPersona" class="mx-auto">
-                    <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="id_bombero" class="form-label">ID Bombero</label>
-                        <input type="text" class="form-control" id="id_bombero" name="id_bombero" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="nombreFormacionPersona" class="form-label">Formación (última edición)</label>
-                        <select class="form-select" id="nombreFormacionPersona" name="id_formacion">
-                        </select>
-                    </div>
-                    </div>
-                    <div class="d-flex justify-content-center gap-2">
-                    <button type="reset" class="btn btn-secondary">Limpiar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                    </div>
-                </form>
                 </div>
             </main>
         </div>
@@ -177,7 +141,7 @@
 
     <!-- Modal de edición -->
     <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalEditarLabel">Editar registro</h5>
@@ -195,11 +159,11 @@
 
     <!-- Modal de ver -->
     <div class="modal fade" id="modalVer" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalle del tipo</h5>
+                    <h5 class="modal-title">Detalle de la edición</h5>
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
@@ -215,26 +179,6 @@
 
             </div>
         </div>
-    </div>
-
-   <!-- Modal eliminar persona -->
-    <div class="modal fade" id="modalEliminarPersona" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title">Confirmar eliminación</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-            ¿Estás seguro de que deseas eliminar este bombero de la edición?
-            <p class="text-muted mb-0">Esta acción no se puede deshacer.</p>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-danger" id="btnConfirmarEliminarPersona">Eliminar</button>
-        </div>
-        </div>
-    </div>
     </div>
 
     <!-- FOOTER -->
