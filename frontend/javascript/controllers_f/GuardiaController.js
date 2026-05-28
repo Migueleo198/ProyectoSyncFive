@@ -253,7 +253,7 @@ function crearArmazonPersonasGuardia(editable, tbodyId, paginacionId) {
 
 function filaPersonaGuardia(a, editable) {
     const accion = editable
-        ? `<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-guardia" data-id-bombero="${a.id_bombero}" title="Desasignar persona"><i class="bi bi-trash"></i></button></td>`
+        ? `<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-guardia" data-id-bombero="${a.id_bombero}" title="Desasignar persona"><i class="bi bi-person-dash"></i></button></td>`
         : '';
     return `
         <tr>

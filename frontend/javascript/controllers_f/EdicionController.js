@@ -283,7 +283,7 @@ function renderTablaPersonasEdit() {
         <td>${p.apellidos ?? ''}</td>
         <td class="text-center">
           <button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-persona-edicion" data-id_bombero="${p.id_bombero}" title="Desapuntar bombero">
-            <i class="bi bi-trash3"></i>
+            <i class="bi bi-person-dash"></i>
           </button>
         </td>
       </tr>`)
