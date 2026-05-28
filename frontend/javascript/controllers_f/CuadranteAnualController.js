@@ -2,6 +2,7 @@ import PersonaApi from '../api_f/PersonaApi.js';
 import PermisoApi from '../api_f/PermisoApi.js';
 import ApiClient  from '../api_f/ApiClient.js';
 import { authGuard } from '../helpers/authGuard.js';
+import { PERMISOS } from '/frontend/config/permissions.js';
 
 
 const MONTH_NAMES = [
@@ -29,6 +30,7 @@ let personas        = [];
 let guardias        = [];
 let permisos        = [];
 let refuerzos       = [];
+let puedeVerGlobal  = false;
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -36,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
    if (!sesion) return;
 
    idBomberoActual = sesion.usuario?.id_bombero || sesion.usuario?.user?.id_bombero || null;
+   puedeVerGlobal  = PERMISOS.cuadrantes.rolesGlobal.includes(sesion.rol);
 
    construirControles();
    construirLeyenda();
@@ -98,12 +101,16 @@ function construirControles() {
            <div class="btn-group ms-2" role="group">
                <input type="radio" class="btn-check" name="modoVista" id="modoIndividual" value="individual" autocomplete="off" checked>
                <label class="btn btn-outline-primary" for="modoIndividual">Mi cuadrante</label>
+               ${puedeVerGlobal ? `
                <input type="radio" class="btn-check" name="modoVista" id="modoGlobal" value="global" autocomplete="off">
                <label class="btn btn-outline-primary" for="modoGlobal">Global</label>
+               ` : ''}
            </div>
+           ${puedeVerGlobal ? `
            <select class="form-select form-select-sm w-auto" id="selectBombero" style="display:none;min-width:200px">
                <option value="">Seleccione un bombero...</option>
            </select>
+           ` : ''}
        </div>
    `;
 }

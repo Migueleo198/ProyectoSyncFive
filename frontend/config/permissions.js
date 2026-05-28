@@ -38,6 +38,9 @@ export const PERMISOS = {
   cuadrantes: {
     rolesLectura:[1,2,3,4,5],
     rolesEscritura: [],
+    // Quién puede ver el cuadrante "Global" (de todo el parque).
+    // El rol 1 (BOMBERO) solo ve su propio cuadrante.
+    rolesGlobal: [2,3,4,5],
   },
   dashboard: {
     rolesLectura:[1,2,3,4,5],
