@@ -1,5 +1,7 @@
 import EdicionApi from '../api_f/EdicionApi.js';
 import FormacionApi from '../api_f/FormacionApi.js';
+import PersonaApi from '../api_f/PersonaApi.js';
+
 import { authGuard } from '../helpers/authGuard.js';
 import { formatearFecha, mostrarExito, mostrarError } from '../helpers/utils.js';
 import { validarNumero, validarRangoFechas } from '../helpers/validacion.js';
@@ -9,15 +11,15 @@ let ediciones = [];
 let sesionActual = null;
 const pagination = new PaginationHelper(15);
 pagination.setLoadingCallback((isLoading) => {
-    if (isLoading) {
-        showTableLoading('#tabla tbody', 6);
-    }
+  if (isLoading) {
+    showTableLoading('#tabla tbody', 6);
+  }
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('ediciones');
   if (!sesionActual) return;
-
+  cargarSelectPersonas();
   cargarEdiciones();
   cargarFormaciones(0, 'nombreFormacion');
   cargarPersonas();
@@ -117,20 +119,20 @@ function bindFiltros() {
 function aplicarFiltros() {
   pagination.goToPage(0);
   const filtroNombre = document.getElementById('nombre')?.value.toLowerCase().trim() ?? '';
-  const filtroDesde  = document.getElementById('filtroDesde')?.value ?? '';
-  const filtroHasta  = document.getElementById('filtroHasta')?.value ?? '';
+  const filtroDesde = document.getElementById('filtroDesde')?.value ?? '';
+  const filtroHasta = document.getElementById('filtroHasta')?.value ?? '';
 
   const filtrados = ediciones.filter(e => {
     const cumpleNombre = !filtroNombre || e.nombre_formacion?.toLowerCase().includes(filtroNombre);
     const fInicio = e.f_inicio?.slice(0, 10) ?? '';
-    const fFin    = e.f_fin?.slice(0, 10) ?? '';
+    const fFin = e.f_fin?.slice(0, 10) ?? '';
     const cumpleDesde = !filtroDesde || fInicio >= filtroDesde;
-    const cumpleHasta = !filtroHasta || fFin    <= filtroHasta;
+    const cumpleHasta = !filtroHasta || fFin <= filtroHasta;
     return cumpleNombre && cumpleDesde && cumpleHasta;
   });
   pagination.setData(filtrados, () => {
-      renderTablaEdiciones(filtrados);
-    });
+    renderTablaEdiciones(filtrados);
+  });
   pagination.render('pagination-edicion');
   renderTablaEdiciones(filtrados);
 }
@@ -211,9 +213,9 @@ function bindCrearEdicion() {
     e.preventDefault();
     const f = new FormData(form);
     const id_formacion = f.get('id_formacion');
-    const f_inicio     = f.get('f_inicio');
-    const f_fin        = f.get('f_fin');
-    const horas        = f.get('horas');
+    const f_inicio = f.get('f_inicio');
+    const f_fin = f.get('f_fin');
+    const horas = f.get('horas');
 
     // ── Validación ──
     if (!validarEdicion(id_formacion, f_inicio, f_fin, horas)) return;
@@ -233,7 +235,7 @@ function bindCrearEdicion() {
 // CAMPOS BD
 // ================================
 const nombresCampos = ['ID-Formacion', 'Fecha inicio', 'Fecha fin', 'Horas'];
-const camposBd      = ['id_formacion', 'f_inicio', 'f_fin', 'horas'];
+const camposBd = ['id_formacion', 'f_inicio', 'f_fin', 'horas'];
 
 // ================================
 // MODAL VER
@@ -244,12 +246,12 @@ function bindModalVer() {
     if (!btn) return;
 
     const id_formacion = btn.dataset.id_formacion;
-    const id_edicion   = btn.dataset.id_edicion;
+    const id_edicion = btn.dataset.id_edicion;
 
     try {
       const response = await EdicionApi.getById(id_formacion, id_edicion);
       const edicionData = response?.data || response || [];
-      const edicion  = edicionData[0];
+      const edicion = edicionData[0];
       if (!edicion) return;
 
       const modalBody = document.getElementById('modalVerBody');
@@ -283,13 +285,13 @@ function bindModalEditar() {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
 
-    const id_edicion   = btn.dataset.id_edicion;
+    const id_edicion = btn.dataset.id_edicion;
     const id_formacion = btn.dataset.id_formacion;
 
     try {
       const response = await EdicionApi.getById(id_formacion, id_edicion);
       const edicionData = response?.data || response || [];
-      const edicion  = edicionData[0];
+      const edicion = edicionData[0];
       if (!edicion) return;
 
       const form = document.getElementById('formEditar');
@@ -324,9 +326,9 @@ function bindModalEditar() {
 
       document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
         const new_id_formacion = form.querySelector('[name="id_formacion"]').value;
-        const f_inicio         = form.querySelector('[name="f_inicio"]').value;
-        const f_fin            = form.querySelector('[name="f_fin"]').value;
-        const horas            = form.querySelector('[name="horas"]').value;
+        const f_inicio = form.querySelector('[name="f_inicio"]').value;
+        const f_fin = form.querySelector('[name="f_fin"]').value;
+        const horas = form.querySelector('[name="horas"]').value;
 
         // ── Validación ──
         if (!validarEdicion(new_id_formacion, f_inicio, f_fin, horas)) return;
@@ -361,12 +363,12 @@ function bindModalEliminarEdicion() {
     if (!btn) return;
 
     const btnConfirm = document.getElementById('btnConfirmarEliminar');
-    btnConfirm.dataset.id_edicion   = btn.dataset.id_edicion;
+    btnConfirm.dataset.id_edicion = btn.dataset.id_edicion;
     btnConfirm.dataset.id_formacion = btn.dataset.id_formacion;
   });
 
   document.getElementById('btnConfirmarEliminar').addEventListener('click', async function () {
-    const id_edicion   = this.dataset.id_edicion;
+    const id_edicion = this.dataset.id_edicion;
     const id_formacion = this.dataset.id_formacion;
     if (!id_edicion || !id_formacion) return;
 
@@ -386,7 +388,7 @@ function bindModalEliminarEdicion() {
 // ================================
 async function cargarPersonas() {
   try {
-    const resEdiciones   = await EdicionApi.getAll();
+    const resEdiciones = await EdicionApi.getAll();
     const todasEdiciones = resEdiciones?.data || resEdiciones || [];
 
     const tbody = document.querySelector('#tablaPersonas tbody');
@@ -443,13 +445,13 @@ function bindInsertarPersona() {
     e.preventDefault();
     const f = new FormData(form);
     const id_formacion = f.get('id_formacion');
-    const id_bombero   = f.get('id_bombero');
+    const id_bombero = f.get('id_bombero');
 
     if (!id_formacion) { mostrarError('Selecciona una formación.'); return; }
-    if (!id_bombero)   { mostrarError('Introduce el ID del bombero.'); return; }
+    if (!id_bombero) { mostrarError('Introduce el ID del bombero.'); return; }
 
     try {
-      const resEdiciones   = await EdicionApi.getAll();
+      const resEdiciones = await EdicionApi.getAll();
       const edicionesFormacion = resEdiciones?.data || resEdiciones || []
         .filter(e => Number(e.id_formacion) === Number(id_formacion))
         .sort((a, b) => new Date(b.f_inicio) - new Date(a.f_inicio));
@@ -480,9 +482,9 @@ function bindModalEliminarPersona() {
     if (!btn) return;
 
     const btnConfirm = document.getElementById('btnConfirmarEliminarPersona');
-    btnConfirm.dataset.id_edicion   = btn.dataset.id_edicion;
+    btnConfirm.dataset.id_edicion = btn.dataset.id_edicion;
     btnConfirm.dataset.id_formacion = btn.dataset.id_formacion;
-    btnConfirm.dataset.id_bombero   = btn.dataset.id_bombero;
+    btnConfirm.dataset.id_bombero = btn.dataset.id_bombero;
   });
 
   document.getElementById('btnConfirmarEliminarPersona').addEventListener('click', async function () {
@@ -498,4 +500,27 @@ function bindModalEliminarPersona() {
       mostrarError('Error al eliminar persona: ' + error.message);
     }
   });
+}
+
+// ================================
+// CARGAR PERSONAS EN SELECT
+// ================================
+async function cargarSelectPersonas() {
+  const select = document.getElementById('id_bombero');
+  if (!select) return;
+
+  try {
+    const res = await PersonaApi.getAll();
+    const personas = res?.data || res || [];
+
+    select.innerHTML = '<option value="">Seleccione persona...</option>';
+    personas.forEach(p => {
+      const option = document.createElement('option');
+      option.value = p.id_bombero;
+      option.textContent = `${p.id_bombero} - ${p.nombre} ${p.apellidos}`;
+      select.appendChild(option);
+    });
+  } catch (e) {
+    mostrarError(e.message || 'Error cargando personas');
+  }
 }

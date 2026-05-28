@@ -7,9 +7,9 @@ let formaciones = [];
 let sesionActual = null;
 const pagination = new PaginationHelper(15);
 pagination.setLoadingCallback((isLoading) => {
-    if (isLoading) {
-        showTableLoading('#tabla tbody', 4);
-    }
+  if (isLoading) {
+    showTableLoading('#tabla tbody', 4);
+  }
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -106,12 +106,12 @@ function aplicarFiltros() {
     !filtroNombre || f.nombre?.toLowerCase().includes(filtroNombre)
   );
   pagination.setData(filtrados, () => {
-      renderTablaFormaciones(filtrados);
-    });
+    renderTablaFormaciones(filtrados);
+  });
   pagination.render('pagination-formacion');
   renderTablaFormaciones(filtrados);
 }
-  
+
 // ================================
 // VALIDAR FORMACIÓN
 // Según DDL Formacion:
@@ -144,7 +144,7 @@ function bindCrearFormacion() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
-    const nombre      = f.get('nombre');
+    const nombre = f.get('nombre');
     const descripcion = f.get('descripcion');
 
     // ── Validación ──
@@ -165,7 +165,7 @@ function bindCrearFormacion() {
 // CAMPOS BD
 // ================================
 const nombresCampos = ['Nombre', 'Descripcion'];
-const camposBd      = ['nombre', 'descripcion'];
+const camposBd = ['nombre', 'descripcion'];
 
 // ================================
 // MODAL VER
@@ -181,6 +181,15 @@ function bindModalVer() {
     const modalBody = document.getElementById('modalVerBody');
     modalBody.innerHTML = '';
 
+    // ── ID ──
+    const pId = document.createElement('p');
+    const strongId = document.createElement('strong');
+    strongId.textContent = 'ID: ';
+    pId.appendChild(strongId);
+    pId.appendChild(document.createTextNode(formacion.id_formacion ?? ''));
+    modalBody.appendChild(pId);
+
+    // ── Resto de campos ──
     nombresCampos.forEach((nombre, index) => {
       const p = document.createElement('p');
       const strong = document.createElement('strong');
@@ -203,7 +212,7 @@ function bindModalEditar() {
     const id = btn.dataset.id;
 
     try {
-      const response  = await FormacionApi.getById(id);
+      const response = await FormacionApi.getById(id);
       const formacion = response?.data || response;
       if (!formacion) return;
 
@@ -225,7 +234,7 @@ function bindModalEditar() {
       `;
 
       document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-        const nombre      = form.querySelector('[name="nombre"]').value;
+        const nombre = form.querySelector('[name="nombre"]').value;
         const descripcion = form.querySelector('[name="descripcion"]').value;
 
         // ── Validación ──

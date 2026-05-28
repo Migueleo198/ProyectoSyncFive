@@ -16,9 +16,9 @@ let rolesDisponibles = [];
 let sesionActual = null;
 const pagination = new PaginationHelper(15);
 pagination.setLoadingCallback((isLoading) => {
-    if (isLoading) {
-        showTableLoading('#tabla tbody', 9);
-    }
+  if (isLoading) {
+    showTableLoading('#tabla tbody', 9);
+  }
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -89,17 +89,17 @@ function aplicarFiltros() {
   pagination.goToPage(0);
   const filtroIDBombero = document.getElementById('filtroIDBombero')?.value.toLowerCase().trim() ?? '';
   const filtroLocalidad = document.getElementById('filtroLocalidad')?.value ?? '';
-  const filtroActivo    = document.getElementById('filtroActivo')?.value ?? '';
+  const filtroActivo = document.getElementById('filtroActivo')?.value ?? '';
 
   const filtrados = personas.filter(p => {
-    const cumpleID        = !filtroIDBombero || String(p.id_bombero).toLowerCase().includes(filtroIDBombero);
+    const cumpleID = !filtroIDBombero || String(p.id_bombero).toLowerCase().includes(filtroIDBombero);
     const cumpleLocalidad = !filtroLocalidad || p.localidad === filtroLocalidad;
-    const cumpleActivo    = filtroActivo === '' || String(p.activo) === String(filtroActivo);
+    const cumpleActivo = filtroActivo === '' || String(p.activo) === String(filtroActivo);
     return cumpleID && cumpleLocalidad && cumpleActivo;
   });
   pagination.setData(filtrados, () => {
-      renderTablaPersonas(filtrados);
-    });
+    renderTablaPersonas(filtrados);
+  });
   pagination.render('pagination-persona');
   renderTablaPersonas(filtrados);
 }
@@ -169,8 +169,8 @@ function renderTablaPersonas(lista) {
   });
 }
 
-const nombresCampos = ['correo','telefono','f_ingreso_diputacion','talla_superior','talla_inferior','talla_calzado','nombre','apellidos','f_nacimiento','telefono_emergencia','domicilio','localidad','id_rol','activo','nombre_usuario'];
-const camposBd      = ['correo','telefono','f_ingreso_diputacion','talla_superior','talla_inferior','talla_calzado','nombre','apellidos','f_nacimiento','telefono_emergencia','domicilio','localidad','id_rol','activo','nombre_usuario'];
+const nombresCampos = ['ID Bombero', 'Nº Funcionario', 'Correo', 'Teléfono', 'F. Ingreso Diputación', 'Talla Superior', 'Talla Inferior', 'Talla Calzado', 'Nombre', 'Apellidos', 'F. Nacimiento', 'Teléfono Emergencia', 'Domicilio', 'Localidad', 'Rol', 'Activo', 'Nombre Usuario'];
+const camposBd = ['id_bombero', 'n_funcionario', 'correo', 'telefono', 'f_ingreso_diputacion', 'talla_superior', 'talla_inferior', 'talla_calzado', 'nombre', 'apellidos', 'f_nacimiento', 'telefono_emergencia', 'domicilio', 'localidad', 'id_rol', 'activo', 'nombre_usuario'];
 
 // ================================
 // MODAL VER
@@ -281,24 +281,24 @@ function bindCrearPersona() {
     e.preventDefault();
     const f = new FormData(form);
     const data = {
-      id_bombero:           f.get('id_bombero')?.trim(),
-      n_funcionario:        f.get('n_funcionario')?.trim(),
-      DNI:                  f.get('dni')?.trim(),
-      nombre:               f.get('nombre')?.trim(),
-      apellidos:            f.get('apellidos')?.trim(),
-      f_nacimiento:         f.get('f_nacimiento'),
-      correo:               f.get('correo')?.trim(),
-      telefono:             f.get('telefono')?.trim(),
-      telefono_emergencia:  f.get('telefono_emergencia')?.trim() || null,
+      id_bombero: f.get('id_bombero')?.trim(),
+      n_funcionario: f.get('n_funcionario')?.trim(),
+      DNI: f.get('dni')?.trim(),
+      nombre: f.get('nombre')?.trim(),
+      apellidos: f.get('apellidos')?.trim(),
+      f_nacimiento: f.get('f_nacimiento'),
+      correo: f.get('correo')?.trim(),
+      telefono: f.get('telefono')?.trim(),
+      telefono_emergencia: f.get('telefono_emergencia')?.trim() || null,
       f_ingreso_diputacion: f.get('f_ingreso_diputacion') || null,
-      domicilio:            f.get('domicilio')?.trim() || null,
-      localidad:            f.get('localidad')?.trim() || null,
-      talla_superior:       f.get('talla_superior')?.trim() || null,
-      talla_inferior:       f.get('talla_inferior')?.trim() || null,
-      talla_calzado:        f.get('talla_calzado')?.trim() || null,
-      id_rol:               f.get('id_rol') || null,
-      nombre_usuario:       f.get('nombre_usuario')?.trim(),
-      contrasenia:          f.get('contrasenia'),
+      domicilio: f.get('domicilio')?.trim() || null,
+      localidad: f.get('localidad')?.trim() || null,
+      talla_superior: f.get('talla_superior')?.trim() || null,
+      talla_inferior: f.get('talla_inferior')?.trim() || null,
+      talla_calzado: f.get('talla_calzado')?.trim() || null,
+      id_rol: f.get('id_rol') || null,
+      nombre_usuario: f.get('nombre_usuario')?.trim(),
+      contrasenia: f.get('contrasenia'),
     };
 
     // CORRECCIÓN: validar todos los campos antes de enviar
@@ -329,34 +329,34 @@ function bindModalEditar() {
       const form = document.getElementById('formEditar');
       form.innerHTML = `
         <div class="row mb-3">
-          <div class="col-lg-4"><label class="form-label">Nombre</label><input type="text" class="form-control" name="nombre" value="${persona.nombre||''}"></div>
-          <div class="col-lg-4"><label class="form-label">Apellidos</label><input type="text" class="form-control" name="apellidos" value="${persona.apellidos||''}"></div>
-          <div class="col-lg-4"><label class="form-label">Correo</label><input type="email" class="form-control" name="correo" value="${persona.correo||''}"></div>
+          <div class="col-lg-4"><label class="form-label">Nombre</label><input type="text" class="form-control" name="nombre" value="${persona.nombre || ''}"></div>
+          <div class="col-lg-4"><label class="form-label">Apellidos</label><input type="text" class="form-control" name="apellidos" value="${persona.apellidos || ''}"></div>
+          <div class="col-lg-4"><label class="form-label">Correo</label><input type="email" class="form-control" name="correo" value="${persona.correo || ''}"></div>
         </div>
         <div class="row mb-3">
-          <div class="col-lg-4"><label class="form-label">Teléfono</label><input type="text" class="form-control" name="telefono" value="${persona.telefono||''}"></div>
-          <div class="col-lg-4"><label class="form-label">Fecha Ingreso Diputación</label><input type="date" class="form-control" name="f_ingreso_diputacion" value="${persona.f_ingreso_diputacion||''}"></div>
-          <div class="col-lg-4"><label class="form-label">Talla Superior</label><input type="text" class="form-control" name="talla_superior" value="${persona.talla_superior||''}"></div>
+          <div class="col-lg-4"><label class="form-label">Teléfono</label><input type="text" class="form-control" name="telefono" value="${persona.telefono || ''}"></div>
+          <div class="col-lg-4"><label class="form-label">Fecha Ingreso Diputación</label><input type="date" class="form-control" name="f_ingreso_diputacion" value="${persona.f_ingreso_diputacion || ''}"></div>
+          <div class="col-lg-4"><label class="form-label">Talla Superior</label><input type="text" class="form-control" name="talla_superior" value="${persona.talla_superior || ''}"></div>
         </div>
         <div class="row mb-3">
-          <div class="col-lg-4"><label class="form-label">Talla Inferior</label><input type="text" class="form-control" name="talla_inferior" value="${persona.talla_inferior||''}"></div>
-          <div class="col-lg-4"><label class="form-label">Talla Calzado</label><input type="number" class="form-control" name="talla_calzado" value="${persona.talla_calzado||''}"></div>
-          <div class="col-lg-4"><label class="form-label">Fecha Nacimiento</label><input type="date" class="form-control" name="f_nacimiento" value="${persona.f_nacimiento||''}"></div>
+          <div class="col-lg-4"><label class="form-label">Talla Inferior</label><input type="text" class="form-control" name="talla_inferior" value="${persona.talla_inferior || ''}"></div>
+          <div class="col-lg-4"><label class="form-label">Talla Calzado</label><input type="number" class="form-control" name="talla_calzado" value="${persona.talla_calzado || ''}"></div>
+          <div class="col-lg-4"><label class="form-label">Fecha Nacimiento</label><input type="date" class="form-control" name="f_nacimiento" value="${persona.f_nacimiento || ''}"></div>
         </div>
         <div class="row mb-3">
-          <div class="col-lg-4"><label class="form-label">Tel. Emergencia</label><input type="text" class="form-control" name="telefono_emergencia" value="${persona.telefono_emergencia||''}"></div>
-          <div class="col-lg-4"><label class="form-label">Domicilio</label><input type="text" class="form-control" name="domicilio" value="${persona.domicilio||''}"></div>
-          <div class="col-lg-4"><label class="form-label">Localidad</label><input type="text" class="form-control" name="localidad" value="${persona.localidad||''}"></div>
+          <div class="col-lg-4"><label class="form-label">Tel. Emergencia</label><input type="text" class="form-control" name="telefono_emergencia" value="${persona.telefono_emergencia || ''}"></div>
+          <div class="col-lg-4"><label class="form-label">Domicilio</label><input type="text" class="form-control" name="domicilio" value="${persona.domicilio || ''}"></div>
+          <div class="col-lg-4"><label class="form-label">Localidad</label><input type="text" class="form-control" name="localidad" value="${persona.localidad || ''}"></div>
         </div>
         <div class="row mb-3">
           <div class="col-lg-4"><label class="form-label" for="editIdRol">Rol</label><select class="form-select" id="editIdRol" name="id_rol"><option value="">Seleccione rol...</option></select></div>
           <div class="col-lg-4"><label class="form-label">Activo</label>
             <select class="form-select" name="activo">
-              <option value="1" ${persona.activo==1?'selected':''}>Sí</option>
-              <option value="0" ${persona.activo==0?'selected':''}>No</option>
+              <option value="1" ${persona.activo == 1 ? 'selected' : ''}>Sí</option>
+              <option value="0" ${persona.activo == 0 ? 'selected' : ''}>No</option>
             </select>
           </div>
-          <div class="col-lg-4"><label class="form-label">Nombre Usuario</label><input type="text" class="form-control" name="nombre_usuario" value="${persona.nombre_usuario||''}"></div>
+          <div class="col-lg-4"><label class="form-label">Nombre Usuario</label><input type="text" class="form-control" name="nombre_usuario" value="${persona.nombre_usuario || ''}"></div>
         </div>
         <div class="text-center">
           <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>

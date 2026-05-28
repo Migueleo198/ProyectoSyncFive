@@ -8,21 +8,21 @@ use Core\Response;
 use Validation\ValidationException;
 use Throwable;
 
-use Services\InfraestructuraAguaService;
+use Services\MapaService;
 
-
-class InfraestructuraAguaController
+class MapaController
 {
-    private InfraestructuraAguaService $service;
+    private MapaService $service;
+
 
     public function __construct()
     {
-        $this->service = new InfraestructuraAguaService();
+$this->service = new MapaService();
     }
 
 
     /**
-     * GET /infraestructuras-agua
+     * GET /mapas
      * Parámetros opcionales: tipo, provincia, municipio, estado
      */
 public function index(Request $req, Response $res): void
@@ -43,7 +43,7 @@ public function index(Request $req, Response $res): void
 
 
     /**
-     * GET /infraestructuras-agua/{codigo}
+     * GET /mapa/{codigo}
      */
     public function show(Request $req, Response $res, string $codigo): void
     {
@@ -62,7 +62,7 @@ public function index(Request $req, Response $res): void
 
 
     /**
-     * POST /infraestructuras-agua
+     * POST /mapa
      */
     public function store(Request $req, Response $res): void
     {
@@ -89,7 +89,7 @@ public function index(Request $req, Response $res): void
 
 
     /**
-     * PUT /infraestructuras-agua/{id}
+     * PUT /mapa/{id}
      */
     public function update(Request $req, Response $res, string $codigo): void
     {
@@ -114,7 +114,7 @@ public function index(Request $req, Response $res): void
 
 
     /**
-     * DELETE /infraestructuras-agua/{codigo}
+     * DELETE /mapa/{codigo}
      */
     public function destroy(Request $req, Response $res, string $codigo): void
     {

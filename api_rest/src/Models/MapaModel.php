@@ -6,7 +6,7 @@ namespace Models;
 use Core\DB;
 use Exception;
 
-class InfraestructuraAguaModel
+class MapaModel
 {
     private DB $db;
 

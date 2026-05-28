@@ -3,19 +3,19 @@ declare(strict_types=1);
 
 namespace Services;
 
-use Models\InfraestructuraAguaModel;
+use Models\MapaModel;
 use Validation\Validator;
 use Validation\ValidationException;
 use Throwable;
 use PDOException;
 
-class InfraestructuraAguaService
+class MapaService
 {
-    private InfraestructuraAguaModel $model;
+    private MapaModel $model;
 
     public function __construct()
     {
-        $this->model = new InfraestructuraAguaModel();
+        $this->model = new MapaModel();
     }
 
 

@@ -3,7 +3,7 @@ export function validarDNI(dni) {
     const dniRegex = /^[0-9]{8}[A-Z]$/;
     if (!dniRegex.test(dni)) return false;
     dni = dni.toUpperCase();
-    
+
     const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
     const numero = parseInt(dni.substring(0, 8), 10);
     const letraCorrecta = letras[numero % 23];
@@ -63,8 +63,7 @@ export function validarIdBombero(id) {
 // NUMERO FUNCIONARIO -> 17 caracteres alfanuméricos
 export function validarNumeroFuncionario(numero) {
     if (!numero) return false;
-
-    const regex = /^[A-Za-z0-9]{17}$/;
+    const regex = /^[A-Za-z0-9\-]{1,17}$/;
     return regex.test(numero.trim());
 }
 
@@ -114,9 +113,7 @@ const INCIDENCIA = ["ABIERTA", "CERRADA"];
 // MANTENIMIENTO
 const MANTENIMIENTO = ["ABIERTO", "REALIZADO"];
 
-export function validarCheck(dato,rango) {
-    dato=dato.toUpperCase();    
+export function validarCheck(dato, rango) {
+    dato = dato.toUpperCase();
     return rango.includes(dato);
 }
-
-
