@@ -503,7 +503,7 @@ function generarContenidoDetalle(guardiasD, permisosD, refuerzosD) {
        html += `
            <div class="mb-2 pb-2 border-bottom">
                <span class="badge bg-success me-2">Guardia</span>
-               <span>${g.h_inicio || '??:??'} - ${g.h_fin || '??:??'}</span>
+               <span>${g.h_inicio || '??:??'} - ${g.h_fin || '??:??'}</span>${etiquetaBombero(g.id_bombero)}
                ${g.notas ? `<div class="text-muted small mt-1">${g.notas}</div>` : ''}
            </div>`;
    });
@@ -515,7 +515,7 @@ function generarContenidoDetalle(guardiasD, permisosD, refuerzosD) {
            <div class="mb-2 pb-2 border-bottom">
                <span class="badge bg-info me-2">Turno de refuerzo</span>
                <span>${hi} - ${hf}</span>
-               ${r.horas ? `<small class="text-muted ms-2">(${r.horas}h)</small>` : ''}
+               ${r.horas ? `<small class="text-muted ms-2">(${r.horas}h)</small>` : ''}${etiquetaBombero(r.id_bombero)}
            </div>`;
    });
 
@@ -527,13 +527,24 @@ function generarContenidoDetalle(guardiasD, permisosD, refuerzosD) {
        html += `
             <div class="mb-2 pb-2 border-bottom">
                 <span class="badge ${badge} me-2">Permiso</span>
-                <span>${p.estado}</span>
+                <span>${p.estado}</span>${etiquetaBombero(p.id_bombero)}
                 <div class="text-muted small mt-1">${formatearRangoPermiso(p)}</div>
                 ${p.descripcion ? `<div class="text-muted small mt-1">${p.descripcion}</div>` : ''}
             </div>`;
     });
 
    return html;
+}
+
+
+// En modo global, identifica a qué bombero pertenece cada evento del día.
+function etiquetaBombero(idBombero) {
+   if (modoVista !== 'global' || idBombero == null) return '';
+   const persona = personas.find(p => p.id_bombero == idBombero);
+   const nombre = persona
+       ? `${persona.nombre} ${persona.apellidos || ''}`.trim()
+       : `Bombero #${idBombero}`;
+   return ` <span class="fw-semibold">· ${nombre}</span>`;
 }
 
 
