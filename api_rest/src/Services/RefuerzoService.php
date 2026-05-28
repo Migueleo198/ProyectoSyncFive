@@ -34,6 +34,25 @@ class RefuerzoService
     }
 
     /**
+     * Obtener las personas asignadas a turnos de refuerzo activos en una fecha
+     */
+    public function getTurnoRefuerzoByFecha(string $fecha): array
+    {
+        Validator::validate(['fecha' => $fecha], [
+            'fecha' => 'required|string'
+        ]);
+
+        try {
+            return $this->model->getTurnoRefuerzoByFecha($fecha);
+        } catch (Throwable $e) {
+            throw new \Exception(
+                "Error interno en la base de datos: " . $e->getMessage(),
+                500
+            );
+        }
+    }
+
+    /**
      * Obtener un refuerzo por su ID (string)
      */
     public function getRefuerzoById(string $id_turno_refuerzo): array
