@@ -320,9 +320,9 @@ function crearCard(e) {
           <p><strong>Dirección:</strong> ${e.direccion ?? ''}</p>
           <p><strong>Solicitante:</strong> ${e.nombre_solicitante ?? 'No informado'}</p>
 
-          <div class="d-flex flex-column gap-2 mt-3" style="max-width:200px;">
+          <div class="d-flex flex-column gap-2 mt-3" style="width:fit-content;">
             <button
-              class="btn btn-outline-primary btn-sm btn-ver"
+              class="btn btn-outline-primary btn-sm btn-ver-emergencia"
               data-bs-toggle="modal"
               data-bs-target="#modalVerEmergencia"
               data-id="${e.id_emergencia}">
@@ -348,7 +348,7 @@ function bindEventos() {
   document.addEventListener('click', function (e) {
 
     // ── Modal VER detalle ──────────────────────────────────────────────────
-    const btnVer = e.target.closest('.btn-ver');
+    const btnVer = e.target.closest('.btn-ver-emergencia');
     if (btnVer) {
       const id         = btnVer.dataset.id;
       const emergencia = emergencias.find(em => em.id_emergencia == id);
