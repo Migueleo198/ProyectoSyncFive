@@ -9,7 +9,16 @@ import { PaginationHelper, showTableLoading } from '../helpers/PaginationHelper.
 
 let ediciones = [];
 let sesionActual = null;
+let personasDisponibles = [];
+
 const pagination = new PaginationHelper(15);
+const paginacionVerPersonas = new PaginationHelper(8);
+const paginacionEditPersonas = new PaginationHelper(8);
+
+let personasVer = [];
+let personasEdit = [];
+let edicionEnEdicion = null; // { id_formacion, id_edicion }
+
 pagination.setLoadingCallback((isLoading) => {
   if (isLoading) {
     showTableLoading('#tabla tbody', 6);
@@ -19,20 +28,17 @@ pagination.setLoadingCallback((isLoading) => {
 document.addEventListener('DOMContentLoaded', async () => {
   sesionActual = await authGuard('ediciones');
   if (!sesionActual) return;
-  cargarSelectPersonas();
   cargarEdiciones();
   cargarFormaciones(0, 'nombreFormacion');
-  cargarPersonas();
-  cargarFormaciones(0, 'nombreFormacionPersona');
+  cargarPersonasDisponibles();
 
   bindModalVer();
 
   if (sesionActual.puedeEscribir) {
     bindCrearEdicion();
-    bindInsertarPersona();
     bindModalEditar();
     bindModalEliminarEdicion();
-    bindModalEliminarPersona();
+    bindDesasignarPersonaEdicion();
   }
 });
 
@@ -164,41 +170,50 @@ async function cargarFormaciones(formacionSeleccionada, id_select) {
 }
 
 // ================================
+// CARGAR PERSONAS DISPONIBLES (para el selector de asignar)
+// ================================
+async function cargarPersonasDisponibles() {
+  try {
+    const res = await PersonaApi.getAll();
+    personasDisponibles = res?.data || res || [];
+  } catch (e) {
+    personasDisponibles = [];
+  }
+}
+
+function crearOptionsPersonas() {
+  return '<option value="">Seleccione persona...</option>' +
+    personasDisponibles
+      .map(p => `<option value="${p.id_bombero}">${p.id_bombero} - ${p.nombre} ${p.apellidos ?? ''}</option>`)
+      .join('');
+}
+
+// ================================
 // VALIDAR EDICIÓN
-// Según DDL Edicion:
-//   f_inicio     DATE NOT NULL
-//   f_fin        DATE NOT NULL  CHECK (f_fin >= f_inicio)
-//   horas        INT  NOT NULL  CHECK (horas > 0)
-//   id_formacion FK  NOT NULL
+//   f_inicio DATE NOT NULL · f_fin DATE NOT NULL CHECK (f_fin >= f_inicio)
+//   horas INT NOT NULL CHECK (horas > 0) · id_formacion FK NOT NULL
 // ================================
 function validarEdicion(id_formacion, f_inicio, f_fin, horas) {
   if (!id_formacion) {
     mostrarError('Debe seleccionar una formación.');
     return false;
   }
-
   if (!f_inicio) {
     mostrarError('La fecha de inicio es obligatoria.');
     return false;
   }
-
   if (!f_fin) {
     mostrarError('La fecha de fin es obligatoria.');
     return false;
   }
-
-  // CHECK (f_fin >= f_inicio)
   if (!validarRangoFechas(f_inicio, f_fin)) {
     mostrarError('La fecha de fin debe ser igual o posterior a la fecha de inicio.');
     return false;
   }
-
-  // CHECK (horas > 0)
   if (!validarNumero(horas)) {
     mostrarError('Las horas deben ser un número entero positivo.');
     return false;
   }
-
   return true;
 }
 
@@ -217,7 +232,6 @@ function bindCrearEdicion() {
     const f_fin = f.get('f_fin');
     const horas = f.get('horas');
 
-    // ── Validación ──
     if (!validarEdicion(id_formacion, f_inicio, f_fin, horas)) return;
 
     try {
@@ -232,10 +246,58 @@ function bindCrearEdicion() {
 }
 
 // ================================
-// CAMPOS BD
+// CAMPOS BD (modal ver)
 // ================================
 const nombresCampos = ['ID-Formacion', 'Fecha inicio', 'Fecha fin', 'Horas'];
 const camposBd = ['id_formacion', 'f_inicio', 'f_fin', 'horas'];
+
+// ================================
+// TABLA DE PERSONAS EN MODALES (paginada)
+// ================================
+function renderTablaPersonasVer() {
+  const tbody = document.querySelector('#tablaPersonasVer');
+  if (!tbody) return;
+  if (!personasVer.length) {
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Sin bomberos apuntados a esta edición</td></tr>';
+    return;
+  }
+  const items = paginacionVerPersonas.getPageItems(personasVer);
+  tbody.innerHTML = items
+    .map(p => `<tr><td>${p.id_bombero}</td><td>${p.nombre ?? ''}</td><td>${p.apellidos ?? ''}</td></tr>`)
+    .join('');
+}
+
+function renderTablaPersonasEdit() {
+  const tbody = document.querySelector('#tablaPersonasEdit');
+  if (!tbody) return;
+  if (!personasEdit.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Sin bomberos apuntados a esta edición</td></tr>';
+    return;
+  }
+  const items = paginacionEditPersonas.getPageItems(personasEdit);
+  tbody.innerHTML = items
+    .map(p => `
+      <tr>
+        <td>${p.id_bombero}</td>
+        <td>${p.nombre ?? ''}</td>
+        <td>${p.apellidos ?? ''}</td>
+        <td class="text-center">
+          <button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-persona-edicion" data-id_bombero="${p.id_bombero}" title="Desapuntar bombero">
+            <i class="bi bi-person-dash"></i>
+          </button>
+        </td>
+      </tr>`)
+    .join('');
+}
+
+async function refrescarPersonasEdit() {
+  if (!edicionEnEdicion) return;
+  const res = await EdicionApi.getPersonas(edicionEnEdicion.id_formacion, edicionEnEdicion.id_edicion);
+  personasEdit = res?.data || res || [];
+  paginacionEditPersonas.setData(personasEdit, () => renderTablaPersonasEdit());
+  paginacionEditPersonas.render('pagination-edit-personas');
+  renderTablaPersonasEdit();
+}
 
 // ================================
 // MODAL VER
@@ -255,20 +317,28 @@ function bindModalVer() {
       if (!edicion) return;
 
       const modalBody = document.getElementById('modalVerBody');
-      modalBody.innerHTML = '';
-
+      let html = '';
       nombresCampos.forEach((nombre, index) => {
         const campo = camposBd[index];
         let valor = edicion[campo] ?? '';
         if (campo === 'f_inicio' || campo === 'f_fin') valor = formatearFecha(valor);
-
-        const p = document.createElement('p');
-        const strong = document.createElement('strong');
-        strong.textContent = nombre + ': ';
-        p.appendChild(strong);
-        p.appendChild(document.createTextNode(valor));
-        modalBody.appendChild(p);
+        html += `<p><strong>${nombre}: </strong>${valor}</p>`;
       });
+      html += `
+        <hr class="my-3">
+        <h6 class="fw-bold">Bomberos apuntados a esta edición</h6>
+        <table class="table table-bordered table-striped">
+          <thead class="table-dark"><tr><th>ID Bombero</th><th>Nombre</th><th>Apellidos</th></tr></thead>
+          <tbody id="tablaPersonasVer"></tbody>
+        </table>
+        <div id="pagination-ver-personas" class="mt-2"></div>`;
+      modalBody.innerHTML = html;
+
+      const resP = await EdicionApi.getPersonas(id_formacion, id_edicion);
+      personasVer = resP?.data || resP || [];
+      paginacionVerPersonas.setData(personasVer, () => renderTablaPersonasVer());
+      paginacionVerPersonas.render('pagination-ver-personas');
+      renderTablaPersonasVer();
 
       new bootstrap.Modal(document.getElementById('modalVer')).show();
     } catch (error) {
@@ -278,7 +348,7 @@ function bindModalVer() {
 }
 
 // ================================
-// MODAL EDITAR
+// MODAL EDITAR (datos + apuntar/desapuntar bomberos)
 // ================================
 function bindModalEditar() {
   document.addEventListener('click', async function (e) {
@@ -293,6 +363,8 @@ function bindModalEditar() {
       const edicionData = response?.data || response || [];
       const edicion = edicionData[0];
       if (!edicion) return;
+
+      edicionEnEdicion = { id_formacion, id_edicion };
 
       const form = document.getElementById('formEditar');
       form.innerHTML = `
@@ -314,12 +386,30 @@ function bindModalEditar() {
             <input type="number" min="1" step="1" class="form-control" name="horas" value="${edicion.horas ?? ''}">
           </div>
         </div>
-        <div class="row text-center">
+        <div class="row text-center mb-2">
           <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
         </div>
+
+        <hr class="my-3">
+        <h6 class="fw-bold">Bomberos apuntados a esta edición</h6>
+        <div class="row g-2 align-items-end mb-3">
+          <div class="col-md-9">
+            <label class="form-label" for="selPersonaEdicion">Persona</label>
+            <select class="form-select" id="selPersonaEdicion">${crearOptionsPersonas()}</select>
+          </div>
+          <div class="col-md-3">
+            <button type="button" class="btn btn-success w-100" id="btnApuntarPersonaEdicion">Apuntar</button>
+          </div>
+        </div>
+        <table class="table table-bordered table-striped">
+          <thead class="table-dark"><tr><th>ID Bombero</th><th>Nombre</th><th>Apellidos</th><th>Acción</th></tr></thead>
+          <tbody id="tablaPersonasEdit"></tbody>
+        </table>
+        <div id="pagination-edit-personas" class="mt-2"></div>
       `;
 
       await cargarFormaciones(edicion.id_formacion, 'nombreFormacionEdit');
+      await refrescarPersonasEdit();
 
       const modal = new bootstrap.Modal(document.getElementById('modalEditar'));
       modal.show();
@@ -330,7 +420,6 @@ function bindModalEditar() {
         const f_fin = form.querySelector('[name="f_fin"]').value;
         const horas = form.querySelector('[name="horas"]').value;
 
-        // ── Validación ──
         if (!validarEdicion(new_id_formacion, f_inicio, f_fin, horas)) return;
 
         try {
@@ -348,8 +437,41 @@ function bindModalEditar() {
         }
       });
 
+      document.getElementById('btnApuntarPersonaEdicion').addEventListener('click', async () => {
+        const id_bombero = document.getElementById('selPersonaEdicion').value;
+        if (!id_bombero) { mostrarError('Selecciona un bombero.'); return; }
+        try {
+          await EdicionApi.setPersonas(id_formacion, id_edicion, { id_bombero });
+          await refrescarPersonasEdit();
+          mostrarExito('Bombero apuntado correctamente');
+        } catch (err) {
+          mostrarError(err.message || 'Error apuntando bombero');
+        }
+      });
+
     } catch (error) {
       mostrarError(error.message || 'Error al cargar edición para editar');
+    }
+  });
+}
+
+// ================================
+// DESAPUNTAR PERSONA (desde el modal editar)
+// ================================
+function bindDesasignarPersonaEdicion() {
+  document.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.btn-desasignar-persona-edicion');
+    if (!btn || !edicionEnEdicion) return;
+
+    const id_bombero = btn.dataset.id_bombero;
+    if (!id_bombero) return;
+
+    try {
+      await EdicionApi.deletePersona(edicionEnEdicion.id_formacion, edicionEnEdicion.id_edicion, id_bombero);
+      await refrescarPersonasEdit();
+      mostrarExito('Bombero desapuntado de la edición');
+    } catch (error) {
+      mostrarError('Error al desapuntar bombero: ' + error.message);
     }
   });
 }
@@ -381,146 +503,4 @@ function bindModalEliminarEdicion() {
       mostrarError('Error al eliminar edición: ' + error.message);
     }
   });
-}
-
-// ================================
-// CARGAR PERSONAS EN EDICIONES
-// ================================
-async function cargarPersonas() {
-  try {
-    const resEdiciones = await EdicionApi.getAll();
-    const todasEdiciones = resEdiciones?.data || resEdiciones || [];
-
-    const tbody = document.querySelector('#tablaPersonas tbody');
-    tbody.innerHTML = '';
-
-    const promesas = todasEdiciones.map(e =>
-      EdicionApi.getPersonas(e.id_formacion, e.id_edicion)
-        .then(res => ({ edicion: e, personas: res?.data || res || [] }))
-        .catch(() => ({ edicion: e, personas: [] }))
-    );
-
-    const resultados = await Promise.all(promesas);
-    const puedeEscribir = sesionActual?.puedeEscribir ?? false;
-
-    resultados.forEach(({ edicion, personas }) => {
-      if (!personas || personas.length === 0) return;
-
-      personas.forEach(persona => {
-        const tr = document.createElement('tr');
-
-        const btnEliminar = puedeEscribir
-          ? `<button type="button" class="btn p-0 btn-eliminar-persona"
-                    data-bs-toggle="modal" data-bs-target="#modalEliminarPersona"
-                    data-id_edicion="${edicion.id_edicion}"
-                    data-id_formacion="${edicion.id_formacion}"
-                    data-id_bombero="${persona.id_bombero}">
-               <i class="bi bi-trash3"></i>
-             </button>`
-          : '';
-
-        tr.innerHTML = `
-          <td>${edicion.nombre_formacion}</td>
-          <td>${formatearFecha(edicion.f_inicio)}</td>
-          <td>${persona.id_bombero}</td>
-          <td class="text-center">${btnEliminar}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    });
-
-  } catch (e) {
-    mostrarError(e.message || 'Error cargando personas');
-  }
-}
-
-// ================================
-// INSERTAR PERSONA EN EDICIÓN
-// ================================
-function bindInsertarPersona() {
-  const form = document.getElementById('formInsertarPersona');
-  if (!form) return;
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const f = new FormData(form);
-    const id_formacion = f.get('id_formacion');
-    const id_bombero = f.get('id_bombero');
-
-    if (!id_formacion) { mostrarError('Selecciona una formación.'); return; }
-    if (!id_bombero) { mostrarError('Introduce el ID del bombero.'); return; }
-
-    try {
-      const resEdiciones = await EdicionApi.getAll();
-      const edicionesFormacion = resEdiciones?.data || resEdiciones || []
-        .filter(e => Number(e.id_formacion) === Number(id_formacion))
-        .sort((a, b) => new Date(b.f_inicio) - new Date(a.f_inicio));
-
-      if (edicionesFormacion.length === 0) {
-        mostrarError('No hay ediciones para la formación seleccionada.');
-        return;
-      }
-
-      const ultimaEdicion = edicionesFormacion[0];
-      await EdicionApi.setPersonas(ultimaEdicion.id_formacion, ultimaEdicion.id_edicion, { id_bombero });
-
-      await cargarPersonas();
-      form.reset();
-      mostrarExito('Bombero apuntado correctamente');
-    } catch (err) {
-      mostrarError(err.message || 'Error apuntando bombero');
-    }
-  });
-}
-
-// ================================
-// MODAL ELIMINAR PERSONA
-// ================================
-function bindModalEliminarPersona() {
-  document.addEventListener('click', function (e) {
-    const btn = e.target.closest('.btn-eliminar-persona');
-    if (!btn) return;
-
-    const btnConfirm = document.getElementById('btnConfirmarEliminarPersona');
-    btnConfirm.dataset.id_edicion = btn.dataset.id_edicion;
-    btnConfirm.dataset.id_formacion = btn.dataset.id_formacion;
-    btnConfirm.dataset.id_bombero = btn.dataset.id_bombero;
-  });
-
-  document.getElementById('btnConfirmarEliminarPersona').addEventListener('click', async function () {
-    const { id_edicion, id_formacion, id_bombero } = this.dataset;
-    if (!id_edicion || !id_formacion || !id_bombero) return;
-
-    try {
-      await EdicionApi.deletePersona(id_formacion, id_edicion, id_bombero);
-      await cargarPersonas();
-      bootstrap.Modal.getInstance(document.getElementById('modalEliminarPersona')).hide();
-      mostrarExito('Persona eliminada correctamente');
-    } catch (error) {
-      mostrarError('Error al eliminar persona: ' + error.message);
-    }
-  });
-}
-
-// ================================
-// CARGAR PERSONAS EN SELECT
-// ================================
-async function cargarSelectPersonas() {
-  const select = document.getElementById('id_bombero');
-  if (!select) return;
-
-  try {
-    const res = await PersonaApi.getAll();
-    const personas = res?.data || res || [];
-
-    select.innerHTML = '<option value="">Seleccione persona...</option>';
-    personas.forEach(p => {
-      const option = document.createElement('option');
-      option.value = p.id_bombero;
-      option.textContent = `${p.id_bombero} - ${p.nombre} ${p.apellidos}`;
-      select.appendChild(option);
-    });
-  } catch (e) {
-    mostrarError(e.message || 'Error cargando personas');
-  }
 }

@@ -60,7 +60,7 @@ export function validarIdBombero(id) {
     return regex.test(id.trim());
 }
 
-// NUMERO FUNCIONARIO -> 17 caracteres alfanuméricos
+// NUMERO FUNCIONARIO -> 17 caracteres alfanuméricos sin guiones
 export function validarNumeroFuncionario(numero) {
     if (!numero) return false;
     const regex = /^[A-Za-z0-9\-]{1,17}$/;

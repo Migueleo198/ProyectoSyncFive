@@ -1,0 +1,4064 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Memoria SIGEBO — Cuerpo</title>
+<link rel="stylesheet" href="memoria.css">
+<style>
+  /* ── Configuración de impresión: márgenes, cabecera y pie con número de página ── */
+  @page {
+    size: A4 portrait;
+    margin: 22mm 24mm 22mm 24mm;
+
+    @top-left {
+      content: "SIGEBO — Sistema de Gestión de Bomberos";
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 9pt;
+      color: #8a94a6;
+      letter-spacing: 0.5px;
+    }
+
+    @top-right {
+      content: "Memoria TFG · DAW";
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 9pt;
+      color: #8a94a6;
+      letter-spacing: 0.5px;
+    }
+
+    @bottom-center {
+      content: counter(page);
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10pt;
+      color: #1d3a8a;
+      font-weight: 600;
+    }
+  }
+
+  /* En pantalla, el body usa fondo neutro para ver los márgenes de cada página */
+  @media screen {
+    body {
+      background: #e7eaf0;
+      padding: 20mm 0;
+    }
+    .chapter {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 10mm auto;
+      background: #ffffff;
+      padding: 22mm 24mm;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CAPÍTULO 1 — INTRODUCCIÓN  (mockup con texto-esqueleto)
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 1</span>
+    <h1 class="chapter__title">Introducción</h1>
+
+    <p class="chapter__intro">
+      Este capítulo presenta al autor del proyecto, expone el contexto y la
+      motivación que llevaron a su ejecución, y resume en una frase el
+      propósito general de la aplicación SIGEBO.
+    </p>
+
+    <h2>1.1. Presentación personal</h2>
+
+    <p>
+      Me llamo <strong>Diego Lorenzo Mir</strong> y tengo 20 años. Soy estudiante
+      de segundo curso del Ciclo Formativo de Grado Superior en
+      <em>Desarrollo de Aplicaciones Web</em> (DAW) en el CPIFP Bajo Aragón
+      de Alcañiz, donde cursé previamente el Grado Medio en Sistemas
+      Microinformáticos y Redes (SMR). Finalicé aquel ciclo en 2024 con el
+      reconocimiento al <strong>mejor expediente académico</strong> de la
+      promoción, distinción que me confirmó la decisión de orientar mi
+      trayectoria profesional hacia el desarrollo de software.
+    </p>
+
+    <p>
+      A lo largo de mi formación —tanto en SMR como en DAW— el centro aplica
+      la metodología de <strong>Aprendizaje Basado en Retos (ABR)</strong>, en
+      la que los estudiantes se organizan en equipos para resolver problemas
+      reales planteados por clientes externos. He participado en varios de
+      estos retos y he asumido el rol de líder de equipo en todos ellos por
+      designación del profesorado, una responsabilidad que ha implicado
+      coordinar el trabajo del grupo, mediar con el cliente y asegurar que el
+      producto final cubriera los objetivos planteados. Esa misma dinámica es
+      la que ha dado lugar al proyecto que se presenta en esta memoria.
+    </p>
+
+    <p>
+      Complemento la formación reglada con cursos especializados en
+      <em>inteligencia artificial aplicada a los negocios</em>
+      (Universidad Europea) y <em>machine learning con Python</em> (INAEM),
+      junto con formación más breve en blockchain y emprendimiento.
+      Profesionalmente he realizado prácticas como técnico de e-commerce en
+      MotoCrossCenter durante el primer curso de DAW (140 horas) y, en el
+      momento de redactar esta memoria, las estoy completando en IPG, una
+      consultora informática centrada en soluciones empresariales y en el
+      desarrollo asistido por inteligencia artificial.
+    </p>
+
+    <h2>1.2. Contexto y motivación del proyecto</h2>
+
+    <p>
+      El Proyecto Fin de Ciclo constituye el último requisito formativo para
+      obtener la titulación de Técnico Superior en Desarrollo de Aplicaciones
+      Web. A diferencia del resto de retos cursados durante mi formación
+      —planteados bajo la metodología de Aprendizaje Basado en Retos
+      (ABR)—, este TFG se articula sobre <strong>Aprendizaje Basado en
+      Proyectos (ABP)</strong>, la única vez que se aplica esta metodología
+      en todo mi recorrido en el centro. La razón es que el TFG no es un reto
+      exploratorio sin solución prevista, sino un proyecto formal y
+      evaluable: requiere objetivos definidos, una planificación cerrada,
+      una memoria escrita y una defensa pública. ABP proporciona el marco
+      adecuado para esa estructura, manteniendo a la vez el trabajo en
+      equipo y la relación con un cliente real que caracteriza al centro.
+    </p>
+
+    <p>
+      En esta edición, el cliente que trasladó el problema al centro fue el
+      <strong>CPIFP San Blas</strong>, que imparte el ciclo formativo de
+      grado superior en <em>Coordinación de Emergencias y Protección
+      Civil</em>. Su equipo docente detectó la necesidad de una herramienta
+      digital que centralizara la operativa diaria de un parque de
+      bomberos —hasta entonces gestionada con métodos manuales y
+      herramientas dispersas— y que, además, pudiera utilizarse como recurso
+      didáctico realista para los alumnos del ciclo, futuros profesionales
+      encargados precisamente de coordinar este tipo de servicios. A partir
+      de esta demanda se constituyó el equipo <em>SyncFive</em>, formado por
+      cinco estudiantes de DAW del que asumí el rol de líder, y que abordó
+      el proyecto bajo el nombre comercial de SIGEBO. El desarrollo se ha
+      extendido a lo largo de aproximadamente seis meses, entre
+      diciembre de 2025 y mayo de 2026.
+    </p>
+
+    <p>
+      La motivación para abordar este proyecto en particular reúne tres
+      vertientes que considero igualmente relevantes. En primer lugar, una
+      razón <strong>formativa</strong>: SIGEBO obliga a integrar prácticamente
+      todas las competencias del ciclo DAW —diseño de bases de datos
+      relacionales, API REST, autenticación y control de acceso, frontend
+      responsive, cartografía web y despliegue contenerizado—, lo que
+      convierte el reto en una síntesis natural de lo aprendido. En segundo
+      lugar, una razón <strong>técnica</strong>: el dominio del problema
+      incluye elementos poco habituales en proyectos académicos, como la
+      cartografía GIS con Leaflet, la gestión de cinco roles con permisos
+      granulares o la coordinación de información en tiempo real durante
+      emergencias. Por último, una razón <strong>de impacto</strong>: trabajar
+      sobre un problema real que afecta a un servicio esencial como la
+      respuesta ante emergencias añade una dimensión de utilidad pública que
+      proyectos puramente académicos no ofrecen.
+    </p>
+
+    <h2>1.3. Propósito general de la aplicación</h2>
+
+    <p>
+      Mi proyecto consiste en una aplicación web para la gestión integral de
+      parques de bomberos —personal, recursos, emergencias y cartografía— que
+      centraliza la operativa diaria del servicio en una única plataforma
+      accesible desde cualquier dispositivo.
+    </p>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       RESTO DE CAPÍTULOS — esqueleto a desarrollar
+       ═══════════════════════════════════════════════════════════ -->
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 2</span>
+    <h1 class="chapter__title">Planteamiento del problema</h1>
+
+    <p class="chapter__intro">
+      Este capítulo describe la necesidad operativa que originó el proyecto,
+      identifica el público al que va dirigida la aplicación y analiza el
+      estado actual de la gestión de parques de bomberos junto con las
+      soluciones existentes en el mercado.
+    </p>
+
+    <h2>2.1. Necesidad detectada</h2>
+
+    <p>
+      Un parque de bomberos es una instalación que opera de forma
+      ininterrumpida y maneja, día tras día, un volumen elevado de
+      información heterogénea: turnos y guardias del personal, formación
+      continua y méritos profesionales, inventario de vehículos y materiales,
+      mantenimiento de equipos, infraestructura de agua —especialmente la
+      red de hidrantes—, registro de avisos y emergencias, movilización de
+      unidades, partes e informes posteriores, cartografía operativa, etc.
+      Toda esta información es crítica: una guardia mal asignada, un
+      hidrante inoperativo no detectado o un vehículo sin la revisión al día
+      pueden traducirse en una respuesta deficiente ante una emergencia
+      real.
+    </p>
+
+    <p>
+      Pese a esta criticidad, la realidad observada al estudiar el problema
+      es que la mayoría de parques continúan gestionando estos procesos
+      con <strong>métodos manuales y herramientas dispersas</strong>:
+      cuadrantes en papel o en hojas de cálculo aisladas, comunicaciones
+      por teléfono y mensajería, libros de registro físicos para las
+      intervenciones, y ausencia de un punto único donde un mando o
+      coordinador pueda consultar en tiempo real el estado del personal,
+      los recursos y las emergencias activas. Esta fragmentación genera
+      duplicidad de información, riesgo de error humano, lentitud en la
+      toma de decisiones y, en última instancia, una pérdida de eficiencia
+      operativa difícilmente justificable en un servicio esencial.
+    </p>
+
+    <p>
+      Esta necesidad fue trasladada al CPIFP Bajo Aragón por el
+      <strong>CPIFP San Blas</strong> como cliente del reto, motivada por
+      una doble vertiente: por un lado, ofrecer una herramienta útil para
+      parques reales con los que el centro mantiene contacto en el marco
+      de su titulación; por otro, disponer de un recurso didáctico con el
+      que su alumnado pudiera familiarizarse con el tipo de sistemas que
+      manejará en su futura actividad profesional como Técnicos Superiores
+      en Coordinación de Emergencias y Protección Civil.
+    </p>
+
+    <h2>2.2. Público destinatario</h2>
+
+    <p>
+      SIGEBO se ha concebido para tres perfiles de usuario diferenciados,
+      cada uno con necesidades y nivel de acceso distintos al sistema:
+    </p>
+
+    <ul>
+      <li>
+        <strong>Personal operativo de parques de bomberos</strong> —
+        bomberos y mandos operativos que utilizan la plataforma para
+        consultar cuadrantes, registrar partes de intervención, gestionar
+        materiales y vehículos, y acceder a la cartografía operativa
+        durante las emergencias. Constituyen el usuario primario y más
+        numeroso. Engloba los siguientes roles del sistema, confirmados
+        por el equipo docente del CPIFP San Blas como reales en la
+        estructura organizativa de un parque:
+        <ul>
+          <li><strong>Bombero</strong> — bombero operativo de base; labores de extinción, rescate y salvamento.</li>
+          <li><strong>Oficial</strong> — oficial de guardia; coordina al equipo de bomberos durante su turno.</li>
+          <li><strong>Jefe de Intervención</strong> — dirección táctica de las operaciones en el lugar del siniestro.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Personal de coordinación y administración</strong> —
+        responsables de planificar guardias, gestionar la formación y los
+        méritos del personal, supervisar el mantenimiento de la
+        infraestructura y elaborar informes de actividad. Requieren acceso
+        a vistas agregadas y a operaciones administrativas que el personal
+        operativo no necesita. Engloba los siguientes roles del sistema:
+        <ul>
+          <li><strong>Jefe de Mando</strong> — dirección estratégica del servicio y coordinación de múltiples unidades.</li>
+          <li><strong>Inspector</strong> — supervisión, inspección y control de calidad del servicio.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Alumnado del ciclo de Coordinación de Emergencias y
+        Protección Civil del CPIFP San Blas</strong> — futuros
+        profesionales del sector que utilizan SIGEBO como recurso
+        didáctico para familiarizarse, en un entorno controlado, con el
+        tipo de herramientas digitales que encontrarán en su entorno
+        laboral.
+      </li>
+    </ul>
+
+    <p>
+      El sistema cubre las necesidades de estos tres perfiles mediante un
+      modelo de control de acceso basado en <strong>cinco roles
+      diferenciados</strong>, cuyos permisos se desarrollan con detalle en
+      el capítulo de diseño.
+    </p>
+
+    <h2>2.3. Estado actual y soluciones existentes</h2>
+
+    <p>
+      Durante la fase inicial del proyecto se realizó un análisis del
+      mercado con el objetivo de identificar soluciones ya consolidadas
+      que cubrieran necesidades similares. La búsqueda permitió localizar
+      <strong>dos referencias principales</strong> que conviene mencionar:
+    </p>
+
+    <ul>
+      <li>
+        <strong>FUOCO</strong> — software de gestión integral de parques
+        de bomberos. Es utilizado, entre otras administraciones, por la
+        Diputación Provincial de Teruel, pero no está disponible como
+        producto abierto ni comercial al que un tercero pueda acceder
+        libremente.
+      </li>
+      <li>
+        <strong>SECIGEST</strong> — plataforma de gestión de servicios
+        contra incendios y emergencias, empleada por ejemplo en la
+        provincia de Huesca. Se ofrece bajo un modelo propietario, con
+        licenciamiento y costes asociados, dirigido a entidades
+        profesionales que necesitan una solución llave en mano.
+      </li>
+    </ul>
+
+    <p>
+      Ambas soluciones acreditan que la necesidad detectada es real y que
+      el problema ya ha sido abordado en el sector. Sin embargo, ninguna
+      de las dos resultó adecuada para el contexto del cliente:
+    </p>
+
+    <ul>
+      <li>
+        <strong>FUOCO</strong> no está accesible como producto abierto
+        ni distribuido comercialmente, lo que dificulta —cuando no
+        impide— su adopción por terceros y, especialmente, por un
+        centro educativo que necesita libertad para adaptar y enseñar
+        sobre el propio sistema.
+      </li>
+      <li>
+        <strong>SECIGEST</strong> resuelve el problema, pero lo hace bajo
+        un modelo comercial cuyo coste y opacidad técnica son
+        incompatibles con un uso didáctico abierto, en el que el
+        alumnado debe poder inspeccionar, modificar o ampliar la
+        aplicación.
+      </li>
+    </ul>
+
+    <p>
+      A las limitaciones de acceso se suma un motivo de fondo más
+      relevante: la percepción compartida por los <strong>usuarios
+      reales</strong> de ambas herramientas. Tanto el personal de
+      bomberos en activo como el alumnado de la titulación de
+      Coordinación de Emergencias y Protección Civil del CPIFP San Blas
+      coinciden en describir estas aplicaciones como
+      <strong>poco intuitivas, con fallos recurrentes, visualmente
+      anticuadas e incompletas</strong> frente a las necesidades reales
+      del día a día en un parque de bomberos. Esta insatisfacción
+      aparece de forma sistemática al recoger los requisitos del
+      cliente y es, junto con la cuestión del acceso, uno de los
+      motores fundamentales del proyecto.
+    </p>
+
+    <p>
+      A partir de este análisis, el equipo concluyó que existía un hueco
+      claro para una <strong>solución propia, abierta, moderna y
+      adaptada al doble uso operativo-didáctico</strong> requerido por
+      el CPIFP San Blas. Esa solución es SIGEBO.
+    </p>
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 3</span>
+    <h1 class="chapter__title">Objetivos</h1>
+
+    <p class="chapter__intro">
+      Este capítulo formula los objetivos del proyecto a partir del
+      problema y el público ya identificados. Se presenta primero el
+      objetivo general que articula la finalidad de SIGEBO, y a
+      continuación la lista de objetivos específicos, formulados
+      durante la fase de planificación siguiendo el criterio SMART y
+      alineados con los requisitos funcionales y no funcionales
+      recogidos del cliente.
+    </p>
+
+    <h2>3.1. Objetivo general</h2>
+
+    <p>
+      Diseñar, desarrollar y desplegar <strong>SIGEBO</strong>, una
+      aplicación web para la <strong>gestión integral de un parque de
+      bomberos</strong> —personal, recursos, mantenimiento, emergencias
+      y cartografía operativa— concebida con un <strong>doble propósito
+      operativo y didáctico</strong> para el CPIFP San Blas y su
+      alumnado de Coordinación de Emergencias y Protección Civil.
+    </p>
+
+    <h2>3.2. Objetivos específicos</h2>
+
+    <p>
+      Para alcanzar el objetivo general, el proyecto se descompone en
+      los siguientes objetivos específicos, cada uno asociado a un
+      bloque funcional del sistema que se desarrolla en detalle en los
+      capítulos posteriores:
+    </p>
+
+    <ul>
+      <li>
+        <strong>OE1 — Digitalizar la operativa diaria del parque.</strong>
+        Sustituir los procedimientos manuales y dispersos por un único
+        punto digital de gestión que cubra personal, guardias, formación,
+        recursos y mantenimiento.
+      </li>
+      <li>
+        <strong>OE2 — Desarrollar una API REST en PHP.</strong>
+        Centralizar la lógica de negocio y la persistencia de datos en
+        una capa de servicios HTTP que actúe como única fuente de
+        verdad para todos los clientes del sistema.
+      </li>
+      <li>
+        <strong>OE3 — Diseñar una interfaz web responsive, moderna e
+        intuitiva.</strong> Ofrecer al usuario final una experiencia
+        clara y rápida, accesible desde cualquier dispositivo, que
+        supere las carencias de usabilidad detectadas en herramientas
+        existentes del sector (FUOCO, SECIGEST).
+      </li>
+      <li>
+        <strong>OE4 — Implementar autenticación segura y control de
+        acceso basado en roles.</strong> Establecer un modelo de cinco
+        roles diferenciados (Bombero, Oficial, Jefe de Intervención,
+        Jefe de Mando, Inspector) con permisos específicos, junto con
+        un mecanismo de autenticación robusto que garantice la
+        segregación de funciones y la trazabilidad de las acciones.
+      </li>
+      <li>
+        <strong>OE5 — Construir un módulo de gestión de emergencias.</strong>
+        Permitir el registro de llamadas, la movilización de recursos
+        humanos y materiales hacia el lugar del siniestro y la
+        generación automática de informes post-intervención.
+      </li>
+      <li>
+        <strong>OE6 — Integrar un módulo cartográfico (GIS).</strong>
+        Representar sobre el mapa los hidrantes, los puntos de riesgo,
+        las rutas de acceso y la información meteorológica relevante
+        para la toma de decisiones operativas.
+      </li>
+      <li>
+        <strong>OE7 — Implementar un sistema de gestión del talento.</strong>
+        Evaluar de forma objetiva al personal del parque combinando
+        rendimiento, formación, participación y feedback, como apoyo a
+        decisiones de promoción, formación y asignación de
+        responsabilidades.
+      </li>
+      <li>
+        <strong>OE8 — Documentar la solución para uso y mantenimiento.</strong>
+        Acompañar el sistema con una ayuda contextual integrada para el
+        usuario final y con la documentación técnica necesaria para su
+        despliegue, mantenimiento y futuras ampliaciones —entre ellas,
+        el asistente conversacional (chatbot) previsto como línea de
+        evolución.
+      </li>
+    </ul>
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 4</span>
+    <h1 class="chapter__title">Planificación</h1>
+
+    <p class="chapter__intro">
+      Este capítulo describe la planificación con la que se abordó el
+      desarrollo de SIGEBO: la metodología elegida, la descomposición
+      del trabajo en fases y tareas, los recursos asignados, el
+      cronograma, el plan de gestión de riesgos y las herramientas de
+      gestión que sostuvieron la coordinación del equipo durante todo
+      el proyecto.
+    </p>
+
+    <h2>4.1. Metodología</h2>
+
+    <p>
+      SIGEBO se ha desarrollado siguiendo un enfoque <strong>iterativo y
+      por fases</strong> propio de los proyectos de ingeniería del
+      software. El trabajo se ha organizado en cuatro grandes fases
+      sucesivas: <strong>planificación, desarrollo, pruebas y
+      lanzamiento</strong>. Cada fase ha generado entregables propios
+      —documentos de análisis, prototipos, módulos funcionales,
+      informes de pruebas y, finalmente, el despliegue— que han
+      servido como entrada validada para la siguiente.
+    </p>
+
+    <p>
+      Los objetivos del proyecto se formularon siguiendo el criterio
+      <strong>SMART</strong>, lo que ha permitido descomponer la visión
+      general en metas concretas, medibles y acotadas en el tiempo. Esta
+      formulación es la base sobre la que descansan tanto la
+      planificación de tareas como la gestión de riesgos.
+    </p>
+
+    <p>
+      El control y seguimiento del proyecto se ha apoyado en dos
+      mecanismos complementarios: una <strong>reunión corta diaria</strong>
+      al inicio de cada jornada para resolver dudas y comunicar
+      incidencias, y una <strong>reunión semanal de seguimiento</strong>
+      los viernes a última hora, en la que se revisan avances, se
+      reasignan tareas y se evalúan las desviaciones respecto al plan.
+      Cualquier cambio relevante en el alcance o los plazos requiere la
+      aprobación del cliente, canalizada a través del líder del
+      proyecto.
+    </p>
+
+    <h2>4.2. Esquema de descomposición del trabajo (EDT)</h2>
+
+    <p>
+      La descomposición del trabajo se ha estructurado en cuatro
+      grandes fases, cada una dividida en subfases y tareas finales
+      con asignación horaria estimada. El total asciende a
+      <strong>990 horas</strong>, distribuidas entre los cinco
+      integrantes del equipo. La estructura jerárquica completa del
+      EDT es la siguiente:
+    </p>
+
+    <ul>
+      <li>
+        <strong>1. Planificación — 170 h</strong>
+        <ul>
+          <li><strong>1.1 Análisis de requisitos</strong> — 70 h (análisis y alcance, requisitos funcionales y no funcionales, usuarios y casos de uso, selección de tecnologías).</li>
+          <li><strong>1.2 Diseño del sistema</strong> — 100 h (arquitectura, wireframes, UX, UI, modelo de datos, validación con stakeholders).</li>
+        </ul>
+      </li>
+      <li>
+        <strong>2. Desarrollo — 635 h</strong>
+        <ul>
+          <li><strong>2.1 Configuración del entorno</strong> — 20 h.</li>
+          <li><strong>2.2 Frontend</strong> — 205 h (estructura base, vistas y formularios, interacciones, validaciones cliente).</li>
+          <li><strong>2.3 Backend</strong> — 215 h (API y lógica de negocio, base de datos, consumo de datos).</li>
+          <li><strong>2.4 Integración Backend/Frontend</strong> — 105 h (conexión a endpoints, CORS, sincronización de formularios y manejo de errores).</li>
+          <li><strong>2.5 Seguridad</strong> — 100 h (validación y sanitización, prevención de inyecciones y XSS, credenciales y sesiones, HTTPS).</li>
+        </ul>
+      </li>
+      <li>
+        <strong>3. Pruebas — 85 h</strong>
+        <ul>
+          <li><strong>3.1 Pruebas varias</strong> — 75 h (funcionales frontend, unitarias backend, aceptación de usuario, seguridad).</li>
+          <li><strong>3.2 Pruebas de integración</strong> — 10 h.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>4. Lanzamiento — 100 h</strong>
+        <ul>
+          <li><strong>4.1 Despliegue</strong> en entorno de producción — 75 h.</li>
+          <li><strong>4.2 Optimización</strong> de rendimiento — 15 h.</li>
+          <li><strong>4.3 Monitorización</strong> y soporte post-lanzamiento — 10 h.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <p>
+      La representación gráfica del EDT, generada por el equipo
+      SyncFive durante la fase de planificación, se muestra a
+      continuación:
+    </p>
+
+    <figure class="figure">
+      <img src="Documentación-20260518T110530Z-3-001/Documentación/Analisis/Elementos Plan de Proyecto/SyncFive_EDT_Bomberos.png" alt="Esquema de descomposición del trabajo (EDT) del proyecto SIGEBO">
+      <figcaption class="figure__caption">
+        <strong>Figura 4.1.</strong> Esquema de descomposición del trabajo (EDT) del proyecto SIGEBO. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <h2>4.3. Recursos</h2>
+
+    <p>
+      Los recursos asignados al proyecto se agrupan en dos categorías:
+      humanos y materiales.
+    </p>
+
+    <p>
+      <strong>Recursos humanos.</strong> El equipo de desarrollo —bajo
+      el nombre <strong>SyncFive</strong>— está formado por cinco
+      estudiantes de segundo curso del Ciclo Formativo de Grado
+      Superior en Desarrollo de Aplicaciones Web del CPIFP Bajo
+      Aragón, con una dedicación de <strong>18 horas semanales por
+      persona</strong>. El reparto de roles es el siguiente:
+    </p>
+
+    <ul>
+      <li><strong>Líder de proyecto</strong> — coordina las tareas, controla plazos, gestiona la comunicación con el cliente y asegura el cumplimiento de los objetivos. Rol asumido por el autor de esta memoria.</li>
+      <li><strong>Desarrollador/a Full Stack</strong> — desarrollo del frontend y del backend, integración de la base de datos y de las funcionalidades principales. Rol compartido por todo el equipo.</li>
+      <li><strong>Diseñador/a Front-End y UX/UI</strong> — diseño de la interfaz, estructuración de vistas, responsividad y experiencia de uso. Rol compartido por todo el equipo.</li>
+      <li><strong>Encargado/a de Pruebas y Documentación</strong> — pruebas funcionales y de usabilidad, redacción de la documentación técnica y de usuario. Rol compartido por todo el equipo.</li>
+    </ul>
+
+    <p>
+      Junto al equipo de desarrollo participan dos figuras externas:
+      el <strong>cliente</strong> (alumnado y profesorado del CPIFP San
+      Blas), que define los requisitos, valida avances y aprueba las
+      entregas; y el <strong>profesorado del CPIFP Bajo Aragón</strong>,
+      que actúa como sponsor académico del proyecto, supervisa el
+      cumplimiento y, finalmente, lo evalúa.
+    </p>
+
+    <p>
+      <strong>Recursos materiales.</strong> El proyecto se ha
+      desarrollado <strong>sin presupuesto económico asignado</strong>,
+      empleando exclusivamente herramientas y servicios gratuitos. Se
+      ha utilizado el equipamiento personal de cada miembro del equipo
+      —ordenador portátil y conexión a internet— y el aula del centro
+      durante las horas lectivas asignadas al módulo de proyecto.
+    </p>
+
+    <p>
+      Conviene señalar, además, que la dedicación real ha superado de
+      forma notable las 18 horas semanales contempladas en la
+      planificación. Tanto durante el periodo lectivo como, sobre todo,
+      a lo largo de la <strong>fase de prácticas en empresa</strong>,
+      los miembros del equipo han invertido un volumen significativo
+      de horas fuera del aula para pulir detalles, corregir
+      desviaciones detectadas en las pruebas y elevar el nivel de
+      acabado de la aplicación hasta una calidad propiamente
+      profesional. Esta dedicación adicional, no presupuestada en el
+      cronograma inicial, ha sido decisiva para entregar SIGEBO en su
+      estado final.
+    </p>
+
+    <h2>4.4. Cronograma</h2>
+
+    <p>
+      La planificación temporal se construyó a partir del EDT y de los
+      recursos disponibles —cinco personas, 18 horas semanales y 11
+      semanas hábiles entre diciembre de 2025 y marzo de 2026—,
+      arrojando un total teórico de <strong>990 horas de trabajo</strong>.
+      El cronograma se ha materializado como un <strong>diagrama de
+      Gantt</strong> generado en GitHub Projects, en el que cada tarea
+      del EDT aparece con su fase, su asignación de personas, sus
+      fechas de inicio y fin y su estado actual (figura 4.2).
+    </p>
+
+    <p>
+      Los hitos principales de la planificación inicial son los
+      siguientes:
+    </p>
+
+    <ul>
+      <li><strong>05/12/2025</strong> — arranque del proyecto: inicio de la fase de planificación.</li>
+      <li><strong>14/02/2026</strong> — fin de la fase de desarrollo e inicio de las pruebas y de la redacción de la documentación técnica.</li>
+      <li><strong>20/02/2026</strong> — fin de la fase de pruebas y validación con el cliente.</li>
+      <li><strong>28/02/2026</strong> — entrega de la documentación técnica.</li>
+      <li><strong>13/03/2026</strong> — cierre del desarrollo funcional, antes del periodo de prácticas en empresa.</li>
+      <li><strong>02/06/2026, 11:30</strong> — defensa del proyecto ante el tribunal.</li>
+    </ul>
+
+    <p>
+      Para asegurar la calidad, cada tarea del Gantt se revisa en
+      grupo antes de darla por cerrada y vincularse a la siguiente.
+      Esta validación encadenada evita el conocido <em>efecto bola de
+      nieve</em>, en el que un error sin detectar en una fase temprana
+      obliga a rehacer trabajo posterior.
+    </p>
+
+    <figure class="figure">
+      <img src="Documentación-20260518T110530Z-3-001/Documentación/Analisis/Elementos Plan de Proyecto/SyncFive_Diagrama_Gantt.png" alt="Diagrama de Gantt del proyecto SIGEBO en GitHub Projects">
+      <figcaption class="figure__caption">
+        <strong>Figura 4.2.</strong> Diagrama de Gantt del proyecto SIGEBO generado en GitHub Projects. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <h2>4.5. Plan de gestión de riesgos</h2>
+
+    <p>
+      Como parte de la planificación se elaboró un <strong>registro de
+      riesgos</strong> que identifica las amenazas más relevantes para
+      la ejecución del proyecto, las valora en términos de
+      probabilidad e impacto (escala 1–10), las prioriza y asocia a
+      cada una una respuesta y un propietario. Los diez riesgos
+      identificados —ordenados aquí por categoría— son los siguientes:
+    </p>
+
+    <ul>
+      <li><strong>R1 — Falta de conocimientos técnicos del equipo</strong> (RRHH; 8×8). Respuesta: formación puntual, documentación técnica compartida y asignación de tareas según nivel. Disparador: tareas que requieren más del doble del tiempo estimado.</li>
+      <li><strong>R2 — Dificultades técnicas en el desarrollo</strong> (Técnico; 8×8). Respuesta: revisiones de código, pruebas continuas y documentación clara. Disparador: bloqueo durante más de una sesión de trabajo o fallos repetidos en integración.</li>
+      <li><strong>R3 — Pérdida de información o fallos en el control de versiones</strong> (Técnico; 7×9). Respuesta: uso de ramas controladas, commits frecuentes y copias de seguridad. Disparador: conflictos difíciles de resolver o cambios no registrados.</li>
+      <li><strong>R4 — Retrasos en la planificación y entrega de tareas</strong> (Gestión; 8×7). Respuesta: reorganizar prioridades, revisiones semanales y ajustar cargas de trabajo. Disparador: tarea con más de dos días de retraso.</li>
+      <li><strong>R5 — Falta de comunicación interna o con el cliente</strong> (Comunicación; 7×8). Respuesta: reuniones fijas semanales y canal de comunicación centralizado. Disparador: mensajes sin respuesta en 24–48 h o malentendidos frecuentes.</li>
+      <li><strong>R6 — Riesgos derivados del trabajo en grupo</strong> (RRHH; 7×8). Respuesta: reparto equitativo de tareas, reuniones de seguimiento y roles claros.</li>
+      <li><strong>R7 — Problemas de calidad en la entrega final</strong> (Calidad; 6×9). Respuesta: pruebas de usabilidad, validación con el cliente y revisión de documentación.</li>
+      <li><strong>R8 — Riesgos de seguridad</strong> (Seguridad; 5×10). Respuesta: auditorías internas, validaciones de entrada y configuración segura del entorno.</li>
+      <li><strong>R9 — Cambios de requisitos por parte del cliente</strong> (Requisitos; 5×8). Respuesta: validación por fases, control de cambios y documentación formal.</li>
+      <li><strong>R10 — Fallos en el despliegue en la nube</strong> (Técnico; 4×7). Respuesta: pruebas en entorno local, guía de despliegue y copias de seguridad.</li>
+    </ul>
+
+    <p>
+      Las desviaciones reales que se materializaron durante la
+      ejecución del proyecto, así como las respuestas aplicadas, se
+      analizan con detalle en el capítulo de Conclusiones.
+    </p>
+
+    <h2>4.6. Herramientas de gestión del proyecto</h2>
+
+    <p>
+      Para sostener la coordinación del equipo y el flujo de
+      información se ha empleado un conjunto reducido y deliberadamente
+      gratuito de herramientas, organizadas según su propósito.
+    </p>
+
+    <p>
+      <strong>Comunicación con el cliente y entre centros.</strong>
+      Para canalizar la relación entre el equipo de desarrollo
+      (SyncFive, CPIFP Bajo Aragón) y el cliente (alumnado y
+      profesorado del CPIFP San Blas) se creó una <strong>comunidad de
+      WhatsApp</strong> bautizada como <em>«PROYECTO RED — Sistema de
+      Gestión de Emergencias»</em>, organizada internamente en seis
+      grupos diferenciados para que cada interlocutor recibiera
+      únicamente las conversaciones que le competían:
+    </p>
+
+    <ul>
+      <li><strong>GRUPO RED</strong> — grupo general transversal en el que participan todos los actores del proyecto: el equipo SyncFive, el profesorado del CPIFP Bajo Aragón, y el profesorado y el alumnado del CPIFP San Blas con el que se coopera para recabar información del dominio y resolver dudas.</li>
+      <li><strong>CPIFP Bajo Aragón</strong> — grupo interno del equipo de desarrollo y su profesorado.</li>
+      <li><strong>CPIFP San Blas</strong> — grupo interno del cliente: su alumnado y su profesorado.</li>
+      <li><strong>RRHH</strong> — sub-equipo especializado en el módulo de Recursos Humanos.</li>
+      <li><strong>RRMM</strong> — sub-equipo especializado en el módulo de Recursos Materiales.</li>
+      <li><strong>CECOM</strong> — sub-equipo especializado en el módulo de Gestión de Emergencias (Centro de Comunicaciones).</li>
+    </ul>
+
+    <p>
+      Los tres últimos grupos (RRHH, RRMM y CECOM) se crearon
+      aproximadamente <strong>a mitad del desarrollo</strong>, cuando
+      el proyecto ya estaba bien encaminado. La decisión respondió a
+      una observación de gestión: la aplicación se vertebraba en torno
+      a <strong>tres pilares funcionales</strong> —recursos humanos,
+      recursos materiales y gestión de las emergencias— y el cliente,
+      por su parte, también había organizado a su alumnado en
+      sub-equipos especializados en cada uno de esos tres ámbitos.
+      Como líder de SyncFive opté por <strong>asignar a cada miembro
+      del equipo de desarrollo a uno de los tres pilares</strong> y
+      emparejarlo con los alumnos del CPIFP San Blas especializados en
+      ese mismo ámbito. Cada uno de los tres grupos materializa esa
+      pareja desarrollador–sub-equipo cliente. La medida agilizó la
+      resolución de dudas específicas, redujo el ruido en el grupo
+      general y permitió a cada desarrollador profundizar en un área
+      concreta del dominio.
+    </p>
+
+    <p>
+      Con anterioridad a la creación de la comunidad de WhatsApp —y de
+      forma puntual también después, para gestiones formales— se
+      empleó el <strong>correo electrónico</strong> como medio de
+      comunicación con el profesorado del CPIFP San Blas.
+    </p>
+
+    <p>
+      <strong>Comunicación académica interna del equipo.</strong> Para
+      las gestiones académicas con el profesorado del CPIFP Bajo
+      Aragón se emplea la <strong>mensajería instantánea de
+      Aeducar</strong>, plataforma oficial del centro.
+    </p>
+
+    <p>
+      <strong>Gestión documental, de código y de tareas.</strong> Las
+      herramientas que soportan los artefactos del proyecto son las
+      siguientes:
+    </p>
+
+    <ul>
+      <li><strong>Gestión documental</strong> — carpeta compartida en Google Drive para todos los documentos del proyecto (planificación, análisis, diseño, pruebas).</li>
+      <li><strong>Gestión del código fuente</strong> — repositorio en GitHub, con ramas por funcionalidad y revisión mediante pull requests.</li>
+      <li><strong>Gestión de tareas y cronograma</strong> — GitHub Projects, con su vista de tablero (kanban) para el seguimiento del sprint y su vista de Roadmap para el diagrama de Gantt.</li>
+      <li><strong>Entrega de tareas al profesorado</strong> — plataforma Aeducar del CPIFP Bajo Aragón.</li>
+    </ul>
+
+    <p>
+      Toda comunicación que afecte al alcance, los plazos o los
+      requisitos se canaliza obligatoriamente a través del
+      <strong>líder del proyecto</strong>, garantizando un único punto
+      de contacto frente al cliente y evitando mensajes contradictorios
+      hacia el equipo.
+    </p>
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 5</span>
+    <h1 class="chapter__title">Diseño del sistema</h1>
+
+    <p class="chapter__intro">
+      Este capítulo describe el diseño técnico de SIGEBO: la
+      arquitectura software y de despliegue elegidas, el modelo de
+      datos que sostiene la persistencia, los casos de uso que el
+      sistema soporta y la forma en la que se comunican entre sí los
+      distintos componentes.
+    </p>
+
+    <h2>5.1. Arquitectura del sistema</h2>
+
+    <p>
+      SIGEBO se ha construido sobre una arquitectura
+      <strong>cliente–servidor con separación estricta</strong> entre
+      frontend y backend. El cliente es una <strong>aplicación web
+      independiente</strong> (HTML, CSS y JavaScript) que reside como
+      ficheros estáticos en el servidor web; el backend es una
+      <strong>API REST monolítica</strong> en PHP que devuelve
+      exclusivamente JSON. Frontend y backend no comparten código, ni
+      proceso, ni plantillas renderizadas en servidor: se comunican
+      únicamente mediante peticiones HTTP.
+    </p>
+
+    <p>
+      Esta separación física obliga a precisar el patrón
+      arquitectónico empleado. El patrón Modelo–Vista–Controlador
+      clásico presupone que la <em>Vista</em> son plantillas
+      renderizadas por el propio servidor, lo que no ocurre en SIGEBO:
+      la capa de presentación reside íntegramente en el cliente. Por
+      ello el backend implementa una <strong>arquitectura en capas de
+      tipo Controlador–Servicio–Modelo (CSM)</strong>, que reserva la
+      capa de presentación al frontend independiente y añade una capa
+      explícita de <em>servicio</em> entre controlador y modelo para
+      centralizar la lógica de negocio.
+    </p>
+
+    <p>
+      El conjunto de tecnologías base del proyecto (PHP, MySQL,
+      HTML/CSS/JavaScript y las librerías de soporte habituales)
+      vino <strong>dado por el profesorado</strong> como marco de
+      trabajo del TFG, sin posibilidad de incorporar
+      <em>frameworks</em> de servidor (Laravel, Symfony, CodeIgniter)
+      ni de cliente (React, Vue, Angular). Como complemento a ese
+      marco, el profesor de Desarrollo Web en Entorno Servidor
+      entregó al equipo una <strong>infraestructura base (Core)</strong>
+      en PHP nativo estricto —router, validador, autoloader, gestión
+      de sesiones, manejador de JWT y envoltorios HTTP
+      (<code>Request</code>/<code>Response</code>)—, sobre la que
+      cada equipo debía construir su aplicación. Esta separación de
+      capas permite que el alumnado se centre en la lógica de negocio
+      y el modelo del dominio sin reinventar piezas técnicas
+      transversales que se imparten de forma teórica en la
+      asignatura.
+    </p>
+
+    <p>
+      Sobre ese esqueleto, el equipo SyncFive ha desarrollado el
+      grueso del trabajo de SIGEBO: los veinticinco dominios del
+      sistema (Controlador + Servicio + Modelo por cada agregado), el
+      registro completo de rutas REST con declaración de roles
+      autorizados, las reglas de validación declarativas de cada
+      endpoint, los middlewares específicos del proyecto
+      (<em>RateLimitMiddleware</em>, <em>AuthMiddleware</em>,
+      <em>RoleMiddleware</em>), el servicio de correo transaccional
+      (<em>EmailService</em>) sobre <em>PHPMailer</em>, el modelo de
+      datos completo y la dockerización del entorno. Se utiliza
+      Composer como gestor de dependencias siguiendo el estándar
+      PSR-4.
+    </p>
+
+    <p>
+      El sistema se organiza, por tanto, en torno a un
+      <strong>frontend independiente</strong> y un <strong>backend en
+      tres capas principales</strong> (Controlador, Servicio y
+      Modelo), apoyado por dos capas transversales (Middlewares e
+      Infraestructura/Core) y por una capa de Validación reutilizable.
+      Sus responsabilidades son:
+    </p>
+
+    <ul>
+      <li><strong>Frontend (cliente)</strong> — aplicación web independiente que se ejecuta en el navegador del usuario. No contiene lógica de negocio: muestra información, recoge acciones y emite peticiones HTTP a la API REST. Tecnologías: <em>HTML5, CSS3, JavaScript</em>, <em>Bootstrap</em> y <em>Leaflet</em> sobre <em>OpenStreetMap</em> para la cartografía operativa.</li>
+      <li><strong>Controlador (Controller)</strong> — punto de entrada de cada petición en el backend. Su implementación es deliberadamente <em>delgada</em>: extrae los parámetros del <code>Request</code>, invoca al servicio correspondiente y construye la <code>Response</code> en JSON (incluyendo el código HTTP y los mensajes de error). Hay 25 controladores, uno por cada agregado del dominio (Persona, Vehículo, Emergencia, etc.).</li>
+      <li><strong>Servicio (Service)</strong> — núcleo de la lógica de negocio y punto donde se valida el contenido de cada petición. Cada servicio invoca al validador con un conjunto de reglas declarativas, orquesta operaciones que afectan a varias entidades (transacciones, envío de email, transformaciones de datos) y aplica las reglas del dominio. Hay 25 servicios, simétricos a los controladores.</li>
+      <li><strong>Modelo (Model)</strong> — capa de persistencia. Implementa el patrón DAO/repositorio sobre una base de datos relacional <em>MySQL</em> mediante PDO con consultas parametrizadas para prevenir inyección SQL. No conoce ni la interfaz de usuario ni la lógica de negocio: se limita a leer y escribir datos garantizando su integridad.</li>
+    </ul>
+
+    <p>
+      Las dos capas transversales que sostienen el flujo son:
+    </p>
+
+    <ul>
+      <li><strong>Middlewares</strong> — interceptores que se ejecutan antes del controlador. El proyecto incluye tres: <em>RateLimitMiddleware</em>, que limita la frecuencia de peticiones por origen para mitigar abusos; <em>AuthMiddleware</em>, que comprueba la identidad del usuario (sesión PHP o, si la ruta así lo declara, JWT en cabecera <code>Authorization: Bearer</code>); y <em>RoleMiddleware</em>, que comprueba que el rol del usuario figura entre los autorizados para la ruta solicitada. La autorización se declara por ruta como un array de roles permitidos (p. ej. <code>[3, 4, 5]</code> para «solo Jefes e Inspector»).</li>
+      <li><strong>Infraestructura (Core)</strong> — componentes técnicos reutilizables, entregados como esqueleto base del proyecto por el profesor de Desarrollo Web en Entorno Servidor, sobre los que se apoyan todas las capas: <em>Router</em> basado en expresiones regulares; <em>Request</em> y <em>Response</em> como envoltorios HTTP; <em>Database</em> y <em>DB</em>, que gestionan la conexión PDO a MySQL; <em>Session</em>, gestor de sesiones server-side con regeneración de identificador en cada login; y <em>JWT</em>, implementación HS256 sin librería externa. Sobre esa base, el equipo añadió el <em>EmailService</em>, un envoltorio sobre PHPMailer para los correos transaccionales (activación de cuenta y recuperación de contraseña) requeridos por el dominio del proyecto.</li>
+    </ul>
+
+    <p>
+      Finalmente, la <strong>capa de Validación</strong>, también
+      parte de la infraestructura base entregada por el profesorado,
+      ofrece una clase <code>Validator</code> con un pequeño
+      <em>DSL</em> al estilo de Laravel: las reglas se declaran como
+      cadena separada por barras
+      (<code>required|string|max:50</code>,
+      <code>required|email</code>,
+      <code>required|string|password</code>), y los errores se
+      acumulan y se elevan como <code>ValidationException</code>, que
+      el controlador convierte automáticamente en una respuesta HTTP
+      422 con la lista detallada de errores por campo. El equipo se
+      ha encargado de declarar las cadenas de reglas concretas que
+      protegen cada endpoint del proyecto.
+    </p>
+
+    <p>
+      Para el despliegue se ha optado por una <strong>arquitectura de
+      servidor único</strong> en la que los tres servicios lógicos
+      —servidor web, servidor de aplicaciones y servidor de base de
+      datos— se ejecutan en el mismo host físico, pero
+      <strong>aislados en contenedores Docker</strong> independientes.
+      Cada contenedor encapsula su servicio junto con sus
+      dependencias, garantizando un entorno de ejecución reproducible
+      en cualquier máquina. Esta separación lógica permite parar,
+      actualizar o sustituir cualquiera de los tres servicios sin
+      afectar a los demás, y mantiene abierta la puerta a una
+      migración futura a una arquitectura distribuida sin reescribir
+      el código.
+    </p>
+
+    <ul>
+      <li><strong>Servidor web</strong> — sirve los archivos estáticos del frontend (HTML, CSS, JavaScript) y gestiona las peticiones HTTP/HTTPS de los clientes. Tecnología: <em>Apache</em> o <em>Nginx</em> sobre Docker.</li>
+      <li><strong>Servidor de aplicaciones</strong> — aloja la API REST en PHP, donde residen el controlador, el servicio y el modelo. Procesa las peticiones recibidas desde el servidor web y aplica las reglas de negocio y de seguridad.</li>
+      <li><strong>Servidor de base de datos</strong> — instancia <em>MySQL</em> dedicada exclusivamente a la persistencia de datos. Garantiza integridad referencial, consistencia y respaldo.</li>
+    </ul>
+
+    <figure class="figure">
+      <img src="Documentación-20260518T110530Z-3-001/Documentación/Analisis/Elementos Plan de Proyecto/SyncFive_Esquema_Aplicacion_Bomberos.png" alt="Esquema general de la aplicación SIGEBO">
+      <figcaption class="figure__caption">
+        <strong>Figura 5.1.</strong> Esquema general de la aplicación SIGEBO y sus componentes principales. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      Para visualizar de forma integral cómo interactúan estos tres
+      servicios lógicos durante una petición real, el siguiente
+      diagrama representa el flujo completo entre el cliente y los
+      componentes alojados en el servidor único.
+    </p>
+
+    <figure class="figure">
+      <img src="fig-5-2-arquitectura-servidor.png" alt="Flujo cliente-servidor en la arquitectura de SIGEBO">
+      <figcaption class="figure__caption">
+        <strong>Figura 5.2.</strong> Flujo cliente–servidor en la arquitectura de SIGEBO: el navegador emite una petición HTTP que el servicio web atiende y delega en el servicio de aplicaciones, el cual consulta la base de datos y devuelve los datos procesados al cliente. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      Como se observa en el diagrama, aunque los tres servicios
+      conviven físicamente en la misma máquina mantienen
+      responsabilidades estrictamente separadas: el servicio HTTP
+      actúa como punto de entrada sin procesar lógica de negocio ni
+      acceder a los datos, el servicio de aplicaciones concentra todo
+      el procesamiento, y el servidor de base de datos atiende
+      exclusivamente consultas SQL. Esta separación lógica permitirá,
+      llegado el caso, migrar cada servicio a una máquina
+      independiente sin reescribir la aplicación.
+    </p>
+
+    <h2>5.2. Modelo de base de datos</h2>
+
+    <p>
+      Una vez establecido cómo se distribuyen los servicios sobre el
+      servidor único, esta sección detalla qué contiene el último de
+      ellos: el servidor de base de datos. La persistencia se ha
+      modelado en una base de datos relacional <strong>MySQL</strong>.
+      El diagrama entidad-relación reúne
+      aproximadamente una veintena de entidades, alineadas con los
+      tres pilares funcionales que vertebran la aplicación —recursos
+      humanos, recursos materiales y gestión de las emergencias—. La
+      entidad <strong>Persona</strong> ocupa una posición central:
+      participa en numerosas relaciones (guardias, formaciones,
+      méritos, permisos, intervenciones) y concentra además los
+      campos vinculados a la autenticación (nombre de usuario,
+      contraseña, tokens de activación y de cambio de contraseña).
+    </p>
+
+    <p>
+      Las entidades se agrupan en las tres áreas funcionales
+      siguientes:
+    </p>
+
+    <ul>
+      <li>
+        <strong>Recursos Humanos (RRHH)</strong> — gestiona al personal del parque y todas las relaciones que lo afectan:
+        <ul>
+          <li><em>Persona</em>, <em>Rol</em>, <em>Grupo</em> — identidad, perfil profesional y agrupación organizativa.</li>
+          <li><em>Carnet</em>, <em>Mérito</em>, <em>Formación</em>, <em>Edición</em> — titulaciones, reconocimientos y formación continua.</li>
+          <li><em>Guardia</em>, <em>Turno de refuerzo</em>, <em>Permiso</em>, <em>Motivo</em> — planificación de servicio y gestión de ausencias.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Recursos Materiales (RRMM)</strong> — gestiona el inventario y la infraestructura del parque:
+        <ul>
+          <li><em>Vehículo</em>, <em>Material</em>, <em>Categoría</em> — flota y equipamiento del servicio.</li>
+          <li><em>Instalación</em>, <em>Almacén</em> — espacios físicos del parque y ubicación del material.</li>
+          <li><em>Mantenimiento</em>, <em>Incidencia</em> — seguimiento del estado operativo del material y de los vehículos.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Gestión de Emergencias (CECOM)</strong> — núcleo operativo del sistema durante una intervención:
+        <ul>
+          <li><em>Emergencia</em>, <em>Tipo de emergencia</em> — registro y clasificación de los avisos atendidos.</li>
+          <li><em>Salida</em> — registro de la movilización de cada vehículo.</li>
+          <li><em>Aviso</em> — comunicaciones internas relacionadas con la intervención.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <p>
+      El diagrama entidad-relación completo se muestra a continuación:
+    </p>
+
+    <figure class="figure">
+      <img src="Documentación-20260518T110530Z-3-001/Documentación/Diseño/Diseño BD/Entidad_Relacion.png" alt="Diagrama entidad-relación de la base de datos de SIGEBO">
+      <figcaption class="figure__caption">
+        <strong>Figura 5.3.</strong> Diagrama entidad-relación de la base de datos de SIGEBO. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <h2>5.3. Casos de uso</h2>
+
+    <p>
+      El sistema soporta <strong>diecisiete casos de uso
+      principales</strong>, agrupados en tres ámbitos funcionales
+      —personal y formación, operativa diaria del parque y gestión de
+      emergencias— y accesibles según el rol del usuario autenticado.
+      Los cinco roles ya presentados en el capítulo 2 (Bombero,
+      Oficial, Jefe de Intervención, Jefe de Mando e Inspector)
+      actúan como <strong>actores</strong> en cada caso. El control de
+      acceso no es estrictamente jerárquico: cada ruta de la API
+      declara explícitamente los identificadores de rol autorizados,
+      lo que permite, por ejemplo, que la creación de una emergencia
+      esté abierta al Jefe de Intervención pero la modificación
+      posterior quede reservada al Jefe de Mando. Como norma general,
+      las operaciones de consulta están abiertas a los cinco roles
+      para favorecer el conocimiento operativo compartido, mientras
+      que las operaciones de escritura se restringen al perfil
+      responsable.
+    </p>
+
+    <p>
+      <strong>Ámbito A. Personal y formación.</strong> Reúne los
+      casos de uso vinculados a la identidad de los miembros del
+      cuerpo, su trayectoria profesional y su disponibilidad:
+    </p>
+
+    <ul>
+      <li><strong>CU1 — Autenticarse y gestionar la cuenta personal.</strong> Inicio de sesión con usuario y contraseña, activación de cuenta mediante token enviado por correo, recuperación y cambio de contraseña, y actualización del perfil propio (datos de contacto y fotografía). Actor principal: cualquier rol autenticado.</li>
+      <li><strong>CU2 — Administrar el personal del parque.</strong> Alta, modificación y baja lógica de los bomberos del cuerpo, así como la asignación inicial del material individual entregado a cada uno. Actor principal: Jefe de Mando (alta y modificación); Inspector (baja).</li>
+      <li><strong>CU3 — Gestionar carnets, méritos y formaciones.</strong> Mantenimiento del catálogo de carnets profesionales (con cálculo automático de la fecha de caducidad a partir de la fecha de obtención y la duración del carnet), del catálogo de méritos y del plan de formación interno con sus ediciones; asignación de cada elemento a las personas correspondientes y gestión de inscripciones a las ediciones. Actor principal: Jefe de Mando (alta y asignación); Inspector (asignación de méritos y borrado del catálogo).</li>
+      <li><strong>CU4 — Solicitar y gestionar permisos.</strong> Solicitud de permisos por parte de cualquier miembro del cuerpo, indicando motivo de una lista controlada (vacaciones, baja médica, asuntos personales, etc.); revisión, aprobación o modificación por parte de la jefatura. Actor principal: cualquier rol para solicitar; Jefe de Mando para aprobar y modificar.</li>
+      <li><strong>CU5 — Consultar el área personal.</strong> Vista consolidada de los datos del usuario autenticado: guardias y turnos de refuerzo asignados, formaciones cursadas o pendientes, carnets y méritos acumulados, material entregado, estadísticas personales y avisos recibidos. Actor principal: cualquier rol autenticado (sobre sus propios datos).</li>
+    </ul>
+
+    <p>
+      <strong>Ámbito B. Operativa diaria del parque.</strong> Cubre
+      la planificación, los recursos materiales y la comunicación
+      interna que sostienen el funcionamiento del parque al margen de
+      las intervenciones:
+    </p>
+
+    <ul>
+      <li><strong>CU6 — Planificar guardias y turnos de refuerzo.</strong> Creación de los servicios de guardia ordinaria y de los turnos de refuerzo extraordinarios (cuando la operativa lo requiere), asignación de personas a cada servicio con su cargo correspondiente y registro de notas asociadas al servicio. Actor principal: Jefe de Mando.</li>
+      <li><strong>CU7 — Alinear la guardia del día.</strong> Montaje operativo de la guardia que entra de servicio en una fecha concreta: visualización de las personas asignadas a esa guardia y al refuerzo del día, modificación del cargo asignado a cada una y registro de notas operativas. Actor principal: Jefe de Mando.</li>
+      <li><strong>CU8 — Consultar el cuadrante.</strong> Visualización del calendario consolidado de guardias y refuerzos en vista mensual o anual. El modo individual (las propias guardias y refuerzos) está disponible para cualquier rol autenticado; el modo global del parque queda reservado a Oficial y superiores. Actor principal: cualquier rol autenticado (individual); Oficial y superiores (global).</li>
+      <li><strong>CU9 — Gestionar la flota de vehículos.</strong> Mantenimiento del inventario de vehículos del parque: alta, baja y modificación de matrículas y características; asignación del vehículo a una instalación; carga y descarga del material asociado a cada vehículo. Actor principal: Jefe de Mando.</li>
+      <li><strong>CU10 — Gestionar el inventario material.</strong> Mantenimiento del catálogo de materiales y sus categorías; gestión de las instalaciones del parque y de los almacenes que cada una contiene; ubicación de cada material en su almacén con control de existencias. Actor principal: Jefe de Mando.</li>
+      <li><strong>CU11 — Registrar mantenimientos e incidencias.</strong> Apertura, seguimiento y cierre de los partes de mantenimiento sobre vehículos y materiales, así como el registro de las incidencias que se detectan en el parque. Actor principal: Jefe de Mando.</li>
+      <li><strong>CU12 — Gestionar la red de infraestructuras de agua.</strong> Mantenimiento del catálogo georreferenciado de hidrantes, depósitos y otras tomas de agua, con su visualización sobre mapa cartográfico (Leaflet sobre OpenStreetMap) y filtros por tipo, estado y caudal. Actor principal: Jefe de Intervención (alta); Jefe de Mando (modificación).</li>
+      <li><strong>CU13 — Enviar y recibir avisos internos.</strong> Comunicación interna entre miembros del cuerpo mediante avisos dirigidos a uno o varios destinatarios; consulta de la bandeja de avisos recibidos por el usuario autenticado. Actor principal: Oficial y superiores (envío); cualquier rol autenticado (lectura de los propios).</li>
+    </ul>
+
+    <p>
+      <strong>Ámbito C. Gestión de emergencias.</strong> Cubre el
+      flujo crítico de respuesta a una llamada, desde la apertura del
+      parte hasta el registro de la salida de los vehículos
+      movilizados:
+    </p>
+
+    <ul>
+      <li><strong>CU14 — Registrar y clasificar emergencias.</strong> Apertura de un parte de emergencia con los datos del aviso (localización, descripción, datos del solicitante) y clasificación según el catálogo de tipos de emergencia (incendio urbano, accidente de tráfico, rescate, etc.), organizado por grupos. Actor principal: Jefe de Intervención.</li>
+      <li><strong>CU15 — Despachar recursos a una intervención.</strong> Selección de los vehículos que acuden a la emergencia y asignación del personal embarcado en cada uno. Actor principal: Jefe de Intervención.</li>
+      <li><strong>CU16 — Seguir las emergencias activas.</strong> Vista operativa de las emergencias en curso con representación cartográfica de su ubicación sobre mapa Leaflet, lo que permite a la jefatura supervisar el estado del conjunto de las intervenciones simultáneas. Actor principal: cualquier rol autenticado.</li>
+      <li><strong>CU17 — Registrar salidas de vehículos.</strong> Anotación de cada movilización de vehículos como registro independiente (con sus horas de salida y de regreso), lo que permite reconstruir a posteriori el histórico de movimientos de la flota y vincularlo a la emergencia correspondiente. Actor principal: Jefe de Mando.</li>
+    </ul>
+
+    <h2>5.4. Comunicación entre componentes</h2>
+
+    <p>
+      Ampliando el flujo cliente–servidor representado en la
+      <strong>Figura 5.2</strong>, esta sección detalla la cadena
+      interna que recorre cada petición HTTP dentro del servidor de
+      aplicaciones. Toda la API entra por un único <strong>front
+      controller</strong> (<code>public/index.php</code>) que
+      configura las cabeceras de CORS y de seguridad, registra el
+      autoloader PSR-4 y delega la resolución de la ruta al
+      <em>Router</em>:
+    </p>
+
+    <ul>
+      <li><strong>1. Routing.</strong> El Router compila cada ruta en una expresión regular y enlaza el método HTTP y la URI con un par <em>Controlador@método</em>. Si la ruta no existe, se devuelve <code>404</code>.</li>
+      <li><strong>2. Rate limit.</strong> Antes de cualquier otra cosa, el <em>RateLimitMiddleware</em> comprueba que el origen no ha excedido el límite de peticiones por ventana de tiempo.</li>
+      <li><strong>3. Autenticación.</strong> Si la ruta está marcada como protegida, el sistema intenta recuperar al usuario de la <strong>sesión PHP</strong> (mecanismo principal en uso, con cookie de sesión server-side y regeneración del identificador en cada login). De forma complementaria, el <em>AuthMiddleware</em> permite también validar un <strong>JWT (HS256)</strong> presente en la cabecera <code>Authorization: Bearer</code> para clientes que no mantengan sesión —característica preparada para futuros consumidores externos de la API, aunque el frontend web actual utiliza únicamente la sesión PHP—. Si la autenticación falla, la cadena se interrumpe con un <code>401</code>.</li>
+      <li><strong>4. Autorización.</strong> Cada ruta protegida declara un conjunto de <em>id_rol</em> autorizados (por ejemplo, <code>[3, 4, 5]</code> para «solo Jefes e Inspector»). El <em>RoleMiddleware</em> comprueba que el rol del usuario figura en esa lista, o devuelve <code>403</code>.</li>
+      <li><strong>5. Controlador.</strong> Se instancia el controlador correspondiente, que extrae los parámetros del <em>Request</em> y delega al servicio.</li>
+      <li><strong>6. Servicio + validación.</strong> El servicio invoca al <em>Validator</em> con las reglas declarativas del endpoint; si la entrada es inválida, la <em>ValidationException</em> se transforma automáticamente en un <code>422</code> con el detalle de los errores por campo. Si es válida, el servicio orquesta la lógica de negocio.</li>
+      <li><strong>7. Modelo + base de datos.</strong> El servicio invoca a uno o varios modelos, que ejecutan las consultas PDO parametrizadas contra MySQL. Operaciones que afectan a varias tablas se envuelven en transacciones para preservar la consistencia.</li>
+      <li><strong>8. Respuesta.</strong> El controlador construye la <em>Response</em> en JSON, con código HTTP coherente con el resultado (<code>200</code> consulta correcta, <code>201</code> recurso creado, <code>204</code> sin contenido, <code>4xx</code> errores de cliente, <code>5xx</code> errores internos), y la devuelve al navegador, que actualiza la Vista.</li>
+    </ul>
+
+    <p>
+      La <strong>autenticación de usuarios</strong> se apoya en el
+      endpoint <code>POST /auth/login</code>, que compara la
+      contraseña recibida contra el hash <em>bcrypt</em> almacenado en
+      la tabla <em>Persona</em> mediante <code>password_verify()</code>,
+      comprueba que la cuenta está activada y crea la sesión PHP. El
+      sistema incluye además flujos completos para la
+      <strong>activación de cuenta</strong>
+      (<code>PATCH /auth/activar-cuenta</code>) y la
+      <strong>recuperación de contraseña</strong>
+      (<code>PATCH /auth/recuperar-contrasena</code> y
+      <code>PATCH /auth/cambiar-contrasena</code>), basados en tokens
+      temporales con fecha de expiración almacenada en la propia
+      tabla <em>Persona</em> y enviados al usuario por correo
+      electrónico mediante <em>PHPMailer</em>.
+    </p>
+
+    <p>
+      A modo de ejemplo concreto, el caso de uso <em>«Despachar
+      recursos a una emergencia»</em> (CU15) recorre los componentes
+      del sistema de la siguiente forma:
+    </p>
+
+    <ul>
+      <li>La Vista emite <code>POST /emergencias/{id_emergencia}/vehiculos</code> con la matrícula en el cuerpo JSON y la cookie de sesión del Jefe de Intervención.</li>
+      <li>El <em>RateLimitMiddleware</em> valida el origen; la sesión PHP recupera al usuario; el <em>RoleMiddleware</em> comprueba que su rol está entre <code>[3, 4, 5]</code> (Jefe de Intervención, Jefe de Mando o Inspector).</li>
+      <li>El <em>EmergenciaController</em> recibe la petición y delega en <em>EmergenciaService</em>.</li>
+      <li>El servicio valida la entrada (<em>Validator</em>), comprueba que el vehículo está operativo (consultando <em>VehiculoModel</em>), registra la <em>Salida</em>, actualiza el estado de la <em>Emergencia</em> y notifica al personal asignado mediante <em>AvisoService</em>. Toda la operación se envuelve en una transacción PDO.</li>
+      <li>El controlador devuelve <code>201 Created</code> con el estado actualizado de la emergencia, en JSON.</li>
+      <li>La Vista refresca el panel de seguimiento en tiempo real con el vehículo ya movilizado.</li>
+    </ul>
+
+    <p>
+      Esta separación estricta de responsabilidades entre Vista,
+      Controlador, Servicio y Modelo —reforzada por el pipeline de
+      middlewares y el aislamiento físico en contenedores Docker—
+      permite que el equipo trabaje en paralelo sobre las distintas
+      capas sin pisar el código de los demás, hace explícitos los
+      límites entre la lógica de negocio y la infraestructura, y
+      sienta las bases para que el sistema pueda crecer en
+      complejidad sin perder coherencia interna.
+    </p>
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 6</span>
+    <h1 class="chapter__title">Tecnologías utilizadas</h1>
+
+    <p class="chapter__intro">
+      Este capítulo recoge el conjunto de tecnologías sobre las que
+      se ha construido SIGEBO, organizadas por la capa del sistema en
+      la que intervienen. Para cada tecnología se indica su versión,
+      el papel que desempeña dentro del proyecto y la razón por la
+      que fue elegida frente a alternativas equivalentes. La premisa
+      común a todas las elecciones ha sido priorizar herramientas
+      <strong>maduras, ampliamente documentadas y de licencia libre o
+      gratuita</strong>, tanto para alinearse con el carácter
+      formativo del proyecto como para no introducir dependencias que
+      comprometieran su sostenibilidad a medio plazo.
+    </p>
+
+    <h2>6.1. Backend</h2>
+
+    <p>
+      El núcleo de la API REST está escrito en <strong>PHP
+      8.2</strong> con el modo estricto activado
+      (<code>declare(strict_types=1)</code> en todos los archivos) y
+      servido por <strong>Apache 2</strong> con el módulo
+      <em>mod_rewrite</em> habilitado, según queda fijado en el
+      <code>Dockerfile</code> oficial del proyecto
+      (<code>FROM&nbsp;php:8.2-apache</code>). El profesorado fijó
+      como restricción no incorporar ningún framework PHP (Laravel,
+      Symfony, CodeIgniter) y, en su lugar, proporcionó al equipo el
+      <strong>esqueleto base del backend</strong> ya descrito en el
+      capítulo 5 (Router, Validator, autoloader PSR-4, gestor de
+      sesiones, gestor JWT HS256 y envoltorios
+      <code>Request</code>/<code>Response</code>). Sobre ese
+      esqueleto, el equipo ha implementado los veinticinco dominios
+      del sistema con su capa de Controlador, Servicio y Modelo, ha
+      declarado el registro de rutas REST con su control de acceso
+      por roles, ha definido las reglas de validación de cada
+      endpoint y ha añadido los middlewares específicos del proyecto
+      (<em>RateLimitMiddleware</em>, <em>AuthMiddleware</em>,
+      <em>RoleMiddleware</em>) y el servicio de correo transaccional.
+    </p>
+
+    <p>
+      La gestión de dependencias se hace con <strong>Composer</strong>
+      siguiendo el estándar de autoload <strong>PSR-4</strong>, lo que
+      permite que cualquier nueva clase añadida bajo el namespace
+      raíz quede automáticamente disponible sin tocar el cargador.
+      La única dependencia externa declarada por el equipo es
+      <strong>PHPMailer ^7.0</strong>, utilizada por el servicio de
+      correo transaccional para los flujos de activación de cuenta y
+      recuperación de contraseña. La seguridad de las contraseñas se
+      apoya en las funciones nativas de PHP
+      <code>password_hash()</code> y <code>password_verify()</code>
+      con el algoritmo <strong>bcrypt</strong>; la autenticación
+      complementaria mediante <strong>JWT (HS256)</strong> se apoya
+      en el gestor sin librería externa incluido en el esqueleto
+      entregado por el profesorado, lo que evita arrastrar la cadena
+      transitiva de dependencias que suelen acarrear las
+      implementaciones comerciales de JWT en PHP.
+    </p>
+
+    <h2>6.2. Base de datos</h2>
+
+    <p>
+      La persistencia se apoya en <strong>MySQL</strong> como sistema
+      gestor relacional. La elección obedece a tres motivos
+      objetivos: madurez del producto, conocimiento previo del equipo
+      (es la base de datos que se imparte en el ciclo formativo
+      DAW) y disponibilidad inmediata en la pila XAMPP utilizada en
+      los entornos locales de desarrollo. El acceso desde PHP se hace
+      a través de <strong>PDO</strong> con consultas
+      <strong>parametrizadas</strong>, lo que neutraliza por diseño
+      el vector de inyección SQL y permite, si en el futuro se
+      sustituyera el motor, reemplazar únicamente la capa de
+      conexión sin reescribir las consultas.
+    </p>
+
+    <h2>6.3. Frontend</h2>
+
+    <p>
+      El cliente es una aplicación web independiente construida en
+      <strong>HTML5, CSS3 y JavaScript</strong> moderno (módulos
+      ES, <code>fetch</code> nativo, <code>async/await</code>), sin
+      ningún framework de componentes. La ausencia de React, Vue o
+      Angular forma parte de la misma restricción tecnológica fijada
+      por el profesorado para el backend, y se traduce, en la
+      práctica, en un cliente delgado —consume JSON, renderiza DOM y
+      emite eventos— que no acopla el backend a ninguna tecnología
+      de presentación concreta.
+    </p>
+
+    <p>
+      Sobre esta base se incorporan tres librerías de soporte:
+    </p>
+
+    <ul>
+      <li><strong>Bootstrap 5.3.2</strong> con <strong>Bootstrap Icons</strong>, cargado desde el CDN público de jsDelivr. Aporta el sistema de rejilla responsive, los componentes de interfaz (modales, formularios, navegación) y la iconografía consistente en toda la aplicación.</li>
+      <li><strong>Leaflet 1.9.4</strong> sobre <strong>OpenStreetMap</strong>, cargado desde unpkg, como motor cartográfico libre. Se utiliza en la gestión de infraestructuras de agua (CU12) y en el seguimiento de emergencias activas (CU16) para representar hidrantes, depósitos y la ubicación de los partes abiertos. Se descartó Google Maps por su modelo de facturación y su dependencia de credenciales comerciales.</li>
+      <li><strong>FullCalendar</strong>, cargado bajo demanda únicamente en las páginas que lo necesitan (calendario y cuadrante), para renderizar los servicios de guardia y los turnos de refuerzo en vistas mensual y anual.</li>
+    </ul>
+
+    <h2>6.4. Infraestructura y despliegue</h2>
+
+    <p>
+      El proyecto se entrega contenedorizado con <strong>Docker</strong>
+      y orquestado mediante <strong>Docker Compose</strong>. Un único
+      comando (<code>docker compose up</code>) levanta los dos
+      contenedores que sostienen el sistema: el servicio aplicativo,
+      construido sobre la imagen oficial <code>php:8.2-apache</code> y
+      con las extensiones <code>pdo_mysql</code> y <code>mysqli</code>
+      añadidas en el <code>Dockerfile</code>, y el servicio de base de
+      datos, basado en la imagen oficial <code>mysql:8.0</code> con un
+      volumen persistente para los datos y la carga automática del
+      script <code>DDL_DML_SIGEBO.sql</code> en el primer arranque.
+      Ambos contenedores comparten una red interna privada y la
+      conexión entre ellos se resuelve por el nombre del servicio.
+      Para el desarrollo, ambos servicios exponen sus puertos al
+      host (<code>8081:80</code> para Apache y <code>3307:3306</code>
+      para MySQL), lo que permite acceder a la aplicación desde el
+      navegador y conectar herramientas de gestión de base de datos
+      directamente desde la máquina local.
+    </p>
+
+    <p>
+      La configuración sensible (credenciales de base de datos y
+      parámetros SMTP) se externaliza completamente mediante variables
+      de entorno. El repositorio incluye un fichero
+      <code>.env.example</code> con los nombres de todas las variables
+      requeridas y valores de ejemplo, de modo que cualquier
+      desarrollador solo tiene que copiarlo a <code>.env</code> y
+      completarlo con sus datos reales; el fichero <code>.env</code>
+      queda excluido del control de versiones vía <code>.gitignore</code>
+      para evitar la exposición accidental de credenciales.
+      El archivo <code>api_rest/config/config.php</code> lee esas
+      variables con <code>getenv()</code> e incorpora un
+      <em>fallback</em> a los valores por defecto de XAMPP, lo que
+      permite que cualquier miembro del equipo que siga trabajando con
+      la pila local pueda hacerlo sin cambios. Esta separación entre
+      configuración y código materializa en la práctica la arquitectura
+      de dos capas de servicio descrita en el capítulo 5: Apache+PHP
+      en un contenedor y MySQL en otro, aislados entre sí y
+      reproducibles en cualquier entorno.
+    </p>
+
+    <h2>6.5. Herramientas de desarrollo y gestión</h2>
+
+    <p>
+      El código se mantiene en un repositorio <strong>Git</strong>
+      alojado en <strong>GitHub</strong>, que actúa también como
+      plataforma de revisión de cambios mediante <em>pull requests</em>
+      por rama de trabajo. La coordinación del equipo se apoya en
+      <strong>GitHub Projects</strong> para el tablero kanban y el
+      diagrama de Gantt presentados en el capítulo 4, y en una
+      comunidad estructurada de <strong>WhatsApp</strong> para la
+      comunicación operativa con el cliente (CPIFP San Blas) y entre
+      los centros formativos implicados. La documentación funcional
+      previa al desarrollo (selección de tecnologías, requisitos,
+      casos de uso, diseño arquitectónico, modelo de datos) se
+      redactó en <strong>Google Docs</strong> y se conserva en el
+      directorio <code>Documentación/</code> del repositorio como
+      ficheros <code>.docx</code>.
+    </p>
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 7</span>
+    <h1 class="chapter__title">Desarrollo y funcionalidades</h1>
+
+    <p class="chapter__intro">
+      Este capítulo recorre en detalle todas las funcionalidades
+      implementadas en SIGEBO, desde el inicio de sesión hasta la
+      administración avanzada, y explica las decisiones técnicas más
+      relevantes adoptadas durante el desarrollo.
+    </p>
+
+    <!-- ── 7.1 ──────────────────────────────────────────────── -->
+    <h2>7.1. Inicio de sesión y control de acceso</h2>
+
+    <p>
+      La pantalla de inicio de sesión es el único punto de entrada a la
+      aplicación. El usuario introduce su nombre de usuario y contraseña;
+      el formulario valida que ambos campos estén completos antes de
+      enviar la petición y muestra mensajes de error inline si alguno
+      falta o si las credenciales son incorrectas, sin recargar la página.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: pantalla de inicio de sesión de SIGEBO]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.1.</strong> Pantalla de inicio de sesión de SIGEBO. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      Tras autenticarse, el servidor crea una sesión PHP y almacena el
+      identificador del usuario junto con su rol numérico (del 1 al 5).
+      Todas las rutas de la API están protegidas con el método
+      <code>protectedSession()</code> del router, que rechaza con
+      <code>401 Unauthorized</code> cualquier petición sin sesión activa
+      y con <code>403 Forbidden</code> si el rol del usuario no está
+      entre los permitidos para esa operación concreta.
+    </p>
+
+    <p>
+      El sistema define cinco niveles de acceso creciente:
+    </p>
+
+    <p class="table-caption"><strong>Tabla 7.1.</strong> Roles del sistema SIGEBO, jerarquía y capacidades. Fuente: equipo SyncFive.</p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nivel</th>
+          <th>Rol</th>
+          <th>Descripción y capacidades en el sistema</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>Bombero</td>
+          <td>Bombero operativo de base. Acceso de solo lectura a la mayoría de módulos: consulta personal, guardias, cuadrante, emergencias, recursos y formación. No tiene acceso al módulo de alineación.</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Oficial</td>
+          <td>Oficial de guardia. Coordina al equipo durante su turno. Puede publicar avisos y gestionar alineaciones.</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Jefe de intervención</td>
+          <td>Responsable de la dirección táctica en el lugar del siniestro. Puede registrar y gestionar emergencias y turnos de refuerzo.</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Jefe de mando</td>
+          <td>Responsable de la dirección estratégica y coordinación de múltiples unidades. CRUD completo sobre personal, recursos, formación y planificación.</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>Inspector</td>
+          <td>Inspector del cuerpo. Acceso total al sistema: supervisión, control de calidad del servicio, gestión de roles y eliminación de registros.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      La misma jerarquía se aplica en el frontend a través del archivo
+      <code>frontend/config/permissions.js</code>, que centraliza los
+      roles permitidos por módulo. De este modo, los botones de crear,
+      editar o eliminar solo aparecen en la interfaz si el usuario tiene
+      el nivel requerido, sin depender únicamente del rechazo del servidor.
+    </p>
+
+    <h3>Activación de cuenta</h3>
+
+    <p>
+      Cuando un gestor crea un nuevo usuario en el sistema, la cuenta
+      queda en estado inactivo y se envía automáticamente un correo
+      electrónico de bienvenida al bombero con un enlace de activación.
+      El enlace incluye un token único generado con
+      <code>bin2hex(random_bytes(32))</code>, que produce una cadena
+      hexadecimal de 64 caracteres criptográficamente segura. El token
+      se almacena en la base de datos junto con su fecha de expiración.
+      Al pulsar el enlace, el usuario llega a la página
+      <code>activarCuenta.html</code>, que recoge el token de la URL y
+      lo envía al backend para validarlo; si es correcto y no ha
+      caducado, la cuenta se activa y el usuario puede iniciar sesión
+      por primera vez.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: correo de activación de cuenta recibido por el nuevo usuario]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.2.</strong> Correo de activación de cuenta enviado al nuevo bombero al ser dado de alta. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <h3>Recuperación de contraseña</h3>
+
+    <p>
+      Si un usuario olvida su contraseña, puede solicitar un
+      restablecimiento desde la pantalla de inicio de sesión. El sistema
+      recibe el correo electrónico del usuario y, si existe en la base de
+      datos, genera un nuevo token de 64 caracteres con fecha de expiración
+      y envía un correo con el enlace de cambio. Por seguridad, la respuesta
+      del servidor es siempre la misma independientemente de si el correo
+      existe o no (<em>«Si el correo existe, se ha enviado un enlace»</em>),
+      evitando así la enumeración de cuentas registradas.
+    </p>
+
+    <p>
+      El enlace dirige al usuario a <code>cambiarPassword.html</code>,
+      donde introduce su nueva contraseña. El backend valida el token,
+      comprueba que no haya expirado, aplica el hash con
+      <code>password_hash(..., PASSWORD_DEFAULT)</code> (bcrypt) e
+      invalida el token para que no pueda reutilizarse.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: formulario de solicitud de recuperación de contraseña]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.3.</strong> Formulario de solicitud de restablecimiento de contraseña en SIGEBO. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: correo electrónico de restablecimiento de contraseña recibido]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.4.</strong> Correo electrónico de restablecimiento de contraseña enviado por SIGEBO. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: pantalla de introducción de nueva contraseña]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.5.</strong> Pantalla de introducción de nueva contraseña tras validar el token. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <!-- ── 7.2 ──────────────────────────────────────────────── -->
+    <h2>7.2. Estructura general de la interfaz</h2>
+
+    <p>
+      Antes de describir cada módulo, conviene entender el marco visual que
+      envuelve toda la aplicación. Una vez autenticado, el usuario ve siempre
+      tres regiones fijas independientemente de la página que esté visitando:
+      la barra superior (<em>header</em>), el menú lateral (<em>sidebar</em>)
+      y el pie de página (<em>footer</em>).
+    </p>
+
+    <h3>Header</h3>
+    <p>
+      La barra superior actúa como ancla de navegación global. El logotipo de
+      SIGEBO situado a la izquierda funciona como enlace de retorno al
+      <em>dashboard</em>, siguiendo la convención habitual de las aplicaciones
+      web. A la derecha se presentan tres elementos en orden: un contador con
+      el número de <strong>emergencias activas</strong> en ese momento junto a
+      su icono —que enlaza directamente a la página de emergencias, ya que es
+      la información más urgente del sistema y debe ser accesible con un solo
+      clic desde cualquier punto de la aplicación—, el nombre del
+      <strong>parque de bomberos</strong> al que pertenece el usuario
+      autenticado, y el <strong>área personal</strong> del usuario con su
+      foto de perfil y nombre, incluida por convención como zona donde gestiona
+      sus datos y solicita permisos. Ambas páginas se describen en detalle en
+      las secciones 7.4 y 7.9 respectivamente.
+    </p>
+
+    <h3>Sidebar</h3>
+    <p>
+      El menú lateral organiza la navegación en cuatro secciones temáticas:
+      <strong>Operaciones</strong> (partes de intervención, avisos y mapas),
+      <strong>Personal</strong> (alineación, guardias, turnos de refuerzo,
+      cuadrante anual y mensual, formaciones, ediciones, carnets, méritos y
+      permisos), <strong>Recursos</strong> (vehículos, salidas, materiales,
+      mantenimiento, incidencias, almacenes e instalaciones) y
+      <strong>Gestión</strong> (administración de usuarios). El apartado
+      Cuadrante dispone de un submenú desplegable que permite acceder
+      directamente a la vista anual o mensual. En pantallas estrechas el
+      sidebar se convierte en un panel deslizante (<em>offcanvas</em>)
+      accesible mediante el botón de menú del header. Al final del menú,
+      fijado en la parte inferior, se encuentra el botón de
+      <strong>cierre de sesión</strong>.
+    </p>
+
+    <h3>Footer</h3>
+    <p>
+      El pie de página muestra el nombre del sistema, el teléfono y correo
+      internos del parque. Además incorpora un panel de
+      <strong>accesibilidad</strong> con tres controles: activación de alto
+      contraste, ajuste del tamaño de fuente (A− / A+) y botón de
+      restablecimiento de preferencias, permitiendo adaptar la visualización
+      a las necesidades de cada usuario.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: vista general con header, sidebar y footer señalizados]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.6.</strong> Estructura general de la interfaz de SIGEBO: header, sidebar y footer. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <!-- ── 7.3 ──────────────────────────────────────────────── -->
+    <h2>7.3. Dashboard principal</h2>
+
+    <p>
+      Tras el inicio de sesión, el usuario llega al <em>dashboard</em>,
+      la pantalla de inicio de SIGEBO. Esta vista agrega de un vistazo
+      los indicadores más relevantes del parque: emergencias activas,
+      personal de guardia, vehículos operativos y el recuento de avisos
+      recibidos por el usuario autenticado.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: dashboard principal con tarjetas de resumen y avisos]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.7.</strong> Dashboard principal con tarjetas de resumen y avisos internos. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      Los datos se cargan de forma asíncrona al entrar en la aplicación
+      mediante llamadas paralelas a la API, de modo que el panel se
+      renderiza progresivamente sin bloquear la navegación. Los avisos
+      internos que aparecen en el dashboard son los recibidos por el
+      usuario autenticado, ordenados por fecha.
+    </p>
+
+    <!-- ── 7.3 ──────────────────────────────────────────────── -->
+    <!-- ── 7.4 ──────────────────────────────────────────────── -->
+    <h2>7.4. Emergencias y cartografía</h2>
+
+    <p>
+      El módulo de emergencias registra cada intervención con su tipo
+      (incendio forestal, accidente de tráfico, rescate, etc.), dirección,
+      descripción, estado y fecha y hora de inicio. Los roles 3, 4 y 5
+      pueden crear emergencias; la modificación de una emergencia ya
+      registrada está restringida a los roles 4 y 5. Todos los roles
+      pueden consultarlas.
+    </p>
+
+    <p>
+      Desde la ficha de una emergencia se gestionan los recursos
+      movilizados: el gestor añade los vehículos desplegados y, para
+      cada vehículo, el personal embarcado. Esto genera un histórico
+      completo y auditado de cada intervención: qué unidades salieron,
+      con qué dotación y en qué momento.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: ficha de emergencia con vehículos y personal movilizados]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.8.</strong> Ficha de emergencia con vehículos y personal movilizados. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      La vista de <strong>emergencias activas</strong> es la pantalla
+      operativa en tiempo real. Muestra una tarjeta por cada intervención
+      abierta con su dirección y, debajo, un mapa interactivo que sitúa
+      geográficamente la emergencia. La tecnología empleada es
+      <strong>Leaflet 1.9</strong> sobre teselas de
+      <strong>OpenStreetMap</strong>. La dirección textual de cada
+      emergencia se convierte en coordenadas mediante la API pública de
+      <strong>Nominatim</strong>, que devuelve latitud y longitud a
+      partir de una dirección en lenguaje natural. Sobre esas coordenadas
+      se coloca un marcador rojo personalizado y se habilita un enlace
+      directo a <strong>Google Maps</strong> en modo navegación para que
+      el personal pueda llegar al punto de intervención desde cualquier
+      dispositivo.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: vista de emergencias activas con mapa Leaflet y marcador de ubicación]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.9.</strong> Vista de emergencias activas con mapa Leaflet y marcador de ubicación. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      Nominatim impone un límite de una petición por segundo. Para
+      respetarlo sin bloquear la interfaz, las tarjetas de emergencia
+      se renderizan de forma escalonada: cada geocodificación espera a
+      la anterior antes de lanzarse, introduciendo un retardo controlado
+      entre peticiones sucesivas. De este modo la vista se carga
+      progresivamente sin violar las condiciones de uso del servicio.
+    </p>
+
+    <!-- ── 7.5 ──────────────────────────────────────────────── -->
+    <h2>7.5. Comunicación interna: avisos</h2>
+
+    <p>
+      El módulo de <strong>avisos</strong> permite a los roles 2 y
+      superior publicar comunicaciones internas: convocatorias, cambios
+      de procedimiento, noticias relevantes o cualquier información que
+      deba llegar al personal. Cada aviso tiene un remitente y uno o
+      varios destinatarios concretos; solo el remitente y los
+      destinatarios pueden ver ese aviso. Solo el administrador (rol 5)
+      puede eliminar un aviso ya publicado.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: módulo de avisos internos]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.10.</strong> Módulo de avisos internos con listado de comunicaciones publicadas. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <!-- ── 7.6 ──────────────────────────────────────────────── -->
+    <h2>7.6. Mapas: infraestructuras de agua y seguimiento de recursos</h2>
+
+    <p>
+      El módulo de <strong>mapas</strong> es una de las piezas más
+      características de SIGEBO. Sobre una capa cartográfica interactiva
+      —construida con <strong>Leaflet</strong> y teselas de
+      <strong>OpenStreetMap</strong>— se representa la información
+      geográfica que el personal necesita durante una intervención. A
+      diferencia del mapa de emergencias descrito en la sección 7.4, que
+      sitúa un aviso puntual geocodificando su dirección, este módulo
+      ofrece una visión territorial permanente de los recursos del
+      parque.
+    </p>
+
+    <p>
+      El contenido principal son las <strong>infraestructuras de
+      agua</strong>: <em>hidrantes</em> y <em>bocas de riego</em>. Cada
+      infraestructura se almacena con sus coordenadas (latitud y
+      longitud), un código identificativo, su denominación, el municipio
+      y la provincia —Teruel, Zaragoza o Huesca— y un estado operativo
+      (<em>activo</em>, <em>avería</em>, <em>fuera de servicio</em> o
+      <em>retirado</em>). El mapa pinta cada punto como un marcador
+      consultable, y un conjunto de filtros por tipo, provincia,
+      municipio y estado permite acotar la búsqueda. La información se
+      complementa con contadores de resumen y una tabla de registro
+      paginada desde la que se da de alta, se consulta y se edita cada
+      infraestructura.
+    </p>
+
+    <p>
+      El módulo está además <strong>preparado para mostrar la posición
+      de los vehículos en tiempo real</strong>: la arquitectura
+      contempla pintar cada vehículo como un marcador sobre su última
+      ubicación conocida, con un detalle emergente que incluye matrícula,
+      modelo, tipo y disponibilidad. No obstante, esta funcionalidad
+      <strong>no llega operativa en esta primera versión</strong>: el
+      cliente no dispuso durante el desarrollo de un mecanismo para
+      capturar y transmitir la ubicación de los vehículos, de modo que,
+      al no existir coordenadas que representar, los recursos móviles no
+      se dibujan todavía en el mapa. Queda como una mejora prevista para
+      futuras versiones, una vez el parque disponga de un sistema de
+      localización embarcado.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: mapa de infraestructuras de agua con hidrantes y bocas de riego]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.11.</strong> Módulo de mapas con las infraestructuras de agua geolocalizadas sobre Leaflet y OpenStreetMap. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <!-- ── 7.7 ──────────────────────────────────────────────── -->
+    <h2>7.7. Planificación operativa: alineación, guardias, turnos de refuerzo y cuadrante</h2>
+
+    <p>
+      La <strong>alineación</strong> es la herramienta de organización
+      táctica del turno. Trabaja sobre un <strong>día concreto</strong>:
+      al seleccionar una fecha, carga la guardia registrada ese día y
+      permite distribuir a su personal en las <strong>posiciones
+      operativas</strong> del parque. Cada posición lleva asociado un
+      cargo —dos oficiales (OF1, OF2), dos conductores (C1, C2) y hasta
+      seis bomberos (B1 a B6)—, de modo que el responsable decide quién
+      ocupa cada puesto en ese turno.
+    </p>
+
+    <p>
+      Los bomberos de la guardia que aún no tienen una posición asignada
+      se muestran aparte, en una lista de <em>bomberos de guardia</em>,
+      para tenerlos siempre a la vista. La pantalla incluye también los
+      <strong>refuerzos del día</strong> y un espacio de
+      <strong>notas</strong> de la guardia. Al guardar, el sistema
+      persiste el cargo asignado a cada bombero y las anotaciones,
+      consolidando así la composición definitiva del equipo para esa
+      jornada.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: pantalla de alineación con posiciones de guardia, bomberos sin cargo y refuerzos del día]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.12.</strong> Pantalla de alineación: distribución del personal de guardia en posiciones operativas. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      Las <strong>guardias</strong> representan los turnos ordinarios del
+      parque. Cada guardia se define con fecha, hora de inicio, hora de
+      fin y notas opcionales. Existe la opción de marcarla como
+      <em>día completo</em>, que fija automáticamente las horas a las
+      08:00 siguiendo la convención operativa del centro. Una vez creada
+      la guardia, los gestores asignan bomberos a ella desde el modal de
+      edición, indicando el cargo de cada uno en ese turno
+      (jefe de guardia, conductor, etc.).
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: listado de guardias con modal de asignación de personal]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.13.</strong> Módulo de guardias con listado y modal de asignación de personal. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      Los <strong>turnos de refuerzo</strong> representan turnos
+      extraordinarios o de apoyo entre parques. A diferencia de las
+      guardias, se definen con una fecha y hora de inicio y fin
+      combinadas (<em>f_inicio</em> y <em>f_fin</em>) y un campo de
+      horas totales, sin el concepto de día completo. La asignación de
+      personal tampoco incluye cargo. Los roles 4 y 5 pueden
+      crearlos y editarlos; el rol 3 y superiores pueden asignar y
+      desasignar personal, mientras que los roles más bajos solo tienen
+      acceso de consulta.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: listado de turnos de refuerzo con modal de asignación de personal]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.14.</strong> Módulo de turnos de refuerzo con listado y asignación de personal de apoyo. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El <strong>cuadrante</strong> es una vista calculada que no
+      almacena datos propios: consulta las guardias y turnos de refuerzo
+      existentes y los proyecta sobre un calendario. Es siempre de
+      <strong>solo lectura</strong> —ningún rol edita datos directamente
+      sobre él—, y se puede consultar en dos modos: <em>«Mi cuadrante»</em>,
+      que muestra únicamente la planificación del usuario autenticado, y
+      <em>«Global»</em>, que permite consultar la de todo el parque y, con
+      un selector, centrarse en un bombero concreto. El modo «Global» queda
+      reservado a los roles de <strong>Oficial o superior</strong> (Oficial,
+      Jefe de Intervención, Jefe de Mando e Inspector); un Bombero de base
+      solo puede ver su propio cuadrante. La restricción se aplica tanto en
+      la interfaz —ocultando el control de cambio de modo— como en el
+      servidor, que rechaza las peticiones de datos globales de roles no
+      autorizados. El cuadrante se ofrece en dos formatos complementarios.
+    </p>
+
+    <p>
+      El <strong>cuadrante mensual</strong> presenta los días del mes
+      como columnas, de modo que cada jornada muestra de un vistazo los
+      turnos activos mediante celdas de color. Es el formato más adecuado
+      para el detalle del día a día: permite ver con precisión qué ocurre
+      en cada fecha concreta y planificar a corto plazo.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: cuadrante mensual con celdas de turnos por día]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.15.</strong> Cuadrante mensual con las jornadas del mes y sus turnos coloreados. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El <strong>cuadrante anual</strong> ofrece una visión de los doce
+      meses del año a la vez: cada mes se representa como un
+      mini-calendario con sus días coloreados según los turnos y eventos.
+      A diferencia del mensual, sacrifica parte del detalle diario a
+      cambio de una perspectiva de conjunto que permite identificar de un
+      vistazo los periodos con cobertura insuficiente y planificar a largo
+      plazo.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: cuadrante anual con los doce meses del año]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.16.</strong> Cuadrante anual con los doce meses del año, cada uno como mini-calendario con sus días coloreados. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      Los <strong>modales de detalle</strong> aparecen en ambos formatos:
+      al pulsar sobre una celda se abre una ventana que recopila todos los eventos de
+      esa fecha sin abandonar la vista general: guardias, turnos de
+      refuerzo y permisos, con sus horarios y notas. En el modo «Global»,
+      cada evento se acompaña además del nombre del bombero al que
+      pertenece, de manera que se distingue de quién es cada servicio.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: modal de detalle de un día con guardias, refuerzos y permisos]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.17.</strong> Modal de detalle de jornada con los eventos del día y el bombero asociado en modo Global. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <!-- ── 7.8 ──────────────────────────────────────────────── -->
+    <h2>7.8. Formación, carnets y méritos</h2>
+
+    <p>
+      La gestión de la formación se articula en dos niveles jerárquicos.
+      El primer nivel son las <strong>formaciones</strong>: programas o
+      tipos de curso genéricos (por ejemplo, «Conducción de vehículos de
+      emergencia», «Primeros auxilios avanzados» o «Gestión de residuos
+      peligrosos»). El segundo nivel son las <strong>ediciones</strong>:
+      convocatorias concretas de una formación, cada una con su propia
+      fecha de inicio, fecha de fin y duración en horas.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: listado de formaciones con código, nombre y descripción]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.18.</strong> Módulo de formación con el listado de cursos (nombre y descripción). Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      A cada edición se le apuntan los bomberos participantes de uno en
+      uno, indicando su identificador en el formulario «Apuntar bombero a
+      edición»; los inscritos quedan recogidos en una tabla de bomberos
+      apuntados. Esta separación en dos niveles permite reutilizar la
+      ficha de un tipo de curso para múltiples convocatorias sin duplicar
+      información, y facilita tanto filtrar el historial formativo de un
+      bombero por tipo de curso como consultar quiénes asistieron a una
+      edición concreta.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: página de ediciones con la tabla de ediciones y el formulario para apuntar bomberos]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.19.</strong> Página de ediciones: convocatorias de cada formación (fecha de inicio, fecha de fin y horas) y apuntado de bomberos por identificador. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El módulo de <strong>carnets</strong> registra las habilitaciones
+      y licencias profesionales de cada bombero: permisos de conducción
+      especiales, certificaciones técnicas o cualquier titulación
+      requerida para operar determinados equipos. Cada carnet pertenece
+      a un <strong>grupo de carnet</strong>, que actúa como categoría
+      agrupadora configurable por el administrador, permitiendo organizar
+      las habilitaciones por familia (conducción, rescate, primeros
+      auxilios, etc.).
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: módulo de carnets con sus grupos de carnet]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.20.</strong> Módulo de carnets: habilitaciones de cada bombero agrupadas por grupo de carnet. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El módulo de <strong>méritos</strong> recoge los reconocimientos
+      y condecoraciones del personal. Cada mérito tiene un nombre y una
+      descripción, y puede asociarse a uno o varios bomberos. Permite
+      mantener un historial oficial de los reconocimientos recibidos a
+      lo largo de la carrera profesional.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: módulo de méritos con el modal de detalle y las personas con el mérito]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.21.</strong> Módulo de méritos: listado de distinciones y gestión de las personas que las ostentan desde los modales. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <!-- ── 7.9 ──────────────────────────────────────────────── -->
+    <h2>7.9. Área personal y solicitud de permisos</h2>
+
+    <p>
+      El <strong>área personal</strong> es una sección privada accesible
+      para cualquier usuario autenticado, independientemente de su rol.
+      Desde allí cada bombero puede consultar su ficha personal, revisar
+      sus turnos asignados, ver su historial de formación y gestionar
+      sus solicitudes de permiso de ausencia.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: área personal con la ficha del bombero, sus turnos y formación]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.22.</strong> Área personal: ficha del bombero con sus turnos asignados e historial de formación. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El módulo de <strong>permisos de ausencia</strong> permite a
+      cualquier usuario solicitar días libres indicando el motivo
+      (vacaciones, asuntos propios, baja médica, etc.), la fecha de
+      inicio y la fecha de fin. La solicitud queda registrada con estado
+      <em>en revisión</em>. Los roles 4 y 5 pueden aprobarla o denegarla
+      desde el módulo de administración; al hacerlo, el estado de la
+      solicitud se actualiza y el solicitante puede consultar la
+      resolución accediendo al módulo de permisos. Los <strong>motivos</strong> de permiso son
+      configurables por el administrador para adaptarse a la normativa
+      interna de cada parque.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: formulario de solicitud de permiso de ausencia]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.23.</strong> Formulario de solicitud de permiso de ausencia desde el área personal. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <!-- ── 7.10 ──────────────────────────────────────────────── -->
+    <h2>7.10. Gestión de vehículos y material</h2>
+
+    <p>
+      El módulo de <strong>vehículos</strong> cataloga todas las unidades
+      de la flota del parque. Cada vehículo se identifica por su
+      <strong>matrícula</strong> y registra su nombre, marca, modelo y
+      tipo, la <strong>instalación</strong> a la que está adscrito, un
+      indicador de <strong>disponibilidad</strong> (operativo o no) y su
+      última posición conocida (latitud y longitud), prevista para el
+      seguimiento en el mapa descrito en la sección 7.6. La relación
+      entre cada vehículo y el material que tiene asignado se gestiona
+      desde el módulo de material que se describe a continuación.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: ficha de vehículo con sus datos técnicos]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.24.</strong> Ficha de vehículo con sus datos técnicos y su disponibilidad. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El módulo de <strong>salidas</strong> lleva un registro auditado de
+      cada uso de un vehículo fuera de las intervenciones de emergencia.
+      Cada salida anota el <strong>vehículo</strong> (por su matrícula),
+      el <strong>conductor</strong> responsable, la fecha y hora de
+      <strong>salida</strong> y de <strong>regreso</strong>, y el
+      <strong>kilometraje</strong> inicial y final, con lo que se puede
+      calcular la distancia recorrida en cada desplazamiento. Resulta útil
+      para el control de uso de la flota y la rendición de cuentas.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: módulo de salidas con vehículo, conductor, horas y kilometraje]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.25.</strong> Módulo de salidas: registro de desplazamientos con vehículo, conductor, horarios y kilometraje. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El módulo de <strong>material</strong> gestiona el inventario
+      general del parque. Cada artículo tiene un nombre, una descripción,
+      una <strong>categoría</strong> y un estado de
+      <em>alta</em> o <em>baja</em>. El material puede asignarse a un
+      <strong>vehículo</strong>, a una <strong>persona</strong> en
+      custodia o a un <strong>almacén</strong>; en el caso de los
+      artículos inventariables, cada asignación lleva su propio
+      <strong>número de serie</strong>, lo que permite distinguir y
+      seguir cada unidad concreta. Todas estas asignaciones —a vehículos,
+      personas y almacenes— se realizan desde el propio módulo de
+      material, que centraliza la gestión del inventario. Las
+      <strong>categorías</strong> de material las configura el
+      administrador e indican si el material es inventariable (con número
+      de serie) o no.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: módulo de material con sus asignaciones a vehículos, personas y almacenes]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.26.</strong> Módulo de material: ficha del artículo y sus asignaciones a vehículos, personas y almacenes. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El módulo de <strong>mantenimiento</strong> registra las tareas de
+      mantenimiento del parque. Cada parte tiene un
+      <strong>responsable</strong> (el bombero asignado), un estado de
+      <em>abierto</em> o <em>realizado</em>, una fecha de inicio, una
+      fecha de fin opcional y una descripción de la intervención. De este
+      modo se lleva un control de las tareas pendientes y completadas y de
+      quién se encarga de cada una.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: módulo de mantenimiento con partes abiertos y realizados]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.27.</strong> Módulo de mantenimiento: partes con su responsable, estado (abierto/realizado) y fechas. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El módulo de <strong>incidencias</strong> registra los problemas
+      detectados sobre los recursos del parque. Cada incidencia indica el
+      <strong>tipo</strong> de problema, la <strong>fecha</strong> en que
+      se detectó, un <strong>asunto</strong> descriptivo, el
+      <strong>estado</strong> de resolución (abierta o cerrada) y el
+      <strong>responsable</strong> (bombero asignado). De forma opcional,
+      puede vincularse a un <strong>material</strong> concreto o a un
+      <strong>vehículo</strong> (por matrícula), lo que permite identificar
+      qué recurso originó el problema y hacer un seguimiento centralizado
+      de su resolución.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: módulo de incidencias con listado y estado de resolución]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.28.</strong> Módulo de incidencias con listado y estado de resolución. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El módulo de <strong>almacenes</strong> representa los espacios de
+      almacenamiento del parque. Cada almacén pertenece a una
+      <strong>instalación</strong> concreta, se ubica en una
+      <strong>planta</strong> determinada y tiene un nombre
+      identificativo. Al asociar el material a los almacenes, el sistema
+      permite saber qué hay guardado en cada zona y facilita las
+      revisiones de inventario por ubicación.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: módulo de almacenes con su instalación, planta y material almacenado]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.29.</strong> Módulo de almacenes: cada almacén con su instalación, planta y material asociado. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El módulo de <strong>instalaciones</strong> cataloga los centros
+      o parques del servicio. Cada instalación registra su
+      <strong>nombre</strong>, <strong>dirección</strong>,
+      <strong>localidad</strong>, <strong>teléfono</strong> y
+      <strong>correo electrónico</strong> de contacto. Las instalaciones
+      actúan como entidad de referencia para otras partes del sistema:
+      los vehículos quedan adscritos a una instalación concreta y los
+      almacenes pertenecen igualmente a una instalación.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: módulo de instalaciones con el listado de centros y sus datos de contacto]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.30.</strong> Módulo de instalaciones: listado de centros con nombre, dirección, localidad y datos de contacto. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <!-- ── 7.11 ──────────────────────────────────────────────── -->
+    <h2>7.11. Gestión de personal</h2>
+
+    <p>
+      El módulo de personas centraliza el registro de todos los trabajadores
+      del servicio. La tabla principal muestra el ID de bombero, número de
+      funcionario, correo electrónico, teléfono, nombre, apellidos, localidad
+      y nombre de usuario. La página incluye filtros por ID de bombero, parque
+      y estado (activo/inactivo). Los roles 4 y 5 pueden crear
+      y editar registros; la eliminación queda reservada al rol 5. El
+      resto de roles tiene acceso de solo consulta.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: listado de personal con filtros y botones de acción]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.31.</strong> Listado de personal con filtros y acciones por rol. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El alta de un nuevo trabajador se realiza mediante un formulario
+      <em>inline</em> situado bajo la tabla, visible únicamente para los roles
+      con permiso de escritura. Recoge los campos obligatorios —ID de bombero,
+      número de funcionario, DNI, nombre, apellidos, fecha de nacimiento,
+      correo electrónico, teléfono, fecha de ingreso en la Diputación, nombre
+      de usuario y contraseña— junto a datos opcionales como teléfono de
+      emergencia, domicilio, localidad, tallas de uniforme (superior, inferior
+      y calzado) y rol. Antes de enviar la petición al servidor se aplican
+      validaciones en cliente: formato del ID de bombero, estructura del número
+      de funcionario (17 caracteres), validez del DNI, formato de correo y
+      teléfono, y complejidad mínima de la contraseña.
+    </p>
+
+    <figure class="figure">
+      <div class="placeholder">[Captura: formulario de alta de nuevo trabajador]</div>
+      <figcaption class="figure__caption">
+        <strong>Figura 7.32.</strong> Formulario de alta de nuevo trabajador situado bajo la tabla. Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      Cada fila de la tabla dispone de tres acciones: ver, editar y eliminar.
+      El modal de detalle lista todos los campos del registro —datos
+      identificativos, fechas, tallas, domicilio, rol y estado— en forma de
+      ficha de solo lectura. El modal de edición permite modificar nombre,
+      apellidos, correo, teléfonos, fechas, tallas, domicilio, localidad, rol,
+      estado y nombre de usuario, excluyendo los campos no modificables tras el
+      alta (ID de bombero, número de funcionario y DNI). La eliminación se
+      confirma en un modal independiente antes de ejecutar la operación.
+    </p>
+
+    <!-- ── 7.12 ──────────────────────────────────────────────── -->
+    <h2>7.12. Administración del sistema</h2>
+
+    <p>
+      La aplicación incluye un conjunto de páginas de gestión de datos
+      maestros que actúan como catálogos de referencia para el resto de
+      módulos. En general todos los roles pueden consultar estos catálogos,
+      pero la creación, edición y eliminación de registros está restringida
+      a los roles con mayor privilegio, con variaciones según el módulo.
+    </p>
+
+    <ul>
+      <li>
+        <strong>Roles:</strong> define los niveles de acceso del sistema
+        (Bombero, Oficial, Jefe de Intervención, Jefe de Mando e Inspector). Solo
+        los roles 4 y 5 pueden acceder a esta página; únicamente el
+        rol 5 puede crear o modificar roles.
+      </li>
+      <li>
+        <strong>Grupos de carnet:</strong> agrupa los tipos de carnet
+        bajo una categoría común, permitiendo organizar las habilitaciones
+        profesionales del personal. Los roles 4 y 5 pueden crear y editar
+        grupos; la eliminación queda reservada al rol 5.
+      </li>
+      <li>
+        <strong>Categorías de material:</strong> clasifica el inventario
+        del almacén (equipos de protección individual, herramienta pesada,
+        material sanitario, etc.). Los roles 4 y 5 pueden crear categorías;
+        la eliminación queda reservada al rol 5.
+      </li>
+      <li>
+        <strong>Tipos de emergencia:</strong> catálogo de clasificaciones
+        de intervención utilizado al registrar una emergencia. Los roles
+        3, 4 y 5 pueden crear tipos; la edición queda restringida a los
+        roles 4 y 5.
+      </li>
+      <li>
+        <strong>Motivos de permiso:</strong> define los tipos de ausencia
+        admitidos por la organización. Los roles 4 y 5 pueden crear
+        motivos; la edición y la eliminación quedan reservadas al rol 5.
+      </li>
+    </ul>
+
+    <!-- ── 7.13 ──────────────────────────────────────────────── -->
+    <h2>7.13. Aspectos técnicos relevantes</h2>
+
+    <h3>Autenticación por sesión PHP</h3>
+
+    <p>
+      Se eligió autenticación basada en sesiones PHP en lugar de tokens
+      JWT por tres razones concretas: el sistema es una aplicación web
+      interna sin clientes móviles nativos ni consumidores de API
+      externos, por lo que la ventaja de los tokens <em>stateless</em>
+      no aporta valor aquí; las sesiones PHP permiten invalidar el
+      acceso de un usuario de forma inmediata desde el servidor
+      (algo que JWT no permite sin una lista de revocación adicional);
+      y simplifican el modelo de seguridad al no requerir almacenamiento
+      ni refresco de tokens en el cliente.
+    </p>
+
+    <h3>Consumo de API con capas <em>Api.js</em></h3>
+
+    <p>
+      Cada módulo del frontend encapsula todas sus llamadas HTTP en un
+      archivo <code>*Api.js</code> dedicado. Estas funciones usan la
+      API nativa <code>fetch</code> con <code>credentials: 'include'</code>
+      para que las cookies de sesión se envíen automáticamente en cada
+      petición. Este patrón centraliza la gestión de errores HTTP,
+      facilita cambiar la URL base de la API sin tocar la lógica de
+      interfaz, y hace que los controladores de frontend sean más
+      legibles al no mezclar lógica de red con manipulación del DOM.
+    </p>
+
+    <h3>Subida de ficheros</h3>
+
+    <p>
+      Las fotos de perfil se gestionan con una petición
+      <code>multipart/form-data</code> separada de los datos textuales
+      del formulario. En el servidor, el servicio valida la extensión
+      del archivo (JPG, JPEG, PNG o WEBP) y su tamaño (máximo 2&nbsp;MB)
+      antes de guardarlo. El nombre del archivo se construye a partir del
+      identificador único del bombero, de modo que cada persona tiene
+      exactamente una foto y una subida nueva reemplaza automáticamente
+      la anterior. Los ficheros se almacenan fuera del árbol público de
+      la SPA y se sirven a través del endpoint
+      <code>/storage/fotos/{filename}</code>, que sanitiza el nombre
+      antes de leer el archivo y devuelve la imagen con las cabeceras
+      de tipo y tamaño correctas.
+    </p>
+
+    <h3>Validaciones en dos capas</h3>
+
+    <p>
+      Las validaciones se aplican tanto en el frontend como en el
+      backend. En el frontend, los formularios comprueban que los
+      campos obligatorios están completos, que los formatos son
+      correctos (fechas, emails, números de teléfono) y que las
+      restricciones de negocio se cumplen antes de enviar la petición,
+      dando retroalimentación inmediata al usuario. En el backend,
+      los controladores y servicios repiten las validaciones
+      críticas de negocio independientemente del frontend, de modo
+      que ninguna petición malformada o malintencionada pueda corromper
+      los datos aunque eluda la validación del navegador.
+    </p>
+
+    <h3>Cartografía con Leaflet y Nominatim</h3>
+
+    <p>
+      La integración cartográfica combina tres componentes: la
+      biblioteca <strong>Leaflet</strong> para renderizar el mapa
+      interactivo en el navegador, las teselas de
+      <strong>OpenStreetMap</strong> como capa base gratuita y sin
+      clave de API, y el servicio de geocodificación
+      <strong>Nominatim</strong> para convertir direcciones textuales
+      en coordenadas. Para cumplir la política de uso aceptable de
+      Nominatim (máximo una petición por segundo y por IP), las
+      geocodificaciones se encolan y se ejecutan con un retardo
+      mínimo entre llamadas sucesivas, de modo que múltiples
+      emergencias activas se localizan progresivamente sin bloquear
+      la interfaz ni vulnerar los términos del servicio.
+    </p>
+
+    <h3>Notificaciones por correo electrónico</h3>
+
+    <p>
+      El sistema envía correos automáticos en dos situaciones: al
+      crear un nuevo trabajador, para que active su cuenta mediante
+      un enlace con token de un solo uso; y cuando un usuario solicita
+      restablecer su contraseña, enviando un enlace de recuperación con
+      expiración. Ambos flujos usan <strong>PHPMailer</strong>. La
+      configuración del servidor SMTP (host, puerto, credenciales y
+      cifrado) se lee en tiempo de ejecución desde variables de
+      entorno, de modo que el mismo código funciona en local con un
+      servidor de pruebas y en producción con el servidor real del
+      parque sin ningún cambio en el código fuente.
+    </p>
+
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 8</span>
+    <h1 class="chapter__title">Despliegue</h1>
+
+    <p class="chapter__intro">
+      Este capítulo describe cómo se empaqueta, configura y pone en
+      marcha SIGEBO en un entorno de producción. Se detalla la
+      infraestructura de contenedores elegida, la configuración del
+      servidor web y la base de datos, la gestión de variables de
+      entorno y los pasos necesarios para que cualquier administrador
+      pueda reproducir el despliegue a partir del repositorio.
+    </p>
+
+    <h2>8.1. Entorno de desarrollo y ejecución</h2>
+
+    <p>
+      El proyecto puede ejecutarse en dos entornos sin modificar el código
+      fuente. En desarrollo local con XAMPP, basta con situar el repositorio
+      dentro de <code>htdocs</code> y apuntar el navegador a la ruta
+      correspondiente; el archivo <code>api_rest/config/config.php</code>
+      detecta la ausencia de variables de entorno y aplica automáticamente
+      los valores por defecto de XAMPP (<code>localhost</code>, puerto
+      <code>3306</code>, usuario <code>root</code> sin contraseña y base de
+      datos <code>syncfive</code>).
+    </p>
+
+    <p>
+      El entorno de producción —y el recomendado para cualquier despliegue
+      reproducible— se basa en <strong>Docker Engine</strong> orquestado
+      con <strong>Docker Compose</strong>. Docker Engine es el motor de
+      contenedorización que permite empaquetar la aplicación junto con
+      todas sus dependencias de sistema (versión de PHP, módulos Apache,
+      librerías del SO) en una imagen portátil y ejecutarla de forma
+      aislada sobre cualquier máquina Linux, Windows o macOS que tenga
+      el motor instalado. Esto elimina el problema clásico de
+      incompatibilidades entre entornos: la misma imagen que funciona
+      en el portátil del desarrollador funciona sin cambios en el servidor
+      del parque. Docker Compose extiende esa portabilidad al plano
+      multi-servicio: con un único fichero declarativo
+      (<code>docker-compose.yml</code>) y un único comando se levantan
+      y orquestan los dos contenedores del sistema —servidor web y base
+      de datos—, se configura la red interna entre ellos, se definen los
+      volúmenes persistentes y se establece el orden de arranque. El
+      requisito en la máquina anfitriona se reduce a tener instalados
+      Docker Engine y el plugin Docker Compose; no es necesario tener
+      PHP, Apache ni MySQL instalados localmente.
+    </p>
+
+    <h2>8.2. Configuración del servidor</h2>
+
+    <p>
+      El servidor web se construye a partir de la imagen oficial
+      <code>php:8.2-apache</code>. El <code>Dockerfile</code> del proyecto
+      añade sobre esa base las extensiones PHP necesarias
+      —<code>pdo</code>, <code>pdo_mysql</code>, <code>mysqli</code>
+      y <code>zip</code>— y habilita el módulo
+      <code>mod_rewrite</code> de Apache, imprescindible para el
+      enrutamiento de la aplicación.
+    </p>
+
+    <p>
+      El enrutamiento se gestiona mediante el fichero <code>.htaccess</code>
+      situado en la raíz del proyecto. Sus reglas cumplen tres funciones:
+      mapear las URLs limpias de cada módulo al fichero HTML correspondiente
+      (por ejemplo, <code>/emergencias</code> →
+      <code>frontend/pages/Emergencia/vistaEmergencia.html</code>),
+      redirigir todas las peticiones a <code>/api/*</code> hacia
+      <code>api_rest/public/</code> donde reside el enrutador PHP, e
+      impedir el acceso directo al directorio <code>frontend/</code>
+      desde el navegador. Las páginas de error 403, 404 y 500 apuntan
+      a vistas personalizadas.
+    </p>
+
+    <p>
+      Toda la configuración sensible —credenciales de base de datos y
+      parámetros SMTP— se gestiona exclusivamente mediante variables de
+      entorno. El repositorio incluye el fichero <code>.env.example</code>
+      con los nombres y valores de ejemplo de todas las variables
+      requeridas:
+    </p>
+
+    <ul>
+      <li><strong>Base de datos:</strong> <code>DB_HOST</code>,
+        <code>DB_PORT</code>, <code>DB_NAME</code>, <code>DB_USER</code>,
+        <code>DB_PASS</code>.</li>
+      <li><strong>SMTP:</strong> <code>MAIL_HOST</code>,
+        <code>MAIL_PORT</code>, <code>MAIL_USERNAME</code>,
+        <code>MAIL_PASSWORD</code>, <code>MAIL_ENCRYPTION</code>,
+        <code>MAIL_FROM_EMAIL</code>, <code>MAIL_FROM_NAME</code>.</li>
+      <li><strong>Aplicación:</strong> <code>APP_URL</code> (URL base
+        pública, utilizada en los enlaces de activación de cuenta y
+        recuperación de contraseña).</li>
+    </ul>
+
+    <p>
+      El fichero <code>.env</code> queda excluido del control de versiones
+      mediante <code>.gitignore</code> para evitar la exposición accidental
+      de credenciales.
+    </p>
+
+    <h2>8.3. Despliegue con Docker</h2>
+
+    <p>
+      El archivo <code>docker-compose.yml</code> define dos servicios que
+      comparten la red interna <code>sigebo-net</code> y se comunican
+      entre sí por el nombre del servicio:
+    </p>
+
+    <ul>
+      <li>
+        <strong>sigebo-apache</strong> — construido desde el
+        <code>Dockerfile</code> del proyecto. Monta el repositorio
+        completo en <code>/var/www/html</code> y expone el puerto
+        <code>8081</code> del host mapeado al <code>80</code> del
+        contenedor. Recibe las variables de entorno definidas en
+        <code>.env</code> y arranca únicamente cuando el servicio de
+        base de datos supera su comprobación de salud.
+      </li>
+      <li>
+        <strong>sigebo-mysql</strong> — basado en la imagen oficial
+        <code>mysql:8.0</code>. Los datos se persisten en el volumen
+        nombrado <code>sigebo-mysql-data</code>, por lo que sobreviven
+        a reinicios y recreaciones del contenedor. En el primer arranque,
+        MySQL ejecuta automáticamente el script
+        <code>DDL_DML_SIGEBO.sql</code> montado en
+        <code>/docker-entrypoint-initdb.d/</code>, lo que inicializa
+        el esquema y los datos de prueba sin intervención manual. El
+        puerto <code>3307</code> del host se mapea al <code>3306</code>
+        del contenedor para permitir la conexión con herramientas de
+        administración externas durante el desarrollo.
+      </li>
+    </ul>
+
+    <p>
+      El servicio MySQL incorpora una comprobación de salud
+      (<code>healthcheck</code>) basada en <code>mysqladmin ping</code>
+      con un intervalo de 10&nbsp;s, un tiempo de espera de 5&nbsp;s y
+      hasta 10 reintentos. El contenedor Apache declara
+      <code>depends_on: mysql: condition: service_healthy</code>, lo que
+      garantiza que Apache no arranca hasta que MySQL esté completamente
+      operativo y evita errores de conexión en el inicio.
+    </p>
+
+    <h3>Entorno colaborativo durante el desarrollo</h3>
+
+    <p>
+      Durante el desarrollo en equipo se utilizó un servidor físico
+      dedicado con <strong>Ubuntu Server 24.04.3</strong>, accesible
+      por todos los miembros del equipo a través de la red local del
+      centro. Sobre ese servidor se levantaron cinco contenedores
+      Apache independientes —uno por cada integrante del equipo—,
+      cada uno con su propio clon del repositorio de GitHub montado
+      como volumen y expuesto en un puerto distinto del host:
+      <code>8081</code>, <code>8082</code>, <code>8083</code>,
+      <code>8084</code> y <code>8085</code>. De este modo, cada
+      desarrollador podía acceder a su instancia desde el navegador,
+      trabajar en su propia rama y ver sus cambios de forma inmediata
+      sin interferir con el trabajo de los demás.
+    </p>
+
+    <p>
+      La base de datos era compartida: un único contenedor MySQL
+      servía a todos los contenedores Apache a través de una red
+      Docker interna, y phpMyAdmin quedó disponible en el puerto
+      <code>8087</code> para la administración de la base de datos.
+      Esta arquitectura permitió que los cinco miembros trabajaran
+      en paralelo sobre el mismo repositorio con aislamiento total
+      entre instancias, siguiendo la metodología de rama por
+      funcionalidad descrita en el capítulo 4.
+    </p>
+
+    <p>
+      Para mantener al cliente informado del progreso, la aplicación
+      se publicaba de forma periódica —aproximadamente cada semana o
+      cada quince días— en el dominio
+      <strong>syncfive.cpifpbajoaragon.info</strong>, alojado en el
+      mismo servidor del centro. Esto permitía al cliente revisar las
+      funcionalidades recién integradas en la rama principal sin
+      necesidad de acceder al entorno de desarrollo interno. La
+      versión final de la aplicación quedó desplegada en ese dominio
+      con fecha de última actualización el <strong>31 de mayo de
+      2026</strong>.
+    </p>
+
+    <h2>8.4. Dependencias y puesta en marcha</h2>
+
+    <p>
+      La única dependencia de terceros del backend es
+      <strong>PHPMailer&nbsp;^7.0</strong>, declarada en
+      <code>composer.json</code>. El directorio <code>vendor/</code>
+      con la librería ya instalada está incluido en el repositorio,
+      por lo que no es necesario ejecutar <code>composer install</code>
+      antes del despliegue.
+    </p>
+
+    <p>
+      Los pasos para poner en marcha el sistema son los siguientes:
+    </p>
+
+    <ol>
+      <li>Clonar el repositorio en la máquina de destino.</li>
+      <li>Copiar <code>.env.example</code> a <code>.env</code> y
+        completar los valores reales de <code>DB_USER</code>,
+        <code>DB_PASS</code>, <code>MYSQL_ROOT_PASSWORD</code> y los
+        parámetros SMTP del parque.</li>
+      <li>Ejecutar <code>docker compose up -d</code> desde la raíz
+        del proyecto. Docker construye la imagen de Apache, descarga la
+        imagen de MySQL si no está en caché y levanta ambos
+        contenedores.</li>
+      <li>En el primer arranque, MySQL inicializa automáticamente la
+        base de datos con el script SQL. Una vez superado el
+        <em>healthcheck</em>, Apache queda disponible.</li>
+      <li>Acceder a la aplicación en <code>http://&lt;host&gt;:8081</code>.
+        Las herramientas de administración de base de datos pueden
+        conectarse en el puerto <code>3307</code>.</li>
+    </ol>
+
+    <figure class="figure">
+      <img src="" alt="Logotipos de Docker y Docker Compose">
+      <figcaption class="figure__caption">
+        <strong>Figura 8.1.</strong> Logotipos de Docker y Docker Compose,
+        las herramientas de contenedorización utilizadas para el despliegue
+        de SIGEBO. Fuente: jhymer.dev.
+      </figcaption>
+    </figure>
+
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 9</span>
+    <h1 class="chapter__title">Pruebas y resultados</h1>
+
+    <p class="chapter__intro">
+      Este capítulo describe la estrategia de pruebas seguida durante
+      el desarrollo de SIGEBO, las pruebas funcionales realizadas sobre
+      cada módulo, los resultados obtenidos y la validación de los
+      objetivos formulados en el capítulo 3. Se cierra con un análisis
+      honesto de las limitaciones detectadas y las mejoras identificadas
+      para versiones futuras.
+    </p>
+
+    <h2>9.1. Estrategia de pruebas</h2>
+
+    <p>
+      Dado el carácter académico y el tamaño del equipo, la estrategia
+      de pruebas adoptada fue exclusivamente <strong>manual y
+      funcional</strong>. No se desarrollaron suites de pruebas
+      automatizadas; en su lugar, cada desarrollador verificaba el
+      comportamiento de las funcionalidades que implementaba en su
+      instancia del servidor compartido antes de abrir una
+      <em>pull request</em>. El proceso de revisión de código exigía
+      la aprobación de al menos dos miembros del equipo antes de
+      integrar cualquier rama en <code>main</code>, lo que actuó como
+      segunda capa de validación.
+    </p>
+
+    <p>
+      Una vez integradas las funcionalidades en la rama principal, la
+      versión resultante se desplegaba en el dominio público
+      <strong>syncfive.cpifpbajoaragon.info</strong> para que el
+      cliente pudiera validar el comportamiento real de la aplicación
+      en condiciones de uso. Las sesiones de revisión con el cliente
+      se celebraban aproximadamente cada semana o cada quince días, y
+      el feedback recogido se traducía en correcciones o en nuevas
+      tareas registradas en GitHub Projects.
+    </p>
+
+    <h2>9.2. Pruebas funcionales realizadas</h2>
+
+    <p>
+      Las pruebas cubrieron los siguientes bloques funcionales:
+    </p>
+
+    <ul>
+      <li>
+        <strong>Autenticación y control de acceso.</strong> Inicio y
+        cierre de sesión, expiración de sesión, activación de cuenta
+        mediante enlace de correo, recuperación de contraseña,
+        redirección al login cuando la sesión no existe y verificación
+        de que cada rol solo accede a los módulos y acciones que le
+        corresponden.
+      </li>
+      <li>
+        <strong>Gestión de personal.</strong> Alta, consulta, edición
+        y baja de trabajadores; subida de foto de perfil; validación de
+        campos obligatorios y formatos (DNI, número de funcionario,
+        correo, teléfono, contraseña).
+      </li>
+      <li>
+        <strong>Planificación operativa.</strong> Creación y edición de
+        guardias y turnos de refuerzo; asignación y desasignación de
+        personal; visualización en cuadrante mensual y anual en los
+        modos «Mi cuadrante» y «Global»; alineación táctica del
+        personal de guardia.
+      </li>
+      <li>
+        <strong>Emergencias.</strong> Registro de intervenciones con
+        tipo, dirección y estado; asignación de vehículos y personal;
+        geocodificación de la dirección sobre mapa Leaflet y
+        comprobación del mecanismo de fallback a Google Maps cuando
+        Nominatim no resuelve la dirección.
+      </li>
+      <li>
+        <strong>Formación y méritos.</strong> Creación de cursos y
+        ediciones; inscripción y baja de personal en ediciones;
+        registro y consulta de méritos por bombero.
+      </li>
+      <li>
+        <strong>Recursos.</strong> Gestión de vehículos, material de
+        almacén, incidencias y mantenimientos; consulta de infraestructuras
+        de agua sobre el mapa cartográfico con filtros por tipo, estado
+        y municipio.
+      </li>
+      <li>
+        <strong>Comunicación interna.</strong> Envío y recepción de
+        avisos entre miembros del cuerpo; restricción de envío según
+        rol; eliminación de avisos reservada al administrador.
+      </li>
+      <li>
+        <strong>Permisos de ausencia.</strong> Solicitud de días libres
+        con motivo y rango de fechas; aprobación y denegación por parte
+        de roles con privilegio; consulta del estado actualizado.
+      </li>
+      <li>
+        <strong>Área personal.</strong> Consulta de estadísticas
+        propias, carnets habilitantes y próximas formaciones; edición
+        de datos personales y cambio de foto de perfil.
+      </li>
+      <li>
+        <strong>Administración del sistema.</strong> Gestión de roles,
+        grupos de carnet, categorías de material, tipos de emergencia
+        y motivos de permiso; verificación de restricciones por rol
+        en cada operación.
+      </li>
+      <li>
+        <strong>Validaciones y seguridad.</strong> Comprobación de que
+        las validaciones de cliente se replican en el servidor; prueba
+        del <em>rate limiting</em> (100 peticiones por minuto por IP);
+        acceso a rutas protegidas sin sesión activa.
+      </li>
+    </ul>
+
+    <h2>9.3. Resultados obtenidos</h2>
+
+    <p>
+      Todos los bloques funcionales descritos en el apartado anterior
+      superaron las pruebas sin incidencias críticas pendientes en la
+      versión final. Los errores detectados durante el desarrollo —fallos
+      de validación, discrepancias entre permisos de frontend y backend,
+      métodos inexistentes en servicios— se corrigieron de forma iterativa
+      antes de integrar cada rama en <code>main</code>.
+    </p>
+
+    <p>
+      El cliente validó la aplicación desplegada en
+      <strong>syncfive.cpifpbajoaragon.info</strong> en las revisiones
+      periódicas, confirmando que los flujos principales —gestión de
+      personal, planificación de guardias, registro de emergencias y
+      consulta de recursos— respondían a las necesidades operativas
+      planteadas en el pliego inicial.
+    </p>
+
+    <h2>9.4. Validación de objetivos</h2>
+
+    <p>
+      La siguiente tabla recoge el grado de cumplimiento de cada
+      objetivo específico formulado en el capítulo 3:
+    </p>
+
+    <p class="table-caption"><strong>Tabla 9.1.</strong> Validación de objetivos específicos de SIGEBO. Fuente: equipo SyncFive.</p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Objetivo</th>
+          <th>Estado</th>
+          <th>Observaciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>OE1</strong> — Digitalizar la operativa diaria</td>
+          <td>✓ Cumplido</td>
+          <td>Personal, guardias, formación, recursos y mantenimiento
+            gestionados desde la aplicación.</td>
+        </tr>
+        <tr>
+          <td><strong>OE2</strong> — API REST en PHP</td>
+          <td>✓ Cumplido</td>
+          <td>API RESTful con arquitectura MVC, middlewares de
+            autenticación y rate limiting, y validación en dos capas.</td>
+        </tr>
+        <tr>
+          <td><strong>OE3</strong> — Interfaz responsive e intuitiva</td>
+          <td>✓ Cumplido</td>
+          <td>SPA con Bootstrap 5, diseño adaptativo y experiencia
+            validada por el cliente.</td>
+        </tr>
+        <tr>
+          <td><strong>OE4</strong> — Autenticación y control de acceso</td>
+          <td>✓ Cumplido</td>
+          <td>Cinco roles con permisos diferenciados, sesiones PHP,
+            activación de cuenta y recuperación de contraseña.</td>
+        </tr>
+        <tr>
+          <td><strong>OE5</strong> — Módulo de gestión de emergencias</td>
+          <td>✓ Cumplido</td>
+          <td>Registro de intervenciones, asignación de recursos y
+            geocodificación implementados. La exportación de partes
+            en PDF queda como línea futura.</td>
+        </tr>
+        <tr>
+          <td><strong>OE6</strong> — Módulo cartográfico (GIS)</td>
+          <td>Parcial</td>
+          <td>Mapa de infraestructuras de agua y localización de
+            emergencias activas implementados. El seguimiento de
+            vehículos en tiempo real y la información meteorológica
+            se posponen a la siguiente versión.</td>
+        </tr>
+        <tr>
+          <td><strong>OE7</strong> — Gestión del talento</td>
+          <td>Parcial</td>
+          <td>Registro de méritos y condecoraciones implementado.
+            El sistema de evaluación objetiva combinando rendimiento,
+            formación y feedback queda como mejora futura.</td>
+        </tr>
+        <tr>
+          <td><strong>OE9</strong> — Coordinación entre servicios de emergencia</td>
+          <td>Pendiente</td>
+          <td>La coordinación global entre diferentes servicios de
+            emergencia queda fuera del alcance de esta versión por
+            exceder las capacidades actuales del equipo. Se contempla
+            como objetivo prioritario de la segunda versión.</td>
+        </tr>
+        <tr>
+          <td><strong>OE8</strong> — Documentación</td>
+          <td>✓ Cumplido</td>
+          <td>Ayuda contextual integrada mediante enlaces a Notion,
+            documentación técnica de despliegue y memoria del
+            proyecto.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>9.5. Limitaciones y mejoras pendientes</h2>
+
+    <p>
+      A lo largo del desarrollo el equipo identificó funcionalidades
+      que, por restricciones de tiempo, se dejaron documentadas para
+      una versión futura:
+    </p>
+
+    <ul>
+      <li>
+        <strong>Validaciones en capa de servicio.</strong> Algunas
+        validaciones de formato (tallas de uniforme, lógica de fechas
+        conjuntas) están implementadas solo en el frontend y no se
+        replican en el servidor.
+      </li>
+      <li>
+        <strong>Subcategorías de material.</strong> El cliente solicitó
+        una jerarquía de dos niveles en las categorías del inventario,
+        que la versión actual no soporta.
+      </li>
+      <li>
+        <strong>Consultas por rango de fechas transversal.</strong>
+        El cliente requiere poder filtrar por rango de fechas obteniendo
+        incidencias, emergencias, permisos y avisos de forma unificada,
+        funcionalidad no implementada.
+      </li>
+      <li>
+        <strong>Gestión de turnos por los propios bomberos.</strong>
+        El cliente solicitó que los turnos de refuerzo se ofertasen en
+        un portal y que los bomberos pudiesen apuntarse voluntariamente,
+        así como solicitar cambios de guardia entre compañeros.
+      </li>
+      <li>
+        <strong>Exportación de partes de intervención en PDF.</strong>
+        Generación automática de informes post-intervención descargables.
+      </li>
+      <li>
+        <strong>Datos de víctimas.</strong> El registro de intervenciones
+        no incluye actualmente un apartado para datos de las personas
+        afectadas (nombre, DNI, teléfono).
+      </li>
+      <li>
+        <strong>Seguimiento de vehículos en tiempo real.</strong>
+        La infraestructura del módulo de mapas está preparada para
+        incorporar localización en tiempo real, pero no se activó en
+        esta versión.
+      </li>
+      <li>
+        <strong>Soporte multi-parque.</strong> La arquitectura actual
+        gestiona un único parque. La extensión a múltiples parques con
+        datos segregados es la mejora estructural de mayor calado para
+        la siguiente versión.
+      </li>
+    </ul>
+
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 10</span>
+    <h1 class="chapter__title">Sostenibilidad del proyecto</h1>
+
+    <p class="chapter__intro">
+      El desarrollo de SIGEBO no se limita a resolver un problema
+      técnico: digitalizar la gestión de un parque de bomberos tiene
+      implicaciones directas sobre la eficiencia operativa, la
+      seguridad de las personas y la forma en que una institución
+      pública rinde cuentas de sus recursos. Este capítulo analiza
+      el proyecto desde la perspectiva de la sostenibilidad,
+      identificando sus aspectos ambientales, sociales y de
+      gobernanza, su relación con los Objetivos de Desarrollo
+      Sostenible de la Agenda 2030, los retos que aborda y las
+      decisiones de diseño que refuerzan su impacto a largo plazo.
+    </p>
+
+    <h2>10.1. Aspectos ASG del proyecto</h2>
+
+    <p>
+      El análisis de sostenibilidad de SIGEBO se articula en torno a
+      los tres ejes del marco ASG (Ambiental, Social y Gobernanza):
+    </p>
+
+    <ul>
+      <li>
+        <strong>Ambiental.</strong> La digitalización de la gestión
+        operativa reduce los procedimientos en papel y la coordinación
+        por canales informales (llamadas, mensajes, pizarras físicas),
+        disminuyendo el desperdicio de recursos materiales. Una mejor
+        planificación de guardias y recursos evita desplazamientos
+        innecesarios de vehículos de emergencia, con el consiguiente
+        ahorro en combustible y emisiones. El módulo de mantenimiento
+        preventivo contribuye a alargar la vida útil de los vehículos
+        y equipos, reduciendo la necesidad de reposición prematura.
+      </li>
+      <li>
+        <strong>Social.</strong> SIGEBO mejora directamente las
+        condiciones de trabajo del personal del parque: la gestión
+        digital de guardias, permisos, formación y méritos aporta
+        transparencia y reduce conflictos organizativos. A nivel
+        ciudadano, una respuesta más coordinada y rápida ante
+        emergencias protege vidas y reduce el impacto humano y
+        material de los siniestros. La accesibilidad del sistema
+        desde cualquier dispositivo con navegador garantiza que
+        ningún miembro del equipo quede excluido por razones
+        tecnológicas.
+      </li>
+      <li>
+        <strong>Gobernanza.</strong> El sistema introduce
+        trazabilidad en todas las operaciones: cada acción queda
+        registrada con el usuario que la realizó y el momento en
+        que ocurrió. El control de acceso basado en cinco roles
+        diferenciados garantiza que cada nivel jerárquico solo
+        puede actuar dentro de sus atribuciones, reforzando la
+        rendición de cuentas interna. La externalización de
+        credenciales mediante variables de entorno y la política
+        de revisión de código por pares son decisiones que
+        reducen el riesgo de incidentes de seguridad.
+      </li>
+    </ul>
+
+    <h2>10.2. Relación con los ODS</h2>
+
+    <p>
+      SIGEBO contribuye directamente a cuatro Objetivos de Desarrollo
+      Sostenible de la Agenda 2030:
+    </p>
+
+    <ul>
+      <li>
+        <strong>ODS 11 — Ciudades y comunidades sostenibles.</strong>
+        Una gestión más eficiente de los servicios de emergencia
+        contribuye a hacer las ciudades más seguras y resilientes.
+        La localización de hidrantes y bocas de riego sobre el mapa
+        cartográfico, junto con la coordinación de recursos humanos
+        y materiales, reduce los tiempos de respuesta ante incidentes
+        urbanos y forestales.
+      </li>
+      <li>
+        <strong>ODS 13 — Acción por el clima.</strong> Los incendios
+        forestales y las emergencias climáticas son cada vez más
+        frecuentes e intensos. Contar con un sistema digital que
+        permita gestionar de forma ágil la movilización de recursos
+        ante este tipo de eventos contribuye a mitigar su impacto.
+        Adicionalmente, la reducción de desplazamientos innecesarios
+        y el mantenimiento preventivo de vehículos disminuyen la
+        huella de carbono operativa del parque.
+      </li>
+      <li>
+        <strong>ODS 16 — Paz, justicia e instituciones sólidas.</strong>
+        SIGEBO refuerza la transparencia y la trazabilidad en la
+        gestión de una institución pública. La separación de funciones
+        por roles, el registro de acciones y la documentación del
+        sistema contribuyen a una gobernanza más sólida y responsable
+        del servicio de bomberos.
+      </li>
+      <li>
+        <strong>ODS 17 — Alianzas para lograr los objetivos.</strong>
+        La arquitectura del sistema, basada en una API REST estándar
+        y un despliegue contenedorizado, facilita la futura integración
+        con otros servicios de emergencia y organismos públicos. La
+        coordinación entre diferentes servicios, aunque pendiente para
+        la segunda versión, está prevista como evolución natural del
+        sistema.
+      </li>
+    </ul>
+
+    <h2>10.3. Retos ambientales y sociales abordados</h2>
+
+    <p>
+      Antes de SIGEBO, la gestión del parque se apoyaba en
+      procedimientos dispersos: registros en papel o en hojas de
+      cálculo no compartidas, coordinación por mensajería informal
+      y ausencia de un inventario centralizado de recursos. Esta
+      situación generaba ineficiencias concretas: guardias asignadas
+      sin visibilidad del estado del personal, vehículos movilizados
+      sin consulta previa de su estado de mantenimiento, y formaciones
+      registradas de forma manual sin trazabilidad del historial de
+      cada bombero.
+    </p>
+
+    <p>
+      SIGEBO aborda estos problemas centralizando toda la información
+      operativa en un único sistema accesible en tiempo real. La
+      disponibilidad inmediata de datos sobre personal, recursos y
+      estado de los vehículos permite tomar decisiones más informadas
+      en situaciones de emergencia, reduciendo el margen de error y
+      el tiempo de respuesta. La digitalización del historial de
+      formación y méritos de cada bombero aporta además una base
+      objetiva para decisiones de promoción y asignación de
+      responsabilidades.
+    </p>
+
+    <h2>10.4. Sostenibilidad aplicada al diseño del software</h2>
+
+    <p>
+      Las decisiones técnicas adoptadas durante el desarrollo de
+      SIGEBO reflejan un compromiso consciente con la sostenibilidad
+      del sistema a medio y largo plazo:
+    </p>
+
+    <ul>
+      <li>
+        <strong>Stack de código abierto sin coste de licencias.</strong>
+        PHP, Apache, MySQL, Bootstrap y Leaflet son tecnologías
+        libres y ampliamente mantenidas por la comunidad, lo que
+        elimina dependencias de proveedores comerciales y garantiza
+        la continuidad del sistema sin costes adicionales.
+      </li>
+      <li>
+        <strong>Arquitectura modular y mantenible.</strong> La
+        separación estricta entre capas (Controlador, Servicio,
+        Modelo) y la organización del frontend en controladores
+        independientes por módulo permiten añadir, modificar o
+        retirar funcionalidades sin reescribir el sistema.
+      </li>
+      <li>
+        <strong>Contenedorización con Docker.</strong> El despliegue
+        reproducible mediante Docker garantiza que el sistema pueda
+        trasladarse a cualquier infraestructura sin adaptaciones,
+        reduciendo el riesgo de obsolescencia tecnológica y
+        facilitando la incorporación de nuevos administradores.
+      </li>
+      <li>
+        <strong>Interfaz responsive y ligera.</strong> La aplicación
+        funciona en cualquier dispositivo con navegador moderno sin
+        necesidad de instalar software adicional, lo que maximiza
+        la accesibilidad y evita la necesidad de renovar hardware
+        en el parque.
+      </li>
+      <li>
+        <strong>Documentación integrada.</strong> Los enlaces de
+        ayuda contextual hacia Notion, la memoria técnica y los
+        comentarios en el código reducen la dependencia de personas
+        concretas para el mantenimiento del sistema.
+      </li>
+    </ul>
+
+    <h2>10.5. Indicadores de sostenibilidad</h2>
+
+    <p>
+      Para medir el impacto real del sistema una vez en producción,
+      se proponen los siguientes indicadores de seguimiento:
+    </p>
+
+    <ul>
+      <li>Tiempo medio de asignación de recursos desde el registro
+        de una emergencia hasta la movilización del primer vehículo.</li>
+      <li>Porcentaje de vehículos con mantenimiento al día sobre el
+        total del parque.</li>
+      <li>Horas de formación registradas por bombero y año.</li>
+      <li>Reducción del tiempo dedicado a tareas administrativas
+        manuales respecto al sistema anterior.</li>
+      <li>Tasa de incidencias resueltas dentro del plazo previsto.</li>
+    </ul>
+
+    <h2>10.6. Reflexión final</h2>
+
+    <p>
+      El desarrollo de SIGEBO ha puesto de manifiesto que el software
+      no es un producto neutro: las decisiones de diseño tienen
+      consecuencias reales sobre las personas que lo usan y sobre
+      el entorno en el que opera. Construir un sistema para un
+      servicio de emergencias implica asumir una responsabilidad
+      social que va más allá de la corrección técnica: la
+      información debe estar disponible cuando se necesita, el
+      acceso debe ser seguro pero no burocrático, y el sistema
+      debe poder ser mantenido y ampliado por personas que no
+      participaron en su creación.
+    </p>
+
+    <p>
+      Como futuros desarrolladores, esta experiencia refuerza la
+      convicción de que la sostenibilidad de un sistema no se
+      garantiza solo con buenas intenciones, sino con decisiones
+      concretas: elegir tecnologías abiertas, documentar las
+      decisiones, separar las responsabilidades en el código y
+      diseñar pensando en quien vendrá después. SIGEBO es un
+      primer paso en esa dirección.
+    </p>
+
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 11</span>
+    <h1 class="chapter__title">Propuesta de integración de chatbot</h1>
+
+    <p class="chapter__intro">
+      Este capítulo presenta una propuesta técnica para integrar un
+      asistente conversacional en SIGEBO. No se trata de una
+      funcionalidad implementada en la versión actual, sino de una
+      línea de evolución definida desde el inicio del proyecto como
+      parte del objetivo OE8. Se describen la justificación, los
+      casos de uso específicos para el entorno de un parque de
+      bomberos, la arquitectura propuesta, las tecnologías
+      candidatas, la integración con la API REST existente, los
+      flujos de conversación principales y las consideraciones de
+      seguridad, coste y plan de implementación.
+    </p>
+
+    <h2>11.1. Justificación</h2>
+
+    <p>
+      SIGEBO centraliza toda la información operativa del parque,
+      pero acceder a ella requiere navegar por la interfaz, recordar
+      la ubicación de cada módulo y ejecutar las acciones en el orden
+      correcto. En situaciones de emergencia o alta presión, esta
+      fricción puede ser determinante. Un asistente conversacional
+      integrado directamente en la aplicación web eliminaría esa
+      barrera: el usuario formularía su consulta o acción en lenguaje
+      natural —por texto o por voz— y el sistema la traduciría
+      automáticamente en las llamadas necesarias a la API, devolviendo
+      una respuesta directa sin abandonar la pantalla en la que
+      se encuentra.
+    </p>
+
+    <p>
+      El modo de voz cobra especial relevancia en el contexto de un
+      parque de bomberos: durante una emergencia activa, un Jefe de
+      Intervención con las manos ocupadas podría dictar «¿qué
+      vehículos están disponibles ahora mismo?» y recibir la respuesta
+      en audio sin tocar el teclado. En el uso cotidiano, el chatbot
+      permitiría delegar consultas rutinarias al asistente y
+      concentrar la atención en decisiones que requieren criterio
+      humano.
+    </p>
+
+    <h2>11.2. Casos de uso para bomberos</h2>
+
+    <p>
+      Los casos de uso más relevantes para el contexto operativo de
+      un parque de bomberos son:
+    </p>
+
+    <ul>
+      <li>
+        <strong>Consultas de guardia y planificación.</strong>
+        «¿Quién está de guardia hoy?», «¿Cuándo es mi próxima
+        guardia?», «¿Hay algún turno de refuerzo disponible esta
+        semana?»
+      </li>
+      <li>
+        <strong>Estado de recursos.</strong>
+        «¿Está operativo el camión X?», «¿Qué vehículos están
+        disponibles ahora mismo?», «¿Cuándo fue el último
+        mantenimiento del equipo Y?»
+      </li>
+      <li>
+        <strong>Emergencias.</strong>
+        «Registra una emergencia en la calle Mayor, 12, tipo
+        incendio urbano», «¿Qué emergencias están activas ahora
+        mismo?», «Asigna el vehículo Z a la emergencia actual».
+      </li>
+      <li>
+        <strong>Formación y méritos.</strong>
+        «¿Cuántas horas de formación tengo este año?»,
+        «¿Hay algún curso próximo para el que pueda inscribirme?»,
+        «Muéstrame mis méritos registrados».
+      </li>
+      <li>
+        <strong>Infraestructuras de agua.</strong>
+        «¿Cuántos hidrantes hay en el municipio de Alcañiz?»,
+        «¿Hay algún hidrante cerca de la calle X?»
+      </li>
+      <li>
+        <strong>Gestión de permisos.</strong>
+        «Solicita un permiso de vacaciones del 15 al 22 de julio»,
+        «¿En qué estado está mi última solicitud de permiso?»
+      </li>
+    </ul>
+
+    <h2>11.3. Arquitectura propuesta</h2>
+
+    <p>
+      La arquitectura del asistente se basa en el patrón
+      <strong>LLM con uso de herramientas</strong>
+      (<em>tool use</em> o <em>function calling</em>): un modelo de
+      lenguaje de gran escala actúa como capa de comprensión e
+      intención, y los endpoints existentes de la API REST de SIGEBO
+      actúan como herramientas que el modelo puede invocar para
+      obtener datos o ejecutar acciones.
+    </p>
+
+    <figure class="figure">
+      <img src="/SIGEBO Chatbot Interaction-2026-05-29-140336.png" alt="Diagrama de arquitectura del chatbot integrado en SIGEBO">
+      <figcaption class="figure__caption">
+        <strong>Figura 11.1.</strong> Arquitectura propuesta para la
+        integración del chatbot con la API REST de SIGEBO.
+        Fuente: equipo SyncFive.
+      </figcaption>
+    </figure>
+
+    <p>
+      El flujo de una petición sigue estos pasos:
+    </p>
+
+    <ol>
+      <li>El usuario escribe un mensaje o activa el modo de voz en
+        el widget del chatbot integrado en la SPA. En modo de voz,
+        la <strong>Web Speech API</strong> del navegador convierte
+        el audio en texto; la respuesta del asistente se reproduce
+        también en audio mediante <em>SpeechSynthesis</em>.</li>
+      <li>El mensaje se envía al backend de SIGEBO, que actúa como
+        intermediario y reenvía la consulta al LLM junto con el
+        contexto de la sesión activa (usuario, rol) y la definición
+        de las herramientas disponibles.</li>
+      <li>El modelo interpreta la intención y decide qué herramienta
+        (endpoint de la API) invocar y con qué parámetros.</li>
+      <li>El backend ejecuta la llamada a la API correspondiente con
+        las credenciales de sesión del usuario.</li>
+      <li>El resultado se devuelve al modelo, que lo reformula en
+        lenguaje natural y lo presenta al usuario.</li>
+    </ol>
+
+    <h2>11.4. Tecnologías candidatas</h2>
+
+    <p>
+      Para la capa de inteligencia se proponen dos opciones
+      equivalentes en capacidades:
+    </p>
+
+    <ul>
+      <li>
+        <strong>API de Claude (Anthropic)</strong> — modelos de la
+        familia Claude 3 o superior. Ofrece soporte nativo de
+        <em>tool use</em> con definición de herramientas en JSON,
+        razonamiento en español sin configuración adicional, ventana
+        de contexto amplia y facturación por tokens consumidos sin
+        coste fijo mensual.
+      </li>
+      <li>
+        <strong>API de OpenAI</strong> — modelos GPT-4o o superior.
+        Ofrece <em>function calling</em> con un esquema equivalente
+        al <em>tool use</em> de Claude, amplio soporte de idiomas,
+        historial de conversación mediante la API de
+        <em>Assistants</em> y el mismo modelo de precios por tokens.
+      </li>
+    </ul>
+
+    <p>
+      Ambas opciones son intercambiables desde el punto de vista de
+      la integración: el backend de SIGEBO actuaría como capa
+      intermedia, lo que permitiría cambiar de proveedor sin
+      modificar el frontend ni la lógica de herramientas.
+    </p>
+
+    <p>
+      En el frontend, el chatbot se integraría como un componente
+      flotante inyectado en el <em>layout</em> compartido de la
+      aplicación —concretamente en el componente de cabecera o
+      pie que se carga en todas las páginas mediante
+      <code>loadHead()</code>—, de modo que esté disponible en
+      cualquier sección sin necesidad de modificar cada página
+      individualmente. Estaría implementado en JavaScript puro
+      siguiendo el mismo patrón de controladores del resto de
+      módulos. Incluiría un botón de micrófono que activaría la
+      <strong>Web Speech API</strong> del navegador para la entrada
+      por voz (<em>SpeechRecognition</em>) y reproduciría la
+      respuesta en audio (<em>SpeechSynthesis</em>), sin depender
+      de servicios externos adicionales para esta funcionalidad.
+      La comunicación con el backend se realizaría mediante
+      peticiones <code>fetch</code> al nuevo endpoint
+      <code>POST /api/chat</code>, manteniendo la cookie de sesión
+      activa para que el modelo opere siempre dentro de los permisos
+      del rol del usuario autenticado.
+    </p>
+
+    <h2>11.5. Integración con la API REST</h2>
+
+    <p>
+      Cada endpoint de la API REST de SIGEBO se definiría como una
+      herramienta que el modelo puede invocar. La definición incluye
+      el nombre de la herramienta, una descripción en lenguaje natural
+      de para qué sirve y el esquema de parámetros que acepta.
+      Ejemplos representativos:
+    </p>
+
+    <ul>
+      <li>
+        <code>obtener_guardia_del_dia</code> — llama a
+        <code>GET /personas/guardias/fecha/{fecha}</code> y devuelve
+        la lista de bomberos asignados a la guardia de una fecha dada.
+      </li>
+      <li>
+        <code>registrar_emergencia</code> — llama a
+        <code>POST /emergencias</code> con los datos extraídos del
+        mensaje del usuario (tipo, dirección, descripción).
+      </li>
+      <li>
+        <code>consultar_estado_vehiculo</code> — llama a
+        <code>GET /vehiculos/{matricula}</code> y resume el estado
+        operativo y el historial de mantenimiento reciente.
+      </li>
+      <li>
+        <code>solicitar_permiso</code> — llama a
+        <code>POST /permisos</code> con el motivo y el rango de
+        fechas indicados en el mensaje.
+      </li>
+    </ul>
+
+    <p>
+      El modelo solo tendría acceso a las herramientas que
+      correspondan al rol del usuario autenticado. El backend
+      construye dinámicamente la lista de herramientas disponibles
+      en función del rol de la sesión antes de enviarla al LLM:
+      un Bombero (rol 1) solo vería herramientas de consulta,
+      mientras que un Jefe de Mando (rol 4) tendría acceso también
+      a las de creación y edición. De este modo, el chatbot replica
+      exactamente el mismo modelo de permisos que rige el resto de
+      la aplicación y es imposible que el asistente ejecute una
+      acción que el usuario no podría hacer manualmente.
+    </p>
+
+    <h2>11.6. Consideraciones de seguridad y coste</h2>
+
+    <p>
+      La integración de un LLM externo plantea dos preocupaciones
+      principales que deben gestionarse explícitamente:
+    </p>
+
+    <ul>
+      <li>
+        <strong>Privacidad de datos.</strong> Los mensajes del usuario
+        y las respuestas de la API se envían a los servidores de
+        Anthropic u OpenAI para su procesamiento. Antes del despliegue
+        en producción sería necesario revisar los términos de
+        tratamiento de datos del proveedor y determinar si la
+        información operativa del parque (nombres de personas, datos
+        de emergencias) puede tratarse bajo esas condiciones o si se
+        requiere anonimización previa.
+      </li>
+      <li>
+        <strong>Coste por uso.</strong> El modelo de facturación por
+        tokens implica que el coste escala con el volumen de
+        conversaciones. Para un parque de bomberos con un equipo
+        reducido, el consumo estimado sería bajo; no obstante, se
+        recomienda implementar un límite de peticiones por usuario y
+        por día, aprovechando el <em>rate limiting</em> ya existente
+        en el backend.
+      </li>
+      <li>
+        <strong>Inyección de prompts.</strong> Al pasar mensajes de
+        usuario directamente al modelo, existe el riesgo de que un
+        usuario malintencionado intente manipular el comportamiento
+        del asistente. Se mitigaría definiendo un
+        <em>system prompt</em> estricto que delimite el ámbito de
+        actuación del modelo y validando en el backend todos los
+        parámetros que el modelo proponga antes de ejecutar la
+        llamada a la API.
+      </li>
+    </ul>
+
+    <h2>11.7. Plan de implementación</h2>
+
+    <p>
+      Se propone un despliegue incremental en tres fases:
+    </p>
+
+    <ol>
+      <li>
+        <strong>Fase 1 — Consultas de solo lectura.</strong>
+        Implementar el endpoint <code>POST /api/chat</code> en el
+        backend, integrar la API del LLM con las herramientas de
+        consulta (guardias, recursos, emergencias activas,
+        formaciones) y añadir el widget al frontend. En esta fase
+        el chatbot no puede ejecutar acciones de escritura.
+      </li>
+      <li>
+        <strong>Fase 2 — Acciones de escritura controladas.</strong>
+        Ampliar las herramientas disponibles para permitir el
+        registro de emergencias, la solicitud de permisos y la
+        asignación de recursos, siempre solicitando confirmación
+        explícita al usuario antes de ejecutar cualquier operación
+        destructiva o irreversible.
+      </li>
+      <li>
+        <strong>Fase 3 — Notificaciones proactivas.</strong>
+        Evolucionar el asistente hacia un modelo de notificaciones
+        inteligentes: alertas de mantenimiento pendiente, recordatorios
+        de guardias próximas o avisos de formaciones con plazas
+        disponibles, enviados proactivamente al canal preferido de
+        cada usuario.
+      </li>
+    </ol>
+
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 12</span>
+    <h1 class="chapter__title">Plan económico</h1>
+
+    <p class="chapter__intro">
+      Este capítulo analiza el coste del proyecto desde dos perspectivas:
+      lo que habría supuesto desarrollarlo en un contexto profesional
+      real y lo que ha costado efectivamente en el marco académico en
+      el que se ha ejecutado. Se cierra con una valoración de la
+      viabilidad económica para el cliente.
+    </p>
+
+    <h2>12.1. Costes teóricos del proyecto</h2>
+
+    <p>
+      Para estimar el coste teórico se parte de las
+      <strong>990 horas de trabajo</strong> planificadas (5
+      desarrolladores × 18 horas semanales × 11 semanas) y se aplica
+      una tarifa de mercado para un perfil de desarrollador web junior
+      en España, que se sitúa en torno a los <strong>15 €/hora</strong>
+      en modalidad de colaboración o prácticas remuneradas.
+    </p>
+
+    <p class="table-caption"><strong>Tabla 12.1.</strong> Estimación de costes teóricos por bloque de trabajo. Fuente: equipo SyncFive.</p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Bloque de trabajo</th>
+          <th>Horas estimadas</th>
+          <th>Coste teórico (15 €/h)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Gestión de parque — digitalización operativa</td>
+          <td>120 h</td>
+          <td>1.800 €</td>
+        </tr>
+        <tr>
+          <td>Desarrollo del frontend (interfaz responsive)</td>
+          <td>160 h</td>
+          <td>2.400 €</td>
+        </tr>
+        <tr>
+          <td>Backend — panel de administración</td>
+          <td>200 h</td>
+          <td>3.000 €</td>
+        </tr>
+        <tr>
+          <td>Control de acceso y roles</td>
+          <td>60 h</td>
+          <td>900 €</td>
+        </tr>
+        <tr>
+          <td>Gestión del talento</td>
+          <td>70 h</td>
+          <td>1.050 €</td>
+        </tr>
+        <tr>
+          <td>Módulo cartográfico (GIS)</td>
+          <td>120 h</td>
+          <td>1.800 €</td>
+        </tr>
+        <tr>
+          <td>Módulo de gestión de emergencias</td>
+          <td>105 h</td>
+          <td>1.575 €</td>
+        </tr>
+        <tr>
+          <td>Pruebas y optimización</td>
+          <td>95 h</td>
+          <td>1.425 €</td>
+        </tr>
+        <tr>
+          <td>Despliegue y documentación</td>
+          <td>20 h</td>
+          <td>300 €</td>
+        </tr>
+        <tr>
+          <td>Manual de uso</td>
+          <td>40 h</td>
+          <td>600 €</td>
+        </tr>
+        <tr style="font-weight:bold">
+          <td><strong>Total mano de obra</strong></td>
+          <td><strong>990 h</strong></td>
+          <td><strong>14.850 €</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      A esta estimación de mano de obra habría que añadir los costes
+      de infraestructura en un entorno de producción real:
+    </p>
+
+    <p class="table-caption"><strong>Tabla 12.2.</strong> Estimación de costes de infraestructura anuales. Fuente: equipo SyncFive.</p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Coste estimado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>VPS o servidor cloud (p. ej. DigitalOcean, Hetzner)</td>
+          <td>~120–240 €/año</td>
+        </tr>
+        <tr>
+          <td>Dominio (.es o .com)</td>
+          <td>~10–15 €/año</td>
+        </tr>
+        <tr>
+          <td>Licencias de software</td>
+          <td>0 € (stack 100% open source)</td>
+        </tr>
+        <tr style="font-weight:bold">
+          <td><strong>Total infraestructura anual</strong></td>
+          <td><strong>~130–255 €/año</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      El coste total teórico del proyecto, sumando desarrollo e
+      infraestructura del primer año, se situaría en torno a los
+      <strong>15.000–15.100 €</strong>.
+    </p>
+
+    <h2>12.2. Costes reales de desarrollo</h2>
+
+    <p>
+      El coste monetario real del proyecto ha sido
+      <strong>cero euros</strong>. El desarrollo se ha realizado
+      íntegramente en el marco del Trabajo de Fin de Ciclo, durante
+      las horas lectivas del módulo de proyecto del CPIFP Bajo
+      Aragón de Alcañiz. Todos los recursos utilizados son gratuitos
+      o de código abierto:
+    </p>
+
+    <ul>
+      <li>
+        <strong>Infraestructura de desarrollo:</strong> servidor físico
+        del centro educativo con Ubuntu Server 24.04.3, sin coste
+        para el equipo.
+      </li>
+      <li>
+        <strong>Entorno de producción:</strong> dominio
+        <code>syncfive.cpifpbajoaragon.info</code> alojado en la
+        infraestructura del propio centro, sin coste adicional.
+      </li>
+      <li>
+        <strong>Stack tecnológico:</strong> PHP, Apache, MySQL, Docker,
+        Bootstrap, Leaflet y todas las librerías utilizadas son
+        software libre sin coste de licencia.
+      </li>
+      <li>
+        <strong>Herramientas de gestión:</strong> GitHub (plan gratuito
+        para estudiantes), GitHub Projects, Google Docs y WhatsApp,
+        todos sin coste.
+      </li>
+    </ul>
+
+    <p>
+      El único coste real es el <strong>coste de oportunidad</strong>
+      del tiempo invertido: las 990 horas de trabajo del equipo
+      corresponden a horas lectivas que, en otro contexto, habrían
+      podido dedicarse a otras actividades formativas.
+    </p>
+
+    <h2>12.3. Valoración de viabilidad y rentabilidad</h2>
+
+    <p>
+      Desde la perspectiva del cliente —el CPIFP San Blas y su
+      alumnado de Coordinación de Emergencias y Protección Civil—,
+      el proyecto ofrece una rentabilidad extraordinaria: obtienen
+      un sistema de gestión a medida, con el código fuente completo
+      y sin dependencia de proveedor, por un coste directo de cero
+      euros.
+    </p>
+
+    <p>
+      Las soluciones comerciales equivalentes del sector
+      —como FUOCO o SECIGEST, analizadas en el capítulo 2—
+      implican costes de licenciamiento recurrentes y una
+      adaptabilidad limitada a las necesidades concretas de cada
+      parque. SIGEBO, al ser open source y estar construido sobre
+      tecnologías estándar, puede ser mantenido, extendido o
+      adaptado por cualquier equipo técnico sin dependencia del
+      equipo original, lo que reduce el coste de propiedad a largo
+      plazo al de la infraestructura de servidor
+      (~130–255 €/año) y al tiempo de mantenimiento interno.
+    </p>
+
+    <p>
+      Si el proyecto evolucionara hacia un producto comercializable
+      —desplegable en otros parques de bomberos de la provincia o
+      la comunidad autónoma—, el coste de desarrollo ya amortizado
+      convertiría el modelo en altamente rentable desde la primera
+      instalación adicional, dado que los costes marginales de
+      despliegue se reducen prácticamente al de la infraestructura
+      de cada nueva instancia.
+    </p>
+
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 13</span>
+    <h1 class="chapter__title">Conclusiones y mejoras futuras</h1>
+
+    <p class="chapter__intro">
+      Este capítulo cierra la memoria con una valoración global del
+      proyecto, los aprendizajes técnicos y personales adquiridos
+      durante su desarrollo, las principales dificultades encontradas
+      y cómo se resolvieron, y las líneas de mejora identificadas
+      para una segunda versión de SIGEBO.
+    </p>
+
+    <h2>13.1. Valoración global del proyecto</h2>
+
+    <p>
+      SIGEBO ha cumplido su objetivo principal: entregar al CPIFP
+      San Blas un sistema de gestión de parque de bomberos funcional,
+      desplegado en producción y validado por el cliente. En los
+      términos del capítulo 9, seis de los nueve objetivos específicos
+      se alcanzaron plenamente y dos de forma parcial, con las
+      limitaciones ya documentadas. El sistema cubre los flujos
+      operativos centrales —personal, guardias, formación, recursos,
+      emergencias y comunicación interna— y ha sido puesto a
+      disposición del cliente en el dominio
+      <strong>syncfive.cpifpbajoaragon.info</strong>.
+    </p>
+
+    <p>
+      Más allá del resultado técnico, el proyecto ha demostrado que
+      un equipo de cinco estudiantes de DAW puede, en once semanas
+      de trabajo, construir un sistema de información real con una
+      arquitectura coherente, un modelo de datos robusto y una
+      experiencia de usuario cuidada. Eso solo es posible cuando
+      existe una metodología clara, una distribución de
+      responsabilidades bien definida y una comunicación constante
+      con el cliente.
+    </p>
+
+    <h2>13.2. Aprendizajes adquiridos</h2>
+
+    <p>
+      El proyecto ha sido una aceleración formativa en varios frentes
+      simultáneos:
+    </p>
+
+    <ul>
+      <li>
+        <strong>Arquitectura de software.</strong> Diseñar e
+        implementar una API REST con separación estricta en capas
+        (Controlador, Servicio, Modelo), middlewares de autenticación
+        y control de acceso, y validación en dos capas ha consolidado
+        conceptos que en el aula solo se habían trabajado de forma
+        parcial.
+      </li>
+      <li>
+        <strong>Trabajo en equipo con Git.</strong> La metodología
+        de rama por funcionalidad, con revisión obligatoria de al
+        menos dos miembros antes de integrar en <code>main</code>,
+        ha enseñado a gestionar conflictos de código, a escribir
+        <em>pull requests</em> comprensibles y a mantener un
+        historial de cambios limpio.
+      </li>
+      <li>
+        <strong>Infraestructura y despliegue.</strong> Configurar un
+        servidor físico con Ubuntu, levantar cinco instancias Docker
+        en paralelo y gestionar variables de entorno para separar
+        configuración de código son competencias que van mucho más
+        allá del currículo habitual de DAW.
+      </li>
+      <li>
+        <strong>Gestión de proyectos reales.</strong> Coordinar un
+        equipo de cinco personas ante un cliente externo —con
+        reuniones de seguimiento, gestión de expectativas y
+        adaptación continua a los cambios de requisitos— ha sido
+        tan formativo como el propio desarrollo técnico.
+      </li>
+      <li>
+        <strong>Seguridad.</strong> El incidente con credenciales
+        detectadas por GitGuardian en una <em>pull request</em>
+        fue una lección práctica sobre gestión de secretos, reescritura
+        de historial Git y la importancia de no versionar nunca
+        información sensible.
+      </li>
+    </ul>
+
+    <h2>13.3. Dificultades encontradas</h2>
+
+    <ul>
+      <li>
+        <strong>Gestión del alcance.</strong> El cliente fue
+        incorporando nuevos requisitos a lo largo de todo el
+        desarrollo —subcategorías de material, exportación de
+        partes en PDF, portal de turnos voluntarios, entre otros—.
+        Mantener el foco en lo comprometido sin descartar las
+        peticiones fue uno de los principales retos de gestión.
+        La solución fue documentar cada solicitud nueva en el
+        registro de mejoras pendientes y trasladarla formalmente
+        a la segunda versión.
+      </li>
+      <li>
+        <strong>Credenciales expuestas en el repositorio.</strong>
+        Durante el proceso de integración de PHPMailer, una
+        contraseña SMTP quedó comprometida en un commit que llegó
+        a una <em>pull request</em> pública. GitGuardian bloqueó
+        el <em>merge</em> y fue necesario reescribir el historial
+        del repositorio para eliminar el secreto. El incidente
+        reforzó la política de gestión de variables de entorno
+        que ya se aplicaba en el proyecto.
+      </li>
+      <li>
+        <strong>Coordinación entre entornos de desarrollo.</strong>
+        Con cinco instancias Docker corriendo en paralelo sobre el
+        mismo servidor y una base de datos compartida, surgieron
+        conflictos puntuales entre ramas que modificaban el esquema
+        de la base de datos. Se resolvió adoptando la práctica de
+        versionar siempre el fichero <code>DDL_DML_SIGEBO.sql</code>
+        y comunicar al equipo cualquier cambio estructural antes
+        de integrarlo.
+      </li>
+      <li>
+        <strong>Integración del correo transaccional.</strong>
+        La configuración de PHPMailer con el servidor SMTP del
+        centro requirió ajustes en los parámetros de cifrado y
+        puerto que no estaban documentados, y la validación en
+        producción consumió más tiempo del estimado.
+      </li>
+    </ul>
+
+    <h2>13.4. Líneas futuras de mejora</h2>
+
+    <p>
+      A lo largo del desarrollo el cliente fue proponiendo mejoras
+      que, por restricciones de tiempo o complejidad, no pudieron
+      incorporarse en esta versión. Todas ellas quedaron
+      documentadas y se contemplan como el núcleo de una
+      <strong>segunda versión de SIGEBO</strong>:
+    </p>
+
+    <ul>
+      <li>
+        <strong>Portal de turnos voluntarios.</strong> Los turnos
+        de refuerzo se ofertarían en un portal accesible para todos
+        los bomberos, que podrían apuntarse voluntariamente. La
+        misma lógica aplicaría a los cambios de guardia entre
+        compañeros.
+      </li>
+      <li>
+        <strong>Exportación de partes de intervención en PDF.</strong>
+        Generación automática del informe post-emergencia en formato
+        descargable, incluyendo recursos movilizados, personal
+        asignado y descripción del siniestro.
+      </li>
+      <li>
+        <strong>Registro de víctimas.</strong> Añadir un apartado
+        en el módulo de emergencias para registrar los datos de las
+        personas afectadas.
+      </li>
+      <li>
+        <strong>Consultas transversales por rango de fechas.</strong>
+        Filtro unificado que devuelva incidencias, emergencias,
+        permisos y avisos dentro de un período seleccionado.
+      </li>
+      <li>
+        <strong>Subcategorías de material.</strong> Jerarquía de
+        dos niveles en el inventario del almacén.
+      </li>
+      <li>
+        <strong>Seguimiento de vehículos en tiempo real.</strong>
+        La infraestructura del módulo de mapas ya está preparada;
+        queda por activar la capa de localización en tiempo real.
+      </li>
+      <li>
+        <strong>Coordinación entre servicios de emergencia.</strong>
+        Extensión del sistema para gestionar la coordinación global
+        entre diferentes parques o servicios, la mejora estructural
+        de mayor calado para la siguiente versión.
+      </li>
+      <li>
+        <strong>Soporte multi-parque.</strong> Arquitectura
+        multi-tenant que permita gestionar varios parques con datos
+        segregados desde una única instancia del sistema.
+      </li>
+      <li>
+        <strong>Integración del asistente conversacional.</strong>
+        Implementación de la propuesta descrita en el capítulo 11,
+        comenzando por las consultas de solo lectura.
+      </li>
+    </ul>
+
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Capítulo 14</span>
+    <h1 class="chapter__title">Agradecimientos</h1>
+
+    <p>
+      Quiero dedicar estas últimas páginas a todas las personas que,
+      de una forma u otra, han hecho posible que llegue hasta aquí.
+    </p>
+
+    <p>
+      A todo el <strong>profesorado del departamento de informática
+      del CPIFP Bajo Aragón de Alcañiz</strong>. Desde los profesores
+      que me acompañaron en primero de Sistemas Microinformáticos y
+      Redes hasta los que han estado conmigo en este segundo curso de
+      DAW, cada uno ha dejado algo en mi forma de entender este
+      oficio. También a <strong>Pepe</strong>, que se marchó a mitad
+      de este curso para cambiar de trabajo y de aires: de esos
+      profesores que te exigen muchísimo pero con los que aprendes
+      el doble, gracias por lo que nos enseñaste mientras estuviste
+      y suerte en lo que venga.
+    </p>
+
+    <p>
+      A <strong>mi familia</strong>, toda, sin excepción. Por estar
+      siempre ahí, por interesarse por lo que hago aunque a veces
+      no entiendan muy bien de qué va, y por darme su opinión sobre
+      mi futuro incluso cuando no la pido. Ese apoyo constante vale
+      más de lo que parece.
+    </p>
+
+    <p>
+      A mis <strong>compañeros del equipo SyncFive</strong>, con
+      quienes he pasado cientos de horas delante de una pantalla,
+      resolviendo problemas, discutiendo decisiones y sacando adelante
+      este proyecto. Ha sido un placer trabajar con vosotros.
+      Mención especial para <strong>Javier</strong>, sin duda quien
+      más esfuerzo y trabajo ha puesto en este proyecto y el
+      integrante en quien más he podido confiar a lo largo de todo
+      este camino. Ha sido un pilar fundamental del equipo.
+    </p>
+
+    <p>
+      A mis <strong>amigos del pueblo</strong>, por la labor
+      imprescindible de conseguir que desconecte de vez en cuando.
+      No tiene precio.
+    </p>
+
+    <p>
+      Y a mis <strong>colegas de clase</strong>: <strong>Iker,
+      David, Ainoa y Alejandro</strong>. Llevamos juntos desde el
+      grado medio y eso ya dice mucho. Alejandro, el año pasado te
+      quedaste en el camino y nos dejaste un hueco difícil de llenar
+      —se nos cayó un grande—, pero seguro que cuando acabes nos
+      alcanzas. Os deseo lo mejor a todos.
+    </p>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       ANEXOS
+  ══════════════════════════════════════════════════════════════ -->
+
+  <section class="chapter">
+    <span class="chapter__number">Anexo A</span>
+    <h1 class="chapter__title">Manual de usuario</h1>
+
+    <p class="chapter__intro">
+      SIGEBO incluye un centro de ayuda integrado accesible desde
+      cualquier módulo de la aplicación mediante el icono
+      <strong>(?)</strong> situado en la esquina superior derecha de
+      cada pantalla. Este centro de ayuda constituye el
+      <strong>manual de usuario oficial</strong> de la aplicación y
+      se mantiene actualizado de forma continua:
+    </p>
+
+    <p style="text-align:center; font-size:1.1em; margin: 1.5rem 0;">
+      <strong>Centro de ayuda SIGEBO:</strong><br>
+      <a href="https://efficient-amaranthus-5c5.notion.site/SIGEBO-Centro-de-Ayuda-31b0bf35f60680b08459f5e24c9295fd"
+         target="_blank">
+        https://efficient-amaranthus-5c5.notion.site/SIGEBO-Centro-de-Ayuda
+      </a>
+    </p>
+
+    <p>
+      A continuación se recoge una referencia rápida de las
+      operaciones más habituales para facilitar la consulta sin
+      necesidad de acceder a la aplicación.
+    </p>
+
+    <h2>A.1. Acceso al sistema</h2>
+
+    <h3>Iniciar sesión</h3>
+    <ol>
+      <li>Acceder a la URL de la aplicación en el navegador.</li>
+      <li>Introducir el nombre de usuario y la contraseña.</li>
+      <li>Pulsar <strong>Iniciar sesión</strong>. El sistema redirige
+        automáticamente al dashboard.</li>
+    </ol>
+
+    <h3>Activar la cuenta por primera vez</h3>
+    <ol>
+      <li>Al ser dado de alta, el sistema envía un correo con un enlace
+        de activación.</li>
+      <li>Pulsar el enlace antes de que expire. Se abrirá una página
+        de confirmación.</li>
+      <li>Una vez activada la cuenta, ya es posible iniciar sesión.</li>
+    </ol>
+
+    <h3>Recuperar la contraseña</h3>
+    <ol>
+      <li>En la pantalla de login, pulsar
+        <strong>¿Olvidaste tu contraseña?</strong></li>
+      <li>Introducir el correo electrónico asociado a la cuenta.</li>
+      <li>Seguir el enlace recibido por correo para establecer una nueva
+        contraseña.</li>
+    </ol>
+
+    <h3>Cerrar sesión</h3>
+    <p>Pulsar el icono de usuario en la barra superior y seleccionar
+      <strong>Cerrar sesión</strong>.</p>
+
+    <h2>A.2. Navegación</h2>
+    <p>
+      La interfaz se divide en tres regiones fijas:
+    </p>
+    <ul>
+      <li><strong>Barra superior (header):</strong> acceso rápido a las
+        emergencias activas, nombre del parque y área personal.</li>
+      <li><strong>Menú lateral (sidebar):</strong> acceso a todos los
+        módulos agrupados por categoría (Operaciones, Personal, Recursos,
+        Gestión).</li>
+      <li><strong>Pie de página (footer):</strong> información de la
+        versión de la aplicación.</li>
+    </ul>
+    <p>Cada módulo dispone de un icono de ayuda
+      <strong>(?)</strong> en la esquina superior derecha que abre la
+      documentación contextual del módulo en Notion.</p>
+
+    <h2>A.3. Dashboard</h2>
+    <p>
+      La página de inicio muestra un resumen del estado del parque:
+      tarjetas con el número de bomberos activos, vehículos operativos,
+      emergencias activas y avisos recientes. Desde aquí se accede
+      directamente a cualquier módulo.
+    </p>
+
+    <h2>A.4. Emergencias</h2>
+    <h3>Consultar emergencias</h3>
+    <p>Acceder a <strong>Operaciones → Emergencias</strong>. Se muestra
+      el listado con tipo, dirección, estado y fecha. Pulsar el icono
+      de ojo para ver el detalle con el mapa y los recursos asignados.</p>
+
+    <h3>Registrar una emergencia</h3>
+    <ol>
+      <li>Pulsar <strong>Nueva emergencia</strong>.</li>
+      <li>Rellenar tipo, dirección y descripción.</li>
+      <li>Guardar. La emergencia queda en estado <em>Activa</em> y
+        aparece en el contador del header.</li>
+    </ol>
+
+    <h3>Asignar recursos a una emergencia</h3>
+    <ol>
+      <li>Abrir el detalle de la emergencia.</li>
+      <li>En la sección de vehículos, seleccionar el vehículo y
+        pulsar <strong>Asignar</strong>.</li>
+      <li>En la sección de personal, seleccionar el bombero y
+        pulsar <strong>Asignar</strong>.</li>
+    </ol>
+
+    <h2>A.5. Avisos internos</h2>
+    <p>Acceder a <strong>Operaciones → Avisos</strong>. Los avisos
+      recibidos aparecen en el listado. Para enviar uno nuevo
+      (roles 2 y superiores), pulsar <strong>Nuevo aviso</strong>,
+      seleccionar destinatarios y redactar el mensaje.</p>
+
+    <h2>A.6. Guardias y turnos de refuerzo</h2>
+    <h3>Consultar guardias</h3>
+    <p>Acceder a <strong>Personal → Guardias</strong>. Se muestra el
+      listado con fecha, horario y personal asignado.</p>
+
+    <h3>Crear una guardia</h3>
+    <ol>
+      <li>Pulsar <strong>Nueva guardia</strong> (roles 4 y 5).</li>
+      <li>Indicar fecha, hora de inicio, hora de fin y notas.</li>
+      <li>Guardar y asignar personal desde el modal de edición.</li>
+    </ol>
+
+    <h3>Turnos de refuerzo</h3>
+    <p>Acceder a <strong>Personal → Turno de refuerzo</strong>. El
+      funcionamiento es equivalente al de guardias. Los roles 4 y 5
+      crean turnos; el rol 3 puede asignar personal a turnos
+      existentes.</p>
+
+    <h2>A.7. Cuadrante</h2>
+    <p>Acceder a <strong>Personal → Cuadrante</strong> en vista mensual
+      o anual. El modo <em>Mi cuadrante</em> muestra únicamente la
+      planificación del usuario autenticado. El modo <em>Global</em>
+      (roles 2 y superiores) muestra la planificación de todo el
+      parque.</p>
+
+    <h2>A.8. Formación</h2>
+    <p>Acceder a <strong>Personal → Formaciones</strong>. Desde aquí
+      se gestionan los cursos y sus ediciones. Cada edición permite
+      inscribir y dar de baja al personal participante.</p>
+
+    <h2>A.9. Área personal</h2>
+    <p>Acceder pulsando sobre el nombre o la foto de perfil en el
+      header. Muestra estadísticas propias, carnets habilitantes,
+      próximas formaciones y méritos. Para editar los datos personales
+      o cambiar la foto, pulsar el icono de lápiz o hacer clic sobre
+      la imagen de perfil.</p>
+
+    <h3>Solicitar un permiso de ausencia</h3>
+    <ol>
+      <li>Acceder a <strong>Gestión → Permisos</strong>.</li>
+      <li>Pulsar <strong>Nueva solicitud</strong>.</li>
+      <li>Seleccionar motivo, fecha de inicio y fecha de fin.</li>
+      <li>Guardar. La solicitud queda en estado <em>En revisión</em>
+        hasta que un rol 4 o 5 la resuelva.</li>
+    </ol>
+
+    <h2>A.10. Gestión de personal</h2>
+    <p>Acceder a <strong>Personal → Trabajadores</strong> (roles 4 y 5).
+      La tabla muestra el listado completo con filtros por ID, parque
+      y estado. Para dar de alta a un nuevo trabajador, rellenar el
+      formulario situado bajo la tabla. Para editar o eliminar,
+      usar los iconos de acción de cada fila.</p>
+
+    <h2>A.11. Recursos: vehículos y material</h2>
+    <p>Acceder a <strong>Recursos → Vehículos</strong> o
+      <strong>Recursos → Material</strong>. En vehículos se gestiona
+      el estado operativo, el historial de mantenimiento y las
+      incidencias. En material se consulta y gestiona el inventario
+      del almacén por categoría.</p>
+
+    <h2>A.12. Mapa de infraestructuras</h2>
+    <p>Acceder a <strong>Operaciones → Mapa</strong>. El mapa muestra
+      los hidrantes y bocas de riego geolocalizados sobre OpenStreetMap.
+      Usar los filtros de tipo, provincia, municipio y estado para
+      acotar la visualización. Pulsar sobre un marcador para ver el
+      detalle del punto de agua.</p>
+
+  </section>
+
+  <section class="chapter">
+    <span class="chapter__number">Anexo B</span>
+    <h1 class="chapter__title">Manual de despliegue</h1>
+
+    <p class="chapter__intro">
+      Este anexo es una guía de referencia rápida para desplegar
+      SIGEBO en un servidor desde cero. El requisito único es tener
+      instalados <strong>Docker Engine</strong> y el plugin
+      <strong>Docker Compose</strong>.
+    </p>
+
+    <h2>B.1. Requisitos previos</h2>
+    <ul>
+      <li>Sistema operativo: Linux (recomendado Ubuntu Server 24.04
+        LTS), Windows con WSL2 o macOS.</li>
+      <li>Docker Engine instalado y activo
+        (<code>sudo systemctl status docker</code>).</li>
+      <li>Plugin Docker Compose v2
+        (<code>docker compose version</code>).</li>
+      <li>Acceso a internet para descargar las imágenes base en el
+        primer arranque.</li>
+      <li>Puerto <code>8081</code> libre en el host (aplicación web).</li>
+    </ul>
+
+    <h2>B.2. Obtener el código</h2>
+    <pre><code>git clone https://github.com/&lt;org&gt;/sigebo.git
+cd sigebo</code></pre>
+
+    <h2>B.3. Configurar las variables de entorno</h2>
+    <ol>
+      <li>Copiar el fichero de ejemplo:
+        <pre><code>cp .env.example .env</code></pre>
+      </li>
+      <li>Editar <code>.env</code> y completar los valores reales:</li>
+    </ol>
+
+    <p class="table-caption"><strong>Tabla B.1.</strong> Variables de entorno requeridas. Fuente: equipo SyncFive.</p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Descripción</th>
+          <th>Ejemplo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>DB_NAME</code></td><td>Nombre de la base de datos</td><td><code>sigebo</code></td></tr>
+        <tr><td><code>DB_USER</code></td><td>Usuario de MySQL</td><td><code>sigebo_user</code></td></tr>
+        <tr><td><code>DB_PASS</code></td><td>Contraseña del usuario MySQL</td><td><code>••••••••</code></td></tr>
+        <tr><td><code>MYSQL_ROOT_PASSWORD</code></td><td>Contraseña root de MySQL</td><td><code>••••••••</code></td></tr>
+        <tr><td><code>MAIL_HOST</code></td><td>Servidor SMTP</td><td><code>smtp.dominio.es</code></td></tr>
+        <tr><td><code>MAIL_PORT</code></td><td>Puerto SMTP</td><td><code>465</code></td></tr>
+        <tr><td><code>MAIL_USERNAME</code></td><td>Usuario de correo</td><td><code>sigebo@dominio.es</code></td></tr>
+        <tr><td><code>MAIL_PASSWORD</code></td><td>Contraseña de correo</td><td><code>••••••••</code></td></tr>
+        <tr><td><code>MAIL_ENCRYPTION</code></td><td>Cifrado SMTP</td><td><code>ssl</code></td></tr>
+        <tr><td><code>MAIL_FROM_EMAIL</code></td><td>Dirección remitente</td><td><code>sigebo@dominio.es</code></td></tr>
+        <tr><td><code>MAIL_FROM_NAME</code></td><td>Nombre remitente</td><td><code>SIGEBO</code></td></tr>
+        <tr><td><code>APP_URL</code></td><td>URL pública de la app</td><td><code>http://IP:8081</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>B.4. Arrancar el sistema</h2>
+    <pre><code>docker compose up -d</code></pre>
+    <p>
+      Docker construye la imagen de Apache desde el
+      <code>Dockerfile</code>, descarga la imagen de MySQL si no
+      está en caché y levanta ambos contenedores. En el primer
+      arranque, MySQL inicializa automáticamente la base de datos
+      con el script <code>DDL_DML_SIGEBO.sql</code>. El contenedor
+      Apache espera a que MySQL supere el <em>healthcheck</em> antes
+      de arrancar.
+    </p>
+
+    <h2>B.5. Verificar el estado</h2>
+    <pre><code>docker compose ps</code></pre>
+    <p>Ambos contenedores deben aparecer en estado
+      <code>Up (healthy)</code>. Si <code>sigebo-mysql</code> tarda
+      en arrancar, esperar unos segundos y volver a comprobarlo.</p>
+
+    <h2>B.6. Acceder a la aplicación</h2>
+    <ul>
+      <li><strong>Aplicación web:</strong>
+        <code>http://&lt;IP-del-servidor&gt;:8081</code></li>
+      <li><strong>Base de datos</strong> (herramienta externa):
+        host <code>&lt;IP&gt;</code>, puerto <code>3307</code>,
+        usuario y contraseña según <code>.env</code>.</li>
+    </ul>
+
+    <h2>B.7. Detener y reiniciar</h2>
+    <pre><code># Detener sin eliminar datos
+docker compose stop
+
+# Reiniciar
+docker compose start
+
+# Detener y eliminar contenedores (los datos persisten en el volumen)
+docker compose down
+
+# Eliminar también el volumen de datos (⚠ borra la BD)
+docker compose down -v</code></pre>
+
+    <h2>B.8. Actualizar a una nueva versión</h2>
+    <ol>
+      <li>Obtener los últimos cambios del repositorio:
+        <pre><code>git pull origin main</code></pre>
+      </li>
+      <li>Reconstruir y reiniciar:
+        <pre><code>docker compose up -d --build</code></pre>
+      </li>
+    </ol>
+
+    <h2>B.9. Solución de problemas frecuentes</h2>
+
+    <p class="table-caption"><strong>Tabla B.2.</strong> Problemas frecuentes y soluciones. Fuente: equipo SyncFive.</p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Síntoma</th>
+          <th>Causa probable</th>
+          <th>Solución</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>La web no carga en el puerto 8081</td>
+          <td>Contenedor Apache no arrancado o puerto ocupado</td>
+          <td>Comprobar <code>docker compose ps</code> y que el puerto
+            8081 esté libre en el host</td>
+        </tr>
+        <tr>
+          <td>Error de conexión a la base de datos</td>
+          <td>MySQL aún no superó el healthcheck o credenciales
+            incorrectas</td>
+          <td>Esperar 30 s y recargar; verificar valores de
+            <code>DB_USER</code> y <code>DB_PASS</code> en
+            <code>.env</code></td>
+        </tr>
+        <tr>
+          <td>Los correos no se envían</td>
+          <td>Parámetros SMTP incorrectos</td>
+          <td>Verificar <code>MAIL_HOST</code>, <code>MAIL_PORT</code>,
+            <code>MAIL_USERNAME</code> y <code>MAIL_PASSWORD</code>
+            en <code>.env</code></td>
+        </tr>
+        <tr>
+          <td>Las rutas devuelven 404</td>
+          <td><code>mod_rewrite</code> no activo o
+            <code>.htaccess</code> no leído</td>
+          <td>Verificar que el <code>Dockerfile</code> ejecuta
+            <code>a2enmod rewrite</code> y que el contenedor se
+            reconstruyó con <code>--build</code></td>
+        </tr>
+        <tr>
+          <td>Los datos desaparecen al recrear el contenedor</td>
+          <td>El volumen fue eliminado con <code>down -v</code></td>
+          <td>No usar <code>-v</code> salvo que se quiera resetear
+            la base de datos intencionalmente</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </section>
+
+</body>
+</html>

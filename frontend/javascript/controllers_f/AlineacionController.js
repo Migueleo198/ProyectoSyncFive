@@ -225,6 +225,7 @@ async function cargarTurnoRefuerzo(fecha) {
             contenedor.appendChild(card);
         });
     } catch (err) {
+        contenedor.innerHTML = '<p class="text-danger small mb-0">No se pudieron cargar los refuerzos del día.</p>';
     }
 }
 

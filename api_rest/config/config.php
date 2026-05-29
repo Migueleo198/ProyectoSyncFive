@@ -97,3 +97,8 @@ define('MAIL_ENCRYPTION', getenv('MAIL_ENCRYPTION') ?: 'ssl');
 
 define('MAIL_FROM_EMAIL', getenv('MAIL_FROM_EMAIL') ?: 'syncfive@cpifpbajoaragon.info');
 define('MAIL_FROM_NAME', getenv('MAIL_FROM_NAME') ?: 'SIGEBO');
+
+// ----------------------------------------------------
+// URL BASE DE LA APLICACIÓN (para enlaces en correos)
+// ----------------------------------------------------
+define('APP_URL', rtrim(getenv('APP_URL') ?: 'http://192.168.13.108:8081', '/'));

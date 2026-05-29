@@ -294,6 +294,6 @@ $router->protectedSession('DELETE', '/mapa/{id}', 'Controllers\\MapaController@d
 // +++++++++++++++++ CUADRANTE +++++++++++++++++
 $router->protectedSession('GET', '/cuadrante/{id_bombero}/guardias',  'Controllers\\CuadranteController@guardias',  [1,2,3,4,5]);
 $router->protectedSession('GET', '/cuadrante/{id_bombero}/refuerzos', 'Controllers\\CuadranteController@refuerzos', [1,2,3,4,5]);
-$router->protectedSession('GET', '/cuadrante/guardias',  'Controllers\\CuadranteController@todasGuardias',  [1,2,3,4,5]);
-$router->protectedSession('GET', '/cuadrante/refuerzos', 'Controllers\\CuadranteController@todosRefuerzos', [1,2,3,4,5]);
+$router->protectedSession('GET', '/cuadrante/guardias',  'Controllers\\CuadranteController@todasGuardias',  [2,3,4,5]);
+$router->protectedSession('GET', '/cuadrante/refuerzos', 'Controllers\\CuadranteController@todosRefuerzos', [2,3,4,5]);
 ?>

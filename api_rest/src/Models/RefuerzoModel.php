@@ -167,6 +167,33 @@ class RefuerzoModel
             ->fetch()['affected'];
     }
 
-   
+    /**
+     * Obtener las personas asignadas a turnos de refuerzo activos en una fecha
+     */
+    public function getTurnoRefuerzoByFecha(string $fecha): array
+    {
+        return $this->db
+            ->query("
+                SELECT
+                    tr.id_turno_refuerzo,
+                    tr.f_inicio,
+                    tr.f_fin,
+                    p.id_bombero,
+                    p.n_funcionario,
+                    p.nombre,
+                    p.apellidos
+                FROM Turno_refuerzo tr
+                INNER JOIN Persona_Turno pt
+                    ON pt.id_turno = tr.id_turno_refuerzo
+                INNER JOIN Persona p
+                    ON p.id_bombero = pt.id_bombero
+                WHERE DATE(:fecha) BETWEEN DATE(tr.f_inicio) AND DATE(tr.f_fin)
+                ORDER BY p.apellidos ASC, p.nombre ASC
+            ")
+            ->bind(':fecha', $fecha)
+            ->fetchAll();
+    }
+
+
 }
 ?>

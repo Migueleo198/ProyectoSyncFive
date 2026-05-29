@@ -14,6 +14,11 @@ pagination.setLoadingCallback((isLoading) => {
     }
 });
 
+const paginacionVerGuardia = new PaginationHelper(8);
+const paginacionEditGuardia = new PaginationHelper(8);
+let personasVerGuardia = [];
+let personasEditGuardia = [];
+
 const cargos = [
     "BOMBERO1", "BOMBERO2", "BOMBERO3", "BOMBERO4", "BOMBERO5",
     "BOMBERO6", "BOMBERO7", "BOMBERO8", "BOMBERO9", "BOMBERO10",
@@ -231,39 +236,55 @@ function nombrePersonaAsignada(a) {
     return nombre || a.id_bombero || '-';
 }
 
-function crearTablaPersonasGuardia(asignaciones, editable = false) {
+function crearArmazonPersonasGuardia(editable, tbodyId, paginacionId) {
     const accionHeader = editable ? '<th class="text-center">Acción</th>' : '';
-    const colspan = editable ? 5 : 4;
-
-    let html = `
+    return `
         <div class="mt-4">
             <h6 class="fw-bold">Personas asignadas</h6>
             <table class="table table-bordered table-striped table-sm">
                 <thead class="table-dark">
                     <tr><th>ID</th><th>Nombre</th><th>Nº Funcionario</th><th>Cargo</th>${accionHeader}</tr>
                 </thead>
-                <tbody>`;
+                <tbody id="${tbodyId}"></tbody>
+            </table>
+            <div id="${paginacionId}" class="mt-2"></div>
+        </div>`;
+}
 
-    if (!asignaciones.length) {
-        html += `<tr><td colspan="${colspan}" class="text-center text-muted">Sin personas asignadas</td></tr>`;
-    } else {
-        asignaciones.forEach(a => {
-            const accion = editable
-                ? `<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-guardia" data-id-bombero="${a.id_bombero}" title="Desasignar persona"><i class="bi bi-trash"></i></button></td>`
-                : '';
-            html += `
-                <tr>
-                    <td>${a.id_bombero || '-'}</td>
-                    <td>${nombrePersonaAsignada(a)}</td>
-                    <td>${a.n_funcionario || '-'}</td>
-                    <td>${a.cargo || '-'}</td>
-                    ${accion}
-                </tr>`;
-        });
+function filaPersonaGuardia(a, editable) {
+    const accion = editable
+        ? `<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-desasignar-guardia" data-id-bombero="${a.id_bombero}" title="Desasignar persona"><i class="bi bi-person-dash"></i></button></td>`
+        : '';
+    return `
+        <tr>
+            <td>${a.id_bombero || '-'}</td>
+            <td>${nombrePersonaAsignada(a)}</td>
+            <td>${a.n_funcionario || '-'}</td>
+            <td>${a.cargo || '-'}</td>
+            ${accion}
+        </tr>`;
+}
+
+function renderFilasVerGuardia() {
+    const tbody = document.getElementById('tbodyPersonasVerGuardia');
+    if (!tbody) return;
+    if (!personasVerGuardia.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Sin personas asignadas</td></tr>';
+        return;
     }
+    tbody.innerHTML = paginacionVerGuardia.getPageItems(personasVerGuardia)
+        .map(a => filaPersonaGuardia(a, false)).join('');
+}
 
-    html += '</tbody></table></div>';
-    return html;
+function renderFilasEditGuardia() {
+    const tbody = document.getElementById('tbodyPersonasEditGuardia');
+    if (!tbody) return;
+    if (!personasEditGuardia.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Sin personas asignadas</td></tr>';
+        return;
+    }
+    tbody.innerHTML = paginacionEditGuardia.getPageItems(personasEditGuardia)
+        .map(a => filaPersonaGuardia(a, true)).join('');
 }
 
 async function crearOptionsPersonasAsignables() {
@@ -325,8 +346,11 @@ function bindModalVer() {
             modalBody.appendChild(p);
         });
         try {
-            const asignaciones = await obtenerPersonasGuardia(guardia.id_guardia);
-            modalBody.insertAdjacentHTML('beforeend', crearTablaPersonasGuardia(asignaciones));
+            modalBody.insertAdjacentHTML('beforeend', crearArmazonPersonasGuardia(false, 'tbodyPersonasVerGuardia', 'pagination-ver-guardia'));
+            personasVerGuardia = await obtenerPersonasGuardia(guardia.id_guardia);
+            paginacionVerGuardia.setData(personasVerGuardia, () => renderFilasVerGuardia());
+            paginacionVerGuardia.render('pagination-ver-guardia');
+            renderFilasVerGuardia();
         } catch (error) {
             modalBody.insertAdjacentHTML('beforeend', '<p class="text-danger mt-3">Error cargando personas asignadas</p>');
         }
@@ -345,10 +369,7 @@ function bindModalEditar() {
         const guardia = response.data;
         if (!guardia) return;
         const form = document.getElementById('formEditar');
-        const [personasOptions, asignaciones] = await Promise.all([
-            crearOptionsPersonasAsignables(),
-            obtenerPersonasGuardia(id)
-        ]);
+        const personasOptions = await crearOptionsPersonasAsignables();
         form.innerHTML = `
             <div class="row mb-3">
                 <div class="col-lg-4">
@@ -394,14 +415,17 @@ function bindModalEditar() {
                 </div>
             </div>
             <div id="tablaPersonasGuardia">
-                ${crearTablaPersonasGuardia(asignaciones, true)}
+                ${crearArmazonPersonasGuardia(true, 'tbodyPersonasEditGuardia', 'pagination-edit-guardia')}
             </div>`;
         bindDiaCompletoGuardia(form);
 
         const refrescarPersonasGuardia = async () => {
-            const actualizadas = await obtenerPersonasGuardia(id);
-            form.querySelector('#tablaPersonasGuardia').innerHTML = crearTablaPersonasGuardia(actualizadas, true);
+            personasEditGuardia = await obtenerPersonasGuardia(id);
+            paginacionEditGuardia.setData(personasEditGuardia, () => renderFilasEditGuardia());
+            paginacionEditGuardia.render('pagination-edit-guardia');
+            renderFilasEditGuardia();
         };
+        await refrescarPersonasGuardia();
 
         form.querySelector('#btnAsignarPersonaGuardia').addEventListener('click', async () => {
             const id_bombero = form.querySelector('#asigGuardiaPersona').value;
