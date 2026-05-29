@@ -175,7 +175,7 @@ class EmailService
     // ================================================================
     public function sendActivationEmail(string $to, string $nombre, string $token): void
     {
-        $url = "http://192.168.13.108:8085/frontend/pages/Login/activarCuenta.html?token={$token}";
+        $url = APP_URL . "/frontend/pages/Login/activarCuenta.html?token={$token}";
 
         $contenido = "
             <p>Hola <strong style='color:#212529;'>{$nombre}</strong>,</p>
@@ -201,7 +201,7 @@ class EmailService
     // ================================================================
     public function sendPasswordResetEmail(string $to, string $nombre, string $token): void
     {
-        $url = "http://192.168.13.108:8085/frontend/pages/Login/cambiarPassword.html?token={$token}";
+        $url = APP_URL . "/frontend/pages/Login/cambiarPassword.html?token={$token}";
 
         $contenido = "
             <p>Hola <strong style='color:#212529;'>{$nombre}</strong>,</p>
