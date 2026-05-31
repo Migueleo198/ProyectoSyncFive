@@ -71,7 +71,7 @@ function bindLogin() {
         // Guardamos usuario en sessionStorage
         sessionStorage.setItem('user', JSON.stringify(user));
         // Redirigir a home
-        window.location.href = '/frontend/pages/home.html';
+        window.location.href = '/home';
 
     } catch (error) {
       mostrarError(error.message || 'Usuario o contraseña incorrectos.');
@@ -366,6 +366,6 @@ export async function cerrarSesion() {
     } finally {
         // Aunque falle el backend, limpiamos la sesión local
         sessionStorage.removeItem('user');
-        window.location.href = '/frontend/pages/Login/login.html';
+        window.location.href = '/login';
     }
 }

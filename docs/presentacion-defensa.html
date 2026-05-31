@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGEBO — Presentación defensa TFG | Diego Lorenzo Mir</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rojo:    #c0392b;
+      --rojo2:   #e74c3c;
+      --oscuro:  #1a1a2e;
+      --medio:   #16213e;
+      --card:    #0f3460;
+      --blanco:  #ffffff;
+      --gris:    #b0bec5;
+      --verde:   #2ecc71;
+      --naranja: #e67e22;
+      --font:    system-ui, -apple-system, 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: #0d0d1a;
+      font-family: var(--font);
+      color: var(--blanco);
+      padding: 2rem 1rem;
+    }
+
+    h1.doc-title {
+      text-align: center;
+      font-size: 1.4rem;
+      color: var(--gris);
+      margin-bottom: 0.25rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    p.doc-sub {
+      text-align: center;
+      color: var(--rojo);
+      font-size: 0.9rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── SLIDE ─────────────────────────────────────────────── */
+    .slide {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      aspect-ratio: 16 / 9;
+      margin: 0 auto 1rem;
+      background: var(--medio);
+      border-radius: 10px;
+      border: 1px solid #2a2a4a;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 2.5rem 3rem;
+    }
+
+    .slide-number {
+      position: absolute;
+      top: 0.7rem;
+      right: 1rem;
+      font-size: 0.75rem;
+      color: #445;
+      font-weight: 600;
+    }
+
+    .slide-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--rojo) 0%, var(--rojo2) 100%);
+    }
+
+    /* notas del ponente bajo cada slide */
+    .notes {
+      max-width: 900px;
+      margin: 0 auto 3rem;
+      background: #111122;
+      border-left: 3px solid var(--rojo);
+      padding: 0.8rem 1.2rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.83rem;
+      color: #8899bb;
+      line-height: 1.6;
+    }
+    .notes strong { color: var(--gris); }
+
+    /* ── PORTADA ────────────────────────────────────────────── */
+    .slide--cover {
+      background: linear-gradient(135deg, #0d0d1a 0%, #1a0a0a 60%, #2a0a0a 100%);
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 0.6rem;
+    }
+    .cover-badge {
+      display: inline-block;
+      background: var(--rojo);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0.25rem 0.8rem;
+      border-radius: 100px;
+      margin-bottom: 0.5rem;
+    }
+    .cover-title {
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+    .cover-title span { color: var(--rojo2); }
+    .cover-sub {
+      font-size: 1.1rem;
+      color: var(--gris);
+      margin-top: 0.3rem;
+    }
+    .cover-meta {
+      margin-top: 1.2rem;
+      font-size: 0.85rem;
+      color: #7788aa;
+      line-height: 2;
+    }
+    .cover-meta strong { color: var(--gris); }
+
+    /* ── AGENDA ─────────────────────────────────────────────── */
+    .agenda-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+      flex: 1;
+    }
+    .agenda-item {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid #2a2a4a;
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.88rem;
+    }
+    .agenda-item .num {
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: var(--rojo2);
+      min-width: 1.4rem;
+    }
+
+    /* ── SLIDE TITLE ────────────────────────────────────────── */
+    .slide-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--blanco);
+      margin-bottom: 0.2rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--rojo);
+      display: inline-block;
+    }
+    .slide-title-small { font-size: 1.2rem; }
+
+    .slide-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--rojo2);
+      margin-bottom: 0.3rem;
+    }
+
+    /* ── LAYOUT HELPERS ─────────────────────────────────────── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      flex: 1;
+      align-items: start;
+      margin-top: 1rem;
+    }
+    .three-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      flex: 1;
+      align-items: start;
+      margin-top: 1rem;
+    }
+
+    ul.bullets {
+      list-style: none;
+      margin-top: 0.7rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    ul.bullets li {
+      font-size: 0.9rem;
+      color: var(--gris);
+      line-height: 1.4;
+      padding-left: 1rem;
+      position: relative;
+    }
+    ul.bullets li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--rojo2);
+      font-size: 0.75rem;
+      top: 2px;
+    }
+    ul.bullets li strong { color: var(--blanco); }
+
+    /* ── TARJETAS / CHIPS ───────────────────────────────────── */
+    .card {
+      background: rgba(192,57,43,0.1);
+      border: 1px solid rgba(192,57,43,0.3);
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+    }
+    .card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--rojo2);
+      margin-bottom: 0.4rem;
+    }
+    .card p, .card ul { font-size: 0.82rem; color: var(--gris); line-height: 1.5; }
+
+    .tag {
+      display: inline-block;
+      background: rgba(231,76,60,0.15);
+      border: 1px solid rgba(231,76,60,0.4);
+      color: #f0a0a0;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.55rem;
+      border-radius: 100px;
+      margin: 0.15rem;
+    }
+    .tag.green {
+      background: rgba(46,204,113,0.12);
+      border-color: rgba(46,204,113,0.3);
+      color: #a0f0b8;
+    }
+    .tag.gray {
+      background: rgba(176,190,197,0.1);
+      border-color: rgba(176,190,197,0.2);
+      color: var(--gris);
+    }
+
+    /* ── BIG STAT ───────────────────────────────────────────── */
+    .stat-row {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      flex: 1;
+      align-items: stretch;
+    }
+    .stat-box {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .stat-num {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--rojo2);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--gris);
+      margin-top: 0.3rem;
+      text-align: center;
+    }
+
+    /* ── MÓDULOS GRID ───────────────────────────────────────── */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+      flex: 1;
+    }
+    .module-item {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 0.7rem 0.5rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--gris);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .module-item .icon { font-size: 1.6rem; }
+
+    /* ── TECH LOGOS ─────────────────────────────────────────── */
+    .tech-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1rem;
+      flex: 1;
+      align-content: flex-start;
+    }
+    .tech-chip {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-size: 0.82rem;
+      color: var(--gris);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .tech-chip .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--rojo2);
+      flex-shrink: 0;
+    }
+
+    /* ── TABLA ──────────────────────────────────────────────── */
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.8rem;
+      font-size: 0.78rem;
+    }
+    .mini-table th {
+      background: rgba(192,57,43,0.2);
+      color: var(--gris);
+      font-weight: 700;
+      padding: 0.4rem 0.6rem;
+      text-align: left;
+      letter-spacing: 0.5px;
+    }
+    .mini-table td {
+      padding: 0.35rem 0.6rem;
+      color: var(--gris);
+      border-bottom: 1px solid #1e1e3a;
+    }
+    .mini-table tr:hover td { background: rgba(255,255,255,0.03); }
+    .ok  { color: var(--verde) !important; font-weight: 700; }
+    .par { color: var(--naranja) !important; font-weight: 700; }
+    .pen { color: #e74c3c !important; font-weight: 700; }
+
+    /* ── IMAGEN PLACEHOLDER ─────────────────────────────────── */
+    .img-placeholder {
+      background: rgba(255,255,255,0.03);
+      border: 2px dashed #334;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: #445;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-align: center;
+      gap: 0.4rem;
+      min-height: 100px;
+      padding: 1rem;
+    }
+    .img-placeholder .ph-icon { font-size: 2rem; }
+
+    /* ── ARQUITECTURA ───────────────────────────────────────── */
+    .arch-layer {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 0.82rem;
+    }
+    .arch-layer .layer-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--rojo2);
+      min-width: 70px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .arch-arrow {
+      text-align: center;
+      color: var(--rojo2);
+      font-size: 1rem;
+      margin: 0.1rem 0;
+    }
+
+    /* ── ROLE BADGE ─────────────────────────────────────────── */
+    .role-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.8rem;
+    }
+    .role-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 0.5rem 0.7rem;
+      font-size: 0.72rem;
+      color: var(--gris);
+      text-align: center;
+    }
+    .role-badge .rb-num {
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--rojo2);
+    }
+
+    /* ── QUOTE / DESTACADO ──────────────────────────────────── */
+    .quote {
+      background: rgba(192,57,43,0.08);
+      border-left: 4px solid var(--rojo2);
+      border-radius: 0 8px 8px 0;
+      padding: 0.8rem 1.2rem;
+      font-size: 1rem;
+      color: var(--blanco);
+      font-style: italic;
+      line-height: 1.5;
+      margin: 0.8rem 0;
+    }
+
+    /* ── TIMELINE ───────────────────────────────────────────── */
+    .timeline {
+      display: flex;
+      gap: 0;
+      margin-top: 0.8rem;
+      flex: 1;
+      align-items: stretch;
+    }
+    .tl-item {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid #2a2a4a;
+      border-radius: 0;
+      padding: 0.6rem 0.5rem;
+      font-size: 0.72rem;
+      text-align: center;
+      color: var(--gris);
+      position: relative;
+    }
+    .tl-item:first-child { border-radius: 8px 0 0 8px; }
+    .tl-item:last-child  { border-radius: 0 8px 8px 0; }
+    .tl-item:not(:last-child) { border-right: none; }
+    .tl-item .tl-month { font-size: 0.8rem; font-weight: 700; color: var(--rojo2); display: block; }
+
+    /* ── FINAL SLIDE ────────────────────────────────────────── */
+    .slide--final {
+      background: linear-gradient(135deg, #0d0d1a 0%, #1a0a0a 60%, #2a0a0a 100%);
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .section-divider {
+      max-width: 900px;
+      margin: 2rem auto 1.5rem;
+      text-align: center;
+    }
+    .section-divider span {
+      background: var(--rojo);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0.3rem 1.2rem;
+      border-radius: 100px;
+    }
+
+    @media print {
+      body { background: #fff; color: #000; }
+    }
+  </style>
+</head>
+<body>
+
+<h1 class="doc-title">SIGEBO — Presentación Defensa TFG</h1>
+<p class="doc-sub">20 diapositivas · 20 minutos · Diego Lorenzo Mir · 1 de junio de 2026</p>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 1 — PORTADA
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide slide--cover">
+  <span class="slide-number">01 / 20</span>
+  <div class="cover-badge">TFG · DAW · 2025–2026</div>
+  <h2 class="cover-title">SIGE<span>BO</span></h2>
+  <p class="cover-sub">Sistema de Gestión de Parque de Bomberos</p>
+  <div class="cover-meta">
+    <strong>Diego Lorenzo Mir</strong><br>
+    Ciclo Superior en Desarrollo de Aplicaciones Web<br>
+    CPIFP Bajo Aragón · Alcañiz<br>
+    Tutor: <strong>[nombre del tutor]</strong><br>
+    1 de junio de 2026
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> Portada. Preséntate: «Buenos días, soy Diego Lorenzo Mir, alumno de segundo de DAW del CPIFP Bajo Aragón.
+  Hoy defiendo mi Trabajo de Fin de Ciclo: SIGEBO, un sistema web para la gestión integral de un parque de bomberos.»
+  Añadir logo del centro y logo/icono de la aplicación (camión de bomberos si no hay logo propio).
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 2 — AGENDA
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">02 / 20</span>
+  <p class="slide-label">Hoy veremos</p>
+  <h2 class="slide-title">Agenda</h2>
+  <div class="agenda-grid">
+    <div class="agenda-item"><span class="num">1</span> Presentación personal y contexto</div>
+    <div class="agenda-item"><span class="num">2</span> El problema y la solución</div>
+    <div class="agenda-item"><span class="num">3</span> Objetivos del proyecto</div>
+    <div class="agenda-item"><span class="num">4</span> Planificación y equipo</div>
+    <div class="agenda-item"><span class="num">5</span> Arquitectura y diseño</div>
+    <div class="agenda-item"><span class="num">6</span> Tecnologías utilizadas</div>
+    <div class="agenda-item"><span class="num">7</span> Demo de funcionalidades</div>
+    <div class="agenda-item"><span class="num">8</span> Aspectos técnicos clave</div>
+    <div class="agenda-item"><span class="num">9</span> Despliegue y pruebas</div>
+    <div class="agenda-item"><span class="num">10</span> Conclusiones · Preguntas</div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> Slide rápida (20–30 s). «En los próximos 20 minutos voy a contaros quién soy, de dónde surge este proyecto,
+  qué construimos y cómo funciona. Al final habrá tiempo para preguntas.»
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 3 — SOBRE MÍ
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">03 / 20</span>
+  <p class="slide-label">Introducción</p>
+  <h2 class="slide-title">Sobre mí</h2>
+  <div class="two-col" style="margin-top:0.8rem">
+    <div>
+      <div class="img-placeholder" style="height:130px">
+        <span class="ph-icon">🧑‍💻</span>
+        <span>FOTO<br>Diego Lorenzo Mir</span>
+      </div>
+    </div>
+    <ul class="bullets">
+      <li><strong>Diego Lorenzo Mir</strong> · 20 años</li>
+      <li>SMR 2022–2024 · <strong>Mejor expediente</strong> de la promoción</li>
+      <li>DAW 2024–2026 · Líder de equipo en todos los retos ABR</li>
+      <li>Prácticas: <strong>MotoCrossCenter</strong> (e-commerce) + <strong>IPG</strong> (software empresarial + IA)</li>
+      <li>Formación extra: IA aplicada (U. Europea) · ML con Python (INAEM) · Blockchain</li>
+    </ul>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1 min. Muy breve. Resalta lo del mejor expediente y el rol de líder porque avala tu capacidad de coordinar.
+  Menciona las prácticas en IPG porque refuerza que ya estás en el sector.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 4 — CONTEXTO DEL PROYECTO
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">04 / 20</span>
+  <p class="slide-label">Contexto</p>
+  <h2 class="slide-title">¿De dónde viene este proyecto?</h2>
+  <div class="two-col" style="margin-top:0.8rem">
+    <div>
+      <div class="card">
+        <div class="card-title">El cliente</div>
+        <p><strong>CPIFP San Blas</strong><br>
+        Ciclo de Coordinación de Emergencias y Protección Civil.<br>
+        Necesitaban una herramienta digital para gestionar la operativa
+        de un parque de bomberos — y un recurso didáctico para sus alumnos.</p>
+      </div>
+      <div class="card" style="margin-top:0.6rem">
+        <div class="card-title">Metodología</div>
+        <p><strong>ABP</strong> (Aprendizaje Basado en Proyectos)<br>
+        Cliente real · Objetivos reales · Defensa pública</p>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Equipo SyncFive</div>
+        <p>5 estudiantes de DAW del CPIFP Bajo Aragón<br>
+        <strong>Diego Lorenzo Mir</strong> — Líder de equipo</p>
+        <div style="margin-top:0.5rem">
+          <span class="tag">Diciembre 2025</span>
+          <span class="tag">→</span>
+          <span class="tag">Mayo 2026</span>
+          <span class="tag gray">~6 meses</span>
+        </div>
+      </div>
+      <div class="stat-row" style="margin-top:0.6rem">
+        <div class="stat-box">
+          <div class="stat-num">5</div>
+          <div class="stat-label">Desarrolladores</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">990</div>
+          <div class="stat-label">Horas de trabajo</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">255</div>
+          <div class="stat-label">Pull Requests</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1.5 min. Explica el contexto ABP y la diferencia con los retos ABR anteriores.
+  El dato de los PRs demuestra flujo de trabajo real en equipo con Git. Ajusta el número si no es 255.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 5 — EL PROBLEMA
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">05 / 20</span>
+  <p class="slide-label">Planteamiento</p>
+  <h2 class="slide-title">El problema: gestión manual y dispersa</h2>
+  <div class="two-col" style="margin-top:0.8rem">
+    <ul class="bullets" style="margin-top:0">
+      <li>Cuadrantes y guardias <strong>en papel o Excel aislados</strong></li>
+      <li>Comunicación por teléfono y WhatsApp</li>
+      <li>Libros de registro físicos para emergencias</li>
+      <li><strong>Sin visibilidad en tiempo real</strong> del personal y recursos</li>
+      <li>Sin inventario centralizado de vehículos y material</li>
+      <li>Sin trazabilidad de formación y méritos</li>
+      <li>Soluciones existentes (FUOCO, SECIGEST): <strong>propietarias, anticuadas e intuitivas</strong></li>
+    </ul>
+    <div>
+      <div class="img-placeholder" style="height: 100%; min-height: 160px">
+        <span class="ph-icon">📋</span>
+        <span>IMAGEN: caos / cuadrante en papel<br>o pantallazo de una hoja de cálculo</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1.5 min. El impacto emocional va aquí: «En un servicio donde los errores cuestan vidas,
+  gestionar con papel y hojas de cálculo dispersas es un riesgo inaceptable.» Menciona FUOCO y SECIGEST brevemente.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 6 — LA SOLUCIÓN: SIGEBO
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">06 / 20</span>
+  <p class="slide-label">La solución</p>
+  <h2 class="slide-title">SIGEBO</h2>
+  <div class="quote">
+    Una aplicación web para la <strong>gestión integral de un parque de bomberos</strong>
+    —personal, recursos, emergencias y cartografía— que centraliza la operativa diaria
+    en una única plataforma accesible desde cualquier dispositivo.
+  </div>
+  <div class="module-grid" style="margin-top:0.6rem">
+    <div class="module-item"><span class="icon">🚨</span>Emergencias</div>
+    <div class="module-item"><span class="icon">🗺️</span>Mapa GIS</div>
+    <div class="module-item"><span class="icon">📅</span>Guardias</div>
+    <div class="module-item"><span class="icon">👥</span>Personal</div>
+    <div class="module-item"><span class="icon">🎓</span>Formación</div>
+    <div class="module-item"><span class="icon">🚒</span>Vehículos</div>
+    <div class="module-item"><span class="icon">📦</span>Material</div>
+    <div class="module-item"><span class="icon">💬</span>Avisos</div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1 min. Lee la frase del propósito despacio y con convicción.
+  Después señala los 8 módulos: «En 6 meses construimos una plataforma con 8 módulos funcionales plenamente integrados.»
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 7 — OBJETIVOS
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">07 / 20</span>
+  <p class="slide-label">Objetivos</p>
+  <h2 class="slide-title">¿Qué nos propusimos?</h2>
+  <div class="two-col" style="margin-top:0.6rem">
+    <div>
+      <div class="card" style="margin-bottom:0.6rem">
+        <div class="card-title">Objetivo general</div>
+        <p>Diseñar, desarrollar y desplegar SIGEBO con <strong>doble propósito:
+        operativo para el parque y didáctico para los alumnos del ciclo</strong>
+        de Coordinación de Emergencias y Protección Civil.</p>
+      </div>
+    </div>
+    <ul class="bullets" style="margin-top:0">
+      <li><strong>OE1</strong> Digitalizar la operativa diaria del parque</li>
+      <li><strong>OE2</strong> API REST en PHP como capa única de datos</li>
+      <li><strong>OE3</strong> Interfaz responsive, moderna e intuitiva</li>
+      <li><strong>OE4</strong> Autenticación segura y 5 roles diferenciados</li>
+      <li><strong>OE5</strong> Módulo de gestión de emergencias</li>
+      <li><strong>OE6</strong> Módulo cartográfico GIS con Leaflet</li>
+      <li><strong>OE7</strong> Sistema de gestión del talento</li>
+      <li><strong>OE8</strong> Documentación completa de uso y despliegue</li>
+    </ul>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1 min. Lee el objetivo general y los OE rápido como lista.
+  No te detengas en cada uno: «Los detallaremos cuando veamos la demo.» El detalle llega en la slide de pruebas/resultados.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 8 — PLANIFICACIÓN
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">08 / 20</span>
+  <p class="slide-label">Planificación</p>
+  <h2 class="slide-title">Cómo nos organizamos</h2>
+  <div class="two-col" style="margin-top:0.7rem">
+    <div>
+      <div class="card" style="margin-bottom:0.5rem">
+        <div class="card-title">Metodología ABP</div>
+        <p>Análisis → Diseño → Implementación → Pruebas → Despliegue</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Herramientas de gestión</div>
+        <p>
+          <span class="tag">GitHub Projects</span>
+          <span class="tag">GitHub Flow</span>
+          <span class="tag">Google Docs</span>
+        </p>
+        <p style="margin-top:0.4rem">Revisión mínima de <strong>2 miembros</strong> antes de merge a main</p>
+      </div>
+    </div>
+    <div>
+      <div class="card-title" style="margin-bottom:0.4rem">Cronograma (6 meses)</div>
+      <div class="timeline">
+        <div class="tl-item"><span class="tl-month">Dic</span>Análisis<br>+ Diseño BD</div>
+        <div class="tl-item"><span class="tl-month">Ene</span>Arquitectura<br>+ Auth</div>
+        <div class="tl-item"><span class="tl-month">Feb</span>Backend<br>API REST</div>
+        <div class="tl-item"><span class="tl-month">Mar</span>Frontend<br>módulos</div>
+        <div class="tl-item"><span class="tl-month">Abr</span>GIS +<br>deploy</div>
+        <div class="tl-item"><span class="tl-month">May</span>Pruebas<br>+ memoria</div>
+      </div>
+      <div class="img-placeholder" style="margin-top:0.5rem; min-height:70px">
+        <span>Captura GitHub Projects / Diagrama de Gantt</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1 min. Pon una captura del GitHub Projects o del diagrama de Gantt de la memoria.
+  Destaca el proceso de revisión: «Ninguna funcionalidad llegaba a main sin la aprobación de dos miembros del equipo.»
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 9 — ARQUITECTURA
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">09 / 20</span>
+  <p class="slide-label">Diseño del sistema</p>
+  <h2 class="slide-title">Arquitectura cliente–servidor</h2>
+  <div class="two-col" style="margin-top:0.7rem">
+    <div>
+      <div class="arch-layer">
+        <span class="layer-label">Browser</span>
+        <span>HTML5 · CSS3 · JavaScript (SPA) · Bootstrap 5</span>
+      </div>
+      <div class="arch-arrow">↕ HTTP / JSON</div>
+      <div class="arch-layer">
+        <span class="layer-label">API REST</span>
+        <span>PHP 8.2 · Apache · Enrutador MVC · Middlewares</span>
+      </div>
+      <div class="arch-arrow">↕ PDO</div>
+      <div class="arch-layer">
+        <span class="layer-label">Base datos</span>
+        <span>MySQL 8 · 30+ tablas</span>
+      </div>
+      <div class="arch-arrow">↕</div>
+      <div class="arch-layer">
+        <span class="layer-label">Infra</span>
+        <span>Docker Engine + Docker Compose</span>
+      </div>
+    </div>
+    <div>
+      <div class="card-title" style="margin-bottom:0.5rem">Control de acceso · 5 roles</div>
+      <div class="role-row">
+        <div class="role-badge"><span class="rb-num">1</span>Bombero</div>
+        <div class="role-badge"><span class="rb-num">2</span>Oficial</div>
+        <div class="role-badge"><span class="rb-num">3</span>J. Intervención</div>
+        <div class="role-badge"><span class="rb-num">4</span>J. Mando</div>
+        <div class="role-badge"><span class="rb-num">5</span>Inspector</div>
+      </div>
+      <div class="img-placeholder" style="margin-top:0.6rem; min-height:110px">
+        <span class="ph-icon">📊</span>
+        <span>Diagrama de arquitectura<br>(de la memoria, figura 5.1)</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1.5 min. Inserta el diagrama de arquitectura que ya tienes en la memoria.
+  Recalca la separación frontend/backend: «No hay lógica de negocio en el frontend. Todo pasa por la API.»
+  Y los 5 roles: «Cada acción del sistema verifica el rol en dos capas: frontend y backend.»
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 10 — TECNOLOGÍAS
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">10 / 20</span>
+  <p class="slide-label">Stack</p>
+  <h2 class="slide-title">Tecnologías utilizadas</h2>
+  <div class="tech-grid">
+    <div class="tech-chip"><span class="dot"></span>PHP 8.2</div>
+    <div class="tech-chip"><span class="dot"></span>Apache</div>
+    <div class="tech-chip"><span class="dot"></span>MySQL 8</div>
+    <div class="tech-chip"><span class="dot"></span>HTML5 · CSS3</div>
+    <div class="tech-chip"><span class="dot"></span>JavaScript (ES6+)</div>
+    <div class="tech-chip"><span class="dot"></span>Bootstrap 5</div>
+    <div class="tech-chip"><span class="dot"></span>Bootstrap Icons</div>
+    <div class="tech-chip"><span class="dot"></span>Leaflet + OpenStreetMap</div>
+    <div class="tech-chip"><span class="dot"></span>Nominatim (geocoding)</div>
+    <div class="tech-chip"><span class="dot"></span>PHPMailer + SMTP</div>
+    <div class="tech-chip"><span class="dot"></span>Docker + Docker Compose</div>
+    <div class="tech-chip"><span class="dot"></span>Git + GitHub</div>
+    <div class="tech-chip"><span class="dot"></span>GitHub Projects</div>
+    <div class="tech-chip"><span class="dot"></span>XAMPP (desarrollo local)</div>
+  </div>
+  <p style="font-size:0.75rem;color:#445;margin-top:0.6rem;text-align:right">100% open source · sin coste de licencias</p>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~30 s. Slide visual rápida. «Todo el stack es open source, sin un euro en licencias.»
+  Reemplaza los chips por logos reales en Google Slides para mayor impacto visual.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 11 — DEMO / CAPTURAS PRINCIPALES
+     ════════════════════════════════════════════════════════════ -->
+<div class="section-divider"><span>Demo de funcionalidades</span></div>
+
+<article class="slide">
+  <span class="slide-number">11 / 20</span>
+  <p class="slide-label">Demo</p>
+  <h2 class="slide-title">La aplicación en acción</h2>
+  <div class="two-col" style="margin-top:0.7rem; gap:0.8rem">
+    <div class="img-placeholder" style="min-height:110px; flex:1">
+      <span class="ph-icon">🖥️</span>
+      <span><strong>Login + Dashboard</strong><br>Pantallazo de la pantalla principal</span>
+    </div>
+    <div class="img-placeholder" style="min-height:110px; flex:1">
+      <span class="ph-icon">🚨</span>
+      <span><strong>Módulo Emergencias</strong><br>Lista de intervenciones + mapa Leaflet</span>
+    </div>
+  </div>
+  <div class="two-col" style="margin-top:0.5rem; gap:0.8rem">
+    <div class="img-placeholder" style="min-height:80px; flex:1">
+      <span class="ph-icon">📅</span>
+      <span><strong>Cuadrante</strong><br>Vista mensual / anual</span>
+    </div>
+    <div class="img-placeholder" style="min-height:80px; flex:1">
+      <span class="ph-icon">🗺️</span>
+      <span><strong>Mapa GIS</strong><br>Hidrantes con filtros</span>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> Esta es la slide de transición a la demo en vivo. Pon aquí capturas reales de la app.
+  Si vas a hacer demo en vivo, puedes saltarte parte de las capturas y abrir directamente el navegador.
+  <strong>Ten el vídeo grabado preparado</strong> por si falla la conexión.
+  Demo sugerida (3–4 min): Login → Dashboard → Registrar emergencia → Ver en el mapa → Cuadrante mensual.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 12 — MÓDULOS EN DETALLE
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">12 / 20</span>
+  <p class="slide-label">Funcionalidades</p>
+  <h2 class="slide-title">Módulos de la plataforma</h2>
+  <div class="module-grid" style="grid-template-columns: repeat(4,1fr); margin-top:0.7rem">
+    <div class="module-item">
+      <span class="icon">🚨</span>
+      <strong style="color:#fff;font-size:0.78rem">Emergencias</strong>
+      <span>Registro · Asignación · Geocodificación</span>
+    </div>
+    <div class="module-item">
+      <span class="icon">🗺️</span>
+      <strong style="color:#fff;font-size:0.78rem">Mapa GIS</strong>
+      <span>Hidrantes · Bocas de riego · Filtros</span>
+    </div>
+    <div class="module-item">
+      <span class="icon">📅</span>
+      <strong style="color:#fff;font-size:0.78rem">Planificación</strong>
+      <span>Guardias · Refuerzos · Cuadrante</span>
+    </div>
+    <div class="module-item">
+      <span class="icon">🎯</span>
+      <strong style="color:#fff;font-size:0.78rem">Alineación</strong>
+      <span>Posiciones tácticas del turno</span>
+    </div>
+    <div class="module-item">
+      <span class="icon">👥</span>
+      <strong style="color:#fff;font-size:0.78rem">Personal</strong>
+      <span>Alta · Edición · Roles · Foto</span>
+    </div>
+    <div class="module-item">
+      <span class="icon">🎓</span>
+      <strong style="color:#fff;font-size:0.78rem">Formación</strong>
+      <span>Cursos · Ediciones · Carnets · Méritos</span>
+    </div>
+    <div class="module-item">
+      <span class="icon">🚒</span>
+      <strong style="color:#fff;font-size:0.78rem">Vehículos</strong>
+      <span>Inventario · Incidencias · Mantenimiento</span>
+    </div>
+    <div class="module-item">
+      <span class="icon">📦</span>
+      <strong style="color:#fff;font-size:0.78rem">Material</strong>
+      <span>Almacén · Categorías · Stock</span>
+    </div>
+    <div class="module-item">
+      <span class="icon">💬</span>
+      <strong style="color:#fff;font-size:0.78rem">Avisos</strong>
+      <span>Comunicación interna por roles</span>
+    </div>
+    <div class="module-item">
+      <span class="icon">🏠</span>
+      <strong style="color:#fff;font-size:0.78rem">Área personal</strong>
+      <span>Estadísticas · Permisos · Perfil</span>
+    </div>
+    <div class="module-item">
+      <span class="icon">⚙️</span>
+      <strong style="color:#fff;font-size:0.78rem">Administración</strong>
+      <span>Roles · Tipos · Categorías del sistema</span>
+    </div>
+    <div class="module-item">
+      <span class="icon">🔒</span>
+      <strong style="color:#fff;font-size:0.78rem">Auth</strong>
+      <span>Login · Activación · Recuperación</span>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1 min. Slide de inventario de lo que existe. No expliques cada módulo, solo señala:
+  «12 módulos completamente funcionales, todos con comunicación hacia la misma API REST.»
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 13 — ASPECTOS TÉCNICOS
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">13 / 20</span>
+  <p class="slide-label">Bajo el capó</p>
+  <h2 class="slide-title">Aspectos técnicos relevantes</h2>
+  <div class="three-col" style="margin-top:0.7rem">
+    <div class="card">
+      <div class="card-title">Autenticación</div>
+      <p>Sesiones PHP server-side. Activación por enlace de correo. Recuperación de contraseña con token de un solo uso. PHPMailer + SMTP.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">API REST (MVC)</div>
+      <p>Validación en <strong>2 capas</strong>: frontend y backend. Middleware de autenticación. <strong>Rate limiting</strong>: 100 req/min/IP.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Cartografía GIS</div>
+      <p>Leaflet + OpenStreetMap. Geocodificación con <strong>Nominatim</strong>; fallback a Google Maps cuando Nominatim no resuelve.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Frontend SPA</div>
+      <p>Capa <em>Api.js</em> centraliza todas las llamadas HTTP. Controladores JS por módulo. Sin framework — JavaScript puro.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Subida de ficheros</div>
+      <p>Fotos de perfil gestionadas por la API; almacenadas en el servidor con validación de tipo y tamaño en backend.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Seguridad</div>
+      <p>Credenciales en <code>.env</code>, nunca en código fuente. Aprendido a las malas: incidente GitGuardian resuelto reescribiendo historial.</p>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1.5 min. Aquí el tribunal evalúa tu profundidad técnica. El rate limiting, la validación en 2 capas y el fallback
+  de geocodificación son los más diferenciadores. El incidente de GitGuardian lo puedes mencionar como aprendizaje de gestión de secretos.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 14 — DESPLIEGUE
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">14 / 20</span>
+  <p class="slide-label">Despliegue</p>
+  <h2 class="slide-title">De desarrollo a producción</h2>
+  <div class="two-col" style="margin-top:0.7rem">
+    <div>
+      <div class="card" style="margin-bottom:0.5rem">
+        <div class="card-title">Docker + Docker Compose</div>
+        <p>2 contenedores: <strong>servidor web</strong> (PHP 8.2 + Apache) + <strong>base de datos</strong> (MySQL 8).<br>
+        Un único comando para levantar todo el sistema:</p>
+        <p style="margin-top:0.5rem;background:#0d0d1a;padding:0.4rem 0.7rem;border-radius:4px;font-family:monospace;font-size:0.82rem;color:var(--verde)">
+          docker compose up --build
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-title">URL de producción</div>
+        <p style="font-size:0.9rem;color:var(--verde);font-weight:700">syncfive.cpifpbajoaragon.info</p>
+        <p style="margin-top:0.3rem">Servidor físico del CPIFP Bajo Aragón · Ubuntu Server 24.04</p>
+      </div>
+    </div>
+    <div class="img-placeholder" style="min-height:100%">
+      <span class="ph-icon">🐳</span>
+      <span>Logo Docker + Docker Compose<br><br>o captura del docker-compose.yml<br>(sin credenciales)</span>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1 min. Recalca la portabilidad de Docker: «La misma imagen que funciona en el portátil funciona en el servidor del parque.»
+  Y la URL real: si el tribunal quiere comprobarlo, está ahí. Muestra la URL en el navegador si el tiempo lo permite.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 15 — PRUEBAS Y RESULTADOS
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">15 / 20</span>
+  <p class="slide-label">Pruebas y resultados</p>
+  <h2 class="slide-title">¿Qué conseguimos?</h2>
+  <table class="mini-table">
+    <thead>
+      <tr><th>Objetivo</th><th>Estado</th><th>Resultado</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>OE1</strong> Digitalizar operativa diaria</td><td class="ok">✓ Cumplido</td><td>Personal, guardias, formación, recursos y mantenimiento</td></tr>
+      <tr><td><strong>OE2</strong> API REST en PHP</td><td class="ok">✓ Cumplido</td><td>Arquitectura MVC, middlewares, rate limiting, validación 2 capas</td></tr>
+      <tr><td><strong>OE3</strong> Interfaz responsive e intuitiva</td><td class="ok">✓ Cumplido</td><td>SPA con Bootstrap 5, validada por el cliente</td></tr>
+      <tr><td><strong>OE4</strong> Autenticación + 5 roles</td><td class="ok">✓ Cumplido</td><td>Sesiones PHP, activación por correo, recuperación de contraseña</td></tr>
+      <tr><td><strong>OE5</strong> Módulo de emergencias</td><td class="ok">✓ Cumplido</td><td>Registro, asignación, geocodificación. PDF → v2.</td></tr>
+      <tr><td><strong>OE6</strong> Módulo cartográfico GIS</td><td class="par">⬡ Parcial</td><td>Hidrantes y emergencias. Tiempo real vehículos → v2.</td></tr>
+      <tr><td><strong>OE7</strong> Gestión del talento</td><td class="par">⬡ Parcial</td><td>Méritos y carnets. Evaluación objetiva → v2.</td></tr>
+      <tr><td><strong>OE8</strong> Documentación</td><td class="ok">✓ Cumplido</td><td>Manual de usuario, despliegue, ayuda contextual Notion</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:0.75rem;color:var(--gris);margin-top:0.5rem">
+    Validación por el cliente en revisiones periódicas sobre
+    <strong style="color:var(--verde)">syncfive.cpifpbajoaragon.info</strong>
+  </p>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1 min. No te disculpes por los parciales — enmárcalos positivamente:
+  «Decidimos ser honestos: lo que no está al 100% lo documentamos como mejora futura, no lo escondemos.»
+  El cliente validó en producción real — eso es diferencial.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 16 — PROPUESTA CHATBOT
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">16 / 20</span>
+  <p class="slide-label">Innovación · Línea futura</p>
+  <h2 class="slide-title">Propuesta: asistente conversacional</h2>
+  <div class="two-col" style="margin-top:0.7rem">
+    <div>
+      <div class="card" style="margin-bottom:0.5rem">
+        <div class="card-title">¿Qué es?</div>
+        <p>Un <strong>chatbot integrado en SIGEBO</strong> que traduce consultas en lenguaje natural en llamadas a la API REST existente. Con soporte de <strong>voz</strong> (Web Speech API).</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Arquitectura</div>
+        <p><strong>LLM (Claude / GPT-4o) + tool use</strong> sobre los endpoints ya existentes. El modelo respeta los mismos 5 roles del sistema.</p>
+      </div>
+    </div>
+    <div>
+      <ul class="bullets" style="margin-top:0">
+        <li>«¿Quién está de guardia hoy?»</li>
+        <li>«¿Está operativo el camión X?»</li>
+        <li>«Registra emergencia en calle Mayor, 12»</li>
+        <li>«Solicita permiso del 15 al 22 de julio»</li>
+      </ul>
+      <div class="img-placeholder" style="margin-top:0.6rem;min-height:80px">
+        <span>Diagrama de arquitectura del chatbot<br>(SIGEBO Chatbot Interaction-2026-05-29.png)</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1 min. Esta slide diferencia el proyecto del resto.
+  Menciona que no está implementado pero sí diseñado con detalle en la memoria (cap. 11).
+  El diagrama del chatbot ya lo tenés guardado: <strong>SIGEBO Chatbot Interaction-2026-05-29-140336.png</strong>. Úsalo aquí.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 17 — PLAN ECONÓMICO
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">17 / 20</span>
+  <p class="slide-label">Plan económico</p>
+  <h2 class="slide-title">¿Cuánto costó?</h2>
+  <div class="stat-row" style="margin-top:0.8rem; flex:none">
+    <div class="stat-box" style="border-color:#2ecc71">
+      <div class="stat-num" style="color:#2ecc71">0 €</div>
+      <div class="stat-label">Coste real del proyecto<br>(marco académico, stack open source)</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">~15.000 €</div>
+      <div class="stat-label">Coste teórico de mercado<br>(990 h × 15 €/h + infraestructura)</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">~200 €</div>
+      <div class="stat-label">Infra anual en producción real<br>(VPS + dominio)</div>
+    </div>
+  </div>
+  <div class="two-col" style="margin-top:0.8rem; flex:none">
+    <div class="card">
+      <div class="card-title">Valor para el cliente</div>
+      <p>Código fuente completo, sin dependencia de proveedor.
+      Las alternativas comerciales (FUOCO, SECIGEST) implican licencias recurrentes y nula adaptabilidad.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Escalabilidad</div>
+      <p>Si se despliega en otros parques de la provincia o comunidad, el coste de desarrollo ya está amortizado.
+      Coste marginal de cada nueva instancia ≈ 200 €/año.</p>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~45 s. Slide visual. El contraste 0€ vs 15.000€ es el gancho.
+  «El cliente obtiene un sistema a medida, con código fuente completo, por coste cero.»
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 18 — CONCLUSIONES
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">18 / 20</span>
+  <p class="slide-label">Conclusiones</p>
+  <h2 class="slide-title">Lo que aprendí</h2>
+  <div class="two-col" style="margin-top:0.7rem">
+    <div>
+      <div class="card-title" style="margin-bottom:0.4rem">Aprendizajes clave</div>
+      <ul class="bullets" style="margin-top:0">
+        <li><strong>Arquitectura real:</strong> API REST con separación estricta de capas</li>
+        <li><strong>Git en equipo:</strong> ramas, PRs, revisiones, resolución de conflictos</li>
+        <li><strong>Docker:</strong> de «funciona en mi máquina» a producción reproducible</li>
+        <li><strong>Gestión de proyectos:</strong> cliente real, alcance, expectativas y entregas</li>
+        <li><strong>Seguridad:</strong> secretos, GitGuardian, reescritura de historial Git</li>
+      </ul>
+    </div>
+    <div>
+      <div class="card-title" style="margin-bottom:0.4rem">Mejoras futuras (v2)</div>
+      <ul class="bullets" style="margin-top:0">
+        <li>Portal de turnos voluntarios</li>
+        <li>Exportación de partes de intervención en PDF</li>
+        <li>Seguimiento de vehículos en tiempo real</li>
+        <li>Soporte multi-parque (arquitectura multi-tenant)</li>
+        <li>Asistente conversacional integrado (cap. 11)</li>
+        <li>Coordinación entre servicios de emergencia</li>
+      </ul>
+    </div>
+  </div>
+  <div class="quote" style="margin-top:0.5rem;font-size:0.85rem">
+    «Cinco estudiantes de DAW, once semanas, un sistema en producción — y un cliente satisfecho.»
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~1.5 min. Esta es la slide de cierre técnico. La frase final es tuya — dila con convicción.
+  Si hay tiempo, menciona que el feedback del cliente fue el motor de la segunda versión.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 19 — AGRADECIMIENTOS
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide">
+  <span class="slide-number">19 / 20</span>
+  <p class="slide-label">Agradecimientos</p>
+  <h2 class="slide-title">Gracias</h2>
+  <div class="three-col" style="margin-top:1rem">
+    <div class="card" style="text-align:center">
+      <div class="icon" style="font-size:2rem;margin-bottom:0.4rem">👨‍🏫</div>
+      <div class="card-title">Profesorado</div>
+      <p>Todo el departamento de informática del CPIFP Bajo Aragón.<br>Con mención especial a Pepe.</p>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="icon" style="font-size:2rem;margin-bottom:0.4rem">👨‍💻</div>
+      <div class="card-title">Equipo SyncFive</div>
+      <p>Los cuatro compañeros con los que pasé cientos de horas.<br>En especial, <strong>Javier</strong>.</p>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="icon" style="font-size:2rem;margin-bottom:0.4rem">👨‍👩‍👦</div>
+      <div class="card-title">Familia y amigos</div>
+      <p>Por el apoyo constante y por conseguir que desconecte de vez en cuando.</p>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> ~30 s. Breve y sincero. Puedes añadir fotos del equipo si las tenés.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SLIDE 20 — FIN / PREGUNTAS
+     ════════════════════════════════════════════════════════════ -->
+<article class="slide slide--final">
+  <span class="slide-number">20 / 20</span>
+  <div style="margin-bottom:0.8rem">
+    <div class="cover-badge">SIGEBO · 2026</div>
+  </div>
+  <h2 class="cover-title" style="font-size:2rem">¿Preguntas?</h2>
+  <p class="cover-sub" style="margin-top:0.5rem">Diego Lorenzo Mir · CPIFP Bajo Aragón</p>
+  <div style="margin-top:1.2rem; display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap">
+    <div class="stat-box" style="min-width:160px; background:rgba(255,255,255,0.04); border:1px solid #2a2a4a; border-radius:8px; padding:0.7rem 1.2rem;">
+      <div style="font-size:0.72rem;color:var(--rojo2);font-weight:700;letter-spacing:1px;text-transform:uppercase">URL en producción</div>
+      <div style="font-size:0.85rem;color:var(--verde);font-weight:700;margin-top:0.2rem">syncfive.cpifpbajoaragon.info</div>
+    </div>
+    <div class="stat-box" style="min-width:160px; background:rgba(255,255,255,0.04); border:1px solid #2a2a4a; border-radius:8px; padding:0.7rem 1.2rem;">
+      <div style="font-size:0.72rem;color:var(--rojo2);font-weight:700;letter-spacing:1px;text-transform:uppercase">Repositorio</div>
+      <div style="font-size:0.85rem;color:var(--gris);font-weight:700;margin-top:0.2rem">GitHub / SyncFive</div>
+    </div>
+  </div>
+  <div class="slide-bar"></div>
+</article>
+<div class="notes">
+  <strong>Notas:</strong> Slide final durante las preguntas. Ten la URL lista en el navegador para mostrarla en vivo si el tribunal quiere ver algo.
+  Recuerda ensayar las preguntas frecuentes: ¿Por qué PHP y no Node/Laravel? ¿Por qué no usaste un framework de frontend (React/Vue)?
+  ¿Cómo gestionaste el control de versiones del esquema de BD? ¿Qué cambiarías del diseño ahora que lo terminaste?
+</div>
+
+</body>
+</html>
