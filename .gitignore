@@ -6,6 +6,3 @@ api_rest/storage/rate_limit/*.json
 # Tooling local
 .atl/
 .claude/
-
-# Documentación pesada de trabajo (no desplegar)
-docs/Documentación-20260518T110530Z-3-001/

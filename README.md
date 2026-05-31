@@ -34,7 +34,6 @@ frontend/        Cliente web
   javascript/    Controladores, API y helpers
   pages/         Vistas HTML por módulo
   includes/      Cabecera, sidebar, footer compartidos
-docs/            Documentación del TFG (memoria, presentación, diagramas)
 .htaccess        Reescritura de rutas (URLs limpias)
 DDL_DML_SIGEBO.sql        Esquema + datos base + datos de demo (init de la BD)
 docker-compose.yml        Servicios apache + mysql
@@ -89,8 +88,3 @@ El sistema define cinco roles con distintos niveles de acceso:
 3. **JEFE DE INTERVENCIÓN**
 4. **JEFE DE MANDO**
 5. **INSPECTOR**
-
-## Documentación
-
-La memoria del TFG, la presentación de defensa y el material gráfico están en
-[`docs/`](docs/).
