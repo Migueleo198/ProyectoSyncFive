@@ -36,8 +36,7 @@ frontend/        Cliente web
   includes/      Cabecera, sidebar, footer compartidos
 docs/            Documentación del TFG (memoria, presentación, diagramas)
 .htaccess        Reescritura de rutas (URLs limpias)
-DDL_DML_SIGEBO.sql        Esquema + datos base (init de la BD)
-seed_demo_junio2026.sql   Datos de ejemplo para la demo (solo INSERT)
+DDL_DML_SIGEBO.sql        Esquema + datos base + datos de demo (init de la BD)
 docker-compose.yml        Servicios apache + mysql
 Dockerfile                Imagen PHP 8.2 + Apache
 ```
@@ -65,12 +64,8 @@ Dockerfile                Imagen PHP 8.2 + Apache
    - Apache queda disponible en **http://localhost:8081**
    - MySQL se expone en el puerto **3307** del host
    - `DDL_DML_SIGEBO.sql` se carga automáticamente como inicialización de la BD
-
-3. (Opcional) Carga los datos de demostración de junio 2026:
-
-   ```bash
-   docker exec -i sigebo-mysql mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < seed_demo_junio2026.sql
-   ```
+     e incluye el esquema, los datos base y los datos de demostración de junio
+     2026 (todo en un único script)
 
 ## Variables de entorno
 
